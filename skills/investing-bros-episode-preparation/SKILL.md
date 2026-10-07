@@ -1,62 +1,53 @@
 ---
-name: Investing Bros episode preparation
+name: investing-bros-episode-preparation
 description: >-
-  Use this before an Investing Bros / אחים להשקעות recording: create the episode
-  Drive folder with a brief subfolder, put all prep Docs there (never show
-  root), research news/deep-dive, then hand WhatsApp share to Amitai Personal.
+  Prepare an upcoming Investing Bros / אחים להשקעות episode before recording:
+  episode Drive folder with a brief/ subfolder, news ideas, deep-dive research,
+  and sharing the prep docs with the brothers. Use when Amitai says things like
+  "prep episode N", "news ideas for this week", "deep dive on X", "הכנה לפרק".
 ---
 # Investing Bros episode preparation
 
-Use **before** recording when preparing news ideas, deep-dive briefs, or other pre-show material for **Investing Bros** (Hebrew: **אחים להשקעות**). Co-hosts: Amitai and Nadav.
+Load `investing-bros-show` first — it has the naming, Drive tree, roles and WhatsApp rules this skill relies on.
 
-Episode shape: ~10 min news, ~20 min deep dive, ~5 min each sharing an investment idea.
+## When to use
+Before a recording: news ideas, a deep-dive brief, one-pagers or any other pre-show material.
 
-Do **not** invent numbers, quotes, or events. Every factual claim needs a source URL.
+## Inputs
+- Episode number N **as Amitai states it** (don't derive it).
+- Topic / deep-dive subject, if decided.
+- Language for group-facing docs (default Hebrew). Amitai may want English drafts in chat first — follow his ask for each send.
 
-**Episode number:** use the number Amitai states. Do **not** auto-increment from old folders.
+## Steps
 
-## Drive layout (prep phase)
+### 1. Drive folder
+1. Under the show root, find an existing `פרק N` folder (prefix match — see show conventions). Reuse it if found; otherwise create `פרק N — נושא`.
+2. Inside it, create (or reuse) the subfolder `brief`.
+3. Create **every** prep Google Doc inside `brief/` — never in the show root, never loose in the episode root.
 
-Show root folder already exists (`אחים להשקעות`). Do **not** invent a second root.
+Typical docs in `brief/`: news/topic ideas, deep-dive brief, any one-pagers. Leave the episode root otherwise empty; post-production fills it later.
 
-1. Create (or reuse) episode folder: `פרק N — נושא` under show root.
-2. Inside it, create subfolder **`brief`** (English name; holds all pre-recording material).
-3. Create every prep Google Doc **inside `brief` only** — never in show root, never loose at episode root during prep.
-4. Typical docs in `brief`:
-   - News / topic ideas Doc (Hebrew when shared to the brothers)
-   - Deep-dive brief Doc
-   - Any one-pagers or extra prep notes for that episode
-5. Leave episode root empty (or nearly empty) until **post-production** fills it with edited audio + `תיאור הפרק` + `אפשרויות כותרת` (see post-production skill). After recording, post-prod may add `extras`; keep `brief` as the prep archive — do not delete it.
+### 2. News segment (~10 ideas)
+- All-In / tech-investor angle (see show conventions). Don't lead with rates, oil or price action unless Amitai asks for macro.
+- Each idea: one crisp line + why it matters for investors + source URL.
+- Preferred sources: Globes, Calcalist, TheMarker, Bank of Israel, Bloomberg, Reuters, Jerusalem Post, and primary company posts/blogs.
 
-If the episode folder already exists from an earlier prep pass, **reuse it** — do not create a duplicate `פרק N`.
+### 3. Deep dive
+Structured brief: what it is → why now → key numbers (each sourced) → bull case / bear case → open questions for the hosts.
 
-## Research standards
+### 4. Share
+Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחים להשקעות`:
+1. Set the Doc(s) to anyone-with-link Viewer.
+2. Send the **Doc link(s)**, not a pasted brief.
+3. Give the exact caption text (ending with the show tag), the links and context; ask for yes/no confirmation.
 
-### News segment (~10 ideas)
-Prefer **All-In / tech-investor** style: model releases, product launches, big raises, major hacks/security stories, infra bottlenecks, fintech/platform moves. Avoid leading with rate cuts, oil prints, or pure price action unless Amitai asks for macro.
+## Handoff checklist
+- [ ] `פרק N — נושא` exists under show root (no duplicate N)
+- [ ] `brief/` exists and holds every prep Doc; nothing in show root
+- [ ] Every factual claim has a source URL
+- [ ] WhatsApp owner given exact group + caption + links; confirmation reported
 
-Each idea: one crisp line + why it matters for investors + source URL. Prefer Globes, Calcalist, TheMarker, Bank of Israel, Bloomberg, Reuters, Jerusalem Post, and primary company/blog posts when relevant.
-
-### Deep dive
-Structured brief: what it is, why now, key numbers (sourced), bull/bear, open questions for the hosts. Hebrew Doc for WhatsApp sharing when the group is Hebrew; English OK in-chat if Amitai prefers English drafts first.
-
-### Hebrew quality
-When the Doc or WhatsApp caption is Hebrew: high-quality natural Hebrew (not literal machine tone). Brand spellings: **ספייסאקס** (not ספייסקס).
-
-## Sharing to WhatsApp
-
-**Amitai Personal owns WhatsApp Web.** Investing Bros does **not** QR-login or drive WhatsApp.
-
-1. Prefer a **Doc link** over a mega paste (long briefs split badly in WhatsApp).
-2. Set Doc share to anyone-with-link Viewer when the brothers need access.
-3. Message **Amitai Personal** with: exact group name (`אחים להשקעות`), exact caption text, Doc URL(s), and context. Ask him to confirm send yes/no.
-4. Every WhatsApp bubble he sends for this show must end with: `sent by Grokbot`.
-5. Weekly English ideas-in-this-chat preference still applies for drafts Amitai reviews here; group-facing copy follows his language ask for that send.
-
-## Checklist before handoff
-
-- [ ] Episode folder `פרק N — נושא` exists under show root
-- [ ] Subfolder `brief` exists
-- [ ] All prep Docs live in `brief` (none in show root)
-- [ ] Sources on factual claims
-- [ ] Amitai Personal given exact group + caption + links (no WhatsApp drive on this agent)
+## Never
+- Invent numbers, quotes or events.
+- Drive WhatsApp Web yourself.
+- Create a second show root or a second folder for the same episode.

@@ -1,47 +1,33 @@
 ---
-name: Investing Bros share new episode
+name: investing-bros-share-new-episode
 description: >-
-  Use this after an Investing Bros episode is published on RedCircle: gather
-  copy, then ask Amitai Personal to send WhatsApp (he owns WhatsApp Web)—do not
-  QR/login on Investing Bros.
+  Share a published Investing Bros / אחים להשקעות episode on WhatsApp: gather
+  the public RedCircle link and per-group copy, then hand the send to the
+  WhatsApp owner. Use after the episode is live, or when Amitai says "share
+  the episode", "send the link to the family", "תפיץ את הפרק".
 ---
 # Investing Bros share new episode
 
-Use **after** an Investing Bros / אחים להשקעות episode is **published** on RedCircle (or Amitai says share the live link).
+Load `investing-bros-show` first — the WhatsApp ownership rules, show tag and **approved destinations** table live there.
 
-## Goal
-Distribute the public episode link on WhatsApp to configured destinations (text + optional artwork).
+## When to use
+After an episode is **published** on RedCircle, or when Amitai says to share the live link.
 
-## WhatsApp ownership (critical)
-**Amitai Personal owns WhatsApp Web.** Investing Bros must **not** open WhatsApp, scan QR, or send from its own desktop.
-
-To send: message **Amitai Personal** with:
-- exact group/chat name(s)
-- exact message text (including `sent by Grokbot` when required)
-- public episode URL
-- optional: ask them to attach show artwork (path or note that cover is on shared disk)
-- context (which episode, why)
-
-Then wait for their confirmation; report back to Amitai.
-
-## Destinations (extensible)
-| Id | WhatsApp target | Notes |
-|----|-----------------|-------|
-| `raskin-empire` | Group `רסקין אימפריה` (also seen as `רסקין אמפריה`) | Family promo |
-| `achim` | Group `אחים להשקעות` | Only when Amitai explicitly wants a live/ready ping there |
-
-Do **not** invent new destinations — only ones Amitai listed or approved.
-
-## Inputs before asking Amitai Personal to send
+## Inputs
 1. **Public episode URL** (RedCircle).
-2. **Per-destination text** — ask Amitai (user) for copy when not already provided; don’t invent promo copy.
-3. Artwork optional unless the run asks for it.
+2. **Destinations** — only ids from the approved-destinations table that Amitai asked for. `achim` only when he explicitly wants a live ping there.
+3. **Text per destination** — ask Amitai for the copy if he hasn't given it. Don't invent promo copy.
+4. **Artwork** (optional, only if the run asks for it) — the show cover (episode artwork isn't defined yet; see `investing-bros-cover-art`).
+
+## Steps
+1. For each destination, prepare: exact group name, exact message text ending with the show tag, the public URL, artwork path or note (if any), and one line of context (which episode, why).
+2. Send that to the WhatsApp owner and ask for a yes/no per destination. Don't open WhatsApp Web yourself.
+3. Wait for confirmation; report to Amitai.
 
 ## Done when
-- Amitai Personal confirmed each destination sent, or reported a clear blocker (group not found, WhatsApp down).
-- Investing Bros reported status in chat.
+Each destination is confirmed sent, or has a clear blocker (group not found, WhatsApp down), and you've reported the status to Amitai.
 
-## Safety
-- Don’t drive WhatsApp on Investing Bros desktop.
-- Don’t expand to extra groups without approval.
-- Don’t delete prior WhatsApp messages.
+## Never
+- Drive WhatsApp Web or scan a QR.
+- Add groups that aren't in the approved table without Amitai's OK.
+- Delete earlier WhatsApp messages.

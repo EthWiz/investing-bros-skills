@@ -1,0 +1,14 @@
+{
+  "name": "investing-bros",
+  "description": "Investing Bros / אחים להשקעות podcast production skills",
+  "owner": {
+    "name": "Amitai Raskin"
+  },
+  "plugins": [
+    {
+      "name": "investing-bros",
+      "source": "./",
+      "description": "Prep, post-production, promo clips, cover art, RedCircle upload and WhatsApp sharing for the Investing Bros podcast."
+    }
+  ]
+}
