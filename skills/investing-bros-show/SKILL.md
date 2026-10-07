@@ -39,6 +39,7 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - Brand spellings: **ספייסאקס** (not ספייסקס). Add new ones here when Amitai corrects a spelling.
 - Chapters are **time first**: `1:05 נושא`.
 - Disclaimer line: `אין כאן המלצת השקעה. רק שיחה.`
+- Host names on screen: **נדב רסקין**, **אמיתי רסקין**. The intro clip spells **אמתי** — open question for Amitai; use אמיתי until he decides, then record the answer here.
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
 
 ## Drive tree
@@ -53,9 +54,18 @@ Show root `אחים להשקעות` already exists. Never create a second root.
     brief/              pre-recording docs (prep archive; keep)   ← episode-preparation
     extras/             raw audio, parts, transcripts, segments.json, RTL .txt copies, temp files ← post-production
     promo/              shorts, teaser (and episode art, once defined) ← shorts, teaser
+    video/              full video episode, only when there is one (cold open + intro + episode) ← post-production
 ```
 
 The episode root holds **only** the three files above plus the three subfolders. Anything else goes in `extras/` (or `promo/` for promo material). `תוספות` is an accepted alternative name for `extras/` if a folder already uses it.
+
+## Brand (video and graphics)
+- **Palette:** black, emerald, white — from the dark show cover (`אחים להשקעות - קאבר מקצועי 3 - כהה.jpg`). On-screen emerald `#1FBF7A` (the cover's own green is too dark over video).
+- **Logo:** the `אחים להשקעות` wordmark cut from that cover (`brand.py logo` in shorts/teaser). Don't redraw or recolour it.
+- **Font:** Heebo, as static weights (SemiBold / ExtraBold / Black via `brand.py fonts`) — libass draws the variable font thin.
+- **Intro clip:** `אחים להשקעות-Intro.mp4` — 6 s, 960×960, 24 fps, stereo music; ends with `עם אמתי ונדב רסקין`. In 16:9 it is padded on black. Drive location not recorded yet — ask Amitai, then write it here.
+- **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. The two hosts within ~3 dB of each other.
+- **Recording layout:** Riverside side-by-side export, 1920×1080, 24 fps: Amitai in the left half, Nadav in the right half (as of episode 6). Check the first frame each episode — seats can change.
 
 ## Roles and accounts
 | Role / account | Who / what | Notes |
@@ -63,7 +73,7 @@ The episode root holds **only** the three files above plus the three subfolders.
 | Approver | Amitai | Episode number, cuts, final title, publish, new destinations |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
-| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the file (base64 limits). Connectors are fine for Docs, folders and moves. |
+| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the file (base64 limits — impractical above a few MB). Connectors are fine for Docs, folders and moves. Claude in Chrome's file upload takes at most 10 MB per call: for bigger video, upload a 2-pass sub-10 MB review copy and tell Amitai, or ask him to drag the full file in. |
 | Show cover art | **Location not recorded yet** — ask Amitai, then write the path here | Used for audiograms and WhatsApp artwork |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
 

@@ -8,12 +8,15 @@ Usage:
 START / END are seconds on the RAW timeline (the same timeline as segments.json).
 Captions are cut to that range, shifted to start at 0, and split into short
 chunks (a few words each) timed proportionally to their length.
-Style Encoding is -1 (libass then picks the base direction per line) and each
-caption gets RLM marks so lines with English and a "?" stay right-to-left.
+Style Encoding is -1 (libass then picks the base direction per line; any other
+value forces left-to-right and puts Hebrew punctuation on the wrong side). Each
+caption gets RLM marks, and English words inside a Hebrew line are wrapped in
+LRI/PDI isolates, so "ל־use cases", "So what?" or "NFTs" keep their place.
 Proofread the Dialogue lines afterwards — whisper mishears names and numbers.
 """
 import argparse
 import json
+import re
 import subprocess
 import sys
 
@@ -62,13 +65,20 @@ def chunk_segments(segments, start, end, max_words):
 
 
 RLM = "‏"
+LRI, PDI = "⁦", "⁩"
+# A run of Latin words (with digits, & ' . - inside), e.g. "use cases", "So what", "S&P 500".
+LATIN_RUN = re.compile(r"[A-Za-z][A-Za-z0-9&'’.\-]*(?:\s+[A-Za-z0-9][A-Za-z0-9&'’.\-]*)*")
 
 
 def rtl(text: str) -> str:
     """Pin a caption to right-to-left. Without this, a line with English and a
     trailing '?' (e.g. 'ו-NVIDIA?') renders with the '?' on the wrong side —
-    the same problem as RedCircle. RLM at both ends and after every '?'."""
-    t = text.replace(RLM, "").replace("?", "?" + RLM)
+    the same problem as RedCircle. RLM at both ends and after every '?', and
+    each Latin run isolated (LRI...PDI) so it can't drag Hebrew around it."""
+    t = text.replace(RLM, "").replace(LRI, "").replace(PDI, "")
+    if re.search(r"[\u0590-\u05FF]", t):
+        t = LATIN_RUN.sub(lambda m: LRI + m.group(0) + PDI, t)
+    t = t.replace("?", "?" + RLM)
     return RLM + t + ("" if t.endswith(RLM) else RLM)
 
 
