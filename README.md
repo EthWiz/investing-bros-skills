@@ -16,7 +16,8 @@ prep ──► record ──► post-production ──► review ──► uploa
 | `investing-bros-show` | **Shared conventions** — load with every other skill: hosts, format, naming, Drive tree, roles/accounts, WhatsApp destinations |
 | `investing-bros-episode-preparation` | Before recording: episode folder + `brief/`, news ideas, deep dive, share prep docs |
 | `investing-bros-post-production` | After recording: combine, transcribe, trim, Hebrew Docs, Drive filing, review ping |
-| `investing-bros-promo-clips` | Vertical shorts and a teaser with burned-in Hebrew captions |
+| `investing-bros-shorts` | Vertical shorts with burned-in Hebrew captions |
+| `investing-bros-teaser` | A 30–60 s episode teaser with burned-in Hebrew captions |
 | `investing-bros-cover-art` | Placeholder — episode artwork process not defined yet |
 | `investing-bros-episode-upload` | RedCircle draft upload, incl. the Hebrew RTL + `?` fix |
 | `investing-bros-share-new-episode` | WhatsApp distribution of the published episode |

@@ -16,7 +16,7 @@ Load `investing-bros-show` first.
 2. Ask what he wants: which base artwork (and where it lives), what text goes on it, sizes and where it will be used (RedCircle episode art, WhatsApp, promo clips).
 3. Make nothing until he answers, and keep any result in the episode's `promo/` folder for his review.
 
-Until this is filled in, other skills use the existing **show cover** wherever artwork is needed (e.g. audiograms in `investing-bros-promo-clips`, WhatsApp artwork in `investing-bros-share-new-episode`).
+Until this is filled in, other skills use the existing **show cover** wherever artwork is needed (e.g. audiograms in `investing-bros-shorts` and `investing-bros-teaser`, WhatsApp artwork in `investing-bros-share-new-episode`).
 
 ## To fill in later
 - Base artwork location (also record it in `investing-bros-show`)
