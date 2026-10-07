@@ -1,50 +1,61 @@
 ---
-name: Investing Bros episode upload
+name: investing-bros-episode-upload
 description: >-
-  Use this when uploading an approved Investing Bros / אחים להשקעות episode to
-  RedCircle (edited audio + Hebrew Docs); draft by default, publish only with
-  explicit OK.
+  Upload an approved Investing Bros / אחים להשקעות episode to RedCircle as a
+  draft: edited audio, final Hebrew title and description with the RTL + "?"
+  fix, episode number. Use when Amitai says "upload episode N", "put it on
+  RedCircle", "העלאה". Publishing live needs his explicit OK.
 ---
 # Investing Bros episode upload
 
-Use when Amitai is ready to put an Investing Bros / אחים להשקעות episode on the podcast host after post-production review (or he explicitly says to upload).
+Load `investing-bros-show` first — accounts, naming and the Drive tree live there.
 
-**Host:** [RedCircle](https://app.redcircle.com) — this show’s host. Do **not** use RSS.com unless Amitai says the host changed.
+## When to use
+After post-production review, when Amitai says to upload (or explicitly asks for it). Host is RedCircle.
 
-**Credentials**
-- Email: `ami.ruskin@gmail.com`
-- Password: env secret `REDCIRCLE_PASSWORD` (never echo / paste into chat or logs)
-- If the env secret is missing in the browser process, use in-chat password form on the live page — never ask him to paste the password in chat.
+## Inputs
+1. Episode number N — confirm with Amitai.
+2. **Edited** audio from the episode folder **root** (the approved cut — never anything from `extras/`, never raw). Keep a local copy for the file picker.
+3. Final copy from the episode Docs:
+   - Title: text after `בחירה סופית:` in `אפשרויות כותרת`; if the Doc was reduced to a single title, use that.
+   - Description: full text of `תיאור הפרק` (intro, disclaimer, chapters — chapters stay time-first).
+4. RedCircle login from show conventions → accounts. Never echo the password or put it in chat or logs.
 
-## Before you start
-1. Confirm episode number and that the **edited** audio is the approved cut (Drive episode folder **root**, not `extras/` / not raw).
-2. Read final copy from the episode Google Docs:
-   - `תיאור הפרק` — description + disclaimer + chapters
-   - `אפשרויות כותרת` — use text under `בחירה סופית:` if present; if the Doc was reduced to a single title, use that title
-3. Chapters stay **time-first** like פרק 1: `1:05 נושא` (do not flip to `נושא — זמן` unless Amitai asks).
-4. Hebrew brand spellings from memory (e.g. ספייסאקס).
-5. Keep a local copy of edited audio handy for the file picker (from Drive download or `/workspace/investing-bros/...`).
+## Steps
 
-## RedCircle click-path (verified)
+### 1. Make the RTL-safe copy
+RedCircle's editor is left-to-right; plain Hebrew with `?` or English names renders scrambled. Generate marked copy with the script — never by hand:
+```bash
+python3 scripts/rtl_fix.py --title  title.txt       > title-rtl.txt
+python3 scripts/rtl_fix.py --description description.txt > description-rtl.txt
+```
+Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rtl.md). Put both `-rtl.txt` files in the episode's `extras/` afterwards.
+
+### 2. RedCircle click-path (verified)
 1. Open `https://app.redcircle.com/shows` and sign in.
 2. Open the show **אחים להשקעות** (Investing Bros).
-3. **Add / New Episode** → lands on a create URL shaped like `/shows/{showId}/ep/create`.
-4. Fill **Title** (final Hebrew title from the Titles Doc).
-5. Fill **Description** by pasting the Description Doc text (preserve blank lines / paragraphs).
-6. **Upload File** — select the edited m4a/mp3. If the first upload fails with a network error, retry once with the same file.
-7. **More Options** → set **Episode Number** when the field exists.
-8. **Save as Draft** / leave **Unpublished**.  
-   **Do not** hit public Publish / submit to directories / make live unless Amitai explicitly said go live.
-9. **Insertion points** (ads pre/mid/post): RedCircle may auto-add defaults after processing. Leave defaults unless Amitai asks to move them — they are placeholders for dynamic ads, not part of the recording. Do not block the draft on fine-tuning them.
+3. **Add / New Episode** → a URL like `/shows/{showId}/ep/create`.
+4. **Title**: paste the contents of `title-rtl.txt` via clipboard (select-all, paste). Retyping strips the marks.
+5. **Description**: paste `description-rtl.txt` the same way; keep the blank lines between blocks.
+6. **Upload File**: the edited m4a/mp3. On a network error, retry once with the same file. If `.m4a` is rejected, a byte-identical copy renamed `.mp3` uploads fine.
+7. **More Options** → **Episode Number** = N, when the field exists.
+8. **Save as Draft** / leave **Unpublished**.
+9. **Insertion points** (pre/mid/post ads): RedCircle may add defaults after processing. Leave them unless Amitai asks — they're dynamic-ad placeholders, not part of the recording. Don't block the draft on them.
 
-## After upload
-1. Report: unpublished draft confirmation, app episode URL, title used, episode number, any upload retry/blocker.
-2. Ping Amitai Personal / Investing Bros chat with the draft link.
-3. WhatsApp host-live notice only if Amitai asked — default post-prod ping is Drive review only.
-4. Tighten this skill only when the UI path changes.
+### 3. Verify
+Screenshot the title and description in the editor. `?` must sit at the end of the Hebrew sentence and timestamps must stay at the start of chapter lines. If an edited-back-and-forth draft still looks broken, create a **fresh draft** with the marked copy instead of patching it, and leave the old draft for Amitai to decide about.
 
-## Safety
-- Never echo the password.
-- Never publish live without explicit OK.
-- Not for Genesis / Hyperliquid work.
-- Do not upload raw/`extras` audio.
+## Hand back
+- Unpublished-draft confirmation and the app episode URL
+- Title used and episode number
+- Any upload retries or blockers
+
+Then send the draft link to Amitai, via the WhatsApp owner if he wants it in the group. Announce the episode as live on WhatsApp only if Amitai asked. Once it's published, sharing is `investing-bros-share-new-episode`.
+
+Update this skill when the RedCircle UI path changes.
+
+## Never
+- Publish live, submit to directories or make public without Amitai's explicit OK.
+- Echo or paste the password.
+- Upload raw or `extras/` audio.
+- Paste Hebrew copy without the RTL + `?` marks.
