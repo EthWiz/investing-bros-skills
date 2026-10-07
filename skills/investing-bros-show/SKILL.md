@@ -52,7 +52,7 @@ Show root `אחים להשקעות` already exists. Never create a second root.
     אפשרויות כותרת      (Google Doc) five titles + "בחירה סופית:"    ← post-production
     brief/              pre-recording docs (prep archive; keep)   ← episode-preparation
     extras/             raw audio, parts, transcripts, segments.json, RTL .txt copies, temp files ← post-production
-    promo/              shorts, teaser (and episode art, once defined) ← promo-clips
+    promo/              shorts, teaser (and episode art, once defined) ← shorts, teaser
 ```
 
 The episode root holds **only** the three files above plus the three subfolders. Anything else goes in `extras/` (or `promo/` for promo material). `תוספות` is an accepted alternative name for `extras/` if a folder already uses it.
@@ -85,6 +85,6 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 |---|---|---|
 | Before recording | `investing-bros-episode-preparation` | `brief/` docs + WhatsApp share |
 | Recording lands | `investing-bros-post-production` | Edited audio + 2 Docs + review ping |
-| Promo (optional, after edit) | `investing-bros-promo-clips` (`investing-bros-cover-art` is a placeholder) | `promo/` files for review |
+| Promo (optional, after edit) | `investing-bros-shorts`, `investing-bros-teaser` (`investing-bros-cover-art` is a placeholder) | `promo/` files for review |
 | Approved | `investing-bros-episode-upload` | RedCircle **draft** link |
 | Published | `investing-bros-share-new-episode` | WhatsApp sends confirmed |

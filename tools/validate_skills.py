@@ -68,10 +68,27 @@ def check_skill(folder: Path) -> list:
     return errs
 
 
+def check_shared_scripts(folders) -> list:
+    """Scripts copied into several skills (same file name) must stay identical."""
+    by_name = {}
+    for folder in folders:
+        for f in sorted((folder / "scripts").glob("*")):
+            if f.is_file() and not f.name.startswith("test_"):
+                by_name.setdefault(f.name, []).append(f)
+    errs = []
+    for name, copies in by_name.items():
+        first = copies[0].read_bytes()
+        for other in copies[1:]:
+            if other.read_bytes() != first:
+                errs.append(f"{other} differs from {copies[0]}; shared scripts must be identical copies")
+    return errs
+
+
 def main() -> int:
     root = Path(sys.argv[1] if len(sys.argv) > 1 else "skills")
     folders = sorted(p for p in root.iterdir() if p.is_dir())
     errs = [e for f in folders for e in check_skill(f)]
+    errs += check_shared_scripts(folders)
     for e in errs:
         print(f"error: {e}")
     print(f"{len(folders)} skills checked, {len(errs)} error(s)")

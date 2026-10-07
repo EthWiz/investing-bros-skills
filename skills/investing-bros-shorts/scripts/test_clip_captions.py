@@ -1,4 +1,4 @@
-"""Tests for clip_captions.py. Run: python3 -m pytest skills/investing-bros-promo-clips/scripts"""
+"""Tests for clip_captions.py. Run: python3 -m pytest skills/investing-bros-shorts/scripts"""
 import os
 import sys
 
