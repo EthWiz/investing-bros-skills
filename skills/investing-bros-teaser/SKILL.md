@@ -49,6 +49,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
      bash teaser_nadav.sh   # -> seg_*.mp4 (video for the episode join), aseg_*.wav, and the muxed teaser
      ```
      Taking the audio from the leveled episode track keeps teaser and episode at the same loudness.
+   - Animated graphics (optional): when a teaser moment is an explainer — a number, "not X but Y" — and Amitai wants it more designed, render that moment (or a vertical teaser) with `investing-bros-hyperframes` and its cards. Keep the per-host cold opens on `build_teaser.py`: they must match the episode's x264 settings to join it without re-encoding, which a HyperFrames export doesn't.
 4. **Watch it once**: captions readable and right-to-left (English words in place), joins clean, no clipped words, nothing out of context that sounds like a buy/sell call. Check loudness (`ebur128`): −14 LUFS for a promo teaser, −16 for a cold open.
 
 ## Hand back

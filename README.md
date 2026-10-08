@@ -17,6 +17,7 @@ prep ──► record ──► post-production ──► review ──► uploa
 | `investing-bros-episode-preparation` | Before recording: episode folder + `brief/`, news ideas, deep dive, share prep docs |
 | `investing-bros-post-production` | After recording: combine, level the hosts, transcribe, trim, Hebrew Docs, full video episode, Drive filing, review ping |
 | `investing-bros-shorts` | Branded vertical shorts: speaker close-ups, hook headline, burned-in Hebrew captions |
+| `investing-bros-hyperframes` | Explainer shorts with animated cards rendered by HyperFrames (HTML/GSAP) on top of the ffmpeg-cut clip |
 | `investing-bros-teaser` | Promo teaser (30–60 s) or per-host cold-open teasers for the video episode |
 | `investing-bros-cover-art` | YouTube thumbnail: AI image prompt + headline options — channel layout, one accent colour |
 | `investing-bros-episode-upload` | RedCircle draft upload, incl. the Hebrew RTL + `?` fix |
@@ -46,7 +47,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
 
-Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
+Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
 
 ## Contributing
 

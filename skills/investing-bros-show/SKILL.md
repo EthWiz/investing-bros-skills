@@ -96,6 +96,6 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 |---|---|---|
 | Before recording | `investing-bros-episode-preparation` | `brief/` docs + WhatsApp share |
 | Recording lands | `investing-bros-post-production` | Edited audio + 2 Docs + review ping |
-| Promo (optional, after edit) | `investing-bros-shorts`, `investing-bros-teaser`, `investing-bros-cover-art` | `promo/` files for review |
+| Promo (optional, after edit) | `investing-bros-shorts` (explainer shorts via `investing-bros-hyperframes`), `investing-bros-teaser`, `investing-bros-cover-art` | `promo/` files for review |
 | Approved | `investing-bros-episode-upload` | RedCircle **draft** link |
 | Published | `investing-bros-share-new-episode` | WhatsApp sends confirmed |

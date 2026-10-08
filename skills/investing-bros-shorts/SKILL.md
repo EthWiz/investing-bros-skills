@@ -5,7 +5,8 @@ description: >-
   Investing Bros / אחים להשקעות episode: pick standalone moments, cut on
   pauses, speaker close-ups, logo + hook headline, burned-in Hebrew captions,
   leveled audio. Use when Amitai asks for "shorts", "clips", "reels", "רילס",
-  "שורטס" or "קליפים" for episode N.
+  "שורטס" or "קליפים" for episode N. Explainer shorts can be rendered with
+  animated cards via investing-bros-hyperframes.
 ---
 # Investing Bros shorts
 
@@ -47,6 +48,8 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[emerald]`. Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
    - **Audio:** if one host is quieter, give his pieces a gain (`[start, end, +dB]`) so both measure within ~2 dB; the render normalises to −14 LUFS.
    For a quick whole-frame clip or an audio-only audiogram, `scripts/clip_captions.py` + `scripts/make_clip.sh` still work.
+
+   **Explainer moment? Render it with HyperFrames instead.** When the clip explains something a card can show — a number, "not X but Y", a list, a before/after — use `investing-bros-hyperframes` for this step: the same pieces, shots and captions, plus animated cards (count-up, strike-through, building list) in the band under the video. It looks more produced and gets Hebrew/English text right natively, at ~6× the render time. Punchlines and stories stay on the plain render.
 5. **Check the export.** For each short:
    - a strip of 6–8 frames across the clip: captions right-to-left (punctuation at the left end, English words in place), not over faces, inside the safe zone; the right host on screen
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
