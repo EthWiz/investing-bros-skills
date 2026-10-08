@@ -4,8 +4,10 @@ description: >-
   Make branded vertical shorts (Reels / YouTube Shorts / TikTok) from an
   Investing Bros / אחים להשקעות episode: pick standalone moments, cut on
   pauses, speaker close-ups, logo + hook headline, burned-in Hebrew captions,
-  leveled audio. Use when Amitai asks for "shorts", "clips", "reels", "רילס",
-  "שורטס" or "קליפים" for episode N. Explainer shorts can be rendered with
+  leveled audio, plus a cover image sized for each short, all uploaded to the
+  episode's Drive promo/ folder. Use when Amitai asks for "shorts", "clips",
+  "reels", "רילס", "שורטס" or "קליפים" for episode N, and whenever shorts are
+  made as part of post-production. Explainer shorts can be rendered with
   animated cards via investing-bros-hyperframes.
 ---
 # Investing Bros shorts
@@ -13,7 +15,7 @@ description: >-
 Load `investing-bros-show` first — brand palette, logo, fonts, loudness and the recording layout live there.
 
 ## When to use
-After post-production for episode N, when Amitai asks for shorts.
+After post-production for episode N when Amitai asks for shorts — and every time shorts are made as part of a post-production run (`investing-bros-post-production` hands over to this skill). Every short this skill makes ends in Drive with its cover (steps 6–7).
 
 ## Inputs
 From the episode's `extras/` folder:
@@ -54,9 +56,23 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - a strip of 6–8 frames across the clip: captions right-to-left (punctuation at the left end, English words in place), not over faces, inside the safe zone; the right host on screen
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
    - duration 30–60 s; listen to every cut — no clipped words, no clicks
+6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid:
+   ```bash
+   python3 scripts/make_cover.py --source raw.mp4 --at <source time of a good frame> --side L \
+     --headline "סוויפט היא בכלל|[לא מערכת תשלומים]" --episode N \
+     --frame frame_vertical.png --fonts fonts/ "שורט-01-סוויפט-cover.jpg"
+   ```
+   - 1080×1920 JPEG (~100 KB), same look as the short: logo, host close-up, the hook headline, `פרק N` pill.
+   - The headline and pill sit inside the centre 1080×1080 square, so Instagram's 4:5 and 1:1 grid crops keep them (TikTok/Shorts show the full 9:16).
+   - Headline = the short's hook (same faithful paraphrase as its on-screen headline), 1–3 lines of ≤18 characters.
+   - Pick the frame by looking: host facing camera, eyes open, mouth not mid-word, his half of the recording (`--side`). Check the result at thumbnail size (~200 px wide).
+7. **Upload to Drive** — the episode folder's `promo/` (find the folder by its `פרק N` prefix as in `investing-bros-show`; create `promo/` inside it if missing). File names follow `investing-bros-show` → Naming:
+   - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `promo/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
+   - **Video (`.mp4`)** — too large for the connector. Upload through the browser into `promo/` (signed in as the Drive upload account from `investing-bros-show`). The agent browser's file upload takes ≤10 MB per call, so first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
+   - Check: list `promo/` and confirm every short has its `.mp4` and `-cover.jpg` (and `.srt`), none empty.
 
 ## Hand back
-Upload the shorts (and their `.srt`) to the episode's `promo/` folder. Send Amitai the folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, any cuts made inside it, and any words you couldn't verify.
+Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
 ## Never
 - Post anywhere — Amitai posts.
@@ -64,3 +80,4 @@ Upload the shorts (and their `.srt`) to the episode's `promo/` folder. Send Amit
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.
 - Use an ASS style `Encoding` other than `-1` — any other value forces left-to-right and Hebrew punctuation lands on the wrong side.
 - Add music or stock footage unless Amitai supplies it.
+- Hand back a short that isn't in Drive with its cover — or a cover whose headline says more than the clip does.

@@ -82,11 +82,15 @@ Order: per-host teasers (cold open) → show intro → the episode.
    Every segment is encoded with the same x264 settings and joined without re-encoding; the body goes in ~8-minute chunks. Under a command time limit add `--max-seconds 150` and re-run the same command until it stops printing `resume` — finished chunks are kept. (Episode 6 on a 4-core laptop VM: ~100 s per 460 s chunk.)
 3. Check: video and audio durations match (the script prints both); spot-check a frame and the sound at each join (teaser → teaser → intro → episode) and somewhere late in the episode for sync.
 
+### 8b. Shorts (when this run includes them)
+If Amitai asked for shorts with this edit (or the run's brief lists them), make them now with `investing-bros-shorts` — it renders each short, makes its sized cover and uploads both (plus captions) to the episode's `promo/` folder. Include the `promo/` link in the review ping.
+
 ### 9. File everything in Drive
 | Where | What |
 |---|---|
 | Episode root | Edited audio renamed `הקלטה-ערוכה-פרק-N.m4a`, Doc `תיאור הפרק`, Doc `אפשרויות כותרת` |
 | `video/` | The full video episode, if made (step 8) |
+| `promo/` | Shorts (`.mp4` + `-cover.jpg` + `.srt` each) and teasers, if made (step 8b) |
 | `extras/` | Raw untrimmed audio (and video), leveled WAV, part files, `segments.json`, transcript `.txt`/`.srt`, `edit.json`, `.txt` copies of Docs, drafts and temp files |
 
 Large audio: upload through the browser as the Drive upload account (show conventions → accounts) when the connector can't carry the file. Nothing else at the episode root.
@@ -101,6 +105,7 @@ Report to Amitai:
 - Edited duration and the start/end cut points
 - Loudness: integrated LUFS and the host balance (dB difference) before → after leveling
 - Video episode link and length, if made
+- Shorts: the `promo/` link, and per short its length and cover headline, if made
 - WhatsApp ping status
 - Blockers
 

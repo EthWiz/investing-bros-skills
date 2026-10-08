@@ -31,6 +31,9 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 | Drive episode folder | `פרק N — נושא` (em dash `—`) | `פרק 4 — ניו קלאודס` |
 | Episode title (RedCircle) | `פרק N – <title>` (en dash `–`) | `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?` |
 | Edited audio | `הקלטה-ערוכה-פרק-N.m4a` | `הקלטה-ערוכה-פרק-4.m4a` |
+| Short (in `promo/`) | `שורט-NN-<נושא>.mp4` | `שורט-01-סוויפט.mp4` |
+| Short cover (in `promo/`) | `שורט-NN-<נושא>-cover.jpg` (1080×1920) | `שורט-01-סוויפט-cover.jpg` |
+| Short captions (in `promo/`) | `שורט-NN-<נושא>.srt` | `שורט-01-סוויפט.srt` |
 
 **Finding an existing episode folder:** match on the `פרק N` prefix (followed by a space or dash), not the full name — the dash and topic may differ from what you would type. If one matches, reuse it. Never create a second folder for the same N.
 
@@ -53,7 +56,7 @@ Show root `אחים להשקעות` already exists. Never create a second root.
     אפשרויות כותרת      (Google Doc) five titles + "בחירה סופית:"    ← post-production
     brief/              pre-recording docs (prep archive; keep)   ← episode-preparation
     extras/             raw audio, parts, transcripts, segments.json, RTL .txt copies, temp files ← post-production
-    promo/              shorts, teaser (and episode art, once defined) ← shorts, teaser
+    promo/              shorts (each .mp4 + -cover.jpg + .srt), teasers, thumbnail ← shorts, teaser, cover-art
     video/              full video episode, only when there is one (cold open + intro + episode) ← post-production
 ```
 
