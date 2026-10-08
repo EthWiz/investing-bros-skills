@@ -8,17 +8,18 @@ Any agent — Claude, Codex, Grokbot — can read and follow these.
 ```
 prep ──► record ──► post-production ──► review ──► upload (draft) ──► publish ──► share
                          │
-                         └──► promo: shorts / teaser   (cover art: placeholder)
+                         └──► promo: shorts / teaser   (+ cover art: YouTube thumbnail prompt)
 ```
 
 | Skill | Use it for |
 |---|---|
 | `investing-bros-show` | **Shared conventions** — load with every other skill: hosts, format, naming, Drive tree, roles/accounts, WhatsApp destinations |
 | `investing-bros-episode-preparation` | Before recording: episode folder + `brief/`, news ideas, deep dive, share prep docs |
-| `investing-bros-post-production` | After recording: combine, transcribe, trim, Hebrew Docs, Drive filing, review ping |
-| `investing-bros-shorts` | Vertical shorts with burned-in Hebrew captions |
-| `investing-bros-teaser` | A 30–60 s episode teaser with burned-in Hebrew captions |
-| `investing-bros-cover-art` | Placeholder — episode artwork process not defined yet |
+| `investing-bros-post-production` | After recording: combine, level the hosts, transcribe, trim, Hebrew Docs, full video episode, Drive filing, review ping |
+| `investing-bros-shorts` | Branded vertical shorts: speaker close-ups, hook headline, burned-in Hebrew captions, a sized cover each, uploaded to Drive `promo/` |
+| `investing-bros-hyperframes` | Explainer shorts with animated cards rendered by HyperFrames (HTML/GSAP) on top of the ffmpeg-cut clip |
+| `investing-bros-teaser` | Promo teaser (30–60 s) or per-host cold-open teasers for the video episode |
+| `investing-bros-cover-art` | YouTube thumbnail: AI image prompt + headline options — channel layout, one accent colour |
 | `investing-bros-episode-upload` | RedCircle draft upload, incl. the Hebrew RTL + `?` fix |
 | `investing-bros-share-new-episode` | WhatsApp distribution of the published episode |
 
@@ -46,7 +47,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
 
-Script dependencies: `ffmpeg` (with libass for captions), Python 3, `faster-whisper` for transcription, an installed Hebrew font (Heebo or Rubik) for captions.
+Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
 
 ## Contributing
 

@@ -43,7 +43,28 @@ def test_build_ass_uses_format_canvas():
     assert "Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,‏שלום‏" in ass
 
 
+RLM, LRI, PDI = "\u200f", "\u2066", "\u2069"
+
+
 def test_rtl_marks_question_marks_and_ends():
-    assert rtl("קלאודס ו-NVIDIA?") == "‏קלאודס ו-NVIDIA?‏"
-    assert rtl("מה זה? בדיוק") == "‏מה זה?‏ בדיוק‏"
+    assert rtl("קלאודס ו-NVIDIA?") == f"{RLM}קלאודס ו-{LRI}NVIDIA{PDI}?{RLM}"
+    assert rtl("מה זה? בדיוק") == f"{RLM}מה זה?{RLM} בדיוק{RLM}"
     assert rtl(rtl("מה זה?")) == rtl("מה זה?")
+
+
+def test_rtl_isolates_english_inside_hebrew():
+    # Episode 6: without isolates "ל־use cases הפיננסיים." rendered in the wrong order.
+    assert rtl("ל־use cases הפיננסיים.") == f"{RLM}ל־{LRI}use cases{PDI} הפיננסיים.{RLM}"
+    assert rtl("זה גם היה הבעיה של ה־NFTs") == f"{RLM}זה גם היה הבעיה של ה־{LRI}NFTs{PDI}{RLM}"
+    assert rtl(rtl("ל־use cases")) == rtl("ל־use cases")
+
+
+def test_rtl_leaves_numbers_and_pure_english_alone():
+    assert LRI not in rtl("זה עולה 40 דולר")
+    assert LRI not in rtl("So what?")
+
+
+def test_build_ass_keeps_auto_direction():
+    ass = build_ass([(0.0, 1.0, "שלום")], "vertical", "DejaVu Sans")
+    style = next(line for line in ass.splitlines() if line.startswith("Style:"))
+    assert style.endswith(",-1")   # Encoding -1 = auto base direction; anything else forces LTR
