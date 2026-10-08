@@ -8,7 +8,7 @@ Any agent — Claude, Codex, Grokbot — can read and follow these.
 ```
 prep ──► record ──► post-production ──► review ──► upload (draft) ──► publish ──► share
                          │
-                         └──► promo: shorts / teaser   (cover art: placeholder)
+                         └──► promo: shorts / teaser   (+ cover art: YouTube thumbnail prompt)
 ```
 
 | Skill | Use it for |
@@ -18,7 +18,7 @@ prep ──► record ──► post-production ──► review ──► uploa
 | `investing-bros-post-production` | After recording: combine, level the hosts, transcribe, trim, Hebrew Docs, full video episode, Drive filing, review ping |
 | `investing-bros-shorts` | Branded vertical shorts: speaker close-ups, hook headline, burned-in Hebrew captions |
 | `investing-bros-teaser` | Promo teaser (30–60 s) or per-host cold-open teasers for the video episode |
-| `investing-bros-cover-art` | Placeholder — episode artwork process not defined yet |
+| `investing-bros-cover-art` | YouTube thumbnail: AI image prompt + headline options in the channel's gold cinematic style |
 | `investing-bros-episode-upload` | RedCircle draft upload, incl. the Hebrew RTL + `?` fix |
 | `investing-bros-share-new-episode` | WhatsApp distribution of the published episode |
 

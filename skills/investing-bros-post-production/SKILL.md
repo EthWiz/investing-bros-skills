@@ -16,7 +16,7 @@ Load `investing-bros-show` first — naming, Drive tree, roles and WhatsApp rule
 This skill covers the core edit only. Promo material is separate:
 - Shorts → `investing-bros-shorts`
 - Teaser → `investing-bros-teaser`
-- Episode artwork → `investing-bros-cover-art` (placeholder — not defined yet)
+- YouTube thumbnail / episode artwork → `investing-bros-cover-art`
 - RedCircle upload (incl. Hebrew RTL fix) → `investing-bros-episode-upload`
 
 ## Inputs

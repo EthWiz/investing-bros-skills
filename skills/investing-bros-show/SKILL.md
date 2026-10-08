@@ -65,6 +65,7 @@ The episode root holds **only** the three files above plus the three subfolders.
 - **Font:** Heebo, as static weights (SemiBold / ExtraBold / Black via `brand.py fonts`) — libass draws the variable font thin.
 - **Intro clip:** `אחים להשקעות-Intro.mp4` — 6 s, 960×960, 24 fps, stereo music; ends with `עם אמתי ונדב רסקין`. In 16:9 it is padded on black. Drive location not recorded yet — ask Amitai, then write it here.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. The two hosts within ~3 dB of each other.
+- **YouTube thumbnails** use a different, gold cinematic style (episodes 1–6) — see `investing-bros-cover-art`.
 - **Recording layout:** Riverside side-by-side export, 1920×1080, 24 fps: Amitai in the left half, Nadav in the right half (as of episode 6). Check the first frame each episode — seats can change.
 
 ## Roles and accounts
@@ -95,6 +96,6 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 |---|---|---|
 | Before recording | `investing-bros-episode-preparation` | `brief/` docs + WhatsApp share |
 | Recording lands | `investing-bros-post-production` | Edited audio + 2 Docs + review ping |
-| Promo (optional, after edit) | `investing-bros-shorts`, `investing-bros-teaser` (`investing-bros-cover-art` is a placeholder) | `promo/` files for review |
+| Promo (optional, after edit) | `investing-bros-shorts`, `investing-bros-teaser`, `investing-bros-cover-art` | `promo/` files for review |
 | Approved | `investing-bros-episode-upload` | RedCircle **draft** link |
 | Published | `investing-bros-share-new-episode` | WhatsApp sends confirmed |
