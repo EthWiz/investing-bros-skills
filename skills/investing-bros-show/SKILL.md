@@ -65,7 +65,7 @@ The episode root holds **only** the three files above plus the three subfolders.
 - **Font:** Heebo, as static weights (SemiBold / ExtraBold / Black via `brand.py fonts`) — libass draws the variable font thin.
 - **Intro clip:** `אחים להשקעות-Intro.mp4` — 6 s, 960×960, 24 fps, stereo music; ends with `עם אמתי ונדב רסקין`. In 16:9 it is padded on black. Drive location not recorded yet — ask Amitai, then write it here.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. The two hosts within ~3 dB of each other.
-- **YouTube thumbnails** use a different, gold cinematic style (episodes 1–6) — see `investing-bros-cover-art`.
+- **YouTube thumbnails** have their own layout — dark cinematic scene, one focal object, one accent colour chosen per episode — see `investing-bros-cover-art`.
 - **Recording layout:** Riverside side-by-side export, 1920×1080, 24 fps: Amitai in the left half, Nadav in the right half (as of episode 6). Check the first frame each episode — seats can change.
 
 ## Roles and accounts
