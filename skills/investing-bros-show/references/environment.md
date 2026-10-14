@@ -44,5 +44,6 @@ Read this before working around anything. Every line here cost an agent time to 
 - The input video needs a keyframe every second (`-g 24 -keyint_min 24`), or seeks freeze frames.
 
 ## Delivering files
+- On Amitai's local Mac, the show bot configuration is in `~/Downloads/telegram.env`; pass that path to `send_telegram.py --env`. Do not print the file. Before posting, verify the configured chat ID matches the approved destination in `investing-bros-show` and verify the bot identity with `getMe`; `getChat` can confirm the group title without consuming updates.
 - Chat attachments are capped at **30 MB**: send a re-encoded review copy (`-crf 21`) and keep the master.
 - Telegram bot uploads are capped at **50 MB**.
