@@ -89,6 +89,8 @@ The default look is now the **full-screen style**: the speaking host fills the 9
 
 Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
 
+If speech continues through the last seconds, omit `endcard` to keep the closing sentence captioned. An end card reserves the final 2.8 seconds for its own text; do not use it over a substantive closing line or caveat.
+
 ## Hand back
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 

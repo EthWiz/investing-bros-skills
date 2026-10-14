@@ -45,3 +45,11 @@ def test_reaction_cut_and_high_res_tracks():
 def test_tags_in_gold_box():
     ass = build_ass(dict(CFG, tags=[[2106.05, 2109.5, "נדב רסקין"]]), _tl(), CHUNKS)
     assert any(",Tag," in l and "נדב רסקין" in l for l in ass.splitlines())
+
+
+def test_without_endcard_keeps_final_spoken_caption():
+    cfg = dict(CFG)
+    cfg.pop("endcard")
+    ass = build_ass(cfg, _tl(), CHUNKS)
+    assert any(",Cap," in line and "לעתיד." in line for line in ass.splitlines())
+    assert ",Dim," not in ass and ",End," not in ass

@@ -53,7 +53,7 @@ def gold(s):
 
 def build_ass(cfg, tl, chunks):
     dur = tl.duration
-    end_t = max(0.0, dur - END_S)
+    end_t = max(0.0, dur - END_S) if cfg.get("endcard") else dur
     st = ("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
           "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
           "Style: Cap,Heebo Black,100,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,-1\n"
