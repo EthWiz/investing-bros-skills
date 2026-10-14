@@ -19,6 +19,9 @@ Three blocks separated by blank lines:
    36:00 רעיון השקעה – נדב
    ```
    Convert from transcript (raw) times with `edited = raw − start` (`start` is in `extras/edit.json`). Use `M:SS`, or `H:MM:SS` past an hour.
+   Chapters start at `0:00` on this edited timeline. If a cold open + intro (~28 s) is prepended in the video, offset every chapter by that length in the **video's** description. The Doc itself stays on the edited-audio timeline.
+
+Fact-check every claim in the description (`investing-bros-show` → Hebrew).
 
 ## `אפשרויות כותרת`
 

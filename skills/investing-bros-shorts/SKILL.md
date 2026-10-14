@@ -5,17 +5,18 @@ description: >-
   Investing Bros / אחים להשקעות episode: pick standalone moments, cut on
   pauses, speaker close-ups, logo + hook headline, burned-in Hebrew captions,
   leveled audio, plus a cover image sized for each short, all uploaded to the
-  episode's Drive promo/ folder. Use when Amitai asks for "shorts", "clips",
-  "reels", "רילס", "שורטס" or "קליפים" for episode N, and whenever shorts are
-  made as part of post-production. Explainer shorts can be rendered with
-  animated cards via investing-bros-hyperframes.
+  episode's Drive promo/ folder. Also cut optional 5–10 min mid-form YouTube
+  segments from the episode. Use when Amitai asks for "shorts", "clips",
+  "reels", "רילס", "שורטס", "קליפים", "mid-form" or "מיד-פורם" for episode N,
+  and whenever shorts are made as part of post-production. Explainer shorts
+  can be rendered with animated cards via investing-bros-hyperframes.
 ---
 # Investing Bros shorts
 
 Load `investing-bros-show` first — brand palette, logo, fonts, loudness and the recording layout live there.
 
 ## When to use
-After post-production for episode N when Amitai asks for shorts — and every time shorts are made as part of a post-production run (`investing-bros-post-production` hands over to this skill). Every short this skill makes ends in Drive with its cover (steps 6–7).
+After post-production for episode N when Amitai asks for shorts — and every time shorts are made as part of a post-production run (`investing-bros-post-production` hands over to this skill). Every short this skill makes ends in Drive with its cover (steps 6–7). Also for an optional mid-form segment (below). Video assets are made only by ליאורה (`investing-bros-show` → Roles).
 
 ## Inputs
 From the episode's `extras/` folder:
@@ -28,7 +29,7 @@ For audio-only recordings, also the show cover (location in `investing-bros-show
 Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
 
 ## Steps
-1. **Propose moments.** Give Amitai 3–6 candidates as a table: start–end, opening line, why it works, a title. Wait for his picks unless he said to just make them. A good short:
+1. **Propose moments.** Start from Riverside's auto-generated shorts. Riverside makes clips automatically; prefer picking good ready-made ones and adding motion captions over cutting from scratch. Give Amitai 3–6 candidates as a table: start–end, opening line, why it works, a title. Episode 7 shipped 5 — aim for that. Wait for his picks unless he said to just make them. Nadav approves the cut before a rebuild or an upload (`investing-bros-show` → Roles). A good short:
    - hooks in the first 3 seconds (a claim, a number, a story, a question — not "אז…", not "חווים את זה היום")
    - makes sense with no episode context, and is **one idea** with a clean end line
    - lands at 30–60 seconds
@@ -47,7 +48,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    ```
    - **Framing:** close-up of whoever is talking (their half, 1080 wide); cut to the other host for his lines or a real reaction. Not the whole frame over blur.
    - **Headline:** a faithful paraphrase of what is said in the clip (e.g. "סוויפט היא בכלל לא מערכת תשלומים") — never a claim the hosts didn't make, never investment promises.
-   - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[emerald]`. Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
+   - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[…]` (that markup renders as gold `#F5B71F`, the house accent). Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
    - **Audio:** if one host is quieter, give his pieces a gain (`[start, end, +dB]`) so both measure within ~2 dB; the render normalises to −14 LUFS.
    For a quick whole-frame clip or an audio-only audiogram, `scripts/clip_captions.py` + `scripts/make_clip.sh` still work.
 
@@ -68,11 +69,16 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - Pick the frame by looking: host facing camera, eyes open, mouth not mid-word, his half of the recording (`--side`). Check the result at thumbnail size (~200 px wide).
 7. **Upload to Drive** — the episode folder's `promo/` (find the folder by its `פרק N` prefix as in `investing-bros-show`; create `promo/` inside it if missing). File names follow `investing-bros-show` → Naming:
    - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `promo/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
-   - **Video (`.mp4`)** — too large for the connector. Upload through the browser into `promo/` (signed in as the Drive upload account from `investing-bros-show`). The agent browser's file upload takes ≤10 MB per call, so first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
+   - **Video (`.mp4`)** — the newer Drive connector takes a file up to **100 MB** (`investing-bros-show` → references/environment.md); `drive.sh put` uses the Drive API and is not bound by that cap. The browser path is still ≤10 MB per call, so for a browser upload first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
    - Check: list `promo/` and confirm every short has its `.mp4` and `-cover.jpg` (and `.srt`), none empty.
 
 ## House style and helper scripts (from episode 7)
 The default look is now the **full-screen style**: the speaking host fills the 9:16 frame, captions appear 2–3 words at a time with the spoken word in gold `#F5B71F`, punch-in zooms on new ideas, a hook title for the first ~2.7 s, the logo top-left, and a darkened end card. The split-frame `build_short.py` render stays available.
+
+Episode 7 (video producer), on top of that look:
+- **5 shorts** per episode, **1080×1920**. Fast cuts, no silences. Zooms alternate **100% / 112%**. Logo end card.
+- A complex idea gets a navy-blue motion animation (`investing-bros-hyperframes`) — still the navy / gold / white palette, no loud colours (show conventions → Tone).
+- Captions are Heebo Black, active word in gold `#F5B71F`. The scripts render Hebrew with libass (Encoding −1). libass can reverse RTL word order; the video producer worked around that with PIL + raqm. If a script's captions come out in the wrong order, stop and propose a script change — don't ship a one-off renderer (working rules in `investing-bros-show`).
 
 | Step | Script | Notes |
 |---|---|---|
@@ -88,6 +94,16 @@ The default look is now the **full-screen style**: the speaking host fills the 9
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
 
 Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
+
+## Titles and descriptions (YouTube)
+- **Title:** Hebrew hook + emoji + a short English keyword phrase + `#shorts`. Example: `למה סין קונה הרבה זהב? 🇨🇳 Why China Is Buying Gold #shorts`.
+- **Description:** a 1–2 sentence hook; a question that invites comments; `🎧 לפרק המלא: <link>`; a subscribe line; `אין כאן המלצת השקעה. רק שיחה.`; hashtags mixing Hebrew and English.
+
+## Mid-form segments
+Optional 5–10 min YouTube segments: **one continuous standalone stretch** cut from the episode (episode 7: "למה זהב?" 11:57–19:11, about 7 min). Not a montage.
+- Start and end on sentence boundaries (`find_cuts.py`). Leave out any part that is being re-recorded.
+- **Title** with a few English keywords. **Description:** hook, link to the full episode, the disclaimer above.
+- Share a review copy compressed under 100 MB (transfer caps in `investing-bros-show` → references/environment.md). Nadav approves it before upload.
 
 ## Hand back
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.

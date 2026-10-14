@@ -49,7 +49,8 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - Brand spellings: **ספייסאקס** (not ספייסקס). Add new ones here when Amitai corrects a spelling.
 - Chapters are **time first**: `1:05 נושא`.
 - Disclaimer line: `אין כאן המלצת השקעה. רק שיחה.`
-- Host names on screen: **נדב רסקין**, **אמיתי רסקין**. The intro clip spells **אמתי** — open question for Amitai; use אמיתי until he decides, then record the answer here.
+- Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Decided: the name is spelled **אמיתי** everywhere (titles, captions, descriptions).
+- **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
 
 ## Drive tree
@@ -74,19 +75,21 @@ The episode root holds **only** the three files above plus the three subfolders.
 - **Palette:** navy, gold and white, from that cover. **House accent: gold `#F5B71F`** (decided 2026-10-14), used by every render script (shorts, covers, teasers, HyperFrames cards). Emerald `#1FBF7A` is retired.
 - **Logo:** the two-line wordmark — white `אחים` over gold `להשקעות` — cut from that cover with `brand.py logo` (shorts/teaser; the navy cover is the default box, stray stars are removed). Don't redraw or recolour it.
 - **Font:** Heebo, as static weights (SemiBold / ExtraBold / Black via `brand.py fonts`) — libass draws the variable font thin.
-- **Intro clip:** `אחים להשקעות/Media Resources/אינטרו - אחים להשקעות.mp4` — 6 s, stereo music; ends with `עם אמתי ונדב רסקין`. Square and 16:9 versions sit beside it (`investing-bros-intro-square_1.mp4`, `investing-bros-intro-16x9_1.mp4`).
-- **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. The two hosts within ~3 dB of each other.
+- **Intro clip:** `אחים להשקעות/Media Resources/אינטרו - אחים להשקעות.mp4` — 6 s, stereo music; ends with `עם אמתי ונדב רסקין`. Square and 16:9 versions sit beside it (`investing-bros-intro-square_1.mp4`, `investing-bros-intro-16x9_1.mp4`). Since episode 7, Amitai's Grok Imagine intro (6 s) replaces the old intro — use it as-is, immediately after the cold open. Video order: cold open (~22 s) + intro, then the episode. Never use watermarked music (AudioJungle previews and the like). Keep the tone serious — no "get rich quick" vibe. Don't copy the old intro's **אמתי** spelling; the name is **אמיתי**.
+- **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
+- **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-teaser` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **YouTube thumbnails** have their own layout — dark cinematic scene, one focal object, one accent colour chosen per episode — see `investing-bros-cover-art`.
-- **Recording layout:** Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change.
+- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
 ## Roles and accounts
 | Role / account | Who / what | Notes |
 |---|---|---|
 | Approver | Amitai | Episode number, cuts, final title, publish, new destinations |
+| Video producer | ליאורה | Shorts, cold opens, the intro, mid-form and the video episode. Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
-| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the file (base64 limits — impractical above a few MB). Connectors are fine for Docs, folders and moves. Claude in Chrome's file upload takes at most 10 MB per call: for bigger video, upload a 2-pass sub-10 MB review copy and tell Amitai, or ask him to drag the full file in. |
+| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the file. Newer connector downloads are 100 MB ([references/environment.md](references/environment.md)); base64 uploads above a few MB are still impractical. Connectors are fine for Docs, folders and moves. Claude in Chrome's file upload takes at most 10 MB per call: for bigger video, upload a 2-pass sub-10 MB review copy and tell Amitai, or ask him to drag the full file in. |
 | Show cover art | `Media Resources/אחים-להשקעות-cover-1400.jpg` (see Brand) | Used for audiograms, logo cutting and WhatsApp artwork |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
 
@@ -98,7 +101,7 @@ Hand-off to the WhatsApp owner always includes: exact group name, exact message 
 Approved destinations — don't add new ones without Amitai's OK:
 | Id | Group | Use |
 |---|---|---|
-| `achim` | `אחים להשקעות` | Prep docs, review-ready pings, draft links; live ping only when Amitai asks |
+| `achim` | `אחים להשקעות` | Prep docs, review-ready pings, draft links; live ping only when Amitai asks (review drafts/cold opens/intros go to Telegram instead) |
 | `raskin-empire` | `רסקין אימפריה` (also seen as `רסקין אמפריה`) | Family promo of the published episode |
 
 Prefer a **Doc or folder link** over pasting long text — long messages split badly in WhatsApp. Set Docs to anyone-with-link Viewer when the brothers need access.
@@ -111,6 +114,9 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
 - **Each post needs Amitai's OK in chat**, like WhatsApp. Don't add destinations without his OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
+- Cold opens, intros and drafts for review are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. Post drafts with the title only.
+- Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
+- To see group messages/media a bot needs privacy mode off (@BotFather → /setprivacy → Disable).
 
 ## Pipeline
 | Stage | Skill | Hands off |
@@ -118,7 +124,8 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | Before recording | `investing-bros-episode-preparation` | `brief/` docs + WhatsApp share |
 | Recording lands | `investing-bros-post-production` | Edited audio + 2 Docs + review ping |
 | Promo (optional, after edit) | `investing-bros-shorts` (explainer shorts via `investing-bros-hyperframes`), `investing-bros-teaser`, `investing-bros-cover-art` | `promo/` files for review |
-| Approved | `investing-bros-episode-upload` | RedCircle **draft** link |
+| Mid-form (optional) | `investing-bros-shorts` → Mid-form | 5–10 min segments for YouTube |
+| Approved | `investing-bros-episode-upload` | RedCircle **draft** link; YouTube via Studio (see upload skill) |
 | Published | `investing-bros-share-new-episode` | WhatsApp sends confirmed |
 
 ## Never
