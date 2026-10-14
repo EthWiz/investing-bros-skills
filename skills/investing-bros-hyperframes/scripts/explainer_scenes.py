@@ -8,10 +8,10 @@ SCENE_TYPES = {"money_roles", "coin_dilution", "currency_trust"}
 SCENE_CSS = """CARD .root{display:block;padding:0;position:relative;background:linear-gradient(135deg,rgba(9,24,46,0.98),rgba(3,11,24,0.98));border:2px solid #B98621;box-shadow:inset 0 1px 0 rgba(255,231,155,0.3);overflow:hidden}
 CARD svg{position:absolute;inset:0;width:968px;height:420px}
 CARD .scene-label{position:absolute;text-align:center;line-height:1.12;font-family:'Heebo ExtraBold',sans-serif;color:#fff}
-CARD .scene-kicker{top:22px;left:34px;width:900px;font-size:40px;color:#F5B71F}
-CARD .scene-heading{top:88px;width:390px;font-size:44px}
-CARD .scene-foot{top:350px;left:36px;width:896px;font-size:46px;font-family:'Heebo Black',sans-serif}
-CARD .scene-detail{font-size:38px;color:#E6D2A0}
+CARD .scene-kicker{top:22px;left:34px;width:900px;font-size:48px;color:#F5B71F}
+CARD .scene-heading{top:88px;width:390px;font-size:52px}
+CARD .scene-foot{top:350px;left:36px;width:896px;font-size:50px;font-family:'Heebo Black',sans-serif}
+CARD .scene-detail{font-size:44px;color:#E6D2A0}
 CARD .scene-hidden{opacity:0}
 CARD .scene-gold{color:#F5B71F}
 """
@@ -148,7 +148,7 @@ def currency_trust(c, cid, text):
     # The spoken total sits above the cash stack; do not depict a fictitious
     # banknote denomination or add unspoken denomination labels.
     body += _label(text, cid, "amount", f"${value:g}", "left:118px;top:78px;width:228px;font-size:70px;direction:ltr;opacity:0;", "scene-gold")
-    body += _label(text, cid, "bank-label", c["bank_label"], "left:550px;top:71px;width:400px;font-size:42px;", "scene-hidden")
+    body += _label(text, cid, "bank-label", c["bank_label"], "left:550px;top:71px;width:400px;font-size:44px;", "scene-hidden")
     body += _label(text, cid, "trust-label", c["trust_label"], "left:389px;top:269px;width:222px;font-size:48px;", "scene-hidden scene-gold")
     body += _label(text, cid, "conclusion", c["conclusion"], classes="scene-foot scene-hidden")
     an = [(("src", c["amount_at"]), "tween", f"#{cid}-bill", {"from":{"opacity":0,"y":24,"rotation":-5,"transformOrigin":"231px 234px"}, "to":{"opacity":1,"y":0,"rotation":0,"duration":0.7,"ease":"back.out(1.3)"}}),

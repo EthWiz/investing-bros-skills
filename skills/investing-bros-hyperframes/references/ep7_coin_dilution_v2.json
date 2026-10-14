@@ -1,9 +1,9 @@
 {
   "layout": "overlay",
   "fps": 24,
-  "panel_scale": 0.84,
+  "panel_scale": 0.78,
   "panel_left": 20,
-  "panel_top": 280,
+  "panel_top": 270,
   "name": "ep7_coin_dilution_v2",
   "pieces": [
     [
@@ -24,7 +24,7 @@
       "end": 1246.05,
       "kicker": "כך מדללים מטבע",
       "before_label": "מטבע זהב",
-      "after_label": "מטבע עם סגסוגת",
+      "after_label": "סגסוגת",
       "metal_label": "מתכות זולות",
       "mix_at": 1237.12,
       "conclusion_at": 1243.3,
