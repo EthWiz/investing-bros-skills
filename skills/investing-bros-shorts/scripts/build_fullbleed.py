@@ -27,6 +27,7 @@ short.json:
 }
 Optional framing controls: caption_x/caption_y, hook_y, and video_offset_y
 (shift the host up by this many output pixels, padding the bottom with black).
+video_offset_y may also be {"L": 160, "R": 0} for different host positions.
 [..] = gold. Captions: 2-3 words at a time, the spoken word gold, centre at y=1290
 (above the Reels/Shorts UI). Logo top-left (56,150), 210 px wide. Also writes NAME.srt from
 "cards" for the platform's subtitle field. Check the export with check_short.py.
@@ -136,6 +137,10 @@ def build_command(cfg, tl):
     S = max(0.0, P[0][0] - 1.0)
     T = max(b for _, b in P) - S + 1.0
     n = len(P)
+    offsets = cfg.get("video_offset_y", 0)
+    values = offsets.values() if isinstance(offsets, dict) else [offsets]
+    if any(not 0 <= int(v) <= 320 for v in values):
+        raise ValueError("video_offset_y must be between 0 and 320 output pixels")
     uses = {}
     for sd in used:
         uses[(idx[srcs[sd]], "v")] = uses.get((idx[srcs[sd]], "v"), 0) + n
@@ -153,7 +158,11 @@ def build_command(cfg, tl):
         for k, (a, b) in enumerate(P):
             f += (f"{take(idx[srcs[sd]], 'v')}trim=start={a - S:.4f}:end={b - S:.4f},setpts=PTS-STARTPTS,"
                   f"crop={w}:{h}:{x}:{y},scale=1080:1920:flags=lanczos,setsar=1[{sd}{k}];")
-        f += "".join(f"[{sd}{k}]" for k in range(n)) + f"concat=n={n}:v=1:a=0[V{sd}];"
+        side_offset = int(offsets.get(sd, 0)) if isinstance(offsets, dict) else 0
+        tag = f"V{sd}_offset" if side_offset else f"V{sd}"
+        f += "".join(f"[{sd}{k}]" for k in range(n)) + f"concat=n={n}:v=1:a=0[{tag}];"
+        if side_offset:
+            f += f"[{tag}]pad=1080:{1920 + side_offset}:0:0:color=black,crop=1080:1920:0:{side_offset}[V{sd}];"
     for k, (a, b) in enumerate(P):
         f += (f"{take(idx[asrc], 'a')}atrim=start={a - S:.4f}:end={b - S:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
               f"afade=t=out:st={b - a - 0.015:.4f}:d=0.015,volume={gains[k]}dB[a{k}];")
@@ -169,9 +178,7 @@ def build_command(cfg, tl):
     g, lg = len(files), len(files) + 1
     f += (f"[vc]fps={fps},zoompan=z='{z}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)*0.35':d=1:s=1080x1920:fps={fps},"
           f"eq=contrast=1.05:saturation=1.1[z];")
-    offset = int(cfg.get("video_offset_y", 0))
-    if not 0 <= offset <= 320:
-        raise ValueError("video_offset_y must be between 0 and 320 output pixels")
+    offset = 0 if isinstance(offsets, dict) else int(offsets)
     host = "z"
     if offset:
         f += f"[z]pad=1080:{1920 + offset}:0:0:color=black,crop=1080:1920:0:{offset}[framed];"

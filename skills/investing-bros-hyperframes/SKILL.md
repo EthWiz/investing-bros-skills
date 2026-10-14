@@ -92,6 +92,8 @@ The other card types work in the panel too. Worked example: [references/ep7-aste
 
 Worked educational examples: [money roles](references/ep7_money_roles_v2.json), [coin dilution](references/ep7_coin_dilution_v2.json), and [currency trust](references/ep7_currency_trust_v2.json). These use `panel_scale: 0.84`, `panel_left: 20`, `panel_top: 280` for larger illustrations while retaining the 170 px right margin. Inspect the actual host's eyes before using these settings on another recording. The cash amount is a spoken total, not a fictional banknote denomination. Coin colours illustrate a qualitative composition change; do not add an unsupported ratio or percentage.
 
+The episode 7 base footage for these larger scenes uses `build_fullbleed.py` with `video_offset_y: {"L": 160, "R": 0}`. This keeps Nadav's eyes below the panel rather than shifting both hosts upward by the same amount. The framing is part of the animation quality check, not an optional cosmetic pass.
+
 ## Hand back
 Make the short's cover and upload short + cover + `.srt` exactly as `investing-bros-shorts` steps 6–7 (sized cover, sub-10 MB upload copy, `promo/` naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
 

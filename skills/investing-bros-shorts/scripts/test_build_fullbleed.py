@@ -68,3 +68,11 @@ def test_excessive_framing_offset_is_rejected():
     import pytest
     with pytest.raises(ValueError, match="video_offset_y"):
         build_command(dict(CFG, video_offset_y=1920), _tl())
+
+
+def test_host_specific_offset_leaves_each_face_in_its_safe_position():
+    cfg = dict(CFG, base="R", shots=[[2140,2141.5,"L"]], video_offset_y={"L":160,"R":0})
+    cmd = build_command(cfg, _tl())
+    assert "[VL_offset]pad=1080:2080:0:0:color=black,crop=1080:1920:0:160[VL]" in cmd
+    assert "[VR]pad=" not in cmd and "[z]pad=" not in cmd
+    assert "[VR][VL]overlay=" in cmd

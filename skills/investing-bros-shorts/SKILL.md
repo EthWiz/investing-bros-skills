@@ -97,6 +97,8 @@ If speech continues through the last seconds, omit `endcard` to keep the closing
 
 Check the actual face position in every frame strip. If the default captions cross a mouth, `build_fullbleed.py` accepts `caption_x`, `caption_y`, `hook_y` and `video_offset_y` in the edit JSON. A starting point for the episode 7 side-by-side source is `caption_x: 480`, `caption_y: 1430`, `hook_y: 360`, `video_offset_y: 160`; verify both hosts and the platform safe zone after rendering.
 
+For a larger explanatory panel, a global video offset can move one host's eyes into the graphic. Set `video_offset_y` per host when needed (episode 7 revisions: `{"L": 160, "R": 0}`), then inspect the panel over both hosts and their closest/leaning frames. The caption position stays fixed while each face is framed safely.
+
 ## Hand back
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, what its required HyperFrames animation explains, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 

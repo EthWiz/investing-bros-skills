@@ -78,9 +78,9 @@ def money_roles(c, cid, text):
                     "to":{"opacity":1,"y":0,"rotation":0,"duration":0.55,"ease":"back.out(1.5)"}}))
     an += [(("src", c["save_at"]), "to", f"#{cid}-save-cross", {"strokeDashoffset":0,"duration":0.8,"ease":"power2.inOut"}),
            (("src", c["trade_at"]), "to", f"#{cid}-payment-path", {"strokeDashoffset":0,"duration":0.8}),
-           (("src", c["trade_at"]), "tween", f"#{cid}-payment", {"from":{"opacity":0,"x":0,"y":0,"svgOrigin":"0 0"}, "to":{"opacity":1,"x":185,"duration":1.3,"ease":"power2.inOut"}}),
-           (("src", c["trade_at"]), "to", f"#{cid}-payment", {"y":-24,"duration":0.65,"ease":"power1.out"}),
-           (("src", c["trade_at"] + 0.65), "to", f"#{cid}-payment", {"y":24,"duration":0.65,"ease":"power1.in"}),
+           (("src", c["trade_at"]), "tween", f"#{cid}-payment", {"from":{"opacity":0,"x":0,"y":0,"svgOrigin":"0 0"}, "to":{"opacity":1,"x":185,"duration":1.3333,"ease":"power2.inOut"}}),
+           (("src", c["trade_at"]), "to", f"#{cid}-payment", {"y":-24,"duration":0.625,"ease":"power1.out"}),
+           (("src", c["trade_at"] + 0.6667), "to", f"#{cid}-payment", {"y":24,"duration":0.625,"ease":"power1.in"}),
            (("src", c["trade_at"] + 1.1), "to", f"#{cid}-trade-check", {"strokeDashoffset":0,"duration":0.55}),
            (("src", c["conclusion_at"]), "fade-in", f"#{cid}-conclusion", {})]
     return body, an
@@ -155,10 +155,10 @@ def currency_trust(c, cid, text):
           (("src", c["amount_at"] + 0.25), "fade-in", f"#{cid}-amount", {}),
           (("src", c["bank_at"]), "tween", f"#{cid}-bank", {"from":{"opacity":0,"y":24}, "to":{"opacity":1,"y":0,"duration":0.7,"ease":"power3.out"}}),
           (("src", c.get("bank_label_at", c["bank_at"]) + 0.15), "fade-in", f"#{cid}-bank-label", {}),
-          (("src", c["trust_at"]), "to", f"#{cid}-trust-line", {"strokeDashoffset":0,"duration":1.05,"ease":"power2.inOut"}),
-          (("src", c["trust_at"]), "tween", f"#{cid}-pulse", {"from":{"opacity":0,"attr":{"cx":390}}, "to":{"opacity":1,"attr":{"cx":608},"duration":1.05,"ease":"power2.inOut"}}),
+          (("src", c["trust_at"]), "to", f"#{cid}-trust-line", {"strokeDashoffset":0,"duration":1.0,"ease":"power2.inOut"}),
+          (("src", c["trust_at"]), "tween", f"#{cid}-pulse", {"from":{"opacity":0,"attr":{"cx":390}}, "to":{"opacity":1,"attr":{"cx":608},"duration":1.0,"ease":"power2.inOut"}}),
           (("src", c["trust_at"] + 0.9), "to", f"#{cid}-bank-light", {"opacity":1,"duration":0.5}),
-          (("src", c["trust_at"] + 1.05), "to", f"#{cid}-pulse", {"opacity":0,"duration":0.45}),
+          (("src", c["trust_at"] + 1.125), "to", f"#{cid}-pulse", {"opacity":0,"duration":0.45}),
           (("src", c["trust_at"]), "fade-in", f"#{cid}-trust-label", {}),
           (("src", c["conclusion_at"]), "fade-in", f"#{cid}-conclusion", {})]
     return body, an
