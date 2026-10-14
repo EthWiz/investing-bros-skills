@@ -6,8 +6,8 @@ description: >-
   adds animated explainer cards (a number counting up, a wrong/right strike,
   a list that builds), the logo and proofread Hebrew captions. Use when
   Amitai asks for "hyperframes", "כרטיסים", "גרפיקה מונפשת", "animated
-  graphics" or "a more designed short", or when a short explains a concept
-  that cards can show.
+  graphics" or "a more designed short", and for every Investing Bros short:
+  each short requires at least one high-quality, informative animation.
 ---
 # Investing Bros shorts with HyperFrames
 
@@ -16,10 +16,19 @@ Load `investing-bros-show` first (brand, loudness, recording layout). The moment
 [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, open source) renders video from an HTML page: the DOM declares timing with `data-*` attributes, a paused GSAP timeline drives the motion, and headless Chrome captures it frame by frame. Chrome lays out the text, so Hebrew right-to-left and mixed Hebrew/English come out right without the ASS workarounds.
 
 ## When to use
+- **Every Investing Bros short requires at least one high-quality, informative HyperFrames animation**, even if Amitai only asks for "shorts". This is a mandatory delivery criterion (Amitai, 2026-10-14).
 - The clip **explains** something — a number, a "not X but Y", a before/after, a short list. Cards make it land (episode 6: "SWIFT — ~~מערכת תשלומים~~ / מערכת הודעות", "40$" counting up).
 - Amitai asks for HyperFrames or a more designed short.
 
-For a punchline, a story or a quick reaction clip, the plain `investing-bros-shorts` render is enough and ~6× faster to render.
+For a punchline, a story or a reaction clip, keep the animation focused on one meaningful explanation. The plain render can provide the base footage, but it is not a finished short until the required animation has been added and checked.
+
+## Animation quality gate
+- Motion must explain something: show the transfer, changing composition, relationship, contrast or spoken number. A decorative entrance or a text card that only repeats the captions is not enough.
+- Captions, hook motion, logos, punch-ins, transitions and end cards do not count as the required informative animation.
+- Use crisp, coherent graphics in the show palette, deliberate motion and readable Hebrew labels. Check at phone size, not just at full resolution.
+- Time the important change to the relevant spoken words; preserve hypotheses and caveats. Do not add made-up figures, percentages, financial claims or predictions.
+- Keep eyes, captions and the platform safe zone clear. Inspect frames before, during and after the animation, then check the final export.
+- New explanatory scenes belong in the supplied generator with tests and a PR, never in a hand-written one-off HTML composition.
 
 ## Inputs
 - The short's edit list from `investing-bros-shorts` step 1–2: kept `pieces` (cut at pauses), `shots` (L/R host), proofread `captions`.
@@ -75,8 +84,15 @@ For the house style, the base video comes from `investing-bros-shorts` → `buil
 |---|---|---|
 | `fly` | an asteroid in space: metal sheen, gold veins, then it flies down and lands on Earth with a gold flash | `kicker`, `metal_at`/`metal_label`, `gold_at`/`gold_label`, `fly_at`, `fly_kicker`, `land_label` |
 | `supply` | a stack of gold bars, a second stack (×N), an arrow, then a value meter that drops | `kicker`, `factor`, `factor_label`, `more_at`, `value_kicker`, `value_at`, `drop_at`, `drop_to`, `drop_mark`, `drop_label` |
+| `money_roles` | coins appear under an abundant-gold hypothesis; a coin transfers between wallets while saving is contrasted | `kicker`, `trade_label`, `save_label`, `abundant_at`, `save_at`, `trade_at`, `conclusion_at`, `conclusion` |
+| `coin_dilution` | cheap-metal particles move into a coin and its composition visibly changes; no invented metal percentage | `kicker`, `before_label`, `after_label`, `metal_label`, `mix_at`, `conclusion_at`, `conclusion` |
+| `currency_trust` | the spoken cash total appears above a note stack; a connection fills and the central bank lights up as trust is explained | `kicker`, `value`, `amount_at`, `bank_at`, `bank_label_at`, `bank_label`, `trust_at`, `trust_label`, `conclusion_at`, `conclusion` |
 
 The other card types work in the panel too. Worked example: [references/ep7-asteroid-overlay.json](references/ep7-asteroid-overlay.json). Labels are the hosts' words or a faithful label for them. Use the full-screen render (with `-g 24`) as `input-video.mp4`; it already has the logo and end card, so leave `endcard` out.
+
+Worked educational examples: [money roles](references/ep7_money_roles_v2.json), [coin dilution](references/ep7_coin_dilution_v2.json), and [currency trust](references/ep7_currency_trust_v2.json). These use `panel_scale: 0.78`, `panel_left: 20`, `panel_top: 270`, with enlarged scene labels, to preserve both phone-size legibility and a margin above the eyes while retaining the 170 px right margin. Inspect the actual host's eyes before using these settings on another recording. The cash amount is a spoken total, not a fictional banknote denomination. Coin colours illustrate a qualitative composition change; do not add an unsupported ratio or percentage.
+
+The episode 7 base footage for these larger scenes uses `build_fullbleed.py` with `video_offset_y: {"L": 160, "R": 0}`. This keeps Nadav's eyes below the panel rather than shifting both hosts upward by the same amount. The framing is part of the animation quality check, not an optional cosmetic pass.
 
 ## Hand back
 Make the short's cover and upload short + cover + `.srt` exactly as `investing-bros-shorts` steps 6–7 (sized cover, sub-10 MB upload copy, `promo/` naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.

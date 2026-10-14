@@ -45,3 +45,34 @@ def test_reaction_cut_and_high_res_tracks():
 def test_tags_in_gold_box():
     ass = build_ass(dict(CFG, tags=[[2106.05, 2109.5, "נדב רסקין"]]), _tl(), CHUNKS)
     assert any(",Tag," in l and "נדב רסקין" in l for l in ass.splitlines())
+
+
+def test_without_endcard_keeps_final_spoken_caption():
+    cfg = dict(CFG)
+    cfg.pop("endcard")
+    ass = build_ass(cfg, _tl(), CHUNKS)
+    assert any(",Cap," in line and "לעתיד." in line for line in ass.splitlines())
+    assert ",Dim," not in ass and ",End," not in ass
+
+
+def test_safe_caption_and_face_framing_can_be_configured():
+    cfg = dict(CFG, caption_x=480, caption_y=1430, hook_y=360, video_offset_y=160)
+    ass = build_ass(cfg, _tl(), CHUNKS)
+    assert "\\pos(480,1430)" in ass and "\\pos(540,360)" in ass
+    cmd = build_command(cfg, _tl())
+    assert "pad=1080:2080:0:0:color=black,crop=1080:1920:0:160[framed]" in cmd
+    assert "[framed][gr]overlay=0:0" in cmd
+
+
+def test_excessive_framing_offset_is_rejected():
+    import pytest
+    with pytest.raises(ValueError, match="video_offset_y"):
+        build_command(dict(CFG, video_offset_y=1920), _tl())
+
+
+def test_host_specific_offset_leaves_each_face_in_its_safe_position():
+    cfg = dict(CFG, base="R", shots=[[2140,2141.5,"L"]], video_offset_y={"L":160,"R":0})
+    cmd = build_command(cfg, _tl())
+    assert "[VL_offset]pad=1080:2080:0:0:color=black,crop=1080:1920:0:160[VL]" in cmd
+    assert "[VR]pad=" not in cmd and "[z]pad=" not in cmd
+    assert "[VR][VL]overlay=" in cmd

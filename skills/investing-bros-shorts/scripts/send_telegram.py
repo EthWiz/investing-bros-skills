@@ -31,13 +31,17 @@ def env(path):
 
 
 def call(tok, method, fields):
-    args = ["curl", "-sS", "--max-time", "400", "--retry", "2"]
+    # An upload can be accepted even when its response is lost. Never retry POSTs
+    # automatically; verify the group before a manual retry. HTTP/1.1 also avoids
+    # observed HTTP/2 PROTOCOL_ERROR failures during large video uploads.
+    args = ["curl", "-sS", "--http1.1", "--connect-timeout", "20", "--max-time", "180"]
     for k, v in fields:
         args += ["-F", f"{k}={v}"]
     r = subprocess.run(args + [f"https://api.telegram.org/bot{tok}/{method}"], capture_output=True, text=True)
     out = json.loads(r.stdout or "{}")
     if not out.get("ok"):
-        sys.exit(f"{method} failed: {out.get('description', r.stderr[:200])}")
+        reason = str(out.get('description', r.stderr[:200])).replace(tok, "[redacted]")
+        sys.exit(f"{method} failed: {reason}")
     return out["result"]
 
 

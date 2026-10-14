@@ -5,10 +5,11 @@ description: >-
   Investing Bros / אחים להשקעות episode: pick standalone moments, cut on
   pauses, speaker close-ups, logo + hook headline, burned-in Hebrew captions,
   leveled audio, plus a cover image sized for each short, all uploaded to the
-  episode's Drive promo/ folder. Use when Amitai asks for "shorts", "clips",
+  episode's Drive promo/ folder. Every short includes at least one high-quality,
+  informative HyperFrames animation. Use when Amitai asks for "shorts", "clips",
   "reels", "רילס", "שורטס" or "קליפים" for episode N, and whenever shorts are
-  made as part of post-production. Explainer shorts can be rendered with
-  animated cards via investing-bros-hyperframes.
+  made as part of post-production. Render the required explanatory animation
+  with investing-bros-hyperframes.
 ---
 # Investing Bros shorts
 
@@ -28,6 +29,8 @@ For audio-only recordings, also the show cover (location in `investing-bros-show
 Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
 
 ## Steps
+**Required in every short:** include at least one high-quality, informative animation rendered with `investing-bros-hyperframes`. It must visually explain a concept, comparison, mechanism, number or story beat actually present in the clip. Animated captions, a moving hook title, the logo, punch-ins, transitions and an end card do **not** satisfy this requirement. Choose a meaningful explanatory moment even for a story or reaction clip. Never deliver a short without its explanatory animation.
+
 1. **Propose moments.** Give Amitai 3–6 candidates as a table: start–end, opening line, why it works, a title. Wait for his picks unless he said to just make them. A good short:
    - hooks in the first 3 seconds (a claim, a number, a story, a question — not "אז…", not "חווים את זה היום")
    - makes sense with no episode context, and is **one idea** with a clean end line
@@ -51,11 +54,12 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - **Audio:** if one host is quieter, give his pieces a gain (`[start, end, +dB]`) so both measure within ~2 dB; the render normalises to −14 LUFS.
    For a quick whole-frame clip or an audio-only audiogram, `scripts/clip_captions.py` + `scripts/make_clip.sh` still work.
 
-   **Explainer moment? Render it with HyperFrames instead.** When the clip explains something a card can show — a number, "not X but Y", a list, a before/after — use `investing-bros-hyperframes` for this step: the same pieces, shots and captions, plus animated cards (count-up, strike-through, building list) in the band under the video. It looks more produced and gets Hebrew/English text right natively, at ~6× the render time. Punchlines and stories stay on the plain render.
+   **Required HyperFrames animation.** Use `investing-bros-hyperframes` for at least one informative animation in every short. The full-screen render may supply the host footage, captions and logo; HyperFrames then adds the explanatory scene. Make the motion show the explanation — a transfer, changing composition, causal connection, comparison or spoken number — rather than merely animating text. Use faithful labels, synchronize the important changes to the spoken words, and keep the scene legible at phone size. Do not introduce unsupported facts, illustrative percentages or investment promises. If the supplied generator cannot express the explanation well, add and test the needed scene in its script through a PR; do not hand-write a one-off composition.
 5. **Check the export.** For each short:
    - a strip of 6–8 frames across the clip: captions right-to-left (punctuation at the left end, English words in place), not over faces, inside the safe zone; the right host on screen
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
    - duration 30–60 s; listen to every cut — no clipped words, no clicks
+   - at least one informative HyperFrames animation is present; it explains the spoken point, its key changes follow the audio, all labels are readable at phone size, and it does not cover eyes, captions or the platform UI
 6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid:
    ```bash
    python3 scripts/make_cover.py --source raw.mp4 --at <source time of a good frame> --side L \
@@ -87,12 +91,19 @@ The default look is now the **full-screen style**: the speaking host fills the 9
 | Upload to Drive | `drive.sh put FILE PROMO_FOLDER_ID` | |
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
 
-Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
+Every short must have at least one informative HyperFrames animation (Amitai's requirement, 2026-10-14). Prefer one or two well-chosen scenes over constant motion. Examples include a coin changing its metal composition, a payment moving between people, or a bank-to-currency connection filling as the host explains trust. Numeric effects must use verified figures actually spoken in the clip.
+
+If speech continues through the last seconds, omit `endcard` to keep the closing sentence captioned. An end card reserves the final 2.8 seconds for its own text; do not use it over a substantive closing line or caveat.
+
+Check the actual face position in every frame strip. If the default captions cross a mouth, `build_fullbleed.py` accepts `caption_x`, `caption_y`, `hook_y` and `video_offset_y` in the edit JSON. A starting point for the episode 7 side-by-side source is `caption_x: 480`, `caption_y: 1430`, `hook_y: 360`, `video_offset_y: 160`; verify both hosts and the platform safe zone after rendering.
+
+For a larger explanatory panel, a global video offset can move one host's eyes into the graphic. Set `video_offset_y` per host when needed (episode 7 revisions: `{"L": 160, "R": 0}`), then inspect the panel over both hosts and their closest/leaning frames. The caption position stays fixed while each face is framed safely.
 
 ## Hand back
-Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
+Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, what its required HyperFrames animation explains, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
 ## Never
+- Deliver a short with no informative HyperFrames animation, or count animated captions, titles, logos, punch-ins or an end card as the required animation.
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.

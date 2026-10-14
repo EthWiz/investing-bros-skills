@@ -1,0 +1,30 @@
+{
+  "layout": "overlay",
+  "fps": 24,
+  "panel_scale": 0.78,
+  "panel_left": 20,
+  "panel_top": 270,
+  "name": "ep7_money_roles_v2",
+  "pieces": [
+    [
+      985.389,
+      1026.58,
+      6
+    ]
+  ],
+  "cards": [
+    {
+      "type": "money_roles",
+      "start": 988.25,
+      "end": 1006.2,
+      "kicker": "אם קל למצוא זהב…",
+      "trade_label": "מסחר",
+      "save_label": "חיסכון",
+      "abundant_at": 988.96,
+      "save_at": 990.6,
+      "trade_at": 995.48,
+      "conclusion_at": 1003.2,
+      "conclusion": "מסחר ≠ שימור ערך"
+    }
+  ]
+}

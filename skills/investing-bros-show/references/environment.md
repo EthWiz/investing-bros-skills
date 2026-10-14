@@ -34,6 +34,8 @@ Read this before working around anything. Every line here cost an agent time to 
 - Transcribe only the picked clip windows (with `word_timestamps=True`), never the whole episode — the Drive transcript already covers that.
 
 ## Fonts
+- On a direct local Mac shell, verify `ffmpeg -filters` lists `ass`; the minimal Homebrew `ffmpeg` package may omit libass. Install `ffmpeg-full` if needed and prepend its `bin/` directory to PATH for the render and QA commands. Do not assume a working `ffmpeg -version` implies caption support.
+- Converting Heebo TTFs to WOFF2 for HyperFrames also needs Python Brotli support (`fonttools[woff]` or `brotli` alongside fontTools).
 - The skills need static Heebo weights (`brand.py fonts`). If `github.com/google/fonts` isn't reachable: `npm pack @fontsource-variable/heebo`, then instance the Hebrew and Latin `*-wght-normal.woff2` subsets at 600/800/900 with fontTools and merge each pair (`fontTools.merge`), naming the families `Heebo SemiBold` / `Heebo ExtraBold` / `Heebo Black`.
 
 ## HyperFrames in the cloud workspace
@@ -42,5 +44,7 @@ Read this before working around anything. Every line here cost an agent time to 
 - The input video needs a keyframe every second (`-g 24 -keyint_min 24`), or seeks freeze frames.
 
 ## Delivering files
+- On Amitai's local Mac, the show bot configuration is in `~/Downloads/telegram.env`; pass that path to `send_telegram.py --env`. Do not print the file. Before posting, verify the configured chat ID matches the approved destination in `investing-bros-show` and verify the bot identity with `getMe`; `getChat` can confirm the group title without consuming updates.
+- A Telegram upload can arrive even if curl loses the response: an episode 7 video was visible in the group despite an HTTP/2 `PROTOCOL_ERROR` and timeout. The send script uses HTTP/1.1 and does not automatically retry uploads. For an ambiguous failure, inspect the approved group in an already-signed-in Telegram app before retrying; never use `getUpdates` because another program consumes them.
 - Chat attachments are capped at **30 MB**: send a re-encoded review copy (`-crf 21`) and keep the master.
 - Telegram bot uploads are capped at **50 MB**.
