@@ -53,3 +53,18 @@ def test_without_endcard_keeps_final_spoken_caption():
     ass = build_ass(cfg, _tl(), CHUNKS)
     assert any(",Cap," in line and "לעתיד." in line for line in ass.splitlines())
     assert ",Dim," not in ass and ",End," not in ass
+
+
+def test_safe_caption_and_face_framing_can_be_configured():
+    cfg = dict(CFG, caption_x=480, caption_y=1430, hook_y=360, video_offset_y=160)
+    ass = build_ass(cfg, _tl(), CHUNKS)
+    assert "\\pos(480,1430)" in ass and "\\pos(540,360)" in ass
+    cmd = build_command(cfg, _tl())
+    assert "pad=1080:2080:0:0:color=black,crop=1080:1920:0:160[framed]" in cmd
+    assert "[framed][gr]overlay=0:0" in cmd
+
+
+def test_excessive_framing_offset_is_rejected():
+    import pytest
+    with pytest.raises(ValueError, match="video_offset_y"):
+        build_command(dict(CFG, video_offset_y=1920), _tl())

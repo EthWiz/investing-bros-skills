@@ -34,6 +34,8 @@ Read this before working around anything. Every line here cost an agent time to 
 - Transcribe only the picked clip windows (with `word_timestamps=True`), never the whole episode — the Drive transcript already covers that.
 
 ## Fonts
+- On a direct local Mac shell, verify `ffmpeg -filters` lists `ass`; the minimal Homebrew `ffmpeg` package may omit libass. Install `ffmpeg-full` if needed and prepend its `bin/` directory to PATH for the render and QA commands. Do not assume a working `ffmpeg -version` implies caption support.
+- Converting Heebo TTFs to WOFF2 for HyperFrames also needs Python Brotli support (`fonttools[woff]` or `brotli` alongside fontTools).
 - The skills need static Heebo weights (`brand.py fonts`). If `github.com/google/fonts` isn't reachable: `npm pack @fontsource-variable/heebo`, then instance the Hebrew and Latin `*-wght-normal.woff2` subsets at 600/800/900 with fontTools and merge each pair (`fontTools.merge`), naming the families `Heebo SemiBold` / `Heebo ExtraBold` / `Heebo Black`.
 
 ## HyperFrames in the cloud workspace

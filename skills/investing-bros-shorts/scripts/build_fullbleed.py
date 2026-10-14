@@ -25,6 +25,8 @@ short.json:
   "endcard": ["לפרק המלא", "[אחים להשקעות · פרק 7]", "עקבו לעוד שורטים"],
   "logo": "logo.png", "fonts": "fonts"
 }
+Optional framing controls: caption_x/caption_y, hook_y, and video_offset_y
+(shift the host up by this many output pixels, padding the bottom with black).
 [..] = gold. Captions: 2-3 words at a time, the spoken word gold, centre at y=1290
 (above the Reels/Shorts UI). Logo top-left (56,150), 210 px wide. Also writes NAME.srt from
 "cards" for the platform's subtitle field. Check the export with check_short.py.
@@ -54,6 +56,8 @@ def gold(s):
 def build_ass(cfg, tl, chunks):
     dur = tl.duration
     end_t = max(0.0, dur - END_S) if cfg.get("endcard") else dur
+    cap_x, cap_y = cfg.get("caption_x", 540), cfg.get("caption_y", CAP_Y)
+    hook_y = cfg.get("hook_y", HOOK_Y)
     st = ("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
           "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
           "Style: Cap,Heebo Black,100,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,-1\n"
@@ -65,7 +69,7 @@ def build_ass(cfg, tl, chunks):
            "[V4+ Styles]\n" + st + "\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
     ev = lambda layer, s, e, style, txt: f"Dialogue: {layer},{ass_time(s)},{ass_time(e)},{style},,0,0,0,,{txt}\n"
     if cfg.get("hook"):
-        out += ev(5, 0, 2.7, "Hook", f"{{\\pos(540,{HOOK_Y})\\fscx70\\fscy70\\t(0,180,\\fscx100\\fscy100)\\fad(0,200)}}"
+        out += ev(5, 0, 2.7, "Hook", f"{{\\pos(540,{hook_y})\\fscx70\\fscy70\\t(0,180,\\fscx100\\fscy100)\\fad(0,200)}}"
                   + "\\N".join(gold(x) for x in cfg["hook"]))
     for chunk in chunks:
         gs, ge = tl.map(chunk[0]["s"]), min(tl.map(chunk[-1]["e"]), end_t)
@@ -80,7 +84,7 @@ def build_ass(cfg, tl, chunks):
             off = "{\\c&H00FFFFFF\\fscx100\\fscy100}"
             parts = [on + rtl(x["w"]) + off if k == j else rtl(x["w"]) for k, x in enumerate(chunk)]
             pop = "\\fscx82\\fscy82\\t(0,90,\\fscx100\\fscy100)" if j == 0 else ""
-            out += ev(1, s, e, "Cap", f"{{\\pos(540,{CAP_Y}){pop}}}" + " ".join(parts))
+            out += ev(1, s, e, "Cap", f"{{\\pos({cap_x},{cap_y}){pop}}}" + " ".join(parts))
     for a, b, name in cfg.get("tags", []):
         out += ev(4, tl.map(a), min(tl.map(b), end_t), "Tag", "{\\an9\\pos(1024,178)\\fad(150,150)}" + rtl(name))
     if cfg.get("endcard"):
@@ -164,7 +168,15 @@ def build_command(cfg, tl):
         z = f"if(gte(it,{tl.map(t):.3f}),{zz},{z})"
     g, lg = len(files), len(files) + 1
     f += (f"[vc]fps={fps},zoompan=z='{z}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)*0.35':d=1:s=1080x1920:fps={fps},"
-          f"eq=contrast=1.05:saturation=1.1[z];[{g}:v]format=rgba[gr];[z][gr]overlay=0:0[g];"
+          f"eq=contrast=1.05:saturation=1.1[z];")
+    offset = int(cfg.get("video_offset_y", 0))
+    if not 0 <= offset <= 320:
+        raise ValueError("video_offset_y must be between 0 and 320 output pixels")
+    host = "z"
+    if offset:
+        f += f"[z]pad=1080:{1920 + offset}:0:0:color=black,crop=1080:1920:0:{offset}[framed];"
+        host = "framed"
+    f += (f"[{g}:v]format=rgba[gr];[{host}][gr]overlay=0:0[g];"
           f"[{lg}:v]scale=210:-1[lg];[g][lg]overlay=56:150[l];[l]ass={name}_fb.ass:fontsdir={cfg.get('fonts', 'fonts')},format=yuv420p[v];"
           f"[ac]{AUDIO}[a]")
     inputs = " ".join(f'-ss {S:.3f} -t {T:.3f} -i "{p}"' for p in files)

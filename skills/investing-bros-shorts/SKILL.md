@@ -91,6 +91,8 @@ Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where
 
 If speech continues through the last seconds, omit `endcard` to keep the closing sentence captioned. An end card reserves the final 2.8 seconds for its own text; do not use it over a substantive closing line or caveat.
 
+Check the actual face position in every frame strip. If the default captions cross a mouth, `build_fullbleed.py` accepts `caption_x`, `caption_y`, `hook_y` and `video_offset_y` in the edit JSON. A starting point for the episode 7 side-by-side source is `caption_x: 480`, `caption_y: 1430`, `hook_y: 360`, `video_offset_y: 160`; verify both hosts and the platform safe zone after rendering.
+
 ## Hand back
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
