@@ -47,6 +47,8 @@ import os
 import re
 import sys
 
+from explainer_scenes import SCENE_CSS, SCENE_TYPES, scene_card
+
 ACCENT = "#F5B71F"                  # house accent gold (investing-bros-show -> Brand)
 BAND = "left:56px;top:1250px;width:840px;height:300px"
 # "overlay" layout (house style): the input video is the finished full-screen short from
@@ -142,6 +144,7 @@ CARD .half{position:absolute;left:-10px;right:-10px;top:50%;border-top:3px dashe
 CARD .a{font-size:44px}
 CARD .b{font-family:'Heebo Black',sans-serif;font-size:72px;color:var(--accent-0);line-height:1}""",
 }
+TYPE_CSS.update({name: SCENE_CSS for name in SCENE_TYPES})
 
 
 def card_body(c, cid):
@@ -192,6 +195,8 @@ def card_body(c, cid):
         body, an = fly_card(c, cid)
     elif t == "supply":
         body, an = supply_card(c, cid)
+    elif t in SCENE_TYPES:
+        body, an = scene_card(c, cid, text)
     elif t == "end":
         a, b = (c["lines"] + ["", ""])[:2]
         body = f'<div class="a" id="{cid}-a">{text(a)}</div><div class="b" id="{cid}-b">{text(b)}</div>'
@@ -324,6 +329,8 @@ def gsap(kind, sel, t, p):
 
 
 def build(cfg):
+    if not any(c.get("type") != "end" for c in cfg.get("cards", [])):
+        raise ValueError("Every short needs at least one informative HyperFrames animation")
     fps = cfg.get("fps", 24)
     tl = Timeline(cfg["pieces"], fps)
     D = tl.duration
@@ -338,9 +345,13 @@ def build(cfg):
             raise ValueError(f"cards {a_id} and {b_id} overlap")
 
     overlay = cfg.get("layout") == "overlay"
-    band = PANEL_BAND if overlay else BAND
-    host_from = "{opacity:0,y:-24,scale:%.2f}" % (PANEL_SCALE - 0.04) if overlay else "{opacity:0,y:30}"
-    host_to = "{opacity:1,y:0,scale:%.2f,duration:0.45,ease:'power3.out'}" % PANEL_SCALE if overlay else "{opacity:1,y:0,duration:0.4,ease:'power2.out'}"
+    panel_scale = float(cfg.get("panel_scale", PANEL_SCALE))
+    if not 0.5 <= panel_scale <= 1.0:
+        raise ValueError("panel_scale must be between 0.5 and 1.0")
+    band = (f"left:{int(cfg.get('panel_left', 56))}px;top:{int(cfg.get('panel_top', 262))}px;"
+            "width:968px;height:420px;transform-origin:50% 0%") if overlay else BAND
+    host_from = "{opacity:0,y:-24,scale:%.2f}" % (panel_scale - 0.04) if overlay else "{opacity:0,y:30}"
+    host_to = "{opacity:1,y:0,scale:%.2f,duration:0.45,ease:'power3.out'}" % panel_scale if overlay else "{opacity:1,y:0,duration:0.4,ease:'power2.out'}"
     js = ["const tl=window.gsap.timeline({paused:true});",
           "window.__fmt=function(v){return String(Math.round(v));};"]
     hosts, files = [], {}

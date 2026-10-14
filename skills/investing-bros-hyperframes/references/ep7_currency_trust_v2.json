@@ -1,0 +1,47 @@
+{
+  "layout": "overlay",
+  "fps": 24,
+  "panel_scale": 0.84,
+  "panel_left": 20,
+  "panel_top": 280,
+  "name": "ep7_currency_trust_v2",
+  "pieces": [
+    [
+      1460.178,
+      1473.086,
+      6
+    ],
+    [
+      1473.086,
+      1480.191,
+      0
+    ],
+    [
+      1480.191,
+      1494.6,
+      6
+    ],
+    [
+      1494.6,
+      1499.602,
+      0
+    ]
+  ],
+  "cards": [
+    {
+      "type": "currency_trust",
+      "start": 1476.4,
+      "end": 1494.5,
+      "kicker": "מה יש לי בכיס?",
+      "value": 500,
+      "amount_at": 1476.4,
+      "bank_at": 1481.1,
+      "bank_label_at": 1484,
+      "bank_label": "הבנק הפדרלי",
+      "trust_at": 1482.2,
+      "trust_label": "אמון",
+      "conclusion_at": 1487.3,
+      "conclusion": "הדולר נשען על אמון"
+    }
+  ]
+}

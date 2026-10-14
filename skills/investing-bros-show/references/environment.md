@@ -45,5 +45,6 @@ Read this before working around anything. Every line here cost an agent time to 
 
 ## Delivering files
 - On Amitai's local Mac, the show bot configuration is in `~/Downloads/telegram.env`; pass that path to `send_telegram.py --env`. Do not print the file. Before posting, verify the configured chat ID matches the approved destination in `investing-bros-show` and verify the bot identity with `getMe`; `getChat` can confirm the group title without consuming updates.
+- A Telegram upload can arrive even if curl loses the response: an episode 7 video was visible in the group despite an HTTP/2 `PROTOCOL_ERROR` and timeout. The send script uses HTTP/1.1 and does not automatically retry uploads. For an ambiguous failure, inspect the approved group in an already-signed-in Telegram app before retrying; never use `getUpdates` because another program consumes them.
 - Chat attachments are capped at **30 MB**: send a re-encoded review copy (`-crf 21`) and keep the master.
 - Telegram bot uploads are capped at **50 MB**.

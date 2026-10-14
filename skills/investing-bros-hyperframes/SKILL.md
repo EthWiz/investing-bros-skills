@@ -84,8 +84,13 @@ For the house style, the base video comes from `investing-bros-shorts` → `buil
 |---|---|---|
 | `fly` | an asteroid in space: metal sheen, gold veins, then it flies down and lands on Earth with a gold flash | `kicker`, `metal_at`/`metal_label`, `gold_at`/`gold_label`, `fly_at`, `fly_kicker`, `land_label` |
 | `supply` | a stack of gold bars, a second stack (×N), an arrow, then a value meter that drops | `kicker`, `factor`, `factor_label`, `more_at`, `value_kicker`, `value_at`, `drop_at`, `drop_to`, `drop_mark`, `drop_label` |
+| `money_roles` | coins appear under an abundant-gold hypothesis; a coin transfers between wallets while saving is contrasted | `kicker`, `trade_label`, `save_label`, `abundant_at`, `save_at`, `trade_at`, `conclusion_at`, `conclusion` |
+| `coin_dilution` | cheap-metal particles move into a coin and its composition visibly changes; no invented metal percentage | `kicker`, `before_label`, `after_label`, `metal_label`, `mix_at`, `conclusion_at`, `conclusion` |
+| `currency_trust` | the spoken cash total appears above a note stack; a connection fills and the central bank lights up as trust is explained | `kicker`, `value`, `amount_at`, `bank_at`, `bank_label_at`, `bank_label`, `trust_at`, `trust_label`, `conclusion_at`, `conclusion` |
 
 The other card types work in the panel too. Worked example: [references/ep7-asteroid-overlay.json](references/ep7-asteroid-overlay.json). Labels are the hosts' words or a faithful label for them. Use the full-screen render (with `-g 24`) as `input-video.mp4`; it already has the logo and end card, so leave `endcard` out.
+
+Worked educational examples: [money roles](references/ep7_money_roles_v2.json), [coin dilution](references/ep7_coin_dilution_v2.json), and [currency trust](references/ep7_currency_trust_v2.json). These use `panel_scale: 0.84`, `panel_left: 20`, `panel_top: 280` for larger illustrations while retaining the 170 px right margin. Inspect the actual host's eyes before using these settings on another recording. The cash amount is a spoken total, not a fictional banknote denomination. Coin colours illustrate a qualitative composition change; do not add an unsupported ratio or percentage.
 
 ## Hand back
 Make the short's cover and upload short + cover + `.srt` exactly as `investing-bros-shorts` steps 6–7 (sized cover, sub-10 MB upload copy, `promo/` naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
