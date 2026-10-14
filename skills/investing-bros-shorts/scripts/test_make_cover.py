@@ -5,7 +5,7 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_cover import PILL_HALF_H, PILL_Y, SQUARE, build_ass, build_command, headline_box, headline_lines  # noqa: E402
+from make_cover import build_command_fullbleed, PILL_HALF_H, PILL_Y, SQUARE, build_ass, build_command, headline_box, headline_lines  # noqa: E402
 
 
 def test_pill_stays_inside_the_square_crop():
@@ -30,9 +30,9 @@ def test_headline_rules():
         headline_lines("שורה ארוכה מדי בשביל תמונה ממוזערת")  # too long to read when tiny
 
 
-def test_ass_is_rtl_with_emerald_and_episode_pill():
+def test_ass_is_rtl_with_gold_and_episode_pill():
     ass = build_ass("סוויפט היא בכלל|[לא מערכת תשלומים]", 6)
-    assert "\\c&H7ABF1F&" in ass and "פרק 6" in ass
+    assert "\\c&H1FB7F5&" in ass and "פרק 6" in ass
     for line in ass.splitlines():
         if line.startswith("Style:"):
             assert line.endswith(",-1")
@@ -44,3 +44,9 @@ def test_command_picks_host_half_and_one_frame():
     fc = cmd[cmd.index("-filter_complex") + 1]
     assert "crop=iw/2:ih:iw/2:0" in fc and "setpts=0" in fc
     assert cmd[cmd.index("-ss") + 1] == "857.200" and "-frames:v" in cmd
+
+
+def test_fullbleed_cover_matches_the_house_style():
+    cmd = build_command_fullbleed("raw.mp4", 2121.0, [1130, 0, 608, 1080], "logo.png", "c.ass", "fonts", "g.png", "o.jpg")
+    fc = cmd[cmd.index("-filter_complex") + 1]
+    assert "crop=608:1080:1130:0" in fc and "overlay=56:150" in fc and "-frames:v" in cmd

@@ -16,7 +16,7 @@ Crop safety: the headline and the pill sit inside the centre 1080x1080 square
 sits above the square on purpose (it is on every frame of the short anyway).
 
 --headline: the short's hook, the same faithful paraphrase as its on-screen
-headline; | breaks a line, [..] is emerald. Needs ffmpeg with libass and Pillow.
+headline; | breaks a line, [..] is the gold accent. Needs ffmpeg with libass and Pillow.
 """
 import argparse
 import os
@@ -25,7 +25,7 @@ import sys
 import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import EMERALD, VERTICAL, WHITE, ass_colour  # noqa: E402
+from brand import ACCENT, VERTICAL, WHITE, ass_colour  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
 W, H = VERTICAL["size"]
@@ -37,7 +37,7 @@ PILL_HALF_H = 51                          # 62 px text + 20 px box border each s
 HEAD_GAP = 40                             # space between the headline's last line and the pill
 LINE_H = 0.95                             # measured: rendered Heebo Black lines, outline included, per font px
 FADE_H = 560                              # dark fade at the bottom of the host picture
-EM = "{\\c&H" + ass_colour(EMERALD)[4:] + "&}"
+EM = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}"
 WH = "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
 
 
@@ -64,7 +64,7 @@ def headline_box(n_lines: int):
 def build_ass(headline: str, episode) -> str:
     lines = headline_lines(headline)
     size, _, _, centre_y = headline_box(len(lines))
-    green = ass_colour(EMERALD)
+    accent = ass_colour(ACCENT)
     body = "\\N".join(rtl(x).replace("[", EM).replace("]", WH) for x in lines)
     head = f"""[Script Info]
 ScriptType: v4.00+
@@ -76,7 +76,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: Head,Heebo Black,{size},&H00FFFFFF,&H00FFFFFF,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,6,4,5,60,60,0,-1
-Style: Pill,Heebo ExtraBold,62,&H000B1006,&H000B1006,{green},{green},0,0,0,0,100,100,0,0,3,20,0,5,0,0,0,-1
+Style: Pill,Heebo ExtraBold,62,&H000B1006,&H000B1006,{accent},{accent},0,0,0,0,100,100,0,0,3,20,0,5,0,0,0,-1
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
@@ -87,10 +87,9 @@ Dialogue: 1,0:00:00.00,0:00:05.00,Head,,0,0,0,,{{\\pos({W // 2},{centre_y})}}{bo
     return head
 
 
-def gradient_png(path: str) -> None:
+def gradient_png(path: str, h: int = FADE_H) -> None:
     """Dark fade over the lower part of the host picture so the headline reads."""
     from PIL import Image
-    h = FADE_H
     img = Image.new("RGBA", (W, h))
     px = img.load()
     for y in range(h):
@@ -113,6 +112,22 @@ def build_command(source, at, side, frame, ass, fonts, grad, out) -> list:
             "-filter_complex", fc, "-map", "[out]", "-frames:v", "1", "-q:v", "2", out]
 
 
+FB_FADE_H = 900                            # full-screen cover: fade from y=1020 to the bottom
+
+
+def build_command_fullbleed(source, at, crop, logo, ass, fonts, grad, out) -> list:
+    """House-style cover: the host full-screen (same crop as build_fullbleed.py), logo top-left."""
+    esc = lambda p: p.replace("\\", "\\\\").replace(":", "\\:").replace("'", "\\'")  # noqa: E731
+    x, y, w, h = crop
+    zw, zh = int(W * ZOOM) // 2 * 2, int(H * ZOOM) // 2 * 2
+    fc = (f"[0:v]crop={w}:{h}:{x}:{y},scale={zw}:{zh},crop={W}:{H}:(iw-{W})/2:(ih-{H})/3,setsar=1,setpts=0[host];"
+          f"[1:v]setpts=0[gr];[2:v]scale=210:-1,setpts=0[lg];"
+          f"[host][gr]overlay=0:{H - FB_FADE_H}[b];[b][lg]overlay=56:150[c];"
+          f"[c]ass='{esc(ass)}':fontsdir='{esc(fonts)}',format=yuvj420p[out]")
+    return ["ffmpeg", "-v", "error", "-y", "-ss", f"{at:.3f}", "-i", source, "-i", grad, "-i", logo,
+            "-filter_complex", fc, "-map", "[out]", "-frames:v", "1", "-q:v", "2", out]
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--source", required=True)
@@ -120,7 +135,11 @@ def main() -> int:
     ap.add_argument("--side", choices=("L", "R", "full"), default="L")
     ap.add_argument("--headline", required=True)
     ap.add_argument("--episode", type=int)
-    ap.add_argument("--frame", required=True, help="brand.py frame vertical")
+    ap.add_argument("--style", choices=("split", "fullbleed"), default="split",
+                    help="fullbleed = house style (matches build_fullbleed.py): host full-screen, logo top-left")
+    ap.add_argument("--crop", help="fullbleed: x,y,w,h of the 9:16 host crop in the source (as in the short's config)")
+    ap.add_argument("--logo", help="fullbleed: logo.png (brand.py logo)")
+    ap.add_argument("--frame", help="split: brand.py frame vertical")
     ap.add_argument("--fonts", required=True, help="folder with static Heebo weights")
     ap.add_argument("out")
     a = ap.parse_args()
@@ -128,8 +147,17 @@ def main() -> int:
         ass = os.path.join(tmp, "cover.ass")
         grad = os.path.join(tmp, "grad.png")
         open(ass, "w", encoding="utf-8").write(build_ass(a.headline, a.episode))
-        gradient_png(grad)
-        subprocess.run(build_command(a.source, a.at, a.side, a.frame, ass, a.fonts, grad, a.out), check=True)
+        if a.style == "fullbleed":
+            if not (a.crop and a.logo):
+                ap.error("--style fullbleed needs --crop and --logo")
+            gradient_png(grad, FB_FADE_H)
+            crop = [int(v) for v in a.crop.split(",")]
+            subprocess.run(build_command_fullbleed(a.source, a.at, crop, a.logo, ass, a.fonts, grad, a.out), check=True)
+        else:
+            if not a.frame:
+                ap.error("--style split needs --frame")
+            gradient_png(grad)
+            subprocess.run(build_command(a.source, a.at, a.side, a.frame, ass, a.fonts, grad, a.out), check=True)
     size = os.path.getsize(a.out)
     print(f"{a.out}: {W}x{H}, {size / 1024:.0f} KB")
     return 0

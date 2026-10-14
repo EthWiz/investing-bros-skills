@@ -29,7 +29,7 @@ teaser.json (times are seconds on the SOURCE timeline; pieces may be in any orde
   "label": "פרק 6 · טוקניזציה ובלוקצ'יין",
   "speaker": "נדב רסקין",
   "pieces": [[2217.05, 2233.0], [1452.88, 1460.0]],
-  "cards": [[2217.05, 2218.5, "בחיים שלי לא הייתי מאמין"], ...]   # | = line break, [..] = emerald
+  "cards": [[2217.05, 2218.5, "בחיים שלי לא הייתי מאמין"], ...]   # | = line break, [..] = gold accent
 }
 """
 import argparse
@@ -38,10 +38,10 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import EMERALD, PANEL, WHITE, ass_colour  # noqa: E402
+from brand import ACCENT, PANEL, WHITE, ass_colour  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
-EM, WH = "{\\c&H" + ass_colour(EMERALD)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
+EM, WH = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
 # Must match assemble_episode.sh so all episode segments join without re-encoding.
 X264 = "-c:v libx264 -preset veryfast -crf 19 -profile:v high -level 4.0 -pix_fmt yuv420p -g 48 -video_track_timescale 24000"
 
@@ -80,7 +80,7 @@ class Timeline:
 def build_ass(cfg, tl: Timeline) -> str:
     cx = 480 if cfg["host"] == "right" else 1440
     L = PANEL
-    green = ass_colour(EMERALD)
+    accent = ass_colour(ACCENT)
     head = f"""[Script Info]
 ScriptType: v4.00+
 PlayResX: 1920
@@ -91,7 +91,7 @@ ScaledBorderAndShadow: yes
 [V4+ Styles]
 Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding
 Style: TSub,Heebo ExtraBold,74,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,0,3,5,0,0,0,-1
-Style: Label,Heebo SemiBold,42,{green},{green},&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,8,0,0,0,-1
+Style: Label,Heebo SemiBold,42,{accent},{accent},&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,8,0,0,0,-1
 Style: Name,Heebo ExtraBold,50,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,2,0,0,0,-1
 
 [Events]

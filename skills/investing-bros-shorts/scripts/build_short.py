@@ -20,7 +20,7 @@ short.json (times are seconds on the SOURCE timeline):
   "fonts": "fonts",               # folder with static Heebo weights (brand.py fonts)
   "pieces": [[843.69, 864.40], [866.48, 871.45, 0.0]],   # kept ranges, optional gain dB per piece
   "shots": [[843.69, 871.45, "L"]],                      # which host fills the frame (L/R), by source time
-  "headline": ["סוויפט היא בכלל", "[לא מערכת תשלומים]"],  # fixed hook text under the logo; [..] = emerald
+  "headline": ["סוויפט היא בכלל", "[לא מערכת תשלומים]"],  # fixed hook text under the logo; [..] = gold accent
   "endcard": ["הפרק המלא על טוקניזציה", "[אחים להשקעות]"],  # replaces the headline for the last seconds
   "tags": [[843.69, 847.2, "אמיתי רסקין"]],              # name tag on the video
   "cards": [[843.69, 845.35, "אתה רוצה להעביר כסף|מישראל לארצות הברית —"]],  # | = line break
@@ -36,10 +36,10 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import EMERALD, VERTICAL, WHITE, ass_colour  # noqa: E402
+from brand import ACCENT, VERTICAL, WHITE, ass_colour  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
-EM, WH = "{\\c&H" + ass_colour(EMERALD)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
+EM, WH = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
 VIDEO_H = {"split": 1215, "full": 608}   # 960x1080 half -> 1080x1215; 1920x1080 -> 1080x608
 MAX_LINE = 26
 

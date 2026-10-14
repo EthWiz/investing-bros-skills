@@ -47,8 +47,13 @@ import os
 import re
 import sys
 
-EMERALD = "#1FBF7A"
+ACCENT = "#F5B71F"                  # house accent gold (investing-bros-show -> Brand)
 BAND = "left:56px;top:1250px;width:840px;height:300px"
+# "overlay" layout (house style): the input video is the finished full-screen short from
+# investing-bros-shorts/build_fullbleed.py (captions and logo burned in); cards sit in a compact
+# top panel, scaled to 0.74 so the host's eyes stay clear.
+PANEL_BAND = "left:56px;top:262px;width:968px;height:420px;transform-origin:50% 0%"
+PANEL_SCALE = 0.74
 LATIN = re.compile(r"[A-Za-z][A-Za-z0-9&'’.\-]*(?:\s+[A-Za-z0-9][A-Za-z0-9&'’.\-]*)*")
 
 
@@ -94,7 +99,7 @@ def close_gaps(items, max_gap=0.35):
     return items
 
 
-BASE_CSS = """CARD .root{width:100%;height:100%;box-sizing:border-box;padding:28px 36px;display:flex;flex-direction:column;justify-content:center;gap:14px;font-family:'Heebo ExtraBold','Heebo Black',sans-serif;color:#fff;background:rgba(7,9,8,0.92);border:2px solid rgba(31,191,122,0.55);border-radius:28px}
+BASE_CSS = """CARD .root{width:100%;height:100%;box-sizing:border-box;padding:28px 36px;display:flex;flex-direction:column;justify-content:center;gap:14px;font-family:'Heebo ExtraBold','Heebo Black',sans-serif;color:#fff;background:rgba(7,9,8,0.92);border:2px solid rgba(245,183,31,0.55);border-radius:28px}
 CARD .kicker{font-family:'Heebo SemiBold',sans-serif;font-size:30px;color:var(--accent-0)}
 CARD .title{font-family:'Heebo Black',sans-serif;font-size:76px;line-height:1.02;margin:0}
 CARD .em{color:var(--accent-0)}"""
@@ -120,6 +125,19 @@ CARD .dot{width:18px;height:18px;border-radius:9px;background:var(--accent-0);fl
 CARD .off{color:#9AA6A0}
 CARD .off .dot{background:transparent;border:3px solid #9AA6A0}
 CARD .title{font-size:62px;color:var(--accent-0)}""",
+    "fly": """CARD .root{display:block;padding:0;position:relative}
+CARD svg{position:absolute;left:0;top:0;width:968px;height:420px}
+CARD .kick{position:absolute;right:40px;top:26px;font-family:'Heebo SemiBold',sans-serif;font-size:34px;color:var(--accent-0);white-space:nowrap}
+CARD .lab{position:absolute;font-family:'Heebo Black',sans-serif;font-size:46px;white-space:nowrap;opacity:0}
+CARD .lab.gold{color:var(--accent-0)}""",
+    "supply": """CARD .root{display:block;padding:0;position:relative}
+CARD svg{position:absolute;left:0;top:0;width:968px;height:420px}
+CARD .kick{position:absolute;top:26px;font-family:'Heebo SemiBold',sans-serif;font-size:34px;color:var(--accent-0);white-space:nowrap}
+CARD .big{position:absolute;font-family:'Heebo Black',sans-serif;line-height:1;white-space:nowrap;direction:ltr;unicode-bidi:isolate;opacity:0}
+CARD .lbl{position:absolute;font-family:'Heebo ExtraBold',sans-serif;font-size:40px;white-space:nowrap;opacity:0}
+CARD .meter{position:absolute;left:130px;top:96px;width:110px;height:270px;border-radius:18px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.18);overflow:hidden;opacity:0}
+CARD .fill{position:absolute;left:0;bottom:0;width:100%;height:100%;background:linear-gradient(to top,#C98A0B,#F5B71F 60%,#FFE08A)}
+CARD .half{position:absolute;left:-10px;right:-10px;top:50%;border-top:3px dashed rgba(255,255,255,0.55)}""",
     "end": """CARD .root{align-items:center;text-align:center;gap:10px;border-color:var(--accent-0);background:rgba(7,9,8,0.94)}
 CARD .a{font-size:44px}
 CARD .b{font-family:'Heebo Black',sans-serif;font-size:72px;color:var(--accent-0);line-height:1}""",
@@ -170,12 +188,112 @@ def card_body(c, cid):
         if c.get("conclusion"):
             body += f'<div class="title" id="{cid}-t">{text(c["conclusion"])}</div>'
             an.append((("src", c.get("conclusion_at", c["start"])), "mask", f"#{cid}-t", {}))
+    elif t == "fly":
+        body, an = fly_card(c, cid)
+    elif t == "supply":
+        body, an = supply_card(c, cid)
     elif t == "end":
         a, b = (c["lines"] + ["", ""])[:2]
         body = f'<div class="a" id="{cid}-a">{text(a)}</div><div class="b" id="{cid}-b">{text(b)}</div>'
         an += [(0.10, "fade-in", f"#{cid}-a", {}), (0.30, "scale-pop", f"#{cid}-b", {})]
     else:
         raise ValueError(f"unknown card type {t}")
+    return body, an
+
+
+def _src(c, key):
+    return ("src", c[key]) if key in c else None
+
+
+def fly_card(c, cid):
+    """An asteroid in space: metal sheen, gold veins, then it flies down and lands on Earth.
+    Keys: kicker, metal_at/metal_label, gold_at/gold_label, fly_at (+ fly_kicker), land_label; times = source."""
+    P = lambda x: f"{cid}-{x}"  # noqa: E731
+    rock = "M-78,-20 C-80,-60 -40,-88 0,-84 C40,-92 82,-60 86,-18 C92,26 64,74 18,82 C-24,90 -70,66 -84,26 Z"
+    stars = "".join(f'<circle cx="{x}" cy="{y}" r="{r}"/>' for x, y, r in
+                    ((60, 50, 2), (180, 120, 1.6), (300, 40, 2.2), (420, 90, 1.4), (540, 30, 1.8), (890, 60, 2),
+                     (930, 200, 1.5), (600, 340, 1.6), (110, 230, 1.4), (470, 210, 1.8), (820, 370, 1.6), (240, 330, 1.3)))
+    veins = "".join(f'<path class="v" d="{d}" stroke-dasharray="{n}" stroke-dashoffset="{n}"/>' for d, n in (
+        ("M-60,10 C-30,0 -10,20 20,6 C40,-4 60,8 74,0", 160), ("M-40,-50 C-20,-30 10,-40 30,-20", 100),
+        ("M-20,60 C0,40 30,50 50,34", 90)))
+    body = f"""<svg viewBox="0 0 968 420" xmlns="http://www.w3.org/2000/svg"><defs>
+<radialGradient id="{P('rk')}" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#9A9A96"/><stop offset="0.6" stop-color="#5E5E5A"/><stop offset="1" stop-color="#2E2E2C"/></radialGradient>
+<linearGradient id="{P('sh')}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff" stop-opacity="0"/><stop offset="0.5" stop-color="#fff" stop-opacity="0.75"/><stop offset="1" stop-color="#fff" stop-opacity="0"/></linearGradient>
+<radialGradient id="{P('ea')}" cx="50%" cy="20%" r="80%"><stop offset="0" stop-color="#2E7DD7"/><stop offset="0.55" stop-color="#1B4F8F"/><stop offset="1" stop-color="#0B1F3A"/></radialGradient>
+<radialGradient id="{P('gl')}"><stop offset="0" stop-color="#FFE08A"/><stop offset="0.4" stop-color="#F5B71F" stop-opacity="0.7"/><stop offset="1" stop-color="#F5B71F" stop-opacity="0"/></radialGradient>
+<linearGradient id="{P('tg')}" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#F5B71F" stop-opacity="0"/><stop offset="1" stop-color="#FFE08A" stop-opacity="0.85"/></linearGradient>
+<clipPath id="{P('cl')}"><path d="{rock}"/></clipPath></defs>
+<g fill="#fff" opacity="0.55">{stars}</g>
+<g id="{P('earth')}" opacity="0"><circle cx="330" cy="935" r="640" fill="url(#{P('ea')})"/><circle cx="330" cy="935" r="640" fill="none" stroke="#7CC4FF" stroke-opacity="0.55" stroke-width="5"/></g>
+<g transform="translate(330,292)"><circle id="{P('glow')}" r="120" fill="url(#{P('gl')})" opacity="0"/><circle id="{P('ring')}" r="40" fill="none" stroke="#FFD66B" stroke-width="6" opacity="0"/></g>
+<g transform="translate(720,190)"><g id="{P('ast')}">
+<path id="{P('tail')}" d="M0,-34 L330,-6 L330,6 L0,34 Z" fill="url(#{P('tg')})" opacity="0" transform="rotate(-21)"/>
+<g id="{P('rock')}"><path d="{rock}" fill="url(#{P('rk')})" stroke="#1E1E1C" stroke-width="3"/>
+<circle cx="-30" cy="-30" r="14" fill="#3A3A37"/><circle cx="34" cy="10" r="20" fill="#3A3A37"/><circle cx="-14" cy="44" r="10" fill="#3A3A37"/><circle cx="46" cy="-44" r="8" fill="#3A3A37"/>
+<g clip-path="url(#{P('cl')})"><rect id="{P('sheen')}" x="-260" y="-100" width="90" height="200" fill="url(#{P('sh')})" transform="skewX(-20)"/></g>
+<g id="{P('veins')}" fill="none" stroke="#F5B71F" stroke-width="7" stroke-linecap="round">{veins}</g></g></g></g></svg>
+<div class="kick" id="{P('k1')}">{text(c.get("kicker", ""))}</div>
+<div class="kick" id="{P('k2')}" style="opacity:0">{text(c.get("fly_kicker", ""))}</div>
+<div class="lab" id="{P('l1')}" style="right:520px;top:120px">{text(c.get("metal_label", ""))}</div>
+<div class="lab gold" id="{P('l2')}" style="right:520px;top:200px">{text(c.get("gold_label", ""))}</div>
+<div class="lab gold" id="{P('l3')}" style="right:40px;top:300px">{text(c.get("land_label", ""))}</div>"""
+    fly = c["fly_at"]
+    an = [(0.1, "tween", f"#{P('rock')}", {"from": {"scale": 0.4, "opacity": 0, "svgOrigin": "0 0"},
+                                            "to": {"scale": 1, "opacity": 1, "duration": 0.6, "ease": "back.out(1.7)"}}),
+          (0.1, "to", f"#{P('rock')}", {"rotation": 22, "svgOrigin": "0 0", "duration": 11, "ease": "none"})]
+    if "metal_at" in c:
+        an += [(_src(c, "metal_at"), "tween", f"#{P('sheen')}", {"from": {"attr": {"x": -260}}, "to": {"attr": {"x": 180}, "duration": 0.9, "ease": "power2.inOut"}}),
+               (_src(c, "metal_at"), "slide-in", f"#{P('l1')}", {})]
+    if "gold_at" in c:
+        an += [(("src", c["gold_at"] - 1.7), "to", f"#{P('veins')} .v", {"strokeDashoffset": 0, "duration": 1.2, "ease": "power2.out", "stagger": 0.25}),
+               (_src(c, "gold_at"), "slide-in", f"#{P('l2')}", {})]
+    an += [(("src", fly - 0.3), "to", f"#{P('l1')}, #{P('l2')}, #{P('k1')}", {"opacity": 0, "duration": 0.3}),
+           (("src", fly - 0.15), "to", f"#{P('k2')}", {"opacity": 1, "duration": 0.35}),
+           (("src", fly - 0.3), "tween", f"#{P('earth')}", {"from": {"opacity": 0, "y": 160}, "to": {"opacity": 1, "y": 0, "duration": 0.9, "ease": "power3.out"}}),
+           (("src", fly), "to", f"#{P('tail')}", {"opacity": 1, "duration": 0.4}),
+           (("src", fly), "to", f"#{P('ast')}", {"x": -390, "duration": 3.7, "ease": "power1.inOut"}),
+           (("src", fly), "to", f"#{P('ast')}", {"y": 98, "duration": 3.7, "ease": "power2.in"}),
+           (("src", fly), "to", f"#{P('rock')}", {"scale": 0.62, "svgOrigin": "0 0", "duration": 3.7, "ease": "power1.in"}),
+           (("src", fly + 3.5), "to", f"#{P('tail')}", {"opacity": 0, "duration": 0.25}),
+           (("src", fly + 3.7), "tween", f"#{P('glow')}", {"from": {"opacity": 0, "scale": 0.2, "svgOrigin": "0 0"}, "to": {"opacity": 1, "scale": 1.6, "duration": 0.6, "ease": "power2.out"}}),
+           (("src", fly + 3.7), "tween", f"#{P('ring')}", {"from": {"opacity": 0.95, "scale": 0.5, "svgOrigin": "0 0"}, "to": {"opacity": 0, "scale": 4.2, "duration": 1.1, "ease": "power2.out", "immediateRender": False}}),
+           (("src", fly + 3.75), "scale-pop", f"#{P('l3')}", {})]
+    return body, an
+
+
+def supply_card(c, cid):
+    """More supply -> less value: a stack of gold bars, a second stack (xN), then a value meter that drops.
+    Keys: kicker, factor (e.g. "×2"), factor_label, more_at, value_kicker, value_at, drop_at, drop_to (0-1),
+    drop_mark (e.g. "½"), drop_label; times = source."""
+    P = lambda x: f"{cid}-{x}"  # noqa: E731
+    ingot = lambda x, y: f'<use href="#{P("ing")}" x="{x}" y="{y}"/>'  # noqa: E731
+    pile = ingot(0, 68) + ingot(104, 68) + ingot(52, 34)
+    body = f"""<svg viewBox="0 0 968 420" xmlns="http://www.w3.org/2000/svg"><defs>
+<linearGradient id="{P('bar')}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#FFE08A"/><stop offset="0.5" stop-color="#F5B71F"/><stop offset="1" stop-color="#B57A06"/></linearGradient>
+<g id="{P('ing')}"><path d="M10,0 L90,0 L100,34 L0,34 Z" fill="url(#{P('bar')})" stroke="#8A5A00" stroke-width="2"/><path d="M14,4 L86,4" stroke="#FFF3C4" stroke-width="3" opacity="0.8"/></g>
+<marker id="{P('ah')}" markerWidth="10" markerHeight="10" refX="5" refY="5" orient="auto"><path d="M0,0 L10,5 L0,10 Z" fill="#F5B71F"/></marker></defs>
+<g transform="translate(736,96)"><g id="{P('pa')}">{pile}</g></g>
+<g transform="translate(520,96)"><g id="{P('pb')}">{pile}</g></g>
+<path id="{P('arrow')}" d="M500,150 L425,150" stroke="#F5B71F" stroke-width="8" stroke-linecap="round" marker-end="url(#{P('ah')})" stroke-dasharray="80" stroke-dashoffset="80"/></svg>
+<div class="kick" style="right:40px">{text(c.get("kicker", ""))}</div>
+<div class="big" id="{P('x')}" style="right:56px;top:214px;font-size:96px;color:var(--accent-0)">{text(c.get("factor", "×2"))}</div>
+<div class="lbl" id="{P('xl')}" style="right:236px;top:236px">{text(c.get("factor_label", ""))}</div>
+<div class="kick" id="{P('k2')}" style="left:110px;opacity:0">{text(c.get("value_kicker", ""))}</div>
+<div class="meter" id="{P('m')}"><div class="fill" id="{P('f')}"></div><div class="half"></div></div>
+<div class="big" id="{P('h')}" style="left:262px;top:104px;font-size:110px;color:#FF5A5F">{text(c.get("drop_mark", "½"))}</div>
+<div class="lbl" id="{P('hl')}" style="left:262px;top:236px">{text(c.get("drop_label", ""))}</div>"""
+    drop = c.get("drop_to", 0.5)
+    an = [(0.25, "tween", f"#{P('pa')}", {"from": {"opacity": 0, "y": 30}, "to": {"opacity": 1, "y": 0, "duration": 0.45, "ease": "back.out(1.6)"}}),
+          (_src(c, "more_at"), "tween", f"#{P('pb')}", {"from": {"opacity": 0, "x": 200}, "to": {"opacity": 1, "x": 0, "duration": 0.55, "ease": "power3.out"}}),
+          (_src(c, "more_at"), "scale-pop", f"#{P('x')}", {}),
+          (("src", c["more_at"] + 0.3), "slide-in", f"#{P('xl')}", {}),
+          (("src", c["value_at"] - 0.4), "to", f"#{P('arrow')}", {"strokeDashoffset": 0, "duration": 0.5, "ease": "power2.out"}),
+          (_src(c, "value_at"), "to", f"#{P('k2')}", {"opacity": 1, "duration": 0.4}),
+          (_src(c, "value_at"), "tween", f"#{P('m')}", {"from": {"opacity": 0, "y": 20}, "to": {"opacity": 1, "y": 0, "duration": 0.4}}),
+          (_src(c, "value_at"), "tween", f"#{P('f')}", {"from": {"height": "0%"}, "to": {"height": "100%", "duration": 0.7, "ease": "power2.out"}}),
+          (_src(c, "drop_at"), "to", f"#{P('f')}", {"height": f"{round(drop * 100)}%", "background": "linear-gradient(to top,#8E1F23,#FF5A5F)", "duration": 0.9, "ease": "power3.inOut"}),
+          (("src", c["drop_at"] + 0.3), "scale-pop", f"#{P('h')}", {}),
+          (("src", c["drop_at"] + 0.5), "fade-in", f"#{P('hl')}", {})]
     return body, an
 
 
@@ -198,6 +316,10 @@ def gsap(kind, sel, t, p):
     if kind == "count":
         return (f"(function(){{const o={{v:0}};tl.to(o,{{v:{p['to']},duration:0.9,ease:'power2.out',onUpdate:function(){{"
                 f"const el=document.querySelector('{sel}');if(el)el.textContent=__fmt(o.v);}}}},{t});}})();")
+    if kind == "tween":
+        return f"tl.fromTo('{sel}',{json.dumps(p['from'], ensure_ascii=False)},{json.dumps(p['to'], ensure_ascii=False)},{t});"
+    if kind == "to":
+        return f"tl.to('{sel}',{json.dumps(p, ensure_ascii=False)},{t});"
     raise ValueError(kind)
 
 
@@ -215,6 +337,10 @@ def build(cfg):
         if b_start < a_end:
             raise ValueError(f"cards {a_id} and {b_id} overlap")
 
+    overlay = cfg.get("layout") == "overlay"
+    band = PANEL_BAND if overlay else BAND
+    host_from = "{opacity:0,y:-24,scale:%.2f}" % (PANEL_SCALE - 0.04) if overlay else "{opacity:0,y:30}"
+    host_to = "{opacity:1,y:0,scale:%.2f,duration:0.45,ease:'power3.out'}" % PANEL_SCALE if overlay else "{opacity:1,y:0,duration:0.4,ease:'power2.out'}"
     js = ["const tl=window.gsap.timeline({paused:true});",
           "window.__fmt=function(v){return String(Math.round(v));};"]
     hosts, files = [], {}
@@ -222,10 +348,10 @@ def build(cfg):
         body, an = card_body(c, cid)
         files[cid] = card_html(cid, c["type"], body)
         hosts.append(f'<div class="card-host clip" id="card-{cid}" data-card-id="{cid}" data-start="{s:.4f}" '
-                     f'data-duration="{e - s:.4f}" data-track-index="2" style="{BAND};visibility:hidden;opacity:0;">\n{files[cid]}</div>')
+                     f'data-duration="{e - s:.4f}" data-track-index="2" style="{band};visibility:hidden;opacity:0;">\n{files[cid]}</div>')
         host = f".card-host[data-card-id=\"{cid}\"]"
         js.append(f"tl.set('{host}',{{visibility:'visible'}},{s});")
-        js.append(f"tl.fromTo('{host}',{{opacity:0,y:30}},{{opacity:1,y:0,duration:0.4,ease:'power2.out'}},{s});")
+        js.append(f"tl.fromTo('{host}',{host_from},{host_to},{s});")
         for when, kind, el, p in an:
             t = tl.q(tl.map(when[1])) if isinstance(when, tuple) else tl.q(s + when)
             t = min(max(t, s), e)
@@ -234,7 +360,7 @@ def build(cfg):
             js.append(f"tl.to('{host}',{{opacity:0,duration:0.3,ease:'power2.in'}},{tl.q(e - 0.3)});")
             js.append(f"tl.set('{host}',{{visibility:'hidden'}},{e});")
 
-    caps = close_gaps([(tl.map(a), tl.map(b), t) for a, b, t in cfg["captions"]])
+    caps = close_gaps([(tl.map(a), tl.map(b), t) for a, b, t in cfg.get("captions", [])])
     capdivs = [f'<div class="cap clip" id="cap-{i}" data-start="{tl.q(s):.4f}" data-duration="{tl.q(e) - tl.q(s):.4f}" '
                f'data-track-index="3"><span dir="rtl">{text(t)}</span></div>' for i, (s, e, t) in enumerate(caps)]
 
@@ -254,20 +380,20 @@ def build(cfg):
 @font-face{{font-family:'Heebo ExtraBold';src:url('fonts/Heebo-ExtraBold.woff2') format('woff2');font-display:block}}
 @font-face{{font-family:'Heebo Black';src:url('fonts/Heebo-Black.woff2') format('woff2');font-display:block}}
 @font-face{{font-family:'Heebo SemiBold';src:url('fonts/Heebo-SemiBold.woff2') format('woff2');font-display:block}}
-:root{{--bg:#070908;--text:#ffffff;--accent-0:{EMERALD};--accent-1:#E8F5EE;--accent-2:#9AA6A0;--accent-3:#0E5C3F;--accent-4:#C9D6CF}}
+:root{{--bg:#070908;--text:#ffffff;--accent-0:{ACCENT};--accent-1:#E8F5EE;--accent-2:#9AA6A0;--accent-3:#7A5A0E;--accent-4:#C9D6CF}}
 *{{box-sizing:border-box}}
 html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#070908;font-family:'Heebo ExtraBold','Heebo Black',sans-serif}}
 #stage{{position:relative;width:100%;height:100%;overflow:hidden;background:#070908}}
-.video-wrapper{{position:absolute;left:0;top:0;width:1080px;height:1216px;overflow:hidden}}
+.video-wrapper{{position:absolute;left:0;top:0;width:1080px;height:{1920 if overlay else 1216}px;overflow:hidden}}
 .video-wrapper video{{width:100%;height:100%;object-fit:cover}}
 #topfade{{position:absolute;left:0;top:0;width:1080px;height:380px;background:linear-gradient(to bottom,rgba(7,9,8,0.75),rgba(7,9,8,0))}}
 #fade{{position:absolute;left:0;top:936px;width:1080px;height:280px;background:linear-gradient(to bottom,rgba(7,9,8,0),rgba(7,9,8,1))}}
 #logo{{position:absolute;left:56px;top:150px;width:210px;height:auto;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.6))}}
-#name-tag{{position:absolute;right:56px;top:170px;font-family:'Heebo ExtraBold',sans-serif;font-size:34px;color:#06100B;background:{EMERALD};padding:8px 22px;border-radius:999px;opacity:0}}
+#name-tag{{position:absolute;right:56px;top:170px;font-family:'Heebo ExtraBold',sans-serif;font-size:34px;color:#06100B;background:{ACCENT};padding:8px 22px;border-radius:999px;opacity:0}}
 .card-host{{position:absolute;pointer-events:none;overflow:hidden}}
 .card-host .card{{position:relative;width:100%;height:100%;overflow:hidden}}
 .cap{{position:absolute;left:56px;top:1010px;width:860px;height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Heebo ExtraBold',sans-serif;font-size:60px;line-height:1.15;color:#fff;text-shadow:0 3px 0 #000,0 0 18px rgba(0,0,0,0.85)}}
-.cap .em{{color:{EMERALD}}}
+.cap .em{{color:{ACCENT}}}
 </style>
 </head>
 <body>
@@ -275,9 +401,8 @@ html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
 <div class="video-wrapper" id="video-wrap">
 <video id="bg-video" src="input-video.mp4" playsinline data-has-audio="true" data-start="0" data-duration="{D:.4f}" data-track-index="1"></video>
 </div>
-<div id="fade"></div>
-<div id="topfade"></div>
-<img id="logo" src="logo.png" alt="אחים להשקעות" />
+{'' if overlay else '<div id="fade"></div>' + chr(10) + '<div id="topfade"></div>'}
+{'' if overlay else '<img id="logo" src="logo.png" alt="אחים להשקעות" />'}
 {tag}
 {chr(10).join(hosts)}
 {chr(10).join(capdivs)}
@@ -302,9 +427,9 @@ html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:
             cur += d
     storyboard = {"schemaVersion": 3,
                   "composition": {"fps": fps, "width": 1080, "height": 1920, "durationSeconds": D,
-                                  "layout": "portrait", "themeId": "investing-bros-emerald", "seed": 6},
+                                  "layout": "portrait", "themeId": "investing-bros-gold", "seed": 6},
                   "videoTrack": {"sourcePath": "input-video.mp4", "startSec": 0, "endSec": D,
-                                 "bounds": {"x": 0, "y": 0, "width": 1080, "height": 1216}},
+                                 "bounds": {"x": 0, "y": 0, "width": 1080, "height": 1920 if overlay else 1216}},
                   "subtitles": {"enabled": True},
                   "cards": [{"id": cid, "type": c["type"], "startSec": s, "endSec": e, "zone": "lower-third", "accentIndex": 0}
                             for cid, c, s, e in cards]}
@@ -333,7 +458,7 @@ def main() -> int:
     json.dump(sb, open(os.path.join(a.project, "storyboard.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(words, open(os.path.join(a.project, "transcript.json"), "w", encoding="utf-8"), ensure_ascii=False)
     print(f"{cfg['name']}: {sb['composition']['durationSeconds']:.2f} s, {len(files)} card(s), "
-          f"{len(cfg['captions'])} caption(s) -> {pub}/index.html")
+          f"{len(cfg.get('captions', []))} caption(s) -> {pub}/index.html")
     return 0
 
 

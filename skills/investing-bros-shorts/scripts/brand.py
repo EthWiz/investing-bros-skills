@@ -20,10 +20,11 @@ folder to the ass filter with fontsdir=.
 """
 import sys
 
-# Palette (from the dark show cover: black, emerald, white).
+# Palette (from the navy/gold show cover; investing-bros-show -> Brand).
 BLACK = (7, 9, 8)
-EMERALD = (31, 191, 122)          # #1FBF7A — bright enough for text on video
-EMERALD_DEEP = (14, 92, 63)       # glows/bands
+ACCENT = (245, 183, 31)           # house accent gold #F5B71F — key words, rules, pills
+ACCENT_DEEP = (122, 90, 14)       # bands
+NAVY_GLOW = (10, 22, 48)          # background glow behind the logo
 WHITE = (255, 255, 255)
 
 
@@ -102,7 +103,7 @@ def extract_logo(cover_path: str, out_path: str, box=LOGO_BOXES["navy"], min_spe
     for y, x in _drop_specks(alpha > 0.15, min_speck):
         alpha[y, x] = 0
     green = a[:, :, 1] > a[:, :, 0] + 15
-    a[green] = np.clip(a[green] * 1.35, 0, 255)      # lift an emerald wordmark for screens
+    a[green] = np.clip(a[green] * 1.35, 0, 255)      # lift an emerald wordmark (old dark cover) for screens
     logo = Image.fromarray(np.dstack([a, alpha * 255]).astype(np.uint8), "RGBA")
     logo.crop(logo.getbbox()).save(out_path)
 
@@ -130,27 +131,27 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
         L = VERTICAL
         w, h = L["size"]
         base = np.zeros((h, w, 3), np.float32) + np.array(BLACK, np.float32)
-        base += _glow((w, h), (540, 250), (620, 260), (8, 48, 30))
-        base += _glow((w, h), (540, 1800), (700, 200), (4, 26, 16))
+        base += _glow((w, h), (540, 250), (620, 260), NAVY_GLOW)
+        base += _glow((w, h), (540, 1800), (700, 200), (5, 11, 24))
         img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8))
         logo = fit_logo(Image.open(logo_path), L["logo_w"], LOGO_MAX_H["vertical"])
         img.paste(logo, ((w - logo.width) // 2, L["logo_y"]), logo)
         d = ImageDraw.Draw(img)
         vy, vh = L["video_y"], 1215
-        d.rectangle([0, vy - 4, w, vy - 1], fill=EMERALD)
-        d.rectangle([0, vy + vh, w, vy + vh + 3], fill=EMERALD)
+        d.rectangle([0, vy - 4, w, vy - 1], fill=ACCENT)
+        d.rectangle([0, vy + vh, w, vy + vh + 3], fill=ACCENT)
     elif kind in ("panel-left", "panel-right"):
         L = PANEL
         w, h = L["size"]
         cx = 480 if kind == "panel-left" else 1440
         base = np.zeros((h, w, 3), np.float32) + np.array(BLACK, np.float32)
-        base += _glow((w, h), (cx, 430), (520, 430), (8, 52, 32))
+        base += _glow((w, h), (cx, 430), (520, 430), NAVY_GLOW)
         img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8))
         logo = fit_logo(Image.open(logo_path), L["logo_w"], LOGO_MAX_H["panel"])
         img.paste(logo, (cx - logo.width // 2, L["logo_y"]), logo)
         d = ImageDraw.Draw(img)
-        d.rectangle([958, 0, 961, h], fill=EMERALD)
-        d.rectangle([cx - 60, 340, cx + 60, 343], fill=EMERALD)
+        d.rectangle([958, 0, 961, h], fill=ACCENT)
+        d.rectangle([cx - 60, 340, cx + 60, 343], fill=ACCENT)
     else:
         raise ValueError(f"unknown frame kind {kind}")
     img.save(out_path)

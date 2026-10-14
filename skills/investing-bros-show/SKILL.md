@@ -71,7 +71,7 @@ The episode root holds **only** the three files above plus the three subfolders.
 
 ## Brand (video and graphics)
 - **Show cover:** `אחים להשקעות/Media Resources/אחים-להשקעות-cover-1400.jpg` — navy and gold, 1400×1400. The old dark cover (`אחים להשקעות - קאבר מקצועי 3 - כהה.jpg`) is retired and not in Drive.
-- **Palette:** navy, gold and white, from that cover. **House accent: gold `#F5B71F`** (decided 2026-10-14). The render scripts still use emerald `#1FBF7A` until the house-style PR moves them over; don't mix the two in one short.
+- **Palette:** navy, gold and white, from that cover. **House accent: gold `#F5B71F`** (decided 2026-10-14), used by every render script (shorts, covers, teasers, HyperFrames cards). Emerald `#1FBF7A` is retired.
 - **Logo:** the two-line wordmark — white `אחים` over gold `להשקעות` — cut from that cover with `brand.py logo` (shorts/teaser; the navy cover is the default box, stray stars are removed). Don't redraw or recolour it.
 - **Font:** Heebo, as static weights (SemiBold / ExtraBold / Black via `brand.py fonts`) — libass draws the variable font thin.
 - **Intro clip:** `אחים להשקעות/Media Resources/אינטרו - אחים להשקעות.mp4` — 6 s, stereo music; ends with `עם אמתי ונדב רסקין`. Square and 16:9 versions sit beside it (`investing-bros-intro-square_1.mp4`, `investing-bros-intro-16x9_1.mp4`).

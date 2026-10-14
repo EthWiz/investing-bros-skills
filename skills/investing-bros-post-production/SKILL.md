@@ -26,6 +26,8 @@ This skill covers the core edit only. Promo material is separate:
 - Tools: `ffmpeg`, Python 3 with numpy, `faster-whisper` (`pip install faster-whisper`). If Hugging Face is blocked, `sherpa-onnx` + `soundfile` (models come from GitHub releases; see step 4).
 - Long jobs: if your shell has a per-command time limit (some agent sandboxes kill commands after ~3 min and don't keep background jobs), use the resumable / chunked options below instead of one long ffmpeg run.
 
+- **For shorts in the house style:** also download each host's own video track from Riverside (Individual tracks, highest resolution recorded — 4K if available) and file them in `extras/` as `track-amitai.mp4` / `track-nadav.mp4`. The side-by-side export only has ~600 px of width per face once cropped to 9:16, so full-screen shorts look soft; `build_fullbleed.py` takes the tracks through `sources` + `crop`.
+
 ## Steps (order matters)
 
 ### 1. Fetch the parts

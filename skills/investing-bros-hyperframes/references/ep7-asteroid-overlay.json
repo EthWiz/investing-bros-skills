@@ -1,0 +1,42 @@
+{
+ "name": "ep7_asteroid_overlay",
+ "fps": 24,
+ "layout": "overlay",
+ "pieces": [
+  [
+   2106.02,
+   2154.45
+  ]
+ ],
+ "_note": "input-video.mp4 = the finished build_fullbleed.py render of the same pieces (captions, logo and end card burned in)",
+ "cards": [
+  {
+   "type": "fly",
+   "start": 2118.9,
+   "end": 2135.95,
+   "kicker": "אסטרואידים בחלל",
+   "metal_at": 2121.25,
+   "metal_label": "רובם מתכת",
+   "gold_at": 2124.7,
+   "gold_label": "חלק גדול — זהב",
+   "fly_at": 2130.9,
+   "fly_kicker": "להנחית אסטרואיד",
+   "land_label": "בכדור הארץ"
+  },
+  {
+   "type": "supply",
+   "start": 2136.05,
+   "end": 2147.0,
+   "kicker": "כמות הזהב בעולם",
+   "factor": "×2",
+   "factor_label": "יותר מלהכפיל",
+   "more_at": 2137.3,
+   "value_kicker": "הערך של הזהב",
+   "value_at": 2140.4,
+   "drop_at": 2142.0,
+   "drop_to": 0.5,
+   "drop_mark": "½",
+   "drop_label": "ערכו בחצי"
+  }
+ ]
+}

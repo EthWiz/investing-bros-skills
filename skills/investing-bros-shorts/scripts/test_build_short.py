@@ -45,7 +45,7 @@ def test_ass_has_headline_endcard_tag_and_captions():
     ass, cards = build_ass(CFG, tl)
     assert ass.count("Dialogue: 0,") == 3
     assert ",Head," in ass and ",End," in ass and ",Tag," in ass
-    assert "\\c&H7ABF1F&" in ass                      # emerald highlight
+    assert "\\c&H1FB7F5&" in ass                      # emerald highlight
     assert "⁦use cases⁩" in ass             # English isolated inside Hebrew
     for line in ass.splitlines():
         if line.startswith("Style:"):

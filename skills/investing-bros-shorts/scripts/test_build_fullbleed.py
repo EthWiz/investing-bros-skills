@@ -31,3 +31,17 @@ def test_ass_highlights_one_word_at_a_time_in_gold_rtl():
     assert not any("}" in re.sub(r"\{[^}]*\}", "", l.split(",,", 1)[1]) for l in caps)   # no stray braces on screen
     assert all(l.endswith(",-1") for l in ass.splitlines() if l.startswith("Style:"))
     assert "לפרק המלא" in ass and "\\p1}m 0 0" in ass                  # end card with dim
+
+
+def test_reaction_cut_and_high_res_tracks():
+    cfg = dict(CFG, base="R", shots=[[2140.0, 2141.5, "L"]], sources={"L": "amitai.mp4", "R": "nadav.mp4"},
+               crop={"L": [656, 0, 1215, 2160]}, audio_source="raw.mp4", pieces=[[2106.02, 2154.45, 0.0]])
+    cmd = build_command(cfg, _tl())
+    assert cmd.count(" -i ") == 5                                       # 3 videos/audio + gradient + logo
+    assert "crop=1215:2160:656:0" in cmd and "crop=608:1080:1130:0" in cmd
+    assert "enable='between(t,34.000,35.500)'" in cmd                   # 2140.0 - 2106.0
+
+
+def test_tags_in_gold_box():
+    ass = build_ass(dict(CFG, tags=[[2106.05, 2109.5, "נדב רסקין"]]), _tl(), CHUNKS)
+    assert any(",Tag," in l and "נדב רסקין" in l for l in ass.splitlines())

@@ -39,7 +39,7 @@ def test_example_builds_a_valid_composition():
     hosts = re.findall(r'<div class="card-host clip" id="card-[^"]+" data-card-id="([^"]+)"', index)
     assert hosts == ["c1", "c2", "c3", "c4", "c5", "end"]          # every card host has clip class + id
     assert "window.__timelines['talking-head-recut']=tl" in index
-    assert "http://" not in index and "https://" not in index        # renderer must not fetch anything
+    assert "https://" not in index and "http://" not in index.replace("http://www.w3.org/2000/svg", "")  # nothing fetched
     for cid, h in files.items():                                    # card CSS is scoped
         for rule in re.findall(r"^([^{\n]+)\{", h.split("<style>")[1].split("</style>")[0], re.M):
             assert rule.startswith(f'.card[data-card-id="{cid}"]')
@@ -78,3 +78,15 @@ def test_input_command_forces_stereo_output(audio_source):
         cfg["audio_source"] = audio_source
     af = build_command(cfg).split("-filter_complex")[1]
     assert "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a]" in af
+
+
+def test_overlay_layout_with_fly_and_supply_cards():
+    cfg = json.load(open(os.path.join(HERE, "..", "references", "ep7-asteroid-overlay.json"), encoding="utf-8"))
+    index, files, sb, _ = build(cfg)
+    assert set(files) == {"c1", "c2"}
+    assert 'height:1920px' in index and 'id="logo"' not in index         # full-screen input already has the logo
+    assert "top:262px" in index and "scale:0.74" in index                 # compact top panel, eyes clear
+    assert "#c1-ast" in index and "strokeDashoffset" in index and "#c2-f" in index
+    assert "http://www.w3.org/2000/svg" in index                          # only the SVG namespace, nothing fetched
+    assert "https://" not in index
+    assert sb["videoTrack"]["bounds"]["height"] == 1920
