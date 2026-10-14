@@ -71,6 +71,21 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - **Video (`.mp4`)** — too large for the connector. Upload through the browser into `promo/` (signed in as the Drive upload account from `investing-bros-show`). The agent browser's file upload takes ≤10 MB per call, so first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
    - Check: list `promo/` and confirm every short has its `.mp4` and `-cover.jpg` (and `.srt`), none empty.
 
+## House style and helper scripts (from episode 7)
+The default look is now the **full-screen style**: the speaking host fills the 9:16 frame, captions appear 2–3 words at a time with the spoken word in gold `#F5B71F`, punch-in zooms on new ideas, a hook title for the first ~2.7 s, the logo top-left, and a darkened end card. The split-frame `build_short.py` render stays available.
+
+| Step | Script | Notes |
+|---|---|---|
+| Get the raw video | `drive.sh get FILE_ID DIR` | rclone remote `show` signed in as the bot account; until that exists, ask Amitai to copy the file into Downloads |
+| Snap cuts to pauses | `find_cuts.py WINDOW.wav --offset T0 --at t1 t2…` | flags cuts with no real pause |
+| Word timings for the picked windows only | `transcribe_clip.py WINDOW.wav --offset T0 --from a --to b --model small.pt` | never the whole episode; install notes in `investing-bros-show` → references/environment.md |
+| Time the proofread captions word by word | `align_words.py short.json words.json -o aligned.json` | `cards` stay the proofread text |
+| Render the house style | `build_fullbleed.py short.json` then `bash NAME_fb.sh` | worked example: [references/ep7-asteroid-fullbleed.json](references/ep7-asteroid-fullbleed.json); its output is also the input for a HyperFrames overlay |
+| Upload to Drive | `drive.sh put FILE PROMO_FOLDER_ID` | |
+| Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
+
+Pick `crop_x` per host so the face is centred (look at one frame). Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
+
 ## Hand back
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 

@@ -68,6 +68,9 @@ For a punchline, a story or a quick reaction clip, the plain `investing-bros-sho
    Drop `PRODUCER_BROWSER_GPU_MODE=hardware` on machines without a GPU. Episode 6 (47 s, 2 cores, software GL): ~3 minutes. Shells with a time limit: start it in the background and poll its log.
 6. **Check the export**: duration = the clip's; `ffmpeg -i output.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak ≤ −1 dB; frames at each card's key moment; listen to every cut.
 
+## Full-screen overlay (house style, episode 7)
+For the house style, the base video comes from `investing-bros-shorts` → `build_fullbleed.py` (full-screen host, word-by-word captions, logo). HyperFrames then adds only 1–2 animated panels in a compact top panel (left 56, top 262, 968×420 scaled to 0.74 so the host's eyes stay clear). `build_composition.py` doesn't generate this layout yet: until it does, propose it as a PR rather than hand-writing `index.html` (Never). The episode 7 page (asteroid → lands on Earth; gold supply ×2 → value ½) is the model for the two new card types.
+
 ## Hand back
 Make the short's cover and upload short + cover + `.srt` exactly as `investing-bros-shorts` steps 6–7 (sized cover, sub-10 MB upload copy, `promo/` naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
 
