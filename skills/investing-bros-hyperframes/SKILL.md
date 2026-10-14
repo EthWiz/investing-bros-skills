@@ -75,4 +75,5 @@ Make the short's cover and upload short + cover + `.srt` exactly as `investing-b
 - Put a number, name or claim on a card that the hosts didn't say.
 - Cut, reorder or speed up the footage inside HyperFrames — edits belong in `make_input.py`, where the cuts are at pauses and the sound is levelled.
 - Load fonts, scripts or images from a URL in the composition.
-- Post anywhere — Amitai posts.
+- Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
+- Hand-write a composition (`index.html`) or card. New layouts and card types go into `build_composition.py` through a PR; follow the working rules in `investing-bros-show`.

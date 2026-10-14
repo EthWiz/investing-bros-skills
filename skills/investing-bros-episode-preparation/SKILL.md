@@ -51,3 +51,4 @@ Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחי
 - Invent numbers, quotes or events.
 - Drive WhatsApp Web yourself.
 - Create a second show root or a second folder for the same episode.
+- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.

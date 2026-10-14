@@ -4,6 +4,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 
 ## Using the skills
 - Always load `skills/investing-bros-show/SKILL.md` — shared facts, naming, Drive tree, roles, accounts and WhatsApp rules.
+- Follow its **Working rules**: run the skill's scripts — don't write your own render, caption, animation, download or upload code. If a script can't do what's needed, stop, say what's missing and propose the change as a PR. Environment limits (Drive connector, Amitai's Mac, network) are in `skills/investing-bros-show/references/environment.md`.
 - Then load the one skill for the task:
 
 | Task | Skill |

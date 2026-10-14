@@ -56,7 +56,8 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 Upload to the episode's `promo/` folder. Send Amitai the link with each teaser's length, the moments used (episode time + opening words), any cuts inside a moment, and any words you couldn't verify.
 
 ## Never
-- Post anywhere — Amitai posts.
+- Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice lines so a host seems to say something he didn't, or cut a caveat to make a line punchier.
 - Add music or stock footage unless Amitai supplies it.
+- Write your own render, caption, download or upload code, or work around a missing feature without saying so — follow the working rules in `investing-bros-show`.

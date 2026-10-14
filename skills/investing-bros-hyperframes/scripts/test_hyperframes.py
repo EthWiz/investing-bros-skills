@@ -68,3 +68,13 @@ def test_input_command_without_levelled_audio_applies_gain():
     cfg = {"name": "t", "fps": 24, "source": "raw.mp4", "pieces": [[1, 12, 16.5]]}
     cmd = build_command(cfg)
     assert "volume=16.5dB" in cmd and "loudnorm=I=-14" in cmd
+
+
+@pytest.mark.parametrize("audio_source", ["lev.wav", None])
+def test_input_command_forces_stereo_output(audio_source):
+    # mono sources (Riverside AAC) used to fail at aresample -> output; both audio paths must set a layout
+    cfg = {"name": "t", "fps": 24, "source": "raw.mp4", "pieces": [[1, 12]], "shots": [[1, 12, "L"]]}
+    if audio_source:
+        cfg["audio_source"] = audio_source
+    af = build_command(cfg).split("-filter_complex")[1]
+    assert "aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo[a]" in af

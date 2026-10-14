@@ -43,6 +43,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
   /plugin install investing-bros@investing-bros
   ```
   Skills then appear as `investing-bros:<skill-name>`.
+- **Claude app (web/desktop/Cowork)**: the repo is private, so it can't be added as a plugin marketplace there. Upload each skill folder as a ZIP under Customize → Skills (the ZIP's root is the skill folder), starting with `investing-bros-show`; re-upload the changed ones after each merge.
 - **Claude Code, manual**: symlink the folders under `skills/` into `~/.claude/skills/` (personal) or `.claude/skills/` (project). Install all of them — they reference `investing-bros-show`.
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.

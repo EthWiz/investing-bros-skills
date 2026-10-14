@@ -59,3 +59,4 @@ Update this skill when the RedCircle UI path changes.
 - Echo or paste the password.
 - Upload raw or `extras/` audio.
 - Paste Hebrew copy without the RTL + `?` marks.
+- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.

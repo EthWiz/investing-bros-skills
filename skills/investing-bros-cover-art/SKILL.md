@@ -70,3 +70,4 @@ Finished images go to the episode's `promo/` folder.
 - Repeat the video title word for word on the thumbnail.
 - Alter the show logo or draw a new one — leave the corner empty for the real logo.
 - Use images or likenesses you don't have rights to unless Amitai supplies them.
+- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.

@@ -32,8 +32,10 @@ W, H = VERTICAL["size"]
 VY, VH = 290, 1216                        # host picture, higher than in the short so the face sits in the crop square
 ZOOM = 1.15                               # a little tighter than the short: a cover is seen tiny
 SQUARE = (420, 1500)                      # centre 1:1 crop of a 9:16 frame
-HEAD_CENTER_Y = 1290                      # headline block centre (below the face, inside the square)
-PILL_Y = 1450
+PILL_Y = 1440                             # episode pill centre (its box stays inside the square)
+PILL_HALF_H = 51                          # 62 px text + 20 px box border each side
+HEAD_GAP = 40                             # space between the headline's last line and the pill
+LINE_H = 0.95                             # measured: rendered Heebo Black lines, outline included, per font px
 FADE_H = 560                              # dark fade at the bottom of the host picture
 EM = "{\\c&H" + ass_colour(EMERALD)[4:] + "&}"
 WH = "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
@@ -49,9 +51,19 @@ def headline_lines(headline: str):
     return lines
 
 
+def headline_box(n_lines: int):
+    """(size, top, bottom, centre_y) of the headline block. It is placed by its bottom edge,
+    HEAD_GAP above the pill, so a 3-line headline grows upwards instead of into the pill."""
+    size = 118 if n_lines <= 2 else 100
+    height = n_lines * size * LINE_H
+    bottom = PILL_Y - PILL_HALF_H - HEAD_GAP
+    top = bottom - height
+    return size, top, bottom, round((top + bottom) / 2)
+
+
 def build_ass(headline: str, episode) -> str:
     lines = headline_lines(headline)
-    size = 118 if len(lines) <= 2 else 100
+    size, _, _, centre_y = headline_box(len(lines))
     green = ass_colour(EMERALD)
     body = "\\N".join(rtl(x).replace("[", EM).replace("]", WH) for x in lines)
     head = f"""[Script Info]
@@ -68,7 +80,7 @@ Style: Pill,Heebo ExtraBold,62,&H000B1006,&H000B1006,{green},{green},0,0,0,0,100
 
 [Events]
 Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
-Dialogue: 1,0:00:00.00,0:00:05.00,Head,,0,0,0,,{{\\pos({W // 2},{HEAD_CENTER_Y})}}{body}
+Dialogue: 1,0:00:00.00,0:00:05.00,Head,,0,0,0,,{{\\pos({W // 2},{centre_y})}}{body}
 """
     if episode is not None:
         head += f"Dialogue: 1,0:00:00.00,0:00:05.00,Pill,,0,0,0,,{{\\pos({W // 2},{PILL_Y})}}{rtl(f'פרק {episode}')}\n"

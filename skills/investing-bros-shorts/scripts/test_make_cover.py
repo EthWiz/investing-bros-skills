@@ -5,13 +5,21 @@ import sys
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_cover import HEAD_CENTER_Y, PILL_Y, SQUARE, build_ass, build_command, headline_lines  # noqa: E402
+from make_cover import PILL_HALF_H, PILL_Y, SQUARE, build_ass, build_command, headline_box, headline_lines  # noqa: E402
 
 
-def test_headline_and_pill_stay_inside_the_square_crop():
+def test_pill_stays_inside_the_square_crop():
     # the 1:1 profile-grid crop of a 9:16 cover keeps y 420..1500
-    assert SQUARE[0] < HEAD_CENTER_Y - 130 and HEAD_CENTER_Y + 130 < SQUARE[1]
-    assert SQUARE[0] < PILL_Y < SQUARE[1] - 40
+    assert SQUARE[0] < PILL_Y - PILL_HALF_H and PILL_Y + PILL_HALF_H < SQUARE[1]
+
+
+@pytest.mark.parametrize("n_lines", [1, 2, 3])
+def test_headline_sits_above_the_pill_and_inside_the_square(n_lines):
+    # episode 7: a 3-line headline centred at a fixed y ran into the pill
+    size, top, bottom, centre = headline_box(n_lines)
+    assert bottom <= PILL_Y - PILL_HALF_H - 40
+    assert top >= SQUARE[0] + 300               # leaves the face area above it alone
+    assert top < centre < bottom
 
 
 def test_headline_rules():

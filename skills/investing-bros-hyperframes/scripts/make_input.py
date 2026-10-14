@@ -22,6 +22,9 @@ import json
 import os
 import sys
 
+# Riverside exports are often mono AAC; without an explicit output layout ffmpeg fails with
+# "Cannot select channel layout for the link between filters aresample and format_out".
+STEREO = "aformat=sample_fmts=fltp:channel_layouts=stereo"
 X264 = "-c:v libx264 -preset medium -crf 18 -pix_fmt yuv420p"
 CROP = {"L": "crop=iw/2:ih:0:0", "R": "crop=iw/2:ih:iw/2:0"}
 VIDEO_W, VIDEO_H = 1080, 1216     # one half (960x1080) of a 1920x1080 recording, scaled ~1.125x (even height for x264)
@@ -71,10 +74,10 @@ def build_command(cfg) -> str:
     vf = (f"[vc]split[x1][x2];[x1]{CROP[base]},scale={VIDEO_W}:{VIDEO_H}:flags=lanczos[B];"
           f"[x2]{CROP[other]},scale={VIDEO_W}:{VIDEO_H}:flags=lanczos[O];[B][O]overlay=0:0:enable='{en}',fps={fps},format=yuv420p[v];")
     if asrc:
-        af = "[ac]volume=2dB,alimiter=limit=0.89:level=disabled,aresample=48000[a]"   # -16 LUFS episode -> ~-14 for social
+        af = "[ac]volume=2dB,alimiter=limit=0.89:level=disabled,aresample=48000," + STEREO + "[a]"   # -16 LUFS episode -> ~-14 for social
     else:
         af = ("[ac]highpass=f=80,acompressor=threshold=0.06:ratio=2.5:attack=15:release=250:makeup=1.5,"
-              "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000[a]")
+              "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000," + STEREO + "[a]")
     inputs = f'-i "{src}"' + (f' -i "{asrc}"' if asrc else "")
     # -g = fps: every second seekable, otherwise the renderer freezes frames on seek
     return (f'ffmpeg -v error -y {inputs} -filter_complex "{vt}{at}{cat}{vf}{af}" -map "[v]" -map "[a]" '

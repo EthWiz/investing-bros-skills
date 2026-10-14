@@ -4,7 +4,8 @@
 Shared by investing-bros-shorts and investing-bros-teaser (identical copies).
 
 Usage:
-    python3 brand.py logo  COVER.jpg OUT_logo.png      # cut the wordmark out of the dark cover
+    python3 brand.py logo  COVER.jpg OUT_logo.png [--box navy|dark|x0,y0,x1,y1]
+                                                       # cut the wordmark out of the show cover (default: navy cover)
     python3 brand.py fonts HEEBO_VARIABLE.ttf OUT_DIR  # static Heebo SemiBold/ExtraBold/Black
     python3 brand.py frame vertical LOGO.png OUT.png   # 1080x1920 shorts frame
     python3 brand.py frame panel-left LOGO.png OUT.png # 1920x1080 teaser, panel left (host video right)
@@ -52,11 +53,43 @@ PANEL = {
 }
 
 
-def extract_logo(cover_path: str, out_path: str, box=(160 / 900, 635 / 900, 750 / 900, 830 / 900)) -> None:
-    """Cut the 'אחים להשקעות' wordmark out of the dark square cover with a soft alpha.
+# Where the "אחים להשקעות" wordmark sits on each cover, as fractions (x0, y0, x1, y1).
+LOGO_BOXES = {
+    "navy": (0.215, 0.115, 0.785, 0.415),   # current cover: Media Resources/אחים-להשקעות-cover-1400.jpg
+    "dark": (160 / 900, 635 / 900, 750 / 900, 830 / 900),   # retired dark cover
+}
+LOGO_MAX_H = {"vertical": 100, "panel": 160}  # the wordmark is two lines; cap its height, not just its width
 
-    box is (x0, y0, x1, y1) as fractions of the cover; the default fits the dark
-    cover's wordmark. Check the result on black before using it.
+
+def _drop_specks(mask, min_px: int):
+    """Indices of mask pixels that belong to blobs smaller than min_px (stars behind the wordmark)."""
+    import numpy as np
+    h, w = mask.shape
+    seen = np.zeros_like(mask, dtype=bool)
+    small = []
+    for y0, x0 in zip(*np.nonzero(mask)):
+        if seen[y0, x0]:
+            continue
+        stack, blob = [(y0, x0)], []
+        seen[y0, x0] = True
+        while stack:
+            y, x = stack.pop()
+            blob.append((y, x))
+            for yy, xx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= yy < h and 0 <= xx < w and mask[yy, xx] and not seen[yy, xx]:
+                    seen[yy, xx] = True
+                    stack.append((yy, xx))
+        if len(blob) < min_px:
+            small.extend(blob)
+    return small
+
+
+def extract_logo(cover_path: str, out_path: str, box=LOGO_BOXES["navy"], min_speck: int = 400) -> None:
+    """Cut the 'אחים להשקעות' wordmark out of a square show cover with a soft alpha.
+
+    box is (x0, y0, x1, y1) as fractions of the cover (LOGO_BOXES has the known covers).
+    Opaque blobs smaller than min_speck pixels (stars, grain) are removed. Check the
+    result on black before using it.
     """
     import numpy as np
     from PIL import Image
@@ -66,33 +99,19 @@ def extract_logo(cover_path: str, out_path: str, box=(160 / 900, 635 / 900, 750 
     a = np.asarray(crop).astype(np.float32)
     bg = np.median(a[:20, :20].reshape(-1, 3), axis=0)
     alpha = np.clip((np.sqrt(((a - bg) ** 2).sum(axis=2)) - 25) / 35, 0, 1)
+    for y, x in _drop_specks(alpha > 0.15, min_speck):
+        alpha[y, x] = 0
     green = a[:, :, 1] > a[:, :, 0] + 15
-    a[green] = np.clip(a[green] * 1.35, 0, 255)      # lift the emerald line for screens
+    a[green] = np.clip(a[green] * 1.35, 0, 255)      # lift an emerald wordmark for screens
     logo = Image.fromarray(np.dstack([a, alpha * 255]).astype(np.uint8), "RGBA")
     logo.crop(logo.getbbox()).save(out_path)
 
 
-def make_fonts(variable_ttf: str, out_dir: str) -> list:
-    """Write static Heebo SemiBold (600), ExtraBold (800) and Black (900)."""
-    from pathlib import Path
-    from fontTools.ttLib import TTFont
-    from fontTools.varLib import instancer
-    out = []
-    Path(out_dir).mkdir(parents=True, exist_ok=True)
-    for weight, label in ((600, "SemiBold"), (800, "ExtraBold"), (900, "Black")):
-        font = instancer.instantiateVariableFont(TTFont(variable_ttf), {"wght": weight})
-        family = f"Heebo {label}"
-        for rec in font["name"].names:
-            if rec.nameID in (1, 4, 16):
-                rec.string = family
-            elif rec.nameID in (2, 17):
-                rec.string = "Regular"
-            elif rec.nameID == 6:
-                rec.string = family.replace(" ", "") + "-Regular"
-        path = f"{out_dir}/Heebo-{label}.ttf"
-        font.save(path)
-        out.append(path)
-    return out
+def fit_logo(logo, max_w: int, max_h: int):
+    """Scale the wordmark to fit max_w x max_h, keeping its aspect ratio."""
+    from PIL import Image
+    k = min(max_w / logo.width, max_h / logo.height)
+    return logo.resize((max(1, round(logo.width * k)), max(1, round(logo.height * k))), Image.LANCZOS)
 
 
 def _glow(size, centre, radius, colour):
@@ -114,10 +133,8 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
         base += _glow((w, h), (540, 250), (620, 260), (8, 48, 30))
         base += _glow((w, h), (540, 1800), (700, 200), (4, 26, 16))
         img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8))
-        logo = Image.open(logo_path)
-        lw = L["logo_w"]
-        logo = logo.resize((lw, int(logo.height * lw / logo.width)), Image.LANCZOS)
-        img.paste(logo, ((w - lw) // 2, L["logo_y"]), logo)
+        logo = fit_logo(Image.open(logo_path), L["logo_w"], LOGO_MAX_H["vertical"])
+        img.paste(logo, ((w - logo.width) // 2, L["logo_y"]), logo)
         d = ImageDraw.Draw(img)
         vy, vh = L["video_y"], 1215
         d.rectangle([0, vy - 4, w, vy - 1], fill=EMERALD)
@@ -129,10 +146,8 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
         base = np.zeros((h, w, 3), np.float32) + np.array(BLACK, np.float32)
         base += _glow((w, h), (cx, 430), (520, 430), (8, 52, 32))
         img = Image.fromarray(np.clip(base, 0, 255).astype(np.uint8))
-        logo = Image.open(logo_path)
-        lw = L["logo_w"]
-        logo = logo.resize((lw, int(logo.height * lw / logo.width)), Image.LANCZOS)
-        img.paste(logo, (cx - lw // 2, L["logo_y"]), logo)
+        logo = fit_logo(Image.open(logo_path), L["logo_w"], LOGO_MAX_H["panel"])
+        img.paste(logo, (cx - logo.width // 2, L["logo_y"]), logo)
         d = ImageDraw.Draw(img)
         d.rectangle([958, 0, 961, h], fill=EMERALD)
         d.rectangle([cx - 60, 340, cx + 60, 343], fill=EMERALD)
@@ -143,7 +158,10 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
 
 def main(argv) -> int:
     if len(argv) >= 3 and argv[0] == "logo":
-        extract_logo(argv[1], argv[2])
+        box = LOGO_BOXES["navy"]
+        if len(argv) >= 5 and argv[3] == "--box":
+            box = LOGO_BOXES[argv[4]] if argv[4] in LOGO_BOXES else tuple(float(v) for v in argv[4].split(","))
+        extract_logo(argv[1], argv[2], box)
     elif len(argv) >= 3 and argv[0] == "fonts":
         print("\n".join(make_fonts(argv[1], argv[2])))
     elif len(argv) >= 4 and argv[0] == "frame":

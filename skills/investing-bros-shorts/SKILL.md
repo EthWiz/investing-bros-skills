@@ -21,7 +21,7 @@ After post-production for episode N when Amitai asks for shorts — and every ti
 From the episode's `extras/` folder:
 - `segments.json` — the transcript
 - the raw master — `.mp4` if the recording has video, otherwise `.m4a`
-- the dark show cover (for the logo) and Heebo (`Heebo[wght].ttf` from google/fonts)
+- the show cover (for the logo; location in `investing-bros-show`) and Heebo (`Heebo[wght].ttf` from google/fonts — fallback in `investing-bros-show` → references/environment.md)
 
 For audio-only recordings, also the show cover (location in `investing-bros-show`).
 
@@ -36,7 +36,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 2. **Find exact cut points.** Whisper segment times are only approximate. For every in/out point, look at the audio energy (20 ms frames) for the pause between words and cut inside it; re-transcribe a 1–3 s window around the point if unsure (whisper drops the last word of a window — give it ~1 s of tail). Never cut mid-word. Inside a clip you may drop a filler stretch, dead air or a phrase you can't make out — **only** if the sentence still says the same thing. Never drop a caveat or disclaimer to make a line punchier.
 3. **Brand assets** (once per episode):
    ```bash
-   python3 scripts/brand.py logo "<dark cover>.jpg" logo.png      # check it on black
+   python3 scripts/brand.py logo "<show cover>.jpg" logo.png      # cover location in investing-bros-show; check the logo on black
    python3 scripts/brand.py fonts Heebo[wght].ttf fonts/
    python3 scripts/brand.py frame vertical logo.png frame_vertical.png
    ```
@@ -75,9 +75,11 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 Send Amitai the `promo/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
 ## Never
-- Post anywhere — Amitai posts.
+- Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.
 - Use an ASS style `Encoding` other than `-1` — any other value forces left-to-right and Hebrew punctuation lands on the wrong side.
 - Add music or stock footage unless Amitai supplies it.
+- Use a figure you haven't verified as the hook headline or cover headline — keep it in the captions as said, and flag it in the hand-back.
 - Hand back a short that isn't in Drive with its cover — or a cover whose headline says more than the clip does.
+- Write your own render, caption, download or upload code, or work around a missing feature without saying so — follow the working rules in `investing-bros-show`.

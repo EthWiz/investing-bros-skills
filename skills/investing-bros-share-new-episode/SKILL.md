@@ -31,3 +31,4 @@ Each destination is confirmed sent, or has a clear blocker (group not found, Wha
 - Drive WhatsApp Web or scan a QR.
 - Add groups that aren't in the approved table without Amitai's OK.
 - Delete earlier WhatsApp messages.
+- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.

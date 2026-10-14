@@ -119,3 +119,4 @@ Next: promo skills if wanted; `investing-bros-episode-upload` once Amitai approv
 - Make Mac-local editing the primary path.
 - Ship an episode (or clip) where one host is more than ~3 dB quieter than the other.
 - Join video segments encoded with different x264 settings using `-c copy` — re-encode them with the same settings (`assemble_episode.sh` does).
+- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.
