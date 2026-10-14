@@ -30,7 +30,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 ## Steps
 1. **Pick moments with Amitai.** Tease, don't resolve: a question raised, a number dropped, a story started — cut before the answer. Wait for his OK unless he said to go ahead.
    - Promo teaser: 2–4 moments, 5–15 s each, strongest first, covering news, deep dive and an idea.
-   - Cold open: 2–5 lines from **one** host (15–30 s; episode 7's open was ~22 s): open on the most surprising line, end on a full sentence — a question or a hook ("…אז יש לי מניה בכיס?", "השאלה הגדולה היא: So what?"). Each line must stand on its own — reordering lines is fine, splicing half-sentences into a new claim is not. **No background music** (Nadav removed it on episode 7). Hard cut into Amitai's intro, which plays as-is (`investing-bros-show` → Brand). Never use watermarked music.
+   - Cold open: 2–5 lines from **one** host (15–30 s; episode 7's open was ~22 s): open on the most surprising line, end on a full sentence — a question or a hook ("…אז יש לי מניה בכיס?", "השאלה הגדולה היא: So what?"). Each line must stand on its own — reordering lines is fine, splicing half-sentences into a new claim is not. Music is allowed when it is done well: tasteful, sitting under the speech, not competing with it, clean loudness around −14 LUFS. Hard cut into Amitai's intro, which plays as-is (`investing-bros-show` → Brand). Never use watermarked music.
 2. **Exact cut points**: cut in the pauses between words (audio energy, or re-transcribe a short window), never mid-word. Proofread every caption against the audio — whisper gets names, numbers and English terms wrong; leave out words you can't verify and report them.
 3. **Render.**
    - Promo teaser (1080×1080):
@@ -59,5 +59,5 @@ Upload to the episode's `promo/` folder. Send Amitai the link with each teaser's
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice lines so a host seems to say something he didn't, or cut a caveat to make a line punchier.
-- Add music or stock footage unless Amitai supplies it. A cold open gets no background music, and never watermarked music (AudioJungle previews).
+- Add music or stock footage unless Amitai supplies it, except music under a cold open: that is allowed when it is tasteful, sits under the speech and does not compete with it, at about −14 LUFS. Never use watermarked music (AudioJungle previews).
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so — follow the working rules in `investing-bros-show`.
