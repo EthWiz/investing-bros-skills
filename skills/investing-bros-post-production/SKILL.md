@@ -61,6 +61,7 @@ scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-
 ```
 - Start: the first real open (ברוכים הבאים / אחים להשקעות / פרק).
 - End: right after the real outro.
+- Before any cut, send Nadav a cut list — false starts, silences, pre/post-roll chatter — and wait for his OK. A later change needs his OK again before a rebuild or upload. Going public still needs Amitai's OK (`investing-bros-show`).
 - `find_bounds.py` only suggests — read the transcript around both points. If either cut is ambiguous, ask Amitai.
 - `trim.sh` also writes `edit.json` next to the output (`start`/`end` in raw seconds). Promo clips and chapters use it to map raw → edited time (`edited = raw − start`).
 - 192k mp3 is fine instead of m4a if needed (`.mp3` output name).
@@ -72,7 +73,7 @@ Find the existing `פרק N` folder (prefix match; prep normally created it) and
 Write `תיאור הפרק` and `אפשרויות כותרת` following [references/episode-docs.md](references/episode-docs.md). Chapters use the **edited** timeline. Keep the Docs plain — no invisible direction marks (those are added only at upload time). Local `.txt` drafts are fine while working; they end up in `extras/` or get deleted.
 
 ### 8. Video episode (when the recording has video and Amitai wants it)
-Order: per-host teasers (cold open) → show intro → the episode.
+Video assets are made only by ליאורה (`investing-bros-show` → Roles). Order: cold open (~22 s) → Amitai's intro, used as-is → the episode. The cold open has no background music, a strong hook, and ends on a full sentence, then a hard cut into the intro (−14 LUFS; `investing-bros-teaser`). Per-host teasers, when there are two, are that cold open.
 1. Make the teasers with `investing-bros-teaser` (per-host cold open, audio from `episode-leveled.wav`).
 2. Assemble:
    ```bash
@@ -81,7 +82,7 @@ Order: per-host teasers (cold open) → show intro → the episode.
      --start START --end END \
      --before "טיזר 1 - נדב.mp4" --before "טיזר 2 - אמיתי.mp4" --intro "אחים להשקעות-Intro.mp4"
    ```
-   Every segment is encoded with the same x264 settings and joined without re-encoding; the body goes in ~8-minute chunks. Under a command time limit add `--max-seconds 150` and re-run the same command until it stops printing `resume` — finished chunks are kept. (Episode 6 on a 4-core laptop VM: ~100 s per 460 s chunk.)
+   Every segment is encoded with the same x264 settings and joined without re-encoding; the body goes in ~8-minute chunks. Under a command time limit add `--max-seconds 150` and re-run the same command until it stops printing `resume` — finished chunks are kept. (Episode 6 on a 4-core laptop VM: ~100 s per 460 s chunk.) When the only change is a trim at the head of an already-encoded master, re-encode that opening and concat the rest with `-c copy` (minutes, not a half-hour re-encode). That `-c copy` is the same encode — don't use it to join pieces that were encoded separately.
 3. Check: video and audio durations match (the script prints both); spot-check a frame and the sound at each join (teaser → teaser → intro → episode) and somewhere late in the episode for sync.
 
 ### 8b. Shorts (when this run includes them)

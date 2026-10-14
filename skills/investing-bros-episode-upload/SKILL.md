@@ -3,15 +3,16 @@ name: investing-bros-episode-upload
 description: >-
   Upload an approved Investing Bros / אחים להשקעות episode to RedCircle as a
   draft: edited audio, final Hebrew title and description with the RTL + "?"
-  fix, episode number. Use when Amitai says "upload episode N", "put it on
-  RedCircle", "העלאה". Publishing live needs his explicit OK.
+  fix, episode number. Also upload the video, shorts and mid-form to YouTube
+  Studio. Use when Amitai says "upload episode N", "put it on
+  RedCircle", "העלאה", "YouTube" or "יוטיוב". Publishing live needs his explicit OK.
 ---
 # Investing Bros episode upload
 
 Load `investing-bros-show` first — accounts, naming and the Drive tree live there.
 
 ## When to use
-After post-production review, when Amitai says to upload (or explicitly asks for it). Host is RedCircle.
+After post-production review, when Amitai says to upload (or explicitly asks for it). Audio host is RedCircle. Video, shorts and mid-form go to YouTube Studio (below).
 
 ## Inputs
 1. Episode number N — confirm with Amitai.
@@ -44,6 +45,12 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 
 ### 3. Verify
 Screenshot the title and description in the editor. `?` must sit at the end of the Hebrew sentence and timestamps must stay at the start of chapter lines. If an edited-back-and-forth draft still looks broken, create a **fresh draft** with the marked copy instead of patching it, and leave the old draft for Amitai to decide about.
+
+## YouTube (via YouTube Studio)
+The agent can upload in the box browser (already signed in to YouTube Studio).
+- Visibility **Public** only after Amitai's OK. Set "No, it's not made for kids".
+- Every short and mid-form description links to the full episode (title and description rules in `investing-bros-shorts`).
+- After the uploads, a daily morning analytics report runs for one week.
 
 ## Hand back
 - Unpublished-draft confirmation and the app episode URL

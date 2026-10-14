@@ -3,7 +3,9 @@
 Read this before working around anything. Every line here cost an agent time to find out (episode 7 shorts, 2026-10-14). If something here is wrong or new, fix it in a PR.
 
 ## Getting raw video and other big files
-- **Drive connector:** reads Docs and files up to **10 MB**. A raw episode (1–2 GB) or a rendered short (15–40 MB) can't come through it, and it can't upload them.
+- **Drive connector:** downloads Docs and files up to **100 MB** on the newer connector (episode 7). A raw episode (1–2 GB) still cannot come through it. The shorts run also hit an older **10 MB** cap — if a download between 10 and 100 MB is rejected, use the Mac or `drive.sh` (Drive API) path instead of retrying the connector. Browser upload (Claude in Chrome) is a separate **10 MB** per call; that limit is unchanged (show conventions → accounts).
+- **Riverside** login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive. Nadav drags full episodes to Drive himself.
+- **Local-exec transfer** (CopyToBox/CopyFromBox) and a Drive upload of a big file are capped at **100 MB**. Split anything larger into 50 MB parts (`split -b 50M`), rejoin with `cat`, and check the sha256 of the original against the rejoined file.
 - **Never sign in to Amitai's Google account from a browser.** The account is in Advanced Protection: sign-in needs his passkey or security key; approving on the phone isn't enough, and a failed attempt locks browser sign-in for 48 hours.
 - **Drive for desktop on Amitai's Mac streams files** (`~/Library/CloudStorage/GoogleDrive-…`). That folder shows up empty to the device shell, and listing it can hang the bridge. Don't use it.
 - **Until the Drive script exists:** ask Amitai to Option-drag the file from Finder into `~/Downloads` (a connected folder), then process it on the Mac.
@@ -18,7 +20,7 @@ Read this before working around anything. Every line here cost an agent time to 
 - Each command stops after **3 minutes**; background processes are **killed** when the command returns. Split long jobs into steps that each finish in time.
 - 4 CPU cores, **4 GB of memory**, a few GB of free disk.
 - Moving files to the cloud workspace is slow: one file of up to about 25 MB per call works; several large files in one call time out. **Render on the Mac; move only small files** (word timings, frame strips, finished shorts).
-- `ffmpeg` (with libass) and Python 3 with Pillow and numpy are installed.
+- `ffmpeg` (with libass) and Python 3 with Pillow and numpy are installed on Amitai's Mac. If the Mac you are on has no ffmpeg (Nadav's machine, episode 7), don't install one for a trim — passthrough with `avconvert`.
 - Writing a changed file to the Mac under the same name can leave the old version in place; give revised files a new name (`_v2`) and check the content on the Mac.
 
 ## Whisper on the Mac
