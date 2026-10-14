@@ -6,8 +6,8 @@ description: >-
   adds animated explainer cards (a number counting up, a wrong/right strike,
   a list that builds), the logo and proofread Hebrew captions. Use when
   Amitai asks for "hyperframes", "כרטיסים", "גרפיקה מונפשת", "animated
-  graphics" or "a more designed short", or when a short explains a concept
-  that cards can show.
+  graphics" or "a more designed short", and for every Investing Bros short:
+  each short requires at least one high-quality, informative animation.
 ---
 # Investing Bros shorts with HyperFrames
 
@@ -16,10 +16,19 @@ Load `investing-bros-show` first (brand, loudness, recording layout). The moment
 [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, open source) renders video from an HTML page: the DOM declares timing with `data-*` attributes, a paused GSAP timeline drives the motion, and headless Chrome captures it frame by frame. Chrome lays out the text, so Hebrew right-to-left and mixed Hebrew/English come out right without the ASS workarounds.
 
 ## When to use
+- **Every Investing Bros short requires at least one high-quality, informative HyperFrames animation**, even if Amitai only asks for "shorts". This is a mandatory delivery criterion (Amitai, 2026-10-14).
 - The clip **explains** something — a number, a "not X but Y", a before/after, a short list. Cards make it land (episode 6: "SWIFT — ~~מערכת תשלומים~~ / מערכת הודעות", "40$" counting up).
 - Amitai asks for HyperFrames or a more designed short.
 
-For a punchline, a story or a quick reaction clip, the plain `investing-bros-shorts` render is enough and ~6× faster to render.
+For a punchline, a story or a reaction clip, keep the animation focused on one meaningful explanation. The plain render can provide the base footage, but it is not a finished short until the required animation has been added and checked.
+
+## Animation quality gate
+- Motion must explain something: show the transfer, changing composition, relationship, contrast or spoken number. A decorative entrance or a text card that only repeats the captions is not enough.
+- Captions, hook motion, logos, punch-ins, transitions and end cards do not count as the required informative animation.
+- Use crisp, coherent graphics in the show palette, deliberate motion and readable Hebrew labels. Check at phone size, not just at full resolution.
+- Time the important change to the relevant spoken words; preserve hypotheses and caveats. Do not add made-up figures, percentages, financial claims or predictions.
+- Keep eyes, captions and the platform safe zone clear. Inspect frames before, during and after the animation, then check the final export.
+- New explanatory scenes belong in the supplied generator with tests and a PR, never in a hand-written one-off HTML composition.
 
 ## Inputs
 - The short's edit list from `investing-bros-shorts` step 1–2: kept `pieces` (cut at pauses), `shots` (L/R host), proofread `captions`.
