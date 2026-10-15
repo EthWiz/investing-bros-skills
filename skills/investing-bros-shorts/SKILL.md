@@ -18,6 +18,13 @@ Load `investing-bros-show` first — brand palette, logo, fonts, loudness and th
 ## When to use
 After post-production for episode N when Amitai asks for shorts — and every time shorts are made as part of a post-production run (`investing-bros-post-production` hands over to this skill). Every short this skill makes ends in Drive with its cover (steps 6–7). Also for an optional mid-form segment (below). Video assets are made only by ליאורה (`investing-bros-show` → Roles).
 
+## Batch playbook
+The video producer's playbook for a batch of 5 Shorts is [references/SHORTS_GUIDE.md](references/SHORTS_GUIDE.md). That guide is the main path for a batch: one config line per Short, then `scripts/shorts.sh` (silence trims, active-speaker crop, Heebo Black captions drawn with PIL + raqm, title card, logo end card). The active word is gold `#F5B71F`. Loudness is −14 LUFS, true peak −1.5 dBTP.
+
+Not in this repo: the Heebo variable font, `yunet.onnx`, and the logo end-card video. Pass them as `HEEBO_FONT`, `YUNET` and `ENDCARD`. The scripts were syntax-checked, not run end to end.
+
+`build_fullbleed.py` (below) is still the render when one short's shots, name tags and reaction cuts are edited by hand.
+
 ## Inputs
 From the episode's `extras/` folder:
 - `segments.json` — the transcript
@@ -78,7 +85,7 @@ The default look is now the **full-screen style**: the speaking host fills the 9
 Episode 7 (video producer), on top of that look:
 - **5 shorts** per episode, **1080×1920**. Fast cuts, no silences. Zooms alternate **100% / 112%**. Logo end card.
 - A complex idea gets a navy-blue motion animation (`investing-bros-hyperframes`) — still the navy / gold / white palette, no loud colours (show conventions → Tone).
-- Captions are Heebo Black, active word in gold `#F5B71F`. The scripts render Hebrew with libass (Encoding −1). libass can reverse RTL word order; the video producer worked around that with PIL + raqm. If a script's captions come out in the wrong order, stop and propose a script change — don't ship a one-off renderer (working rules in `investing-bros-show`).
+- Captions are Heebo Black, active word in gold `#F5B71F`. `build_fullbleed.py` renders Hebrew with libass (Encoding −1). libass can reverse RTL word order; the batch playbook (`shorts.sh`, `reel/captions.py`) draws captions with PIL + raqm instead. If a script's captions come out in the wrong order, stop and propose a script change — don't ship a one-off renderer (working rules in `investing-bros-show`).
 
 | Step | Script | Notes |
 |---|---|---|
@@ -92,6 +99,8 @@ Episode 7 (video producer), on top of that look:
 | Cover in the house style | `make_cover.py --style fullbleed --crop x,y,w,h --logo logo.png …` | same crop as the short |
 | Upload to Drive | `drive.sh put FILE PROMO_FOLDER_ID` | |
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
+| Batch of 5 (the playbook) | `shorts.sh ep.cfg out/` | [references/SHORTS_GUIDE.md](references/SHORTS_GUIDE.md). Needs `ENDCARD`; `HEEBO_FONT` and, for a two-shot, `YUNET` |
+| Share copy | `export.sh short.mp4 share/` | under 100 MB, plus 50 MB parts when the master is larger. Same script as in `investing-bros-post-production` |
 
 Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
 
