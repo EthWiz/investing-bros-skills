@@ -13,6 +13,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Recording is in: combine, level, transcribe, trim, Docs, video episode, review ping | `investing-bros-post-production` |
 | Vertical shorts | `investing-bros-shorts` |
 | Shorts / teaser moments with animated explainer cards (HyperFrames) | `investing-bros-hyperframes` |
+| Episode titles + description Docs | `investing-bros-title-description` |
 | Episode teaser / per-host cold open | `investing-bros-teaser` |
 | Episode artwork / YouTube thumbnail prompt | `investing-bros-cover-art` |
 | Upload to RedCircle (draft) | `investing-bros-episode-upload` |

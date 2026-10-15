@@ -49,6 +49,7 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - Brand spellings: **ספייסאקס** (not ספייסקס). Add new ones here when Amitai corrects a spelling.
 - Chapters are **time first**: `1:05 נושא`.
 - Disclaimer line: `אין כאן המלצת השקעה. רק שיחה.`
+- **No em dash `—` in episode titles, descriptions or chapters** (decided 2026-10-15). The episode title's only dash is the en dash after the number (`פרק N – `); the em dash belongs only in the Drive folder name. Titles: concise, question-led, no clickbait — see `investing-bros-title-description`.
 - Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Decided: the name is spelled **אמיתי** everywhere (titles, captions, descriptions).
 - **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
@@ -60,8 +61,8 @@ Show root `אחים להשקעות` already exists. Never create a second root.
 אחים להשקעות/                      show root (exists)
   פרק N — נושא/                    one per episode — created by prep, reused by everyone after
     הקלטה-ערוכה-פרק-N.m4a          edited, upload-ready audio      ← post-production
-    תיאור הפרק          (Google Doc) description + disclaimer + chapters ← post-production
-    אפשרויות כותרת      (Google Doc) five titles + "בחירה סופית:"    ← post-production
+    תיאור הפרק          (Google Doc) description + disclaimer + chapters ← title-description
+    אפשרויות כותרת      (Google Doc) five titles + "בחירה סופית:"    ← title-description
     brief/              pre-recording docs (prep archive; keep)   ← episode-preparation
     extras/             raw audio, parts, transcripts, segments.json, RTL .txt copies, temp files ← post-production
     promo/              shorts (each .mp4 + -cover.jpg + .srt), teasers, thumbnail ← shorts, teaser, cover-art
@@ -122,7 +123,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | Stage | Skill | Hands off |
 |---|---|---|
 | Before recording | `investing-bros-episode-preparation` | `brief/` docs + WhatsApp share |
-| Recording lands | `investing-bros-post-production` | Edited audio + 2 Docs + review ping |
+| Recording lands | `investing-bros-post-production` (Docs via `investing-bros-title-description`) | Edited audio + 2 Docs + review ping |
 | Promo (optional, after edit) | `investing-bros-shorts` (explainer shorts via `investing-bros-hyperframes`), `investing-bros-teaser`, `investing-bros-cover-art` | `promo/` files for review |
 | Mid-form (optional) | `investing-bros-shorts` → Mid-form | 5–10 min segments for YouTube |
 | Approved | `investing-bros-episode-upload` | RedCircle **draft** link; YouTube via Studio (see upload skill) |
