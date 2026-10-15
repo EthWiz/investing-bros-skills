@@ -9,9 +9,9 @@ GOLD = "(245, 183, 31"  # #F5B71F
 
 
 def _sources():
-    files = [p for p in ROOT.glob("*.py") if not p.name.startswith("test_")]
-    files += list(ROOT.glob("*.sh"))
-    files += list((ROOT / "reel").glob("*"))
+    files = [p for p in ROOT.glob("*.py") if p.is_file() and not p.name.startswith("test_")]
+    files += [p for p in ROOT.glob("*.sh") if p.is_file()]
+    files += [p for p in (ROOT / "reel").glob("*") if p.is_file()]
     return files
 
 
