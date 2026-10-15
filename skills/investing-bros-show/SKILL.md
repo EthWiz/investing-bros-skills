@@ -4,8 +4,8 @@ description: >-
   Shared facts and house rules for the Investing Bros / אחים להשקעות podcast:
   hosts, episode format, naming, the Drive folder tree, Hebrew spellings, who
   owns WhatsApp, accounts, approved WhatsApp and Telegram destinations, working
-  rules and environment limits. Load this alongside any other investing-bros-*
-  skill, or whenever a task touches the show.
+  rules, the mandatory workflow, and environment limits. Load this alongside
+  any other investing-bros-* skill, or whenever a task touches the show.
 ---
 # Investing Bros show conventions
 
@@ -27,10 +27,18 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 6. **Ask, don't guess** on ambiguous cuts, titles or numbers.
 
 ## Working rules (every skill)
-1. **Use the scripts.** Run the skill's scripts from `scripts/`. Don't write your own render, caption, animation, download or upload code. If a script lacks a feature or has a bug, stop, tell Amitai what's missing, and propose the change as a PR to this repo. A one-time workaround is allowed only with Amitai's OK, and it must be listed in the hand-back.
-2. **The hand-back lists what ran:** the scripts run, any generated command patched by hand and why, and the PR that will fix it.
-3. **End every run with a learnings PR.** Bugs, missing steps and new facts go back into the skills the same day.
+1. **Use the scripts.** Run the skill's scripts from `scripts/`. Don't write your own render, caption, animation, download or upload code. If a script lacks a feature or has a bug, stop, tell Amitai what's missing, and send the change to Grokki (Mandatory workflow). Don't open the PR yourself. A one-time workaround is allowed only with Amitai's OK, and it must be listed in the hand-back.
+2. **The hand-back lists what ran:** the scripts run, any generated command patched by hand and why, and what you sent Grokki.
+3. **End every task with that note to Grokki** (Mandatory workflow). Bugs, missing steps and new facts go to Grokki the same day.
 4. **Know the environment before working around it.** Limits of the Drive connector, Amitai's Mac, the network and the tools are in [references/environment.md](references/environment.md).
+
+## Mandatory workflow
+Approved by Nadav. Every podcast task — titles and descriptions, editing, shorts, uploads, prep.
+
+1. **Pull latest `main` first.** Before starting, pull this repo's latest `main` and follow the matching skill from it.
+2. **Send Grokki the lessons.** At the end, send Grokki (גרוקי, Nadav's main assistant) a short summary of lessons and changes.
+3. **Grokki is the only writer to this repo.** Grokki batches those notes into one PR per day or per episode. No other agent opens a skills PR.
+4. **Nadav approves the merge.** Nothing here merges without his explicit approval.
 
 ## Naming
 | Thing | Pattern | Example |

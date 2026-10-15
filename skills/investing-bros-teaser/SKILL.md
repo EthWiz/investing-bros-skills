@@ -77,6 +77,8 @@ ffmpeg -y -i speech.wav -i bed.wav -filter_complex "\
 
 **Checklist.** No hiss, no watermark. Speech intelligible. Music never competes (about −18 to −24 dB under the dialogue). Bed fades in and out. `ebur128`: about −14 LUFS, true peak ≤ −1 dBTP. Hard cut into the intro.
 
+`cold_open.sh` in `investing-bros-post-production` cuts opener segments from the master, applies this mix, and hard-cuts the intro. The branded panel stays `build_teaser.py`.
+
 ## Hand back
 Upload to the episode's `promo/` folder. Send Amitai the link with each teaser's length, the moments used (episode time + opening words), any cuts inside a moment, and any words you couldn't verify.
 

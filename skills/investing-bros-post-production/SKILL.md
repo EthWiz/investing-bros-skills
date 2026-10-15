@@ -86,8 +86,10 @@ Video assets are made only by ליאורה (`investing-bros-show` → Roles). Or
    Every segment is encoded with the same x264 settings and joined without re-encoding; the body goes in ~8-minute chunks. Under a command time limit add `--max-seconds 150` and re-run the same command until it stops printing `resume` — finished chunks are kept. (Episode 6 on a 4-core laptop VM: ~100 s per 460 s chunk.) When the only change is a trim at the head of an already-encoded master, re-encode that opening and concat the rest with `-c copy` (minutes, not a half-hour re-encode). That `-c copy` is the same encode — don't use it to join pieces that were encoded separately.
 3. Check: video and audio durations match (the script prints both); spot-check a frame and the sound at each join (teaser → teaser → intro → episode) and somewhere late in the episode for sync.
 
+Shell recipes that cut the cold open and the body from the master, hard-cut the intro, and make a share copy are in [references/video-recipes.md](references/video-recipes.md) (`cold_open.sh`, `cut_episode.sh`, `join.sh`, `conform_intro.sh`, `export.sh`). `cold_open.sh` mixes a music bed only by the recipe in `investing-bros-teaser` → Cold-open music bed. Set `INTRO` to Amitai's intro; there is no default path. `assemble_episode.sh` stays the way to join teasers that `investing-bros-teaser` already rendered.
+
 ### 8b. Shorts (when this run includes them)
-If Amitai asked for shorts with this edit (or the run's brief lists them), make them now with `investing-bros-shorts` — it renders each short, makes its sized cover and uploads both (plus captions) to the episode's `promo/` folder. Include the `promo/` link in the review ping.
+If Amitai asked for shorts with this edit (or the run's brief lists them), make them now with `investing-bros-shorts` — it renders each short, makes its sized cover and uploads both (plus captions) to the episode's `promo/` folder. The batch playbook is `SHORTS_GUIDE` in that skill. Include the `promo/` link in the review ping.
 
 ### 9. File everything in Drive
 | Where | What |
