@@ -5,8 +5,8 @@ description: >-
   hosts, episode format, naming, the Drive folder tree, Hebrew spellings, who
   owns WhatsApp, accounts, approved WhatsApp and Telegram destinations, working
   rules, the mandatory workflow, the pre-recording checklist, and environment
-  limits. Load this alongside
-  any other investing-bros-* skill, or whenever a task touches the show.
+  limits. Load this alongside any other investing-bros-* skill, or whenever a
+  task touches the show.
 ---
 # Investing Bros show conventions
 
