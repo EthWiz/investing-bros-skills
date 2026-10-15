@@ -5,7 +5,7 @@ import sys
 sys.path.insert(0, os.path.dirname(__file__))
 from rtl_fix import LRM, RLM, rtl_fix_description, rtl_fix_title  # noqa: E402
 
-TITLE = "פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?"
+TITLE = "פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?"
 
 DESCRIPTION = """\
 מה זה NeoCloud? הכירו את החברות שמשכירות GPU לענקיות ה-AI.

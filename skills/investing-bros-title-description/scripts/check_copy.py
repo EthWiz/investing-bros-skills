@@ -15,16 +15,16 @@ import re
 import sys
 import unicodedata
 
-EM_DASHES = {"—": "em dash", "―": "horizontal bar"}
+EM_DASHES = {"—": "em dash", "―": "horizontal bar", "–": "en dash"}  # all read as AI-written; plain hyphen only
 DIRECTION_MARKS = {"‎": "LRM", "‏": "RLM", "‪": "LRE", "‫": "RLE",
                    "‬": "PDF", "⁦": "LRI", "⁧": "RLI", "⁩": "PDI"}
 DISCLAIMER = "אין כאן המלצת השקעה. רק שיחה."
 FINAL_LABEL = "בחירה סופית:"
-TITLE_RE = re.compile(r"^פרק (\d+) – (\S.*)$")          # en dash, spaces both sides
+TITLE_RE = re.compile(r"^פרק (\d+) - (\S.*)$")          # plain hyphen, spaces both sides
 NUMBERED_RE = re.compile(r"^\s*(\d+)[.)]\s*(.+)$")
 CHAPTER_RE = re.compile(r"^(?:(\d{1,2}):)?(\d{1,2}):(\d{2}) (\S.*)$")
 
-TITLE_MAX = 60        # characters after "פרק N – "
+TITLE_MAX = 60        # characters after "פרק N - "
 TITLE_AIM = 50
 INTRO_MAX = 450
 CHAPTER_LABEL_MAX = 60
@@ -50,7 +50,7 @@ def _visible_len(s: str) -> int:
 def _common(text: str, where: str, out: list):
     for ch, name in EM_DASHES.items():
         if ch in text:
-            out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or split the sentence")
+            out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or a plain hyphen '-'")
     for ch, name in DIRECTION_MARKS.items():
         if ch in text:
             out.append(f"error: {where}: contains an invisible {name} mark - the Doc stays plain; "
@@ -70,7 +70,7 @@ def check_title(line: str, where: str, episode=None) -> list:
     _common(line, where, out)
     m = TITLE_RE.match(line.strip())
     if not m:
-        out.append(f"error: {where}: must be 'פרק N – <כותרת>' with an en dash '–' (U+2013) and spaces")
+        out.append(f"error: {where}: must be 'פרק N - <כותרת>' with a plain hyphen '-' and a space each side")
         return out
     num, body = int(m.group(1)), m.group(2)
     if episode is not None and num != episode:
