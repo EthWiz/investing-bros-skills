@@ -51,8 +51,9 @@ The video episode has a cold open + intro (~28 s) in front. Its YouTube descript
 | 2 | `ניו פריימס: איך זן חדש של חברות טכנולוגיה משנה את חוקי המשחק` | Right shape (topic: hook), but 58 characters and no `פרק 2 – ` prefix in the Doc |
 | 4 | `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?` | **The model.** 34 characters, topic then a real question the episode debates |
 | 6 | `פרק 6 - מהפכת הטוקניזציה` | Hyphen instead of en dash, no question. Off-layout; don't copy |
+| 7 | `פרק 7- זהב` (working title, from the Drive folder) | One word, no hook. Rewritten 2026-10-15 to five options led by the episode's own question: `פרק 7 – זהב: למה להחזיק מתכת שלא מייצרת כלום?` |
 
-Episode 5 (`אנרגיה גרעינית`) and 7 (`זהב`) titles weren't in Drive when this skill was written. Add them here when Amitai shares them.
+Episode 5's (`אנרגיה גרעינית`) final title wasn't in Drive when this skill was written. Add it here when Amitai shares it. When an episode has no `אפשרויות כותרת` Doc, the Drive folder name is the working title; say so in the hand-back.
 
 Past slips the checker now catches:
 - Episode 2's `.txt` draft opened `אחים להשקעות פרק 2 — שני אחים מדברים...` (em dash).
