@@ -45,7 +45,7 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 Three blocks, blank line between them (exact layout in references):
 1. **Intro.** One paragraph, about 450 characters or less. Open with a question when one fits naturally, then the deep dive, the main news items and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
-3. **Chapters**, time first, from `0:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, short labels, names spelled as in the brand list.
+3. **Chapters**, time first, from `0:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 10 seconds apart, short labels, names spelled as in the brand list. **Every label starts with a Hebrew word**, never English or a number (`1:05 מרוץ המודלים: OpenAI מול אנתרופיק`, not `1:05 OpenAI מול אנתרופיק`): a line that starts with English flips left-to-right and scrambles its timestamp and numbers on YouTube. The intro starts with a Hebrew word too.
 
 No em dash or en dash anywhere: intro, chapters or titles. Plain hyphen only.
 
@@ -71,6 +71,7 @@ Send him the five titles in chat, numbered as in the Doc, with your recommendati
 
 ## Never
 - Use an em dash `—` or en dash `–` in a title, description or chapter. Only the plain hyphen `-`.
+- Start a chapter label or the intro with English or a number.
 - Write a title the episode doesn't deliver on, or one that sounds like a buy/sell recommendation.
 - Put a number or claim in the copy that wasn't said in the episode or isn't fact-checked.
 - Add direction marks to the Docs (they're added only at upload).

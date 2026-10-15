@@ -42,6 +42,15 @@ Three blocks separated by blank lines:
 2. **Disclaimer**: exactly `אין כאן המלצת השקעה. רק שיחה.` on its own line **(checked)**.
 3. **Chapters**: time first, `M:SS` or `H:MM:SS` past an hour, start at `0:00`, times go up **(checked)**. On the **edited** audio timeline: `edited = raw − start`, with `start` from `extras/edit.json`. 8–14 chapters for a ~45 min episode. Short labels (60 characters or less, **warned**); a chapter may be a question. A plain hyphen inside a chapter label (`רעיון השקעה - אמיתי`) is fine; an em or en dash is not **(checked)**.
 
+### Hebrew next to English and numbers (YouTube, RedCircle, WhatsApp)
+Each line is laid out right-to-left or left-to-right by its **first letter**. A line whose first letter is English flips to left-to-right, so in a Hebrew description its timestamp jumps to the other side and its numbers and words come out in the wrong order (episode 5 on YouTube: `00:46 Anthropic: ...`, `09:46 AMD ...`, `31:16 SMR: ...`, `47:45 Oracle: ...`).
+- Every chapter label starts with a **Hebrew word**: `1:05 מרוץ המודלים: OpenAI מול אנתרופיק`, not `1:05 OpenAI מול אנתרופיק` **(checked)**. Not a number, a symbol or `- ` either.
+- The intro's first line starts with a Hebrew word too **(checked)**.
+- English names and numbers are fine **inside** a Hebrew line (`סייבר: Zscaler ו-CrowdStrike`).
+- Timestamps only at the start of the line, as `M:SS` or `H:MM:SS` (no `00:` hours prefix under an hour, no `-` after the time).
+- YouTube chapter rules: first at `0:00`, at least 3, going up, at least 10 seconds apart **(checked)**, or YouTube shows no chapters.
+- YouTube gets the plain Doc text. The RTL marks from `investing-bros-episode-upload` are for RedCircle only.
+
 The video episode has a cold open + intro (~28 s) in front. Its YouTube description offsets every chapter by that length; the Doc stays on the edited-audio timeline.
 
 ## Past episodes (for tone and length)

@@ -40,6 +40,23 @@ CLICKBAIT = [
 # Warnings: fine in a chapter, but a title that sounds like a buy/sell call needs a second look.
 CALL_WORDS = ["לקנות", "למכור", "תקנו", "תמכרו", "קונים עכשיו", "מוכרים עכשיו"]
 
+HEBREW_RE = re.compile(r"[\u05D0-\u05EA]")
+LATIN_RE = re.compile(r"[A-Za-z]")
+MIN_CHAPTER_GAP = 10  # seconds; YouTube ignores chapters shorter than this
+BIDI_FIX = ("start it with a Hebrew word; a line that starts with English or a number turns "
+            "left-to-right in a Hebrew description, and its timestamp, numbers and words land out of order")
+
+
+def _first_strong(s: str):
+    """'R' if the first letter is Hebrew, 'L' if Latin, None if there's no letter."""
+    for ch in s:
+        if HEBREW_RE.match(ch):
+            return "R"
+        if LATIN_RE.match(ch):
+            return "L"
+    return None
+
+
 EMOJI_RE = re.compile("[\U0001F000-\U0001FAFF☀-➿️]")
 
 
@@ -167,6 +184,8 @@ def check_description(text: str) -> list:
         for l in intro:
             if CHAPTER_RE.match(l):
                 out.append(f"error: description: a chapter line sits above the disclaimer: '{l}'")
+            elif _first_strong(l) != "R" or not HEBREW_RE.match(l[0]):
+                out.append(f"error: description: intro line '{l[:30]}...': {BIDI_FIX}")
         intro_text = " ".join(intro)
         if _visible_len(intro_text) > INTRO_MAX:
             out.append(f"warn: description: intro is {_visible_len(intro_text)} characters (aim for {INTRO_MAX} or less)")
@@ -190,12 +209,18 @@ def check_description(text: str) -> list:
             out.append(f"error: chapter 1: chapters start at 0:00 (edited timeline), got '{l.split()[0]}'")
         if t <= prev:
             out.append(f"error: chapter {i}: times must go up ('{l.split()[0]}')")
+        elif prev >= 0 and t - prev < MIN_CHAPTER_GAP:
+            out.append(f"error: chapter {i}: only {t - prev} s after the previous chapter "
+                       f"(YouTube needs at least {MIN_CHAPTER_GAP} s, or it drops the chapters)")
         prev = t
         label = m.group(4)
+        if not HEBREW_RE.match(label[0]):
+            out.append(f"error: chapter {i}: label '{label}' - {BIDI_FIX} "
+                       f"(e.g. '1:05 מרוץ המודלים: OpenAI מול אנתרופיק')")
         if _visible_len(label) > CHAPTER_LABEL_MAX:
             out.append(f"warn: chapter {i}: label is {_visible_len(label)} characters (aim for {CHAPTER_LABEL_MAX} or less)")
     if len(chapters) < 3:
-        out.append(f"warn: description: only {len(chapters)} chapters")
+        out.append(f"error: description: only {len(chapters)} chapters (YouTube needs at least 3 to show chapters)")
     return out
 
 

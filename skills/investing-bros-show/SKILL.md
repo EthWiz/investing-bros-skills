@@ -53,6 +53,7 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Decided: the name is spelled **אמיתי** everywhere (titles, captions, descriptions).
 - **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
+- **Every public Hebrew line starts with a Hebrew word**, including chapter labels after the timestamp (`1:05 מרוץ המודלים: OpenAI מול אנתרופיק`). A line that starts with English or a number flips left-to-right and scrambles its timestamp and numbers (episode 5 on YouTube). Checked by `check_copy.py` in `investing-bros-title-description`.
 
 ## Drive tree
 Show root `אחים להשקעות` already exists. Never create a second root.

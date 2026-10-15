@@ -21,7 +21,7 @@ EP2_DESC = """למה חברות כמו ספייסאקס, פלנטיר ואנדו
 אין כאן המלצת השקעה. רק שיחה.
 
 0:00 ברוכים הבאים לפרק
-1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים
+1:05 מרוץ המודלים: OpenAI Astra מול אנתרופיק
 
 3:47 גרוק, אג׳נטים ושימוש במחשב
 
@@ -159,3 +159,33 @@ def test_cli_exit_codes(tmp_path):
     bad = tmp_path / "d.txt"
     bad.write_text("משהו — אחר\n", encoding="utf-8")
     assert main(["--description", str(bad)]) == 1
+
+
+def test_chapter_label_starting_with_english_fails():
+    # episode 2 went out with "1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים": the line flips LTR
+    bad = EP2_DESC.replace("1:05 מרוץ המודלים: OpenAI Astra מול אנתרופיק", "1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים")
+    errs = errors(check_description(bad))
+    assert len(errs) == 1 and "chapter 2" in errs[0] and "Hebrew word" in errs[0]
+
+
+def test_chapter_label_starting_with_number_or_symbol_fails():
+    for label in ["2022: רוסיה והדולר", "- פתיחה", "SpaceX וטלקום"]:
+        bad = EP2_DESC.replace("45:33 סייבר וזיסקיילר", f"45:33 {label}")
+        assert any("Hebrew word" in e for e in errors(check_description(bad))), label
+
+
+def test_english_inside_a_hebrew_label_is_fine():
+    ok = EP2_DESC.replace("45:33 סייבר וזיסקיילר", "45:33 סייבר: Zscaler ו-CrowdStrike")
+    assert errors(check_description(ok)) == []
+
+
+def test_intro_must_start_with_hebrew():
+    bad = EP2_DESC.replace("למה חברות כמו", "SpaceX, Palantir: למה חברות כמו")
+    assert any("intro line" in e for e in errors(check_description(bad)))
+
+
+def test_youtube_chapter_rules():
+    close = EP2_DESC.replace("1:05 מרוץ", "0:05 מרוץ")
+    assert any("at least 10 s" in e for e in errors(check_description(close)))
+    two = "למה זהב? שיחה על זהב.\n\nאין כאן המלצת השקעה. רק שיחה.\n\n0:00 פתיחה\n1:00 זהב\n"
+    assert any("at least 3" in e for e in errors(check_description(two)))
