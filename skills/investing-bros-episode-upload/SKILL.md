@@ -49,7 +49,8 @@ Screenshot the title and description in the editor. `?` must sit at the end of t
 ## YouTube (via YouTube Studio)
 The agent can upload in the box browser (already signed in to YouTube Studio).
 - Visibility **Public** only after Amitai's OK. Set "No, it's not made for kids".
-- Every short and mid-form description links to the full episode (title and description rules in `investing-bros-shorts`).
+- **Shorts:** links in the description are not clickable. For every Short, at upload set Studio's **Related video** (סרטון קשור) to the full episode, and keep the episode URL in the description too (wording in `investing-bros-shorts`).
+- **Long videos** (the full episode and mid-form): a plain URL on its own line is clickable. Put the episode link that way.
 - After the uploads, a daily morning analytics report runs for one week.
 
 ## Hand back
