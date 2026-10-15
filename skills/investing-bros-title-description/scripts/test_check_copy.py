@@ -4,13 +4,13 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent))
 from check_copy import check_description, check_title, check_titles, main  # noqa: E402
 
-EP4 = "פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?"
+EP4 = "פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?"
 
-TITLES_OK = """1. פרק 7 – זהב: למה הבנקים המרכזיים קונים?
-2. פרק 7 – זהב: מגן מאינפלציה או סתם מתכת?
-3. פרק 7 – איך משקיעים בזהב ב־2026?
-4. פרק 7 – זהב מול ביטקוין: מי באמת שומר ערך?
-5. פרק 7 – זהב, בנקים מרכזיים ומה שביניהם
+TITLES_OK = """1. פרק 7 - זהב: למה הבנקים המרכזיים קונים?
+2. פרק 7 - זהב: מגן מאינפלציה או סתם מתכת?
+3. פרק 7 - איך משקיעים בזהב ב־2026?
+4. פרק 7 - זהב מול ביטקוין: מי באמת שומר ערך?
+5. פרק 7 - זהב, בנקים מרכזיים ומה שביניהם
 
 בחירה סופית:
 """
@@ -21,7 +21,7 @@ EP2_DESC = """למה חברות כמו ספייסאקס, פלנטיר ואנדו
 אין כאן המלצת השקעה. רק שיחה.
 
 0:00 ברוכים הבאים לפרק
-1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים
+1:05 מרוץ המודלים: OpenAI Astra מול אנתרופיק
 
 3:47 גרוק, אג׳נטים ושימוש במחשב
 
@@ -39,19 +39,26 @@ def test_episode_4_title_passes():
 
 
 def test_em_dash_fails_title():
-    errs = errors(check_title("פרק 4 – ניו קלאודס — מי ינצח במלחמת העננים?", "t"))
+    errs = errors(check_title("פרק 4 - ניו קלאודס — מי ינצח במלחמת העננים?", "t"))
     assert any("em dash" in e for e in errs)
 
 
 def test_em_dash_after_number_fails():
     # the Drive folder uses an em dash; the title must not
     errs = errors(check_title("פרק 4 — ניו קלאודס", "t"))
-    assert any("en dash" in e for e in errs) and any("em dash" in e for e in errs)
+    assert any("plain hyphen" in e for e in errs) and any("em dash" in e for e in errs)
 
 
-def test_hyphen_after_number_fails():
-    # episode 6 went out as "פרק 6 - מהפכת הטוקניזציה"
-    assert errors(check_title("פרק 6 - מהפכת הטוקניזציה", "t"))
+def test_en_dash_fails_anywhere():
+    # Amitai, 2026-10-15: an en dash reads as AI-written, same as an em dash
+    errs = errors(check_title("פרק 4 \u2013 ניו קלאודס: מי ינצח במלחמת העננים?", "t"))
+    assert any("en dash" in e for e in errs) and any("plain hyphen" in e for e in errs)
+    assert any("en dash" in e for e in errors(check_description(EP2_DESC.replace("8:14 מה זה", "8:14 \u2013 מה זה"))))
+
+
+def test_plain_hyphen_titles_pass():
+    # episode 6 and 7 as published use the plain hyphen
+    assert errors(check_title("פרק 6 - מהפכת הטוקניזציה", "t")) == []
 
 
 def test_wrong_episode_number():
@@ -60,19 +67,19 @@ def test_wrong_episode_number():
 
 def test_too_long_title_fails_and_long_warns():
     long_body = "א" * 61
-    assert errors(check_title(f"פרק 4 – {long_body}", "t"))
-    mid = check_title(f"פרק 4 – {'א' * 55}", "t")
+    assert errors(check_title(f"פרק 4 - {long_body}", "t"))
+    mid = check_title(f"פרק 4 - {'א' * 55}", "t")
     assert not errors(mid) and any(p.startswith("warn:") for p in mid)
 
 
 def test_clickbait_and_hype_fail():
-    for bad in ["פרק 4 – לא תאמינו מה קרה לענן?", "פרק 4 – הענן המטורף",
-                "פרק 4 – ניו קלאודס!", "פרק 4 – ניו קלאודס 🚀"]:
+    for bad in ["פרק 4 - לא תאמינו מה קרה לענן?", "פרק 4 - הענן המטורף",
+                "פרק 4 - ניו קלאודס!", "פרק 4 - ניו קלאודס 🚀"]:
         assert errors(check_title(bad, "t")), bad
 
 
 def test_buy_call_only_warns():
-    p = check_title("פרק 4 – ניו קלאודס: לקנות או לחכות?", "t")
+    p = check_title("פרק 4 - ניו קלאודס: לקנות או לחכות?", "t")
     assert not errors(p) and any("buy/sell" in x for x in p)
 
 
@@ -88,12 +95,19 @@ def test_needs_five_options_and_final_line():
 
 
 def test_needs_three_questions():
-    flat = "\n".join(f"{i}. פרק 7 – זהב ומה שביניהם {i}" for i in range(1, 6)) + "\n\nבחירה סופית:\n"
+    flat = "\n".join(f"{i}. פרק 7 - זהב ומה שביניהם {i}" for i in range(1, 6)) + "\n\nבחירה סופית:\n"
     assert any("questions" in e for e in errors(check_titles(flat, 7)))
 
 
 def test_single_chosen_title_ok():
     assert check_titles(EP4 + "\n", 4) == []
+
+
+def test_single_published_title():
+    # episode 7 went up on YouTube as "פרק 7 - למה כולם קונים זהב?"
+    assert errors(check_titles("פרק 7 - למה כולם קונים זהב?\n", 7)) == []
+    errs = errors(check_titles("פרק 7 \u2013 למה כולם קונים זהב?\n", 7))
+    assert errs and all("dash" in e or "hyphen" in e for e in errs)
 
 
 def test_final_pick_is_checked():
@@ -145,3 +159,33 @@ def test_cli_exit_codes(tmp_path):
     bad = tmp_path / "d.txt"
     bad.write_text("משהו — אחר\n", encoding="utf-8")
     assert main(["--description", str(bad)]) == 1
+
+
+def test_chapter_label_starting_with_english_fails():
+    # episode 2 went out with "1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים": the line flips LTR
+    bad = EP2_DESC.replace("1:05 מרוץ המודלים: OpenAI Astra מול אנתרופיק", "1:05 OpenAI Astra מול אנתרופיק ומרוץ המודלים")
+    errs = errors(check_description(bad))
+    assert len(errs) == 1 and "chapter 2" in errs[0] and "Hebrew word" in errs[0]
+
+
+def test_chapter_label_starting_with_number_or_symbol_fails():
+    for label in ["2022: רוסיה והדולר", "- פתיחה", "SpaceX וטלקום"]:
+        bad = EP2_DESC.replace("45:33 סייבר וזיסקיילר", f"45:33 {label}")
+        assert any("Hebrew word" in e for e in errors(check_description(bad))), label
+
+
+def test_english_inside_a_hebrew_label_is_fine():
+    ok = EP2_DESC.replace("45:33 סייבר וזיסקיילר", "45:33 סייבר: Zscaler ו-CrowdStrike")
+    assert errors(check_description(ok)) == []
+
+
+def test_intro_must_start_with_hebrew():
+    bad = EP2_DESC.replace("למה חברות כמו", "SpaceX, Palantir: למה חברות כמו")
+    assert any("intro line" in e for e in errors(check_description(bad)))
+
+
+def test_youtube_chapter_rules():
+    close = EP2_DESC.replace("1:05 מרוץ", "0:05 מרוץ")
+    assert any("at least 10 s" in e for e in errors(check_description(close)))
+    two = "למה זהב? שיחה על זהב.\n\nאין כאן המלצת השקעה. רק שיחה.\n\n0:00 פתיחה\n1:00 זהב\n"
+    assert any("at least 3" in e for e in errors(check_description(two)))

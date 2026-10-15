@@ -3,7 +3,7 @@ name: investing-bros-title-description
 description: >-
   Write the Hebrew title options and episode description for an Investing
   Bros / אחים להשקעות episode, in the show's layout: five concise, engaging
-  titles that lead with a real question (no clickbait, no em dashes), and the
+  titles that lead with a real question (no clickbait, no em or en dashes), and the
   description Doc (intro paragraph, disclaimer, time-first chapters), checked
   by a script before they go in Drive. Use when Amitai asks for "titles",
   "a title", "description", "כותרת", "כותרות", "אפשרויות כותרת", "תיאור הפרק"
@@ -31,12 +31,12 @@ The full layout, past examples and good/bad titles are in [references/layout.md]
 Read the transcript. Note: the deep-dive topic and the question the brothers actually argue about, the 3–5 news items that took real time, each brother's investment idea, and any line that would make a listener stop scrolling. The **deep dive is the title's subject**; news items go in the description, not the title.
 
 ### 2. Write five titles
-Layout: `פרק N – <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?`).
-- **Lead with a question.** At least three of the five are questions; the question goes at the end, after the topic. Question-first (`פרק N – <שאלה>?`) is fine for one or two options.
-- **Concise.** 50 characters or less after `פרק N – `; 60 is the hard limit.
+Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?`).
+- **Lead with a question.** At least three of the five are questions; the question goes at the end, after the topic. Question-first (`פרק N - <שאלה>?`) is fine for one or two options.
+- **Concise.** 50 characters or less after `פרק N - `; 60 is the hard limit.
 - **Engaging, not clickbait.** The question must be one the episode really discusses, and a listener should feel the episode delivered on it. No secrets, no "you won't believe", no promised returns, no hype words, no `!`, no emoji.
 - **No buy or sell call.** "לקנות או לחכות?" only if the episode frames it as a debate, never as advice.
-- **No em dash `—`.** Use `:` or `,`. The only dash is the en dash `–` after the episode number.
+- **No em dash `—` and no en dash `–`.** Both read as AI-written. Use `:` or `,`. The only dash is the plain hyphen `-` after the episode number.
 - Give five different angles, e.g. the debate, the stakes, the "what is it", the investor angle, the contrarian view.
 - English company and product names stay in English (`NVIDIA`, `CoreWeave`); Hebrew brand spellings from `investing-bros-show`.
 - A number goes in a title only if it was said in the episode **and** you've checked it against a source.
@@ -45,9 +45,9 @@ Layout: `פרק N – <נושא>: <שאלה>?` (episode 4 is the model: `פרק 
 Three blocks, blank line between them (exact layout in references):
 1. **Intro.** One paragraph, about 450 characters or less. Open with a question when one fits naturally, then the deep dive, the main news items and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
-3. **Chapters**, time first, from `0:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, short labels, names spelled as in the brand list.
+3. **Chapters**, time first, from `0:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 10 seconds apart, short labels, names spelled as in the brand list. **Every label starts with a Hebrew word**, never English or a number (`1:05 מרוץ המודלים: OpenAI מול אנתרופיק`, not `1:05 OpenAI מול אנתרופיק`): a line that starts with English flips left-to-right and scrambles its timestamp and numbers on YouTube. The intro starts with a Hebrew word too.
 
-No em dash anywhere: intro, chapters or titles.
+No em dash or en dash anywhere: intro, chapters or titles. Plain hyphen only.
 
 ### 4. Check
 Save each as a plain `.txt` and run:
@@ -70,7 +70,8 @@ Send him the five titles in chat, numbered as in the Doc, with your recommendati
 - Next: `investing-bros-episode-upload` uses the text after `בחירה סופית:` and the full description
 
 ## Never
-- Use an em dash `—` in a title, description or chapter.
+- Use an em dash `—` or en dash `–` in a title, description or chapter. Only the plain hyphen `-`.
+- Start a chapter label or the intro with English or a number.
 - Write a title the episode doesn't deliver on, or one that sounds like a buy/sell recommendation.
 - Put a number or claim in the copy that wasn't said in the episode or isn't fact-checked.
 - Add direction marks to the Docs (they're added only at upload).

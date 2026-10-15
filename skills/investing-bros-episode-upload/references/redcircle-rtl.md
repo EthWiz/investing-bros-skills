@@ -13,7 +13,7 @@ What did **not** work:
 - **LRM** = `U+200E` (left-to-right mark)
 
 **Title:** one RLM right after the final `?`.
-Example: `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?` + RLM.
+Example: `פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?` + RLM.
 
 **Description:**
 1. An RLM right after **every** `?`, including mid-line ones (`מה זה NeoCloud?` + RLM + ` הכירו את…`).

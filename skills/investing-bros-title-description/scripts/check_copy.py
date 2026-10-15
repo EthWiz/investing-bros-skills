@@ -15,16 +15,16 @@ import re
 import sys
 import unicodedata
 
-EM_DASHES = {"—": "em dash", "―": "horizontal bar"}
+EM_DASHES = {"—": "em dash", "―": "horizontal bar", "–": "en dash"}  # all read as AI-written; plain hyphen only
 DIRECTION_MARKS = {"‎": "LRM", "‏": "RLM", "‪": "LRE", "‫": "RLE",
                    "‬": "PDF", "⁦": "LRI", "⁧": "RLI", "⁩": "PDI"}
 DISCLAIMER = "אין כאן המלצת השקעה. רק שיחה."
 FINAL_LABEL = "בחירה סופית:"
-TITLE_RE = re.compile(r"^פרק (\d+) – (\S.*)$")          # en dash, spaces both sides
+TITLE_RE = re.compile(r"^פרק (\d+) - (\S.*)$")          # plain hyphen, spaces both sides
 NUMBERED_RE = re.compile(r"^\s*(\d+)[.)]\s*(.+)$")
 CHAPTER_RE = re.compile(r"^(?:(\d{1,2}):)?(\d{1,2}):(\d{2}) (\S.*)$")
 
-TITLE_MAX = 60        # characters after "פרק N – "
+TITLE_MAX = 60        # characters after "פרק N - "
 TITLE_AIM = 50
 INTRO_MAX = 450
 CHAPTER_LABEL_MAX = 60
@@ -40,6 +40,23 @@ CLICKBAIT = [
 # Warnings: fine in a chapter, but a title that sounds like a buy/sell call needs a second look.
 CALL_WORDS = ["לקנות", "למכור", "תקנו", "תמכרו", "קונים עכשיו", "מוכרים עכשיו"]
 
+HEBREW_RE = re.compile(r"[\u05D0-\u05EA]")
+LATIN_RE = re.compile(r"[A-Za-z]")
+MIN_CHAPTER_GAP = 10  # seconds; YouTube ignores chapters shorter than this
+BIDI_FIX = ("start it with a Hebrew word; a line that starts with English or a number turns "
+            "left-to-right in a Hebrew description, and its timestamp, numbers and words land out of order")
+
+
+def _first_strong(s: str):
+    """'R' if the first letter is Hebrew, 'L' if Latin, None if there's no letter."""
+    for ch in s:
+        if HEBREW_RE.match(ch):
+            return "R"
+        if LATIN_RE.match(ch):
+            return "L"
+    return None
+
+
 EMOJI_RE = re.compile("[\U0001F000-\U0001FAFF☀-➿️]")
 
 
@@ -50,7 +67,7 @@ def _visible_len(s: str) -> int:
 def _common(text: str, where: str, out: list):
     for ch, name in EM_DASHES.items():
         if ch in text:
-            out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or split the sentence")
+            out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or a plain hyphen '-'")
     for ch, name in DIRECTION_MARKS.items():
         if ch in text:
             out.append(f"error: {where}: contains an invisible {name} mark - the Doc stays plain; "
@@ -70,7 +87,7 @@ def check_title(line: str, where: str, episode=None) -> list:
     _common(line, where, out)
     m = TITLE_RE.match(line.strip())
     if not m:
-        out.append(f"error: {where}: must be 'פרק N – <כותרת>' with an en dash '–' (U+2013) and spaces")
+        out.append(f"error: {where}: must be 'פרק N - <כותרת>' with a plain hyphen '-' and a space each side")
         return out
     num, body = int(m.group(1)), m.group(2)
     if episode is not None and num != episode:
@@ -99,8 +116,8 @@ def check_titles(text: str, episode=None) -> list:
     if not nonblank:
         return ["error: titles: empty"]
 
-    # Amitai may cut the Doc down to the single chosen title.
-    if len(nonblank) == 1 and TITLE_RE.match(nonblank[0].strip()):
+    # A single title: Amitai cut the Doc down to his pick, or a published title is being checked.
+    if len(nonblank) == 1 and not NUMBERED_RE.match(nonblank[0]):
         return check_title(nonblank[0], "title", episode)
 
     finals = [i for i, l in enumerate(nonblank) if l.strip().startswith(FINAL_LABEL)]
@@ -167,6 +184,8 @@ def check_description(text: str) -> list:
         for l in intro:
             if CHAPTER_RE.match(l):
                 out.append(f"error: description: a chapter line sits above the disclaimer: '{l}'")
+            elif _first_strong(l) != "R" or not HEBREW_RE.match(l[0]):
+                out.append(f"error: description: intro line '{l[:30]}...': {BIDI_FIX}")
         intro_text = " ".join(intro)
         if _visible_len(intro_text) > INTRO_MAX:
             out.append(f"warn: description: intro is {_visible_len(intro_text)} characters (aim for {INTRO_MAX} or less)")
@@ -190,12 +209,18 @@ def check_description(text: str) -> list:
             out.append(f"error: chapter 1: chapters start at 0:00 (edited timeline), got '{l.split()[0]}'")
         if t <= prev:
             out.append(f"error: chapter {i}: times must go up ('{l.split()[0]}')")
+        elif prev >= 0 and t - prev < MIN_CHAPTER_GAP:
+            out.append(f"error: chapter {i}: only {t - prev} s after the previous chapter "
+                       f"(YouTube needs at least {MIN_CHAPTER_GAP} s, or it drops the chapters)")
         prev = t
         label = m.group(4)
+        if not HEBREW_RE.match(label[0]):
+            out.append(f"error: chapter {i}: label '{label}' - {BIDI_FIX} "
+                       f"(e.g. '1:05 מרוץ המודלים: OpenAI מול אנתרופיק')")
         if _visible_len(label) > CHAPTER_LABEL_MAX:
             out.append(f"warn: chapter {i}: label is {_visible_len(label)} characters (aim for {CHAPTER_LABEL_MAX} or less)")
     if len(chapters) < 3:
-        out.append(f"warn: description: only {len(chapters)} chapters")
+        out.append(f"error: description: only {len(chapters)} chapters (YouTube needs at least 3 to show chapters)")
     return out
 
 

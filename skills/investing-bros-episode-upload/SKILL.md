@@ -50,6 +50,8 @@ Screenshot the title and description in the editor. `?` must sit at the end of t
 The agent can upload in the box browser (already signed in to YouTube Studio).
 - Visibility **Public** only after Amitai's OK. Set "No, it's not made for kids".
 - Every short and mid-form description links to the full episode (title and description rules in `investing-bros-shorts`).
+- Full episode: title and description from the episode Docs, pasted **plain** (no `rtl_fix.py` marks; those are for RedCircle). Run `check_copy.py` from `investing-bros-title-description` on the exact text you paste. If the video has a cold open + intro in front, add its length to every chapter and start with a `0:00` chapter for the opening (e.g. `0:00 טעימה מהפרק`), then rerun the check.
+- After saving, open the public watch page and check: every description line is right-aligned with its timestamp on the right, the times are in order, and the chapters show on the progress bar. A line that looks wrong almost always starts with English; reword it to start with Hebrew.
 - After the uploads, a daily morning analytics report runs for one week.
 
 ## Hand back

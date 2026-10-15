@@ -36,7 +36,7 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 | Thing | Pattern | Example |
 |---|---|---|
 | Drive episode folder | `פרק N — נושא` (em dash `—`) | `פרק 4 — ניו קלאודס` |
-| Episode title (RedCircle) | `פרק N – <title>` (en dash `–`) | `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?` |
+| Episode title (RedCircle, YouTube) | `פרק N - <title>` (plain hyphen `-`, a space each side) | `פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?` |
 | Edited audio | `הקלטה-ערוכה-פרק-N.m4a` | `הקלטה-ערוכה-פרק-4.m4a` |
 | Short (in `promo/`) | `שורט-NN-<נושא>.mp4` | `שורט-01-סוויפט.mp4` |
 | Short cover (in `promo/`) | `שורט-NN-<נושא>-cover.jpg` (1080×1920) | `שורט-01-סוויפט-cover.jpg` |
@@ -49,10 +49,11 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - Brand spellings: **ספייסאקס** (not ספייסקס). Add new ones here when Amitai corrects a spelling.
 - Chapters are **time first**: `1:05 נושא`.
 - Disclaimer line: `אין כאן המלצת השקעה. רק שיחה.`
-- **No em dash `—` in episode titles, descriptions or chapters** (decided 2026-10-15). The episode title's only dash is the en dash after the number (`פרק N – `); the em dash belongs only in the Drive folder name. Titles: concise, question-led, no clickbait — see `investing-bros-title-description`.
+- **No em dash `—` and no en dash `–` in anything public**: titles, descriptions, chapters, captions, posts (decided 2026-10-15: both read as AI-written). The only dash is a plain hyphen `-`, e.g. `פרק N - `. The em dash stays only in private Drive folder names. Titles: concise, question-led, no clickbait; see `investing-bros-title-description`.
 - Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Decided: the name is spelled **אמיתי** everywhere (titles, captions, descriptions).
 - **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
+- **Every public Hebrew line starts with a Hebrew word**, including chapter labels after the timestamp (`1:05 מרוץ המודלים: OpenAI מול אנתרופיק`). A line that starts with English or a number flips left-to-right and scrambles its timestamp and numbers (episode 5 on YouTube). Checked by `check_copy.py` in `investing-bros-title-description`.
 
 ## Drive tree
 Show root `אחים להשקעות` already exists. Never create a second root.
