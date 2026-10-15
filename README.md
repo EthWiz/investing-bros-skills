@@ -16,6 +16,7 @@ prep ──► record ──► post-production ──► review ──► uploa
 | `investing-bros-show` | **Shared conventions** — load with every other skill: hosts, format, naming, Drive tree, roles/accounts, WhatsApp destinations |
 | `investing-bros-episode-preparation` | Before recording: episode folder + `brief/`, news ideas, deep dive, share prep docs |
 | `investing-bros-post-production` | After recording: combine, level the hosts, transcribe, trim, Hebrew Docs, full video episode, Drive filing, review ping |
+| `investing-bros-title-description` | Five question-led Hebrew title options + the description Doc (intro, disclaimer, chapters), checked by `check_copy.py`: concise, no clickbait, no em dashes |
 | `investing-bros-shorts` | Branded vertical shorts: speaker close-ups, hook headline, burned-in Hebrew captions, a sized cover each, uploaded to Drive `promo/` |
 | `investing-bros-hyperframes` | Explainer shorts with animated cards rendered by HyperFrames (HTML/GSAP) on top of the ffmpeg-cut clip |
 | `investing-bros-teaser` | Promo teaser (30–60 s) or per-host cold-open teasers for the video episode |

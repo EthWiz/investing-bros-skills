@@ -17,6 +17,7 @@ This skill covers the core edit only. Promo material is separate:
 - Shorts → `investing-bros-shorts`
 - Teaser → `investing-bros-teaser`
 - YouTube thumbnail / episode artwork → `investing-bros-cover-art`
+- Titles and description Docs → `investing-bros-title-description` (step 7)
 - RedCircle upload (incl. Hebrew RTL fix) → `investing-bros-episode-upload`
 
 ## Inputs
@@ -70,7 +71,7 @@ scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-
 Find the existing `פרק N` folder (prefix match; prep normally created it) and **reuse it**. Only create `פרק N — נושא` if none exists. Create `extras/` inside it if missing. Leave `brief/` alone.
 
 ### 7. Hebrew Google Docs (exactly two, in the episode root)
-Write `תיאור הפרק` and `אפשרויות כותרת` following [references/episode-docs.md](references/episode-docs.md). Chapters use the **edited** timeline. Keep the Docs plain — no invisible direction marks (those are added only at upload time). Local `.txt` drafts are fine while working; they end up in `extras/` or get deleted.
+Write `תיאור הפרק` and `אפשרויות כותרת` with `investing-bros-title-description`: it has the layout, the title rules (question-led, concise, no clickbait, no em dash) and `check_copy.py`, which must pass before the Docs are written. Chapters use the **edited** timeline. Keep the Docs plain — no invisible direction marks (those are added only at upload time).
 
 ### 8. Video episode (when the recording has video and Amitai wants it)
 Video assets are made only by ליאורה (`investing-bros-show` → Roles). Order: cold open (~22 s) → Amitai's intro, used as-is → the episode. The cold open has a strong hook and ends on a full sentence, then a hard cut into the intro. A music bed, if any, is mixed with the recipe in `investing-bros-teaser` → Cold-open music bed (a ducked licensed track, not a noise layer). Per-host teasers, when there are two, are that cold open.
