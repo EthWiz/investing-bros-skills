@@ -51,9 +51,9 @@ The video episode has a cold open + intro (~28 s) in front. Its YouTube descript
 | 2 | `ניו פריימס: איך זן חדש של חברות טכנולוגיה משנה את חוקי המשחק` | Right shape (topic: hook), but 58 characters and no `פרק 2 – ` prefix in the Doc |
 | 4 | `פרק 4 – ניו קלאודס: מי ינצח במלחמת העננים?` | **The model.** 34 characters, topic then a real question the episode debates |
 | 6 | `פרק 6 - מהפכת הטוקניזציה` | Hyphen instead of en dash, no question. Off-layout; don't copy |
-| 7 | `פרק 7- זהב` (working title, from the Drive folder) | One word, no hook. Rewritten 2026-10-15 to five options led by the episode's own question: `פרק 7 – זהב: למה להחזיק מתכת שלא מייצרת כלום?` |
+| 7 | `פרק 7 - למה כולם קונים זהב?` (YouTube) | Good hook: short, a real question the episode answers. Hyphen instead of en dash, and "קונים" leans toward a buy call. Suggested fix: `פרק 7 – למה כולם חוזרים לזהב?` |
 
-Episode 5's (`אנרגיה גרעינית`) final title wasn't in Drive when this skill was written. Add it here when Amitai shares it. When an episode has no `אפשרויות כותרת` Doc, the Drive folder name is the working title; say so in the hand-back.
+Episode 5's (`אנרגיה גרעינית`) final title wasn't in Drive when this skill was written. Add it here when Amitai shares it. When an episode has no `אפשרויות כותרת` Doc, check the published YouTube title before treating the Drive folder name as the working title (episode 7's folder said `פרק 7- זהב`; YouTube had the real title). Read a YouTube title without a browser through `https://www.youtube.com/oembed?url=<video URL>&format=json`.
 
 Past slips the checker now catches:
 - Episode 2's `.txt` draft opened `אחים להשקעות פרק 2 — שני אחים מדברים...` (em dash).

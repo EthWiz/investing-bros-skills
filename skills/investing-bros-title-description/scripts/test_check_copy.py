@@ -96,6 +96,12 @@ def test_single_chosen_title_ok():
     assert check_titles(EP4 + "\n", 4) == []
 
 
+def test_single_title_with_hyphen_gets_dash_error_only():
+    # episode 7 went up on YouTube as "פרק 7 - למה כולם קונים זהב?"
+    errs = errors(check_titles("פרק 7 - למה כולם קונים זהב?\n", 7))
+    assert len(errs) == 1 and "en dash" in errs[0]
+
+
 def test_final_pick_is_checked():
     bad = TITLES_OK.replace("בחירה סופית:", "בחירה סופית: פרק 7 — זהב")
     assert errors(check_titles(bad, 7))

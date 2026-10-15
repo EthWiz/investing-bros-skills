@@ -99,8 +99,8 @@ def check_titles(text: str, episode=None) -> list:
     if not nonblank:
         return ["error: titles: empty"]
 
-    # Amitai may cut the Doc down to the single chosen title.
-    if len(nonblank) == 1 and TITLE_RE.match(nonblank[0].strip()):
+    # A single title: Amitai cut the Doc down to his pick, or a published title is being checked.
+    if len(nonblank) == 1 and not NUMBERED_RE.match(nonblank[0]):
         return check_title(nonblank[0], "title", episode)
 
     finals = [i for i, l in enumerate(nonblank) if l.strip().startswith(FINAL_LABEL)]
