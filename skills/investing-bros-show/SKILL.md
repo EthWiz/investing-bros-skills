@@ -4,7 +4,8 @@ description: >-
   Shared facts and house rules for the Investing Bros / אחים להשקעות podcast:
   hosts, episode format, naming, the Drive folder tree, Hebrew spellings, who
   owns WhatsApp, accounts, approved WhatsApp and Telegram destinations, working
-  rules, the mandatory workflow, and environment limits. Load this alongside
+  rules, the mandatory workflow, the pre-recording checklist, and environment
+  limits. Load this alongside
   any other investing-bros-* skill, or whenever a task touches the show.
 ---
 # Investing Bros show conventions
@@ -17,6 +18,12 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - **Episode format:** ~10 min news, ~20 min deep dive, ~5 min each for one investment idea per host.
 - **News taste:** All-In-style tech (model releases, launches, big raises/IPOs, hacks, infra, fintech/platform moves) over macro/rates/oil/price action, unless Amitai asks for macro.
 - **Podcast host:** [RedCircle](https://app.redcircle.com). Not RSS.com unless Amitai says the host changed.
+
+## Pre-recording checklist
+Approved by Nadav.
+
+1. **Clap and room tone.** Clap once at the start for A/V sync. Leave about 3–5 seconds of silence at the start and at the end — that silence is the noise profile for denoise.
+2. **Mistakes stay in the take.** Don't stop recording. Say **שוב** and repeat the whole sentence. Editors search the transcript for `שוב` and cut the bad take.
 
 ## Hard rules (every skill)
 1. **Never invent** numbers, quotes, events or promo copy. Factual claims need a source URL.
