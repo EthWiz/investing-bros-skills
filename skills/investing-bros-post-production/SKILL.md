@@ -30,8 +30,6 @@ This skill covers the core edit only. Promo material is separate:
 
 ## Steps (order matters)
 
-**Recording markers.** Use the two in `investing-bros-show` → Pre-recording checklist. Line the opening clap up for A/V sync. Take the denoise noise profile from the silence at the start and at the end. Search the transcript for `שוב` and cut the bad take before it; keep the repeated sentence.
-
 ### 1. Fetch the parts
 Ask the WhatsApp owner to download the latest parts from group `אחים להשקעות` **only** into `$EP/parts/` (prefer `m4a`). Name them so they sort in order (`part1.m4a`, `part2.m4a`).
 
