@@ -4,14 +4,16 @@
 #
 # Usage:
 #   assemble_episode.sh OUT.mp4 --body VIDEO --body-audio LEVELED.wav
-#                       [--start S --end E]
+#                       [--edit edit.json | --start S --end E]
 #                       [--before CLIP.mp4]... [--before-audio CLIP.wav]...
 #                       [--intro INTRO.mp4] [--fps RATE] [--force]
 #                       [--chunk 460] [--max-seconds N]
 #
 #   --body        the episode video (raw master or Riverside export), 1920x1080
 #   --body-audio  level_audio.sh output for that SAME file (same timeline)
-#   --start/--end cut points on that timeline (default: whole file; use edit.json)
+#   --edit        edit.json from trim.sh: start, end and any cuts inside the episode
+#                 (same timeline as --body); the body skips every cut
+#   --start/--end cut points on that timeline when there is no edit.json (default: whole file)
 #   --before      clips that play first, in order (e.g. the teasers); repeatable
 #   --before-audio optional 48 kHz PCM sidecars in the same order as --before;
 #                  when used, supply one per clip (avoids AAC encoder-delay loss)
@@ -29,9 +31,10 @@
 # decoded to 48 kHz stereo PCM before concat and checked against its video's
 # frame count, so compressed-audio priming cannot accumulate at joins.
 set -euo pipefail
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 out="${1:?usage: assemble_episode.sh OUT.mp4 --body VIDEO --body-audio WAV [...]}"; shift
-body="" baudio="" start=0 end="" intro="" chunk=460 budget=0 fps="" force=0 replace_existing=0
+body="" baudio="" start="" end="" editjson="" intro="" chunk=460 budget=0 fps="" force=0 replace_existing=0
 before=(); before_audio=()
 while (( $# )); do
   case "$1" in
@@ -39,6 +42,7 @@ while (( $# )); do
     --body-audio) baudio="$2"; shift 2 ;;
     --start) start="$2"; shift 2 ;;
     --end) end="$2"; shift 2 ;;
+    --edit) editjson="$2"; shift 2 ;;
     --before) before+=("$2"); shift 2 ;;
     --before-audio) before_audio+=("$2"); shift 2 ;;
     --intro) intro="$2"; shift 2 ;;
@@ -74,7 +78,17 @@ PY
 gop=$(python3 -c 'import sys; print(max(1, round(float(sys.argv[1]) * 2)))' "$fps_decimal")
 X264=(-c:v libx264 -preset veryfast -crf 19 -profile:v high -level 4.0 -pix_fmt yuv420p -g "$gop" -video_track_timescale 90000 -r "$fps")
 VF="scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2:black,setsar=1,fps=$fps,format=yuv420p"
-[[ -z "$end" ]] && end=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$body")
+# Kept body ranges on the body's timeline, one "a b" per line.
+ranges=()
+if [[ -n "$editjson" ]]; then
+  [[ -z "$start$end" ]] || { echo "error: use --edit or --start/--end, not both" >&2; exit 2; }
+  kept=$(python3 "$here/edit_map.py" "$editjson" --keep)
+  while IFS= read -r l; do [[ -n "$l" ]] && ranges+=("$l"); done <<<"$kept"
+else
+  [[ -z "$start" ]] && start=0
+  [[ -z "$end" ]] && end=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$body")
+  ranges=("$start $end")
+fi
 work="${out%.*}.parts"
 (( replace_existing )) && rm -rf "$work"
 mkdir -p "$work"
@@ -175,41 +189,47 @@ if [[ -n "$intro" ]]; then
   list+=(intro)
 fi
 
-# 2. Body in chunks (resumable).
-total=$(awk -v s="$start" -v e="$end" 'BEGIN { printf "%.6f", e - s }')
-n=$(awk -v t="$total" -v c="$chunk" 'BEGIN { printf "%d", (t + c - 0.000001) / c }')
-for ((k = 0; k < n; k++)); do
-  f="$work/body$k.mp4"; list+=("body$k")
-  if [[ -f "$f" ]] && ! fps_matches "$f"; then
-    if (( force )); then
-      rm -f "$f"
-    else
-      echo "error: cached $f has a different frame rate; rerun with --force" >&2
-      exit 1
+# 2-3. Body: each kept range in chunks (resumable), then its audio trimmed to
+# that range's frame count (keeps sync across cuts). Without cuts there is one range.
+body_wavs=()
+for ((r = 0; r < ${#ranges[@]}; r++)); do
+  read -r rs re <<<"${ranges[$r]}"
+  # single range keeps the old part names so existing caches still resume
+  if (( ${#ranges[@]} == 1 )); then pfx="body"; wav="body"; else pfx="body${r}_"; wav="body_r$r"; fi
+  total=$(awk -v s="$rs" -v e="$re" 'BEGIN { printf "%.6f", e - s }')
+  n=$(awk -v t="$total" -v c="$chunk" 'BEGIN { printf "%d", (t + c - 0.000001) / c }')
+  for ((k = 0; k < n; k++)); do
+    f="$work/$pfx$k.mp4"; list+=("$pfx$k")
+    if [[ -f "$f" ]] && ! fps_matches "$f"; then
+      if (( force )); then
+        rm -f "$f"
+      else
+        echo "error: cached $f has a different frame rate; rerun with --force" >&2
+        exit 1
+      fi
     fi
-  fi
-  [[ -f "$f" ]] && continue
-  if over_budget; then echo "resume: $k of $n body chunks done — run the same command again"; exit 3; fi
-  ss=$(awk -v s="$start" -v k="$k" -v c="$chunk" 'BEGIN { printf "%.6f", s + k * c }')
-  len=$(awk -v t="$total" -v k="$k" -v c="$chunk" 'BEGIN { l = t - k * c; if (l > c) l = c; printf "%.6f", l }')
-  ffmpeg -v error -nostdin -y -ss "$ss" -t "$len" -i "$body" -map 0:v:0 -an -vf "$VF" "${X264[@]}" "$work/tmp.mp4"
-  mv "$work/tmp.mp4" "$f"
-  echo "body chunk $((k + 1))/$n done ($(frames "$f") frames)"
+    [[ -f "$f" ]] && continue
+    if over_budget; then echo "resume: range $((r + 1))/${#ranges[@]}, $k of $n body chunks done — run the same command again"; exit 3; fi
+    ss=$(awk -v s="$rs" -v k="$k" -v c="$chunk" 'BEGIN { printf "%.6f", s + k * c }')
+    len=$(awk -v t="$total" -v k="$k" -v c="$chunk" 'BEGIN { l = t - k * c; if (l > c) l = c; printf "%.6f", l }')
+    ffmpeg -v error -nostdin -y -ss "$ss" -t "$len" -i "$body" -map 0:v:0 -an -vf "$VF" "${X264[@]}" "$work/tmp.mp4"
+    mv "$work/tmp.mp4" "$f"
+    echo "body chunk $((k + 1))/$n of range $((r + 1))/${#ranges[@]} done ($(frames "$f") frames)"
+  done
+  bf=0; for ((k = 0; k < n; k++)); do bf=$((bf + $(frames "$work/$pfx$k.mp4"))); done
+  bd=$(dur_of_frames "$bf")
+  ffmpeg -v error -nostdin -y -ss "$rs" -i "$baudio" \
+    -af "aresample=48000:async=1:min_hard_comp=0.01:first_pts=0,aformat=channel_layouts=stereo,apad,atrim=duration=$bd" \
+    -c:a pcm_s16le "$work/$wav.wav"
+  check_pcm_frames "$(pcm_samples "$work/$wav.wav")" "$bf"
+  body_wavs+=("$wav")
 done
-
-# 3. Body audio trimmed to the body's frame count.
-bf=0; for ((k = 0; k < n; k++)); do bf=$((bf + $(frames "$work/body$k.mp4"))); done
-bd=$(dur_of_frames "$bf")
-ffmpeg -v error -nostdin -y -ss "$start" -i "$baudio" \
-  -af "aresample=48000:async=1:min_hard_comp=0.01:first_pts=0,aformat=channel_layouts=stereo,apad,atrim=duration=$bd" \
-  -c:a pcm_s16le "$work/body.wav"
-check_pcm_frames "$(pcm_samples "$work/body.wav")" "$bf"
 
 # 4. Join video (copy) and audio, mux.
 : > "$work/video.txt"; : > "$work/audio.txt"
 for s in "${list[@]}"; do echo "file '$s.mp4'" >> "$work/video.txt"; done
 for s in "${list[@]}"; do [[ "$s" == body* ]] || echo "file '$s.wav'" >> "$work/audio.txt"; done
-echo "file 'body.wav'" >> "$work/audio.txt"
+for s in "${body_wavs[@]}"; do echo "file '$s.wav'" >> "$work/audio.txt"; done
 ffmpeg -v error -nostdin -y -f concat -safe 0 -i "$work/video.txt" -c copy "$work/video.mp4"
 ffmpeg -v error -nostdin -y -f concat -safe 0 -i "$work/audio.txt" -c:a pcm_s16le "$work/audio.wav"
 expected_samples=0
@@ -217,7 +237,7 @@ for s in "${list[@]}"; do
   if [[ "$s" == body* ]]; then continue; fi
   expected_samples=$((expected_samples + $(pcm_samples "$work/$s.wav")))
 done
-expected_samples=$((expected_samples + $(pcm_samples "$work/body.wav")))
+for s in "${body_wavs[@]}"; do expected_samples=$((expected_samples + $(pcm_samples "$work/$s.wav"))); done
 actual_samples=$(pcm_samples "$work/audio.wav")
 [[ "$actual_samples" -eq "$expected_samples" ]] || {
   echo "error: PCM concat has $actual_samples samples; expected $expected_samples" >&2

@@ -79,7 +79,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
   /plugin install investing-bros@investing-bros
   ```
   Skills then appear as `investing-bros:<skill-name>`.
-- **Claude app (web/desktop/Cowork)**: the repo is private, so it can't be added as a plugin marketplace there. Upload each skill folder as a ZIP under Customize → Skills (the ZIP's root is the skill folder), starting with `investing-bros-show`; re-upload the changed ones after each merge.
+- **Claude app (web/desktop/Cowork)**: the repo is private, so it can't be added as a plugin marketplace there. After every merge, GitHub builds one ZIP per skill on the [`skills-latest` release](https://github.com/EthWiz/investing-bros-skills/releases/tag/skills-latest). Upload them under Customize → Skills, starting with `investing-bros-show`. Each skill carries a `VERSION` file; if it doesn't match the release notes, re-upload.
 - **Claude Code, manual**: symlink the folders under `skills/` into `~/.claude/skills/` (personal) or `.claude/skills/` (project). Install all of them — they reference `investing-bros-show`.
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
@@ -90,4 +90,4 @@ Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `
 
 ## Contributing
 
-See `AGENTS.md` → *Editing the skills*. Run `python3 tools/validate_skills.py && python3 -m pytest skills` before pushing, and open a small PR saying what changed and why.
+See `AGENTS.md` → *Editing the skills*. Run `python3 tools/validate_skills.py && python3 -m pytest skills tools` before pushing, and open a small PR saying what changed and why.

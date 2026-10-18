@@ -84,16 +84,18 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
   1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with Amitai/Nadav (e.g. "remove the 40 s") before cutting.
   2. Cut on a pause, not mid-word; listen to the join.
-  3. Make the cut in audio **and** video with the same times. `trim.sh` here cuts only the start and end; mid-episode cuts arrive with `trim.sh --cut A-B` / `assemble_episode.sh --edit` (PR #14). Until that is merged, say which cuts are waiting in the hand-back; don't splice by hand (show conventions → Working rules).
-  4. Shift every chapter after the cut: `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on the description's timeline).
+  3. Make the cut in audio **and** video with the same times. `trim.sh --cut A-B` (repeatable) removes it from the audio and records it in `edit.json`; `investing-bros-video` → `assemble_episode.sh --edit edit.json` removes the same range from the video. Don't splice by hand.
+  4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
   5. Check A/V drift at the end of the assembled video (`assemble_episode.sh` prints the sync check) and spot-check lips right after the join.
+- Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation.
 
 ### 6. Trim and check
 ```bash
-scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-edited.m4a"
+scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-edited.m4a" \
+  --cut 1203.4-1209.9 --cut 1830-1836.2      # the approved cuts inside the episode, if any
 ffmpeg -i "$EP/investing-bros-episode-edited.m4a" -af ebur128=peak=true -f null - 2>&1 | tail -12
 ```
-`trim.sh` writes `edit.json` (`start`/`end` in raw seconds). Chapters, shorts and the video map raw → edited time with it (`edited = raw − start`). Listen to the first and last 20 seconds and to every cut. Loudness: about −16 LUFS, true peak ≤ −1.5 dBTP.
+`trim.sh` writes `edit.json` (`start`, `end` and `cuts`, in raw seconds); each join gets a 10 ms fade. Chapters, shorts and the video map raw → edited time with it: `python3 scripts/edit_map.py edit.json --raw 754.2` (with no cuts that is `raw − start`). Listen to the first and last 20 seconds and to every cut. Loudness: about −16 LUFS, true peak ≤ −1.5 dBTP.
 
 ### 7. File in Drive
 Find the `פרק N` folder (prefix match; prep normally created it). Only create `פרק N — נושא` if none exists.
@@ -116,7 +118,7 @@ Large files: upload as the Drive upload account in the browser when the connecto
 ## Hand back
 - Drive folder link
 - Link to the `תמלול - פרק N` Doc
-- Edited length, the start/end cut points, and any cut waiting for script support
+- Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
 - Loudness (integrated LUFS) and the host balance before → after leveling
 - Next: titles, video and shorts can start now, in parallel
 
