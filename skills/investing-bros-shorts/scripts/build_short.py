@@ -23,7 +23,7 @@ short.json (times are seconds on the SOURCE timeline):
   "headline": ["סוויפט היא בכלל", "[לא מערכת תשלומים]"],  # fixed hook text under the logo; [..] = gold accent
   "endcard": ["הפרק המלא על טוקניזציה", "[אחים להשקעות]"],  # replaces the headline for the last seconds
   "tags": [[843.69, 847.2, "אמיתי רסקין"]],              # name tag on the video
-  "cards": [[843.69, 845.35, "אתה רוצה להעביר כסף|מישראל לארצות הברית —"]],  # | = line break
+  "cards": [[843.69, 845.35, "אתה רוצה להעביר כסף|מישראל לארצות הברית,"]],  # | = line break
   "audio": "highpass=f=80,acompressor=threshold=0.06:ratio=2.5:attack=15:release=250:makeup=1.5"
 }
 
@@ -101,6 +101,8 @@ def check_cards(cards):
         lines = text.split("|")
         if len(lines) > 2:
             warnings.append(f"more than two lines: {text}")
+        if "\u2014" in text or "\u2013" in text:
+            warnings.append(f"em/en dash on screen (use a comma or a plain hyphen): {text}")
         for line in lines:
             if len(line.replace("[", "").replace("]", "")) > MAX_LINE:
                 warnings.append(f"line longer than {MAX_LINE} characters: {line}")
@@ -210,7 +212,7 @@ def main() -> int:
     open(base + ".sh", "w", encoding="utf-8").write(build_command(cfg, tl))
     print(f"{cfg['name']}: {tl.duration:.2f} s, {len(tl.pieces)} piece(s), {len(cards)} caption card(s)")
     if not 30 <= tl.duration <= 60:
-        print(f"warning: {tl.duration:.1f} s is outside 30–60 s")
+        print(f"warning: {tl.duration:.1f} s is outside 30-60 s")
     for w in check_cards(cfg["cards"]):
         print("warning:", w)
     return 0

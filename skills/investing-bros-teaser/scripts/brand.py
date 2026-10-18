@@ -7,6 +7,8 @@ Usage:
     python3 brand.py logo  COVER.jpg OUT_logo.png [--box navy|dark|x0,y0,x1,y1]
                                                        # cut the wordmark out of the show cover (default: navy cover)
     python3 brand.py fonts HEEBO_VARIABLE.ttf OUT_DIR  # static Heebo SemiBold/ExtraBold/Black
+    python3 brand.py fonts heebo-hebrew-wght-normal.woff2 heebo-latin-wght-normal.woff2 OUT_DIR
+                                                       # fallback: @fontsource-variable/heebo subsets, merged
     python3 brand.py frame vertical LOGO.png OUT.png   # 1080x1920 shorts frame
     python3 brand.py frame panel-left LOGO.png OUT.png # 1920x1080 teaser, panel left (host video right)
     python3 brand.py frame panel-right LOGO.png OUT.png
@@ -157,6 +159,60 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
     img.save(out_path)
 
 
+FONT_WEIGHTS = {"SemiBold": 600, "ExtraBold": 800, "Black": 900}
+
+
+def _static(src: str, weight: int, family: str):
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib.instancer import instantiateVariableFont
+    font = TTFont(src)
+    font.flavor = None
+    if "fvar" in font:
+        font = instantiateVariableFont(font, {"wght": weight}, updateFontNames=False)
+    names = font["name"]
+    for rec in list(names.names):
+        if rec.nameID in (16, 17, 21, 22, 25):
+            names.removeNames(nameID=rec.nameID)
+    full = family.replace(" ", "")
+    for nid, val in ((1, family), (2, "Regular"), (3, f"{full}-static"), (4, family), (6, full)):
+        names.setName(val, nid, 3, 1, 0x409)
+        names.setName(val, nid, 1, 0, 0)
+    font["OS/2"].usWeightClass = 400                   # one face per family: libass must not synthesise bold
+    font["OS/2"].fsSelection = (font["OS/2"].fsSelection & ~0b1100001) | 0b1000000   # REGULAR only
+    font["head"].macStyle = 0
+    return font
+
+
+def make_fonts(*args):
+    """make_fonts(src1[, src2...], out_dir) -> written paths. Each src is the variable Heebo (ttf or woff2);
+    several srcs (Hebrew + Latin subsets) are instanced one by one and merged into one font per weight."""
+    import os
+    import tempfile
+    *srcs, out_dir = args
+    if not srcs:
+        raise ValueError("fonts: give the variable Heebo font (or its subsets) and an output folder")
+    os.makedirs(out_dir, exist_ok=True)
+    written = []
+    for style, weight in FONT_WEIGHTS.items():
+        family = f"Heebo {style}"
+        out = os.path.join(out_dir, f"Heebo-{style}.ttf")
+        if len(srcs) == 1:
+            _static(srcs[0], weight, family).save(out)
+        else:
+            from fontTools.merge import Merger
+            with tempfile.TemporaryDirectory() as tmp:
+                parts = []
+                for i, src in enumerate(srcs):
+                    part = os.path.join(tmp, f"{i}.ttf")
+                    _static(src, weight, family).save(part)
+                    parts.append(part)
+                merged = Merger().merge(parts)
+                merged.save(out)
+                _static(out, weight, family).save(out)     # merge keeps the first part's names; set them again
+        written.append(out)
+    return written
+
+
 def main(argv) -> int:
     if len(argv) >= 3 and argv[0] == "logo":
         box = LOGO_BOXES["navy"]
@@ -164,7 +220,7 @@ def main(argv) -> int:
             box = LOGO_BOXES[argv[4]] if argv[4] in LOGO_BOXES else tuple(float(v) for v in argv[4].split(","))
         extract_logo(argv[1], argv[2], box)
     elif len(argv) >= 3 and argv[0] == "fonts":
-        print("\n".join(make_fonts(argv[1], argv[2])))
+        print("\n".join(make_fonts(*argv[1:])))
     elif len(argv) >= 4 and argv[0] == "frame":
         make_frame(argv[1], argv[2], argv[3])
     else:

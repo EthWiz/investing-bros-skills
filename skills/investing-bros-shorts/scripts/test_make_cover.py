@@ -51,3 +51,32 @@ def test_fullbleed_cover_matches_the_house_style():
     fc = cmd[cmd.index("-filter_complex") + 1]
     assert "crop=608:1080:1130:0" in fc and "overlay=56:150" in fc and "-frames:v" in cmd
     assert "vflip" in fc                                   # dark fade behind the logo: white "אחים" vanished on a bright wall
+
+
+def test_boxed_line_and_word_rule():
+    from make_cover import headline_warnings, is_boxed, line_centres
+    ass = build_ass("סוויפט היא בכלל|[[לא מערכת תשלומים]]", 6)
+    box = [l for l in ass.splitlines() if ",Box," in l]
+    assert len(box) == 1 and "[" not in box[0].split(",,", 1)[1]           # brackets stripped, navy on a gold box
+    assert is_boxed("[[א]]") and not is_boxed("[א]")
+    with pytest.raises(ValueError):
+        headline_lines("[[א]]|[[ב]]")                                     # one focal line
+    with pytest.raises(ValueError):
+        headline_lines("לא מערכת — תשלומים")                          # no dashes on screen
+    assert headline_warnings("אחת שתיים שלוש|ארבע חמש שש שבע") and not headline_warnings("סוויפט|[[לא תשלומים]]")
+    ys = line_centres(["א", "[[ב]]", "ג"])
+    assert ys == sorted(ys) and ys[-1] < PILL_Y - PILL_HALF_H              # top to bottom, above the pill
+
+
+@pytest.mark.parametrize("n_boxed", [0, 1])
+def test_headline_inside_every_grid_crop(n_boxed):
+    from make_cover import GRID_34
+    _, top, bottom, _ = headline_box(3, n_boxed)
+    assert GRID_34[0] < SQUARE[0] < top and bottom < SQUARE[1] < GRID_34[1]
+
+
+def test_host_picture_gets_the_thumbnail_grade():
+    from make_cover import GRADE
+    for cmd in (build_command("raw.mp4", 1.0, "L", "f.png", "c.ass", "fonts", "g.png", "o.jpg"),
+                build_command_fullbleed("raw.mp4", 1.0, [0, 0, 608, 1080], "l.png", "c.ass", "fonts", "g.png", "o.jpg")):
+        assert GRADE in cmd[cmd.index("-filter_complex") + 1]

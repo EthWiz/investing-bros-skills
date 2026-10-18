@@ -35,3 +35,12 @@ def test_vertical_logo_clears_the_headline():
     logo = fit_logo(tall, VERTICAL["logo_w"], LOGO_MAX_H["vertical"])
     assert logo.height <= LOGO_MAX_H["vertical"] and logo.width <= VERTICAL["logo_w"]
     assert VERTICAL["logo_y"] + logo.height + 20 <= VERTICAL["headline_margin_v"]
+
+
+def test_fonts_command_is_wired():
+    # brand.py fonts crashed with NameError (make_fonts was missing) until October 2026
+    import pytest
+    from brand import FONT_WEIGHTS, make_fonts
+    assert FONT_WEIGHTS == {"SemiBold": 600, "ExtraBold": 800, "Black": 900}
+    with pytest.raises(ValueError):
+        make_fonts("only-an-out-dir")

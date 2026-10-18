@@ -71,3 +71,9 @@ def test_command_switches_host_and_applies_gain():
 def test_check_cards_flags_three_lines_and_long_lines():
     warnings = check_cards([[0, 1, "א|ב|ג"], [1, 2, "א" * 30]])
     assert len(warnings) == 2
+
+
+def test_dash_on_screen_is_flagged():
+    from build_short import check_cards
+    assert check_cards([(0, 1, "מישראל לארצות הברית — בשנייה")])
+    assert check_cards([(0, 1, "לארצות הברית, מהר")]) == []
