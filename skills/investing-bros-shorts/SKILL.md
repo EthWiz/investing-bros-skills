@@ -86,12 +86,16 @@ Episode 7 (video producer), on top of that look:
 | Snap cuts to pauses | `find_cuts.py WINDOW.wav --offset T0 --at t1 t2…` | flags cuts with no real pause |
 | Word timings for the picked windows only | `transcribe_clip.py WINDOW.wav --offset T0 --from a --to b --model small.pt` | never the whole episode; install notes in `investing-bros-show` → references/environment.md |
 | Time the proofread captions word by word | `align_words.py short.json words.json -o aligned.json` | `cards` stay the proofread text |
-| Centre the face | `face_crop.py raw.mp4 --at t1 t2 t3` | prints `crop_x` for both hosts; confirm on one frame |
+| Centre the face | `face_crop.py raw.mp4 --at t1 t2 t3` | prints `crop_x` for both hosts; confirm on one frame — hands in shot pull it off (episode 7: suggested L=64, the face needed ~100) |
 | Render the house style | `build_fullbleed.py short.json` then `bash NAME_fb.sh` | also writes `NAME.srt`; `base` + `shots` cut to the other host for reactions; `tags` = name tag; `sources`/`crop` take each host's own high-res Riverside track. Worked example: [references/ep7-asteroid-fullbleed.json](references/ep7-asteroid-fullbleed.json). Its output is also the input for a HyperFrames overlay |
 | Check the export | `check_short.py NAME.mp4` | length, −14 LUFS, peak, and a frame strip you must look at |
 | Cover in the house style | `make_cover.py --style fullbleed --crop x,y,w,h --logo logo.png …` | same crop as the short |
 | Upload to Drive | `drive.sh put FILE PROMO_FOLDER_ID` | |
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
+
+**Link every short to the full episode** (this is what turns Short views into episode views):
+- End card: name the payoff and point up to the link, e.g. `["השיחה ממשיכה בפרק המלא", "[אחים להשקעות · פרק N]", "הקישור לפרק — כאן למעלה"]`. No arrow glyphs (Heebo has none).
+- Hand back a `youtube-שורט-NN.md` next to each short with: the **Related video** to set in YouTube Studio (the full episode — that is the tappable link on the Short), title, description with the episode link at the short's timestamp (`&t=<seconds>`), the pinned-comment text, and the `.srt` to upload. Worked example: [references/youtube-short-example.md](references/youtube-short-example.md).
 
 Add 1–2 animated explainer panels with `investing-bros-hyperframes` only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
 

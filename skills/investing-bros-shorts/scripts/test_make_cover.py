@@ -50,3 +50,4 @@ def test_fullbleed_cover_matches_the_house_style():
     cmd = build_command_fullbleed("raw.mp4", 2121.0, [1130, 0, 608, 1080], "logo.png", "c.ass", "fonts", "g.png", "o.jpg")
     fc = cmd[cmd.index("-filter_complex") + 1]
     assert "crop=608:1080:1130:0" in fc and "overlay=56:150" in fc and "-frames:v" in cmd
+    assert "vflip" in fc                                   # dark fade behind the logo: white "אחים" vanished on a bright wall

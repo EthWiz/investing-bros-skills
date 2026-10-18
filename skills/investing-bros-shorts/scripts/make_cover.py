@@ -121,8 +121,8 @@ def build_command_fullbleed(source, at, crop, logo, ass, fonts, grad, out) -> li
     x, y, w, h = crop
     zw, zh = int(W * ZOOM) // 2 * 2, int(H * ZOOM) // 2 * 2
     fc = (f"[0:v]crop={w}:{h}:{x}:{y},scale={zw}:{zh},crop={W}:{H}:(iw-{W})/2:(ih-{H})/3,setsar=1,setpts=0[host];"
-          f"[1:v]setpts=0[gr];[2:v]scale=210:-1,setpts=0[lg];"
-          f"[host][gr]overlay=0:{H - FB_FADE_H}[b];[b][lg]overlay=56:150[c];"
+          f"[1:v]setpts=0[gr];[2:v]scale=210:-1,setpts=0[lg];[1:v]vflip,scale={W}:420,setpts=0[top];"
+          f"[host][gr]overlay=0:{H - FB_FADE_H}[b0];[b0][top]overlay=0:0[b];[b][lg]overlay=56:150[c];"
           f"[c]ass='{esc(ass)}':fontsdir='{esc(fonts)}',format=yuvj420p[out]")
     return ["ffmpeg", "-v", "error", "-y", "-ss", f"{at:.3f}", "-i", source, "-i", grad, "-i", logo,
             "-filter_complex", fc, "-map", "[out]", "-frames:v", "1", "-q:v", "2", out]
