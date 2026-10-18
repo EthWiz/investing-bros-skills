@@ -18,7 +18,7 @@ After the audio edit (`investing-bros-post-production`), when the recording has 
 
 ## Inputs
 From the episode's `extras/`:
-- `transcript/segments.json` and `edit.json` (raw timeline; `edited = raw − start`)
+- `transcript/segments.json` and `edit.json` (raw timeline; map to edited time with `scripts/edit_map.py edit.json --raw T`)
 - the raw master video (`investing-bros-episode-raw-untrimmed.mp4`) and `episode-leveled.wav` (same timeline)
 - brand assets from `scripts/brand.py` (logo, fonts, frames) and the intro clip (show conventions → Brand)
 - the description file `תיאור-פרק-N.txt` from the episode root, for the YouTube description (step 4)
@@ -47,10 +47,10 @@ Order: cold open(s) → the intro, as-is → the episode. Hard cuts.
 ```bash
 scripts/assemble_episode.sh "$EP/פרק-N-וידאו.mp4" \
   --body "$EP/investing-bros-episode-raw-untrimmed.mp4" --body-audio "$EP/episode-leveled.wav" \
-  --start START --end END \
+  --edit "$EP/edit.json" \
   --before "טיזר 1 - נדב.mp4" --before "טיזר 2 - אמיתי.mp4" --intro "<intro clip>.mp4"
 ```
-`START`/`END` come from `edit.json`. Every segment uses the same x264 settings and the body goes in ~8-minute chunks; under a command time limit add `--max-seconds 150` and re-run until it stops printing `resume`. Never join separately encoded pieces with `-c copy`.
+`--edit` applies the same start, end and inside cuts as the audio, so the video and the published audio match. Every segment uses the same x264 settings and the body goes in ~8-minute chunks; under a command time limit add `--max-seconds 150` and re-run until it stops printing `resume`. Never join separately encoded pieces with `-c copy`.
 
 Check: video and audio durations match (the script prints both); look at a frame and listen at each join and somewhere late in the episode for sync.
 

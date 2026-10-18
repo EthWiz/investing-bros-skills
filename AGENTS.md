@@ -32,7 +32,7 @@ Several agents (Amitai's, Nadav's, Grokbot) work on the same episodes, so improv
 - Each skill: frontmatter `name` = folder name (lowercase, hyphens), `description` says what it does **and** when to use it (include Amitai's Hebrew/English trigger phrases). Body sections: When to use → Inputs → Steps → Done when → Hand back → Never. **Done when** lists the files the skill leaves in the Drive folder (the validator requires the section).
 - One skill per stage of the episode flow. A variant of a step (HyperFrames for shorts, the thumbnail for the copy) is a `references/` file of that skill, not a new skill.
 - Code an agent should run goes in the skill's `scripts/`, with tests (`test_*.py`) where it can be tested. Longer reference material goes in `references/`.
-- A script used by two skills is copied into both (`clip_captions.py`, `make_clip.sh`, `brand.py` in shorts and video): other scripts import them from their own folder, and skills may be installed separately. Edit both copies together — the validator fails if same-named scripts differ.
+- A script used by several skills is copied into each (`clip_captions.py`, `make_clip.sh`, `brand.py` in shorts and video; `edit_map.py` in post-production, title-description, video and shorts): other scripts import them from their own folder, and skills may be installed separately. Edit all copies together — the validator fails if same-named scripts differ.
 - Refer to other skills by name, not by relative path — skills may be installed separately.
 - Never commit passwords, tokens or cookies; refer to secrets by env-var name.
-- Before pushing: `python3 tools/validate_skills.py` and `python3 -m pytest skills` (CI runs both).
+- Before pushing: `python3 tools/validate_skills.py` and `python3 -m pytest skills tools` (CI runs both). After a merge, GitHub rebuilds the per-skill ZIPs on the `skills-latest` release.

@@ -1,0 +1,43 @@
+name: release-skills
+
+# After every merge to main: one ZIP per skill (for the Claude app), published as the
+# "skills-latest" release. Each ZIP carries a VERSION file so agents can tell if
+# their installed copy is current.
+on:
+  push:
+    branches: [main]
+    paths:
+      - "skills/**"
+      - ".claude-plugin/plugin.json"
+      - "tools/build_skill_zips.py"
+      - ".github/workflows/release-skills.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-skills
+  cancel-in-progress: true
+
+jobs:
+  zips:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Validate before publishing
+        run: |
+          pip install pyyaml
+          python3 tools/validate_skills.py
+      - name: Build one ZIP per skill
+        run: python3 tools/build_skill_zips.py dist
+      - name: Publish the skills-latest release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release delete skills-latest --yes --cleanup-tag || true
+          gh release create skills-latest dist/*.zip \
+            --title "Skills: latest main" --notes-file dist/NOTES.md --target "$GITHUB_SHA"
