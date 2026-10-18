@@ -1,28 +1,43 @@
 # Investing Bros skills (אחים להשקעות)
 
-Shared, versioned agent skills for producing the **Investing Bros / אחים להשקעות** podcast (Amitai & Nadav Raskin).
-Any agent — Claude, Codex, Grokbot — can read and follow these.
+Shared, versioned agent skills for producing the **Investing Bros / אחים להשקעות** podcast (Amitai & Nadav Raskin). Any agent — Claude, Codex, Grokbot — can read and follow them.
 
-## Pipeline
+## Episode flow
+
+From the finished recording to live on RedCircle, Spotify and YouTube. Each step is one skill; the Drive episode folder shows what's done.
 
 ```
-prep ──► record ──► post-production ──► review ──► upload (draft) ──► publish ──► share
-                         │
-                         └──► promo: shorts / teaser   (+ cover art: YouTube thumbnail prompt)
+1 audio edit ──┬──► 2 titles + description (.txt) + thumbnail ──┐
+               ├──► 3 cold opens + intro + video episode ────────┼──► 5 review ► upload ► publish ► check Spotify ► share
+               └──► 4 shorts + covers, mid-form highlights ──────┘
 ```
 
-| Skill | Use it for |
+| # | Step | Skill | Leaves in the Drive folder `פרק N — נושא/` | Approves |
+|---|---|---|---|---|
+| 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
+| 1 | Audio edit: combine, level the hosts, transcribe, cut start/end and silences, trim, loudness | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
+| 2 | Five question-led titles, description with chapters, thumbnail prompt | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, `promo/` thumbnail | Amitai (title) |
+| 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
+| 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `shorts/`, `mid-form/` | Nadav |
+| 5 | Review ping, RedCircle draft, YouTube (private), then publish, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
+
+- Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
+- Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
+- `investing-bros-show` holds what all of them share: hosts, naming, the Drive tree, brand, accounts, WhatsApp/Telegram destinations, working rules. Load it with every skill.
+- **Nothing goes public without Amitai's explicit OK in chat.**
+
+## Improving the skills
+
+The skills get better a little after every run, from whichever agent did the work. When a run teaches something:
+
+| What happened | Where it goes |
 |---|---|
-| `investing-bros-show` | **Shared conventions** — load with every other skill: hosts, format, naming, Drive tree, roles/accounts, WhatsApp destinations |
-| `investing-bros-episode-preparation` | Before recording: episode folder + `brief/`, news ideas, deep dive, share prep docs |
-| `investing-bros-post-production` | After recording: combine, level the hosts, transcribe, trim, Hebrew Docs, full video episode, Drive filing, review ping |
-| `investing-bros-title-description` | Five question-led Hebrew title options + the description Doc (intro, disclaimer, chapters), checked by `check_copy.py`: concise, no clickbait, no em dashes |
-| `investing-bros-shorts` | Branded vertical shorts: speaker close-ups, hook headline, burned-in Hebrew captions, a sized cover each, uploaded to Drive `promo/` |
-| `investing-bros-hyperframes` | Explainer shorts with animated cards rendered by HyperFrames (HTML/GSAP) on top of the ffmpeg-cut clip |
-| `investing-bros-teaser` | Promo teaser (30–60 s) or per-host cold-open teasers for the video episode |
-| `investing-bros-cover-art` | YouTube thumbnail: AI image prompt + headline options — channel layout, one accent colour |
-| `investing-bros-episode-upload` | RedCircle draft upload, incl. the Hebrew RTL + `?` fix |
-| `investing-bros-share-new-episode` | WhatsApp distribution of the published episode |
+| A mistake a script could catch (a dash, a timestamp, a file size) | A check in that skill's script, with a test |
+| A step that was missing or wrong | One line in the skill that owns the step |
+| A fact (spelling, account, size limit, a decision) | `investing-bros-show` only |
+| Something you couldn't verify or fix yet | A GitHub issue |
+
+Small PRs, one fix each, merged the same day. Details in `AGENTS.md`.
 
 ## Layout
 
@@ -30,7 +45,7 @@ prep ──► record ──► post-production ──► review ──► uploa
 .claude-plugin/          plugin + marketplace manifests (Claude Code)
 AGENTS.md                agent instructions (CLAUDE.md imports it)
 skills/<name>/
-  SKILL.md               frontmatter (name, description) + steps
+  SKILL.md               frontmatter (name, description) + When to use, Inputs, Steps, Done when, Hand back, Never
   scripts/               code the agent runs (+ test_*.py)
   references/            detail loaded only when needed
 tools/validate_skills.py frontmatter/layout checks (run in CI)
@@ -49,8 +64,10 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
 
+Version 3.0 merged eleven skills into seven. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art` or `-share-new-episode`, it has an old copy: remove those and install the current set.
+
 Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
 
 ## Contributing
 
-See `AGENTS.md` → *Editing the skills*. In short: shared facts only in `investing-bros-show`, one skill per folder, code in `scripts/` with tests, never commit secrets. Run `python3 tools/validate_skills.py && python3 -m pytest skills` before pushing. Open a PR (or push to `main` for trivial fixes) and note what changed and why.
+See `AGENTS.md` → *Editing the skills*. Run `python3 tools/validate_skills.py && python3 -m pytest skills` before pushing, and open a small PR saying what changed and why.

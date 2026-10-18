@@ -1,17 +1,6 @@
----
-name: investing-bros-hyperframes
-description: >-
-  Render an Investing Bros / אחים להשקעות short (or a teaser moment) with
-  HyperFrames: ffmpeg cuts the clean host clip, then an HTML/GSAP composition
-  adds animated explainer cards (a number counting up, a wrong/right strike,
-  a list that builds), the logo and proofread Hebrew captions. Use when
-  Amitai asks for "hyperframes", "כרטיסים", "גרפיקה מונפשת", "animated
-  graphics" or "a more designed short", or when a short explains a concept
-  that cards can show.
----
-# Investing Bros shorts with HyperFrames
+# HyperFrames render (explainer shorts)
 
-Load `investing-bros-show` first (brand, loudness, recording layout). The moment picking, cut points and caption proofreading come from `investing-bros-shorts` — this skill replaces only its render step.
+Part of `investing-bros-shorts`: it replaces only the render step (step 4). Moment picking, cut points, caption proofreading, the cover and the Drive upload stay as in the main skill.
 
 [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, open source) renders video from an HTML page: the DOM declares timing with `data-*` attributes, a paused GSAP timeline drives the motion, and headless Chrome captures it frame by frame. Chrome lays out the text, so Hebrew right-to-left and mixed Hebrew/English come out right without the ASS workarounds.
 
@@ -19,16 +8,16 @@ Load `investing-bros-show` first (brand, loudness, recording layout). The moment
 - The clip **explains** something — a number, a "not X but Y", a before/after, a short list. Cards make it land (episode 6: "SWIFT — ~~מערכת תשלומים~~ / מערכת הודעות", "40$" counting up).
 - Amitai asks for HyperFrames or a more designed short.
 
-For a punchline, a story or a quick reaction clip, the plain `investing-bros-shorts` render is enough and ~6× faster to render.
+For a punchline, a story or a quick reaction clip, the plain render is enough and ~6× faster to render.
 
 ## Inputs
-- The short's edit list from `investing-bros-shorts` step 1–2: kept `pieces` (cut at pauses), `shots` (L/R host), proofread `captions`.
+- The short's edit list from steps 1–2 of the main skill: kept `pieces` (cut at pauses), `shots` (L/R host), proofread `captions`.
 - The source recording (side-by-side, 1920×1080) and the levelled episode audio (`episode-leveled.wav` from post-production) — or the raw audio plus per-piece gains.
-- Brand assets from `investing-bros-shorts` → `brand.py`: `logo.png` (wordmark) and the static Heebo TTFs.
+- Brand assets from `brand.py`: `logo.png` (wordmark) and the static Heebo TTFs.
 - Node 18+, ffmpeg/ffprobe, and the HyperFrames CLI (`npx hyperframes`, from npm).
 
 ## Steps
-1. **Write `short.json`** — one file drives both scripts; format in `scripts/build_composition.py`, full worked example in [references/example-swift.json](references/example-swift.json). Add `cards` (2–6 per short, one at a time, never overlapping):
+1. **Write `short.json`** — one file drives both scripts; format in `scripts/build_composition.py`, full worked example in [references/example-swift.json](example-swift.json). Add `cards` (2–6 per short, one at a time, never overlapping):
    | type | shows | good for |
    |---|---|---|
    | `route` | A ——→ B with a filling bar | a transfer, a move, a journey |
@@ -69,17 +58,17 @@ For a punchline, a story or a quick reaction clip, the plain `investing-bros-sho
 6. **Check the export**: duration = the clip's; `ffmpeg -i output.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak ≤ −1 dB; frames at each card's key moment; listen to every cut.
 
 ## Full-screen overlay (house style, episode 7)
-For the house style, the base video comes from `investing-bros-shorts` → `build_fullbleed.py` (full-screen host, word-by-word captions, logo). HyperFrames then adds only 1–2 animated panels in a compact top panel (left 56, top 262, 968×420 scaled to 0.74 so the host's eyes stay clear). Set `"layout": "overlay"` in short.json (no `captions` — they are burned into the input) and use these card types:
+For the house style, the base video comes from `build_fullbleed.py` (full-screen host, word-by-word captions, logo). HyperFrames then adds only 1–2 animated panels in a compact top panel (left 56, top 262, 968×420 scaled to 0.74 so the host's eyes stay clear). Set `"layout": "overlay"` in short.json (no `captions` — they are burned into the input) and use these card types:
 
 | type | shows | keys (times = source) |
 |---|---|---|
 | `fly` | an asteroid in space: metal sheen, gold veins, then it flies down and lands on Earth with a gold flash | `kicker`, `metal_at`/`metal_label`, `gold_at`/`gold_label`, `fly_at`, `fly_kicker`, `land_label` |
 | `supply` | a stack of gold bars, a second stack (×N), an arrow, then a value meter that drops | `kicker`, `factor`, `factor_label`, `more_at`, `value_kicker`, `value_at`, `drop_at`, `drop_to`, `drop_mark`, `drop_label` |
 
-The other card types work in the panel too. Worked example: [references/ep7-asteroid-overlay.json](references/ep7-asteroid-overlay.json). Labels are the hosts' words or a faithful label for them. Use the full-screen render (with `-g 24`) as `input-video.mp4`; it already has the logo and end card, so leave `endcard` out.
+The other card types work in the panel too. Worked example: [references/ep7-asteroid-overlay.json](ep7-asteroid-overlay.json). Labels are the hosts' words or a faithful label for them. Use the full-screen render (with `-g 24`) as `input-video.mp4`; it already has the logo and end card, so leave `endcard` out.
 
-## Hand back
-Make the short's cover and upload short + cover + `.srt` exactly as `investing-bros-shorts` steps 6–7 (sized cover, sub-10 MB upload copy, `promo/` naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
+## After the render
+Make the short's cover and upload short + cover + `.srt` exactly as the main skill's steps 6–7 (sized cover, `shorts/` folder and naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
 
 ## Never
 - Put a number, name or claim on a card that the hosts didn't say.

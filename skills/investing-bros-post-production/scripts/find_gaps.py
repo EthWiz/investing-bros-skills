@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """List long silences in the episode, with the transcript around each, to build
-the cut list Nadav approves before the trim (post-production step 5).
+the cut list Nadav approves before the trim (investing-bros-post-production).
 
 Suggestions only: a pause can be a thinking beat that belongs in the episode.
 

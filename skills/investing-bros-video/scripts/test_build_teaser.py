@@ -1,4 +1,4 @@
-"""Tests for build_teaser.py. Run: python3 -m pytest skills/investing-bros-teaser/scripts"""
+"""Tests for build_teaser.py. Run: python3 -m pytest skills/investing-bros-video/scripts"""
 import os
 import sys
 

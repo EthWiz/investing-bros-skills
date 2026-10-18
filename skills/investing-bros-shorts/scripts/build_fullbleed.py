@@ -7,7 +7,7 @@ Usage:
 
 The output (1080x1920, keyframe every second) is a finished short, and also the
 input video for a HyperFrames overlay with 1-2 animated explainer panels
-(investing-bros-hyperframes). Times are on the SOURCE timeline.
+(the HyperFrames render, references/hyperframes.md). Times are on the SOURCE timeline.
 
 short.json:
 {

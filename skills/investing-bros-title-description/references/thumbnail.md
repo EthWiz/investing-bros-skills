@@ -1,20 +1,8 @@
----
-name: investing-bros-cover-art
-description: >-
-  Write the image-generation prompt (and headline options) for an Investing
-  Bros / אחים להשקעות episode's YouTube thumbnail: the channel's dark
-  cinematic layout with one main accent colour, built for click-through. Use when Amitai asks for
-  "cover art", "a thumbnail", "תמונה ממוזערת", "תמונת פרק", "קאבר לפרק" or a
-  prompt to give an AI image tool for episode N.
----
-# Investing Bros cover art (YouTube thumbnail)
+# Thumbnail (YouTube cover art)
 
-Load `investing-bros-show` first.
+Step 6 of `investing-bros-title-description`.
 
-The thumbnail is drawn by an AI image tool (Amitai uses Gemini / Grok); this skill writes the prompt and the headline. Thumbnails follow their own layout (below); shorts and teasers use the black/emerald brand from `investing-bros-show`.
-
-## When to use
-After the episode's topic and title are settled (usually after post-production), when Amitai asks for cover art, a thumbnail, or "a prompt for an AI".
+The thumbnail is drawn by an AI image tool (Amitai uses Gemini / Grok); this step writes the prompt and the headline. Thumbnails follow their own layout (below); shorts and teasers use the navy/gold brand from `investing-bros-show`.
 
 ## Inputs
 - Episode number N and the episode's real content: the transcript or chapters (post-production) — the thumbnail sells what is actually in the episode.
@@ -39,7 +27,7 @@ Not always gold — what matters is that it isn't too much.
 2. **Write 2–3 headline options**, each:
    - 2–4 words, readable on a phone at thumbnail size in under a second
    - true to what the hosts said (a question is fine: "המניה שלך על הבלוקצ'יין?")
-   - different from the video title — the thumbnail and title should add up, not repeat (title `פרק 6 – מהפכת הטוקניזציה`, thumbnail `וול סטריט עוברת לבלוקצ'יין`)
+   - different from the video title — the thumbnail and title should add up, not repeat (title `פרק 6 - מהפכת הטוקניזציה`, thumbnail `וול סטריט עוברת לבלוקצ'יין`)
    - no investment promises, no "you'll get rich", no fake urgency
 3. **Pick one focal object and one accent colour.** The object shows the hook as a transformation or a contrast (a dollar bill dissolving into glowing blockchain cubes; a reactor glowing over a dark landscape) — one object, not a collage. Choose the accent as above.
 4. **Fill the prompt** (English instructions, Hebrew text quoted exactly):
@@ -56,18 +44,17 @@ Not always gold — what matters is that it isn't too much.
    "נדב ואמיתי רסקין".
    Leave the top-left corner empty for the channel logo. No other text, no watermarks.
    ```
-   Worked example: [references/examples.md](references/examples.md).
+   Worked example: [references/examples.md](thumbnail-examples.md).
 5. **Check the result** before handing it on (if Amitai sends it back, or you generated it): Hebrew letters correct and right-to-left (AI tools garble Hebrew — regenerate or fix the text in Canva), headline readable when shrunk to ~160 px wide, the focal object obvious, really only one accent colour (regenerate if the tool added a second glow colour), top-left clear for the logo, nothing that looks like a real company's logo unless the episode is about that company.
 
-## Hand back
+## What to hand over
 Send Amitai: the prompt (in a code block, ready to paste), the 2–3 headline options with the one used marked, the accent colour and why, and two lines of advice:
 - check it on a phone at thumbnail size;
 - YouTube Studio's **Test & compare** can A/B up to three thumbnails on the published video — worth running with two of the headlines.
-Finished images go to the episode's `promo/` folder.
+The finished image goes in the episode's `promo/` folder as `thumbnail-פרק-N.jpg`.
 
 ## Never
 - Put claims on the thumbnail the episode doesn't make, or investment promises.
 - Repeat the video title word for word on the thumbnail.
 - Alter the show logo or draw a new one — leave the corner empty for the real logo.
 - Use images or likenesses you don't have rights to unless Amitai supplies them.
-- Write your own code where this skill has a script, or work around a missing step without saying so — follow the working rules in `investing-bros-show`.
