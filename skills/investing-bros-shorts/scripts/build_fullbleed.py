@@ -20,14 +20,21 @@ short.json:
   "audio_source": "raw.mp4",                    # optional: audio file on the same timeline (default: source)
   "tags": [[2106.05, 2109.5, "נדב רסקין"]],      # name tag (top right)
   "words": "aligned.json",                      # from align_words.py (proofread caption text + whisper timing)
-  "hook": ["אסטרואיד אחד", "[יכול להכפיל]", "[את הזהב בעולם?]"],   # first ~2.7 s, faithful paraphrase
+  "hook": ["למה לסייברקאב", "אין הגה?"],       # first ~2.7 s: ONE idea, as short as possible (<= ~6 words)
+  "hook_style": "strips",                       # default: cream/mustard torn-paper strips, navy type (brand);
+                                                # "legacy" = the old white/gold ASS hook (rebuilding old exports only)
+  "hook_y": 440, "caption_y": 1290,             # centre y; bounds brand.HOOK_Y_BOUNDS / CAPTION_Y_BOUNDS,
+                                                # pick the spot that clears the face (face_crop.py suggests both)
   "zooms": [[2114.5, 1.13], [2119.0, 1.0]],     # punch-ins: from this source time, this zoom (1.0 = none)
   "endcard": ["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק 7]", "הקישור לפרק כאן למעלה"],
   "logo": "logo.png", "fonts": "fonts"
 }
-[..] = gold. Captions: 2-3 words at a time, the spoken word gold, centre at y=1290
-(above the Reels/Shorts UI). Logo top-left (56,150), 210 px wide. Also writes NAME.srt from
-"cards" for the platform's subtitle field. Check the export with check_short.py.
+[..] = gold in captions. Captions: 2-3 words at a time, the spoken word gold, centre at
+caption_y (default 1290, allowed 1100-1470: above the Reels/Shorts UI). The hook is drawn
+by brand.hook_strips into NAME_hook.png and overlaid for the first 2.7 s, so it never looks
+like a caption. Logo top-left (56,150), 210 px wide. Also writes NAME.srt from "cards" for
+the platform's subtitle field, and NAME_layout.json (caption_y, hook_y, hook box) that
+check_short.py checks against the bounds. Check the export with check_short.py.
 """
 import argparse
 import json
@@ -35,14 +42,15 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import ACCENT, FONT_BLACK, FONT_EXTRABOLD, ass_colour  # noqa: E402
+from brand import (ACCENT, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK, FONT_EXTRABOLD,  # noqa: E402
+                   HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, ass_colour, hook_strips)
 from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
 GOLD = ACCENT
 G = "{\\c" + ass_colour(GOLD) + "}"
 W = "{\\c&H00FFFFFF}"
-CAP_Y, HOOK_Y, END_S = 1290, 700, 2.8
+LEGACY_HOOK_Y, END_S, HOOK_S = 700, 2.8, 2.7
 AUDIO = ("highpass=f=80,acompressor=threshold=0.06:ratio=2.5:attack=15:release=250:makeup=1.5,"
          "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo")
 
@@ -51,7 +59,25 @@ def gold(s):
     return rtl(s).replace("[", G).replace("]", W)
 
 
+def layout(cfg):
+    """Caption and hook positions for this short, checked against the brand bounds."""
+    style = cfg.get("hook_style", "strips")
+    if style not in ("strips", "legacy"):
+        raise ValueError(f"hook_style must be 'strips' or 'legacy', not {style!r}")
+    cap_y = cfg.get("caption_y", CAPTION_Y_DEFAULT)
+    hook_y = cfg.get("hook_y", HOOK_Y_DEFAULT if style == "strips" else LEGACY_HOOK_Y)
+    lo, hi = CAPTION_Y_BOUNDS
+    if not lo <= cap_y <= hi:
+        raise ValueError(f"caption_y {cap_y} is outside {lo}-{hi} (platform UI below, hook band above)")
+    lo, hi = HOOK_Y_BOUNDS
+    if style == "strips" and not lo <= hook_y <= hi:
+        raise ValueError(f"hook_y {hook_y} is outside the top band {lo}-{hi}")
+    return {"hook_style": style, "caption_y": cap_y, "hook_y": hook_y}
+
+
 def build_ass(cfg, tl, chunks):
+    lay = layout(cfg)
+    CAP_Y, HOOK_Y = lay["caption_y"], lay["hook_y"]
     dur = tl.duration
     end_t = max(0.0, dur - END_S)
     st = ("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
@@ -64,8 +90,8 @@ def build_ass(cfg, tl, chunks):
     out = ("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n"
            "[V4+ Styles]\n" + st + "\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
     ev = lambda layer, s, e, style, txt: f"Dialogue: {layer},{ass_time(s)},{ass_time(e)},{style},,0,0,0,,{txt}\n"
-    if cfg.get("hook"):
-        out += ev(5, 0, 2.7, "Hook", f"{{\\pos(540,{HOOK_Y})\\fscx70\\fscy70\\t(0,180,\\fscx100\\fscy100)\\fad(0,200)}}"
+    if cfg.get("hook") and lay["hook_style"] == "legacy":
+        out += ev(5, 0, HOOK_S, "Hook", f"{{\\pos(540,{HOOK_Y})\\fscx70\\fscy70\\t(0,180,\\fscx100\\fscy100)\\fad(0,200)}}"
                   + "\\N".join(gold(x) for x in cfg["hook"]))
     for chunk in chunks:
         gs, ge = tl.map(chunk[0]["s"]), min(tl.map(chunk[-1]["e"]), end_t)
@@ -129,7 +155,7 @@ def build_command(cfg, tl):
     idx = {f: i for i, f in enumerate(files)}
     P = tl.pieces
     gains = tl.gains
-    S = max(0.0, P[0][0] - 1.0)
+    S = max(0.0, min(a for a, _ in P) - 1.0)     # earliest piece: the opening may be a later line
     T = max(b for _, b in P) - S + 1.0
     n = len(P)
     uses = {}
@@ -164,15 +190,19 @@ def build_command(cfg, tl):
     else:
         f += f"[V{base}]null[vc];"
     z = "1.0"
-    for t, zz in sorted(cfg.get("zooms", [])):          # latest time ends up outermost
+    for t, zz in sorted(cfg.get("zooms", []), key=lambda x: tl.map(x[0])):   # latest OUTPUT time ends up outermost
         z = f"if(gte(it,{tl.map(t):.3f}),{zz},{z})"
-    g, lg = len(files), len(files) + 1
+    g, lg, hk = len(files), len(files) + 1, len(files) + 2
+    strips = bool(cfg.get("hook")) and layout(cfg)["hook_style"] == "strips"
+    hook = (f"[s];[{hk}:v]format=rgba,fade=t=out:st={HOOK_S - 0.2:.2f}:d=0.2:alpha=1[hk];"
+            f"[s][hk]overlay=0:0:eof_action=pass,format=yuv420p[v];") if strips else ",format=yuv420p[v];"
     f += (f"[vc]fps={fps},zoompan=z='{z}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)*0.35':d=1:s=1080x1920:fps={fps},"
           f"eq=contrast=1.05:saturation=1.1[z];[{g}:v]format=rgba[gr];[z][gr]overlay=0:0[g];"
-          f"[{lg}:v]scale=210:-1[lg];[g][lg]overlay=56:150[l];[l]ass={name}_fb.ass:fontsdir={cfg.get('fonts', 'fonts')},format=yuv420p[v];"
-          f"[ac]{AUDIO}[a]")
+          f"[{lg}:v]scale=210:-1[lg];[g][lg]overlay=56:150[l];[l]ass={name}_fb.ass:fontsdir={cfg.get('fonts', 'fonts')}"
+          f"{hook}[ac]{AUDIO}[a]")
     inputs = " ".join(f'-ss {S:.3f} -t {T:.3f} -i "{p}"' for p in files)
-    return (f'ffmpeg -v error -y {inputs} -i "{name}_grad.png" -i "{cfg.get("logo", "logo.png")}" '
+    hook_in = f'-loop 1 -framerate {fps} -t {HOOK_S} -i "{name}_hook.png" ' if strips else ""
+    return (f'ffmpeg -v error -y {inputs} -i "{name}_grad.png" -i "{cfg.get("logo", "logo.png")}" {hook_in}'
             f'-filter_complex "{f}" -map "[v]" -map "[a]" -c:v libx264 -preset veryfast -crf 17 -g {fps} -keyint_min {fps} '
             f'-r {fps} -c:a aac -b:a 192k -movflags +faststart -t {tl.duration:.4f} "{name}.mp4"\n')
 
@@ -188,6 +218,11 @@ def main():
     base = os.path.join(a.out_dir, cfg["name"])
     open(base + "_fb.ass", "w", encoding="utf-8").write(build_ass(cfg, tl, chunks))
     make_gradient(base + "_grad.png")
+    lay = layout(cfg)
+    if cfg.get("hook") and lay["hook_style"] == "strips":
+        font = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg.get("fonts", "fonts"), "Heebo-Black.ttf")
+        lay["hook_box"] = hook_strips(cfg["hook"], base + "_hook.png", font, lay["hook_y"])
+    json.dump(lay, open(base + "_layout.json", "w"))
     open(base + "_fb.sh", "w", encoding="utf-8").write(build_command(cfg, tl))
     if cfg.get("cards"):
         cards = close_gaps([(tl.map(s), tl.map(e), t) for s, e, t in cfg["cards"]])

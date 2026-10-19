@@ -8,10 +8,15 @@ Prints duration, integrated loudness (target about -14 LUFS) and true peak (belo
 and checks the opening and the ending: frame 1 is not black or fading in, speech starts
 within 0.4 s, and the short doesn't trail off in more than 1 s of silence. Length outside
 15-60 s fails; outside the 20-45 s target is a note to explain in the hand-back.
+If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
+given), the caption and hook positions must be inside brand.CAPTION_Y_BOUNDS and
+brand.HOOK_Y_BOUNDS, and the hook block must stay below the top app chrome.
 Then LOOK at the strip: captions right-to-left and inside the safe zone, the right host
 on screen, nothing over the face, the hook readable on the first frame.
 """
 import argparse
+import json
+import os
 import re
 import subprocess
 import sys
@@ -27,7 +32,11 @@ def probe(path):
     return d, lufs, peak
 
 
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from brand import CAPTION_Y_BOUNDS, HOOK_Y_BOUNDS  # noqa: E402
+
 LIMIT, TARGET = (15, 60), (20, 45)
+TOP_CHROME = 140           # px of app UI at the top of a 1920-px frame
 DARK_FRAME = 25            # mean luma (0-255) below this reads as a black frame
 LEAD_SILENCE, TAIL_SILENCE = 0.4, 1.0
 
@@ -64,6 +73,24 @@ def opening_problems(d, first_luma, later_luma, quiet):
     return out
 
 
+def layout_problems(lay):
+    """Caption and hook positions recorded by build_fullbleed.py, against the brand bounds."""
+    out = []
+    lo, hi = CAPTION_Y_BOUNDS
+    if not lo <= lay.get("caption_y", lo) <= hi:
+        out.append(f"caption_y {lay['caption_y']} is outside {lo}-{hi}; captions must clear the UI and the hook band")
+    if lay.get("hook_style", "strips") == "strips":
+        lo, hi = HOOK_Y_BOUNDS
+        if not lo <= lay.get("hook_y", lo) <= hi:
+            out.append(f"hook_y {lay['hook_y']} is outside the top band {lo}-{hi}")
+        box = lay.get("hook_box")
+        if box and box[0] < TOP_CHROME:
+            out.append(f"hook starts at y={box[0]}, under the top {TOP_CHROME} px of app chrome")
+        if box and box[1] >= lay.get("caption_y", 1e9) - 60:
+            out.append("hook block runs into the captions")
+    return out
+
+
 def problems(d, lufs, peak):
     out = []
     if not LIMIT[0] <= d <= LIMIT[1]:
@@ -78,6 +105,7 @@ def problems(d, lufs, peak):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("video"); ap.add_argument("--frames", type=int, default=8)
+    ap.add_argument("--layout", help="NAME_layout.json from build_fullbleed.py (default: next to the video)")
     a = ap.parse_args()
     d, lufs, peak = probe(a.video)
     strip = re.sub(r"\.[^.]+$", "", a.video) + "_strip.jpg"
@@ -86,6 +114,13 @@ def main():
     print(f"{a.video}: {d:.2f} s, {lufs} LUFS, peak {peak} dB -> {strip}")
     bad = problems(d, lufs, peak) + opening_problems(d, luma(a.video, 0), luma(a.video, min(0.5, d / 2)),
                                                      silences(a.video))
+    lay_path = a.layout or re.sub(r"\.[^.]+$", "", a.video) + "_layout.json"
+    if os.path.exists(lay_path):
+        lay = json.load(open(lay_path))
+        print(f"layout: caption_y {lay.get('caption_y')}, hook_y {lay.get('hook_y')} ({lay.get('hook_style')})")
+        bad += layout_problems(lay)
+    elif a.layout:
+        bad.append(f"layout file {a.layout} not found")
     for p in bad:
         print("warning:", p)
     if LIMIT[0] <= d <= LIMIT[1] and not TARGET[0] <= d <= TARGET[1]:

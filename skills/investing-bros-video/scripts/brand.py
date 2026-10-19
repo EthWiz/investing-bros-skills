@@ -31,6 +31,11 @@ ACCENT_DEEP = (122, 90, 14)       # bands
 NAVY_GLOW = (10, 22, 48)          # background glow behind the logo
 TITLE_NAVY = (19, 32, 62)          # teaser title outline #13203E
 WHITE = (255, 255, 255)
+# Financial Journal print palette (investing-bros-brand -> brand-rules.md). Used for the
+# Shorts hook strips, which must look different from the white/gold captions.
+JOURNAL_NAVY = (9, 36, 59)        # #09243B headline ink, paper shadow
+JOURNAL_CREAM = (245, 235, 213)   # #F5EBD5 first strip
+JOURNAL_MUSTARD = (216, 165, 46)  # #D8A52E second strip
 FONT_SEMIBOLD = "Heebo SemiBold"
 FONT_EXTRABOLD = "Heebo ExtraBold"
 FONT_BLACK = "Heebo Black"
@@ -66,6 +71,77 @@ VERTICAL = {
     "caption_margin_v": 400,        # bottom-anchored captions sit above the UI zone
     "caption_margin_l": 110, "caption_margin_r": 170,
 }
+
+# Full-bleed short (1080x1920): where captions and the hook may sit (centre y, canvas px).
+# Captions stay above the bottom ~400 px of app UI (a 100 px line with outline needs
+# its centre <= 1470) and below the hook band; the hook stays in the top band, under
+# the top ~140 px of app chrome. Inside the bounds, put each where it clears the face
+# (face_crop.py suggests both). check_short.py fails a render outside them.
+CAPTION_Y_BOUNDS = (1100, 1470)
+HOOK_Y_BOUNDS = (300, 620)
+CAPTION_Y_DEFAULT, HOOK_Y_DEFAULT = 1290, 440
+HOOK_STRIPS = {"size": 108, "second_scale": 1.1, "pad_x": 34, "pad_y": 14, "overlap": 8,
+               "tilt": (-1.2, 1.0), "shadow": (6, 9, 7, 110)}   # shadow dx, dy, blur, alpha
+
+
+def hook_strips(lines, out_path, font_path, centre_y=HOOK_Y_DEFAULT, size=None):
+    """Draw the Shorts hook as torn-paper strips (Financial Journal): line 1 on cream,
+    line 2 on mustard (then alternating), navy Heebo Black type, a soft paper shadow.
+
+    Writes a transparent 1080x1920 PNG and returns the block's (top, bottom) in px.
+    "[...]" accent markup is ignored: the strip colour is the accent. Deterministic
+    (edges are seeded from the text). Needs Pillow with raqm for Hebrew shaping.
+    """
+    import random
+    import zlib
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    cfg = HOOK_STRIPS
+    size = size or cfg["size"]
+    strips = []
+    for i, raw in enumerate(lines):
+        text = raw.replace("[", "").replace("]", "").strip()
+        rng = random.Random(zlib.crc32(f"{i}:{text}".encode()))
+        font = ImageFont.truetype(font_path, round(size * (cfg["second_scale"] if i % 2 else 1)))
+        probe = ImageDraw.Draw(Image.new("L", (10, 10)))
+        x0, y0, x1, y1 = probe.textbbox((0, 0), text, font=font, direction="rtl", language="he")
+        w, h = x1 - x0 + 2 * cfg["pad_x"], y1 - y0 + 2 * cfg["pad_y"]
+        jag = max(4, size // 13)
+        top = [(x, rng.uniform(0, jag)) for x in range(0, w + 1, 9)]
+        right = [(w - rng.uniform(0, jag), y) for y in range(0, h + 1, 9)]
+        bottom = [(x, h - rng.uniform(0, jag)) for x in range(w, -1, -9)]
+        left = [(rng.uniform(0, jag), y) for y in range(h, -1, -9)]
+        mask = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(mask).polygon(top + right + bottom + left, fill=255)
+        colour = JOURNAL_MUSTARD if i % 2 else JOURNAL_CREAM
+        grain = np.random.default_rng(zlib.crc32(text.encode())).normal(0, 5, (h, w, 1))
+        paper = np.clip(np.asarray(Image.new("RGB", (w, h), colour), np.float32) + grain, 0, 255).astype(np.uint8)
+        strip = Image.fromarray(paper, "RGB").convert("RGBA")
+        ImageDraw.Draw(strip).text((cfg["pad_x"] - x0, cfg["pad_y"] - y0), text, font=font,
+                                   fill=JOURNAL_NAVY + (255,), direction="rtl", language="he")
+        strip.putalpha(mask)
+        strips.append(strip.rotate(cfg["tilt"][i % 2], resample=Image.BICUBIC, expand=True))
+    total = sum(s.height for s in strips) - cfg["overlap"] * (len(strips) - 1)
+    y = round(centre_y - total / 2)
+    block = (y, y + total)
+    canvas = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
+    dx, dy, blur, alpha = cfg["shadow"]
+    for s in strips:
+        x = round(540 - s.width / 2)
+        shadow = Image.new("RGBA", s.size, JOURNAL_NAVY + (0,))
+        shadow.putalpha(s.getchannel("A").point(lambda a: a * alpha // 255))
+        layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+        layer.paste(shadow, (x + dx, y + dy))
+        canvas = Image.alpha_composite(canvas, layer.filter(ImageFilter.GaussianBlur(blur)))
+        layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+        layer.paste(s, (x, y))
+        canvas = Image.alpha_composite(canvas, layer)
+        y += s.height - cfg["overlap"]
+    canvas.save(out_path)
+    return block
+
 
 # Teaser (1920x1080): one host's half of the side-by-side recording at native
 # size (960x1080) next to a branded panel with logo, label, captions and name.

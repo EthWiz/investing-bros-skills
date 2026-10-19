@@ -37,7 +37,7 @@ def test_reaction_cut_and_high_res_tracks():
     cfg = dict(CFG, base="R", shots=[[2140.0, 2141.5, "L"]], sources={"L": "amitai.mp4", "R": "nadav.mp4"},
                crop={"L": [656, 0, 1215, 2160]}, audio_source="raw.mp4", pieces=[[2106.02, 2154.45, 0.0]])
     cmd = build_command(cfg, _tl())
-    assert cmd.count(" -i ") == 5                                       # 3 videos/audio + gradient + logo
+    assert cmd.count(" -i ") == 6                                       # 3 videos/audio + gradient + logo + hook strips
     assert "crop=1215:2160:656:0" in cmd and "crop=608:1080:1130:0" in cmd
     assert "enable='between(t,34.000,35.500)'" in cmd                   # 2140.0 - 2106.0
 
@@ -45,3 +45,36 @@ def test_reaction_cut_and_high_res_tracks():
 def test_tags_in_gold_box():
     ass = build_ass(dict(CFG, tags=[[2106.05, 2109.5, "נדב רסקין"]]), _tl(), CHUNKS)
     assert any(",Tag," in l and "נדב רסקין" in l for l in ass.splitlines())
+
+
+def test_hook_is_paper_strips_not_a_caption_by_default():
+    cmd = build_command(CFG, _tl())
+    ass = build_ass(CFG, _tl(), CHUNKS)
+    assert '-loop 1 -framerate 24 -t 2.7 -i "ep7_asteroid_hook.png"' in cmd
+    assert "fade=t=out:st=2.50:d=0.2:alpha=1" in cmd and "[s][hk]overlay=0:0:eof_action=pass" in cmd
+    assert not any(",Hook," in l for l in ass.splitlines() if l.startswith("Dialogue"))
+
+
+def test_legacy_hook_style_keeps_the_old_ass_hook():
+    cfg = dict(CFG, hook_style="legacy")
+    assert "_hook.png" not in build_command(cfg, _tl())
+    assert any(",Hook," in l and "\\pos(540,700)" in l for l in build_ass(cfg, _tl(), CHUNKS).splitlines())
+
+
+def test_caption_y_is_configurable_within_bounds():
+    import pytest
+    ass = build_ass(dict(CFG, caption_y=1460), _tl(), CHUNKS)
+    caps = [l for l in ass.splitlines() if ",Cap," in l]
+    assert caps and all("\\pos(540,1460)" in l for l in caps)
+    with pytest.raises(ValueError):
+        build_ass(dict(CFG, caption_y=1600), _tl(), CHUNKS)      # under the platform UI
+    with pytest.raises(ValueError):
+        build_ass(dict(CFG, hook_y=900), _tl(), CHUNKS)          # out of the top band
+
+
+def test_opening_on_a_later_line_seeks_to_the_earliest_piece():
+    pieces = [[2140.0, 2150.0, 0.0], [2106.02, 2120.0, 0.0]]
+    cmd = build_command(dict(CFG, pieces=pieces, zooms=[[2141.0, 1.12], [2107.0, 1.0]]), Timeline(pieces, 24))
+    assert "-ss 2105.000" in cmd                                     # not 2139.0: the second piece is earlier
+    assert "trim=start=35.0000" in cmd and "trim=start=1.0000" in cmd
+    assert "zoompan=z='if(gte(it,11.000),1.0,if(gte(it,1.000),1.12,1.0))'" in cmd   # ordered by output time

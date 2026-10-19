@@ -226,6 +226,55 @@
           0.23
         ]
       }
+    },
+    "shorts-video-hook": {
+      "size": [
+        1080,
+        1920
+      ],
+      "status": "approved-production",
+      "owner": "investing-bros-shorts",
+      "zones": {
+        "hook_band": [
+          0.0,
+          0.073,
+          1.0,
+          0.323
+        ],
+        "captions": [
+          0.0,
+          0.573,
+          1.0,
+          0.193
+        ]
+      },
+      "hook": {
+        "strips": [
+          "cream",
+          "mustard"
+        ],
+        "ink": "navy",
+        "font": "Heebo Black",
+        "size": 108,
+        "second_scale": 1.1,
+        "tilt_deg": [
+          -1.2,
+          1.0
+        ],
+        "shown_s": 2.7,
+        "centre_y_px": [
+          300,
+          620
+        ]
+      },
+      "captions": {
+        "colour": "#FFFFFF",
+        "current_word": "#F5B71F",
+        "centre_y_px": [
+          1100,
+          1470
+        ]
+      }
     }
   }
 }
