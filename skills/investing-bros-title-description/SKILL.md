@@ -45,6 +45,8 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 - Five different angles: the debate, the stakes, the "what is it", the investor angle, the contrarian view.
 - English company names stay in English (`NVIDIA`); Hebrew brand spellings from `investing-bros-show`. A number goes in a title only if it was said **and** checked against a source.
 
+**Shorts titles** (requested by `investing-bros-shorts`): Hebrew only — the short hook, optionally one emoji. No English words, no `#shorts` or other hashtags, no pipe `|`, no `פרק N - ` prefix.
+
 ### 3. Write the description
 Three blocks, blank line between them:
 1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
