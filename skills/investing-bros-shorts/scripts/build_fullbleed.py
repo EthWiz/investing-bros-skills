@@ -28,6 +28,10 @@ short.json:
                                                 # the captions; captions under the chin (face_crop.py suggests)
   "zooms": [[2114.5, 1.13], [2119.0, 1.0]],     # punch-ins: from this source time, this zoom (1.0 = none)
   "endcard": ["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק 7]", "הקישור לפרק כאן למעלה"],
+  "endcard_arrow": true,                        # optional: mustard down arrow under the end card (link in the description)
+  "callouts": [{"at": 2131.9, "text": "הקישור לפרק המלא בתיאור", "dur": 2.2, "bottom": 1350, "bob": 7}],
+                                                # optional: a paper-strip "look down" callout with a mustard arrow,
+                                                # fades in, bobs ~2x/s, fades out; "at" = source time
   "logo": "logo.png", "fonts": "fonts"
 }
 [..] = gold in captions. Captions: 2-3 words at a time, the spoken word gold, centre at
@@ -43,7 +47,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import (ACCENT, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
+from brand import (ACCENT, ARROW_ASS, CALLOUT, JOURNAL_MUSTARD, JOURNAL_NAVY, callout_strip, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
                    FONT_EXTRABOLD, HOOK_GAP, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, LOGO_BOX, ass_colour,
                    hook_strips)
 from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
@@ -87,6 +91,21 @@ def hook_box_problems(box, caption_y):
     return out
 
 
+def callout_windows(cfg, tl):
+    """[(start, end)] output time of each callout."""
+    return [(tl.map(c["at"]), tl.map(c["at"]) + c.get("dur", 2.2)) for c in cfg.get("callouts", [])]
+
+
+def callout_problems(box, window, caption_y, duration):
+    """A callout must sit between the logo and the captions (with HOOK_GAP) and never over the hook or end card."""
+    out = []
+    if box[0] < LOGO_BOX[3] + HOOK_GAP or box[1] > caption_y - CAPTION_HALF - HOOK_GAP:
+        out.append(f"callout y {box[0]}-{box[1]} needs {HOOK_GAP} px clear of the logo and the captions (caption_y {caption_y})")
+    if window[0] < HOOK_S or window[1] > duration - END_S:
+        out.append(f"callout {window[0]:.2f}-{window[1]:.2f} s overlaps the hook (0-{HOOK_S}) or the end card")
+    return out
+
+
 def build_ass(cfg, tl, chunks):
     lay = layout(cfg)
     CAP_Y, HOOK_Y = lay["caption_y"], lay["hook_y"]
@@ -127,6 +146,10 @@ def build_ass(cfg, tl, chunks):
         if len(lines) > 2:
             lines[2] = "{\\fs56}" + lines[2]
         out += ev(6, end_t, dur, "End", "{\\pos(540,900)\\fad(250,0)}" + "\\N".join(lines))
+        if cfg.get("endcard_arrow"):
+            arrow = (f"{{\\an8\\pos(540,{900 + 34 * len(lines) + 40})\\fad(250,0)\\1c{ass_colour(JOURNAL_MUSTARD)}"
+                     f"\\3c{ass_colour(JOURNAL_NAVY)}\\bord3\\shad0\\p1}}{ARROW_ASS}{{\\p0}}")
+            out += ev(6, end_t, dur, "End", arrow)
     return out
 
 
@@ -207,14 +230,25 @@ def build_command(cfg, tl):
     g, lg, hk = len(files), len(files) + 1, len(files) + 2
     strips = bool(cfg.get("hook")) and layout(cfg)["hook_style"] == "strips"
     hook = (f"[s];[{hk}:v]format=rgba,fade=t=out:st={HOOK_S - 0.2:.2f}:d=0.2:alpha=1[hk];"
-            f"[s][hk]overlay=0:0:eof_action=pass,format=yuv420p[v];") if strips else ",format=yuv420p[v];"
+            f"[s][hk]overlay=0:0:eof_action=pass[s0]") if strips else "[s0]"
+    ci = hk + (1 if strips else 0)
+    co_in = ""
+    for k, (c, (t0, t1)) in enumerate(zip(cfg.get("callouts", []), callout_windows(cfg, tl))):
+        (cw, ch), d = c.get("size", (800, 172)), t1 - t0
+        y0 = c.get("bottom", 1350) - ch
+        hook += (f";[{ci + k}:v]format=rgba,fade=t=in:st=0:d={CALLOUT['fade_in']}:alpha=1,"
+                 f"fade=t=out:st={d - CALLOUT['fade_out']:.2f}:d={CALLOUT['fade_out']}:alpha=1,setpts=PTS+{t0:.3f}/TB[co{k}];"
+                 f"[s{k}][co{k}]overlay=x={540 - cw // 2}:y='{y0}+{c.get('bob', 7)}*sin(2*PI*{CALLOUT['bob_hz']}*(t-{t0:.3f}))'"
+                 f":eof_action=pass[s{k + 1}]")
+        co_in += f'-loop 1 -framerate {fps} -t {d:.3f} -i "{name}_callout{k}.png" '
+    hook += f";[s{len(cfg.get('callouts', []))}]format=yuv420p[v];"
     f += (f"[vc]fps={fps},zoompan=z='{z}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)*0.35':d=1:s=1080x1920:fps={fps},"
           f"eq=contrast=1.05:saturation=1.1[z];[{g}:v]format=rgba[gr];[z][gr]overlay=0:0[g];"
           f"[{lg}:v]scale=210:-1[lg];[g][lg]overlay=56:150[l];[l]ass={name}_fb.ass:fontsdir={cfg.get('fonts', 'fonts')}"
           f"{hook}[ac]{AUDIO}[a]")
     inputs = " ".join(f'-ss {S:.3f} -t {T:.3f} -i "{p}"' for p in files)
     hook_in = f'-loop 1 -framerate {fps} -t {HOOK_S} -i "{name}_hook.png" ' if strips else ""
-    return (f'ffmpeg -v error -y {inputs} -i "{name}_grad.png" -i "{cfg.get("logo", "logo.png")}" {hook_in}'
+    return (f'ffmpeg -v error -y {inputs} -i "{name}_grad.png" -i "{cfg.get("logo", "logo.png")}" {hook_in}{co_in}'
             f'-filter_complex "{f}" -map "[v]" -map "[a]" -c:v libx264 -preset veryfast -crf 17 -g {fps} -keyint_min {fps} '
             f'-r {fps} -c:a aac -b:a 192k -movflags +faststart -t {tl.duration:.4f} "{name}.mp4"\n')
 
@@ -229,6 +263,9 @@ def main():
     chunks = json.load(open(words_path, encoding="utf-8"))
     base = os.path.join(a.out_dir, cfg["name"])
     open(base + "_fb.ass", "w", encoding="utf-8").write(build_ass(cfg, tl, chunks))
+    fonts_dir = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg.get("fonts", "fonts"))
+    for k, (c, win) in enumerate(zip(cfg.get("callouts", []), callout_windows(cfg, tl))):
+        c["size"] = callout_strip(c["text"], f"{base}_callout{k}.png", os.path.join(fonts_dir, "Heebo-Black.ttf"))
     make_gradient(base + "_grad.png")
     lay = layout(cfg)
     if cfg.get("hook") and lay["hook_style"] == "strips":
@@ -237,8 +274,17 @@ def main():
         bad = hook_box_problems(lay["hook_box"], lay["caption_y"])
         if bad:
             raise SystemExit("; ".join(bad) + " - move hook_y or shorten the hook")
-    json.dump(lay, open(base + "_layout.json", "w"))
+    lay["callouts"] = []
+    for c, win in zip(cfg.get("callouts", []), callout_windows(cfg, tl)):
+        b = c.get("bob", 7)
+        box = [c.get("bottom", 1350) - c["size"][1] - b, c.get("bottom", 1350) + b]
+        bad = callout_problems(box, win, lay["caption_y"], tl.duration)
+        if bad:
+            raise SystemExit("; ".join(bad))
+        lay["callouts"].append({"window": [round(win[0], 2), round(win[1], 2)], "box": box})
+    lay["duration"] = round(tl.duration, 3)
     open(base + "_fb.sh", "w", encoding="utf-8").write(build_command(cfg, tl))
+    json.dump(lay, open(base + "_layout.json", "w"))
     if cfg.get("cards"):
         cards = close_gaps([(tl.map(s), tl.map(e), t) for s, e, t in cfg["cards"]])
         open(base + ".srt", "w", encoding="utf-8").write(build_srt(cards))

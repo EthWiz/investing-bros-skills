@@ -147,6 +147,48 @@ def hook_strips(lines, out_path, font_path, centre_y=HOOK_Y_DEFAULT, size=None):
     return block
 
 
+# Down arrow (Heebo has no arrow glyphs): an ASS vector drawing, 60x70 px, for the end card.
+ARROW_ASS = "m 20 0 l 40 0 l 40 36 l 60 36 l 30 70 l 0 36 l 20 36"
+CALLOUT = {"size": 58, "pad_x": 30, "pad_y": 12, "arrow": (84, 72), "gap": 10,
+           "fade_in": 0.25, "fade_out": 0.3, "bob_hz": 2.0}
+
+
+def callout_strip(text, out_path, font_path, size=None):
+    """A "look down" callout: one cream torn-paper strip with navy Heebo Black type and a
+    mustard down arrow (navy edge) under it. Writes a tight transparent PNG, returns (w, h)."""
+    import random
+    import zlib
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    c = CALLOUT
+    size = size or c["size"]
+    rng = random.Random(zlib.crc32(text.encode()))
+    font = ImageFont.truetype(font_path, size)
+    x0, y0, x1, y1 = ImageDraw.Draw(Image.new("L", (8, 8))).textbbox((0, 0), text, font=font, direction="rtl", language="he")
+    sw, sh = x1 - x0 + 2 * c["pad_x"], y1 - y0 + 2 * c["pad_y"]
+    aw, ah = c["arrow"]
+    W, H = sw + 24, sh + c["gap"] + ah + 24          # room for the shadow
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    jag = max(3, size // 13)
+    edge = ([(x, rng.uniform(0, jag)) for x in range(0, sw + 1, 9)] + [(sw - rng.uniform(0, jag), y) for y in range(0, sh + 1, 9)]
+            + [(x, sh - rng.uniform(0, jag)) for x in range(sw, -1, -9)] + [(rng.uniform(0, jag), y) for y in range(sh, -1, -9)])
+    ax, ay = (sw - aw) / 2, sh + c["gap"]
+    arrow = [(ax + aw * 0.33, ay), (ax + aw * 0.67, ay), (ax + aw * 0.67, ay + ah * 0.5), (ax + aw, ay + ah * 0.5),
+             (ax + aw / 2, ay + ah), (ax, ay + ah * 0.5), (ax + aw * 0.33, ay + ah * 0.5)]
+    shadow = Image.new("L", (W, H), 0)
+    d = ImageDraw.Draw(shadow)
+    d.polygon([(x + 5, y + 7) for x, y in edge], fill=110)
+    d.polygon([(x + 5, y + 7) for x, y in arrow], fill=110)
+    img.paste(Image.new("RGBA", (W, H), JOURNAL_NAVY + (255,)), (0, 0), shadow.filter(ImageFilter.GaussianBlur(6)))
+    d = ImageDraw.Draw(img)
+    d.polygon(edge, fill=JOURNAL_CREAM + (255,))
+    d.text((c["pad_x"] - x0, c["pad_y"] - y0), text, font=font, fill=JOURNAL_NAVY + (255,), direction="rtl", language="he")
+    d.polygon(arrow, fill=JOURNAL_MUSTARD + (255,), outline=JOURNAL_NAVY + (255,), width=3)
+    img.save(out_path)
+    return W, H
+
+
 # Teaser (1920x1080): one host's half of the side-by-side recording at native
 # size (960x1080) next to a branded panel with logo, label, captions and name.
 PANEL = {

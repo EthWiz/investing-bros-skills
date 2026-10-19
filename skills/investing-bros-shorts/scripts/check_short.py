@@ -89,6 +89,13 @@ def layout_problems(lay):
         cap = lay.get("caption_y")
         if box and cap and box[1] > cap - CAPTION_HALF - HOOK_GAP:
             out.append(f"hook ends at y={box[1]}: it needs {HOOK_GAP} px clear above the captions (caption_y {cap})")
+    for c in lay.get("callouts", []):
+        (top, bottom), (t0, t1) = c["box"], c["window"]
+        cap = lay.get("caption_y", CAPTION_Y_BOUNDS[1])
+        if top < LOGO_BOX[3] + HOOK_GAP or bottom > cap - CAPTION_HALF - HOOK_GAP:
+            out.append(f"callout y {top}-{bottom} needs {HOOK_GAP} px clear of the logo and the captions")
+        if t0 < 2.7 or (lay.get("duration") and t1 > lay["duration"] - 2.8):
+            out.append(f"callout {t0}-{t1} s overlaps the hook or the end card")
     return out
 
 

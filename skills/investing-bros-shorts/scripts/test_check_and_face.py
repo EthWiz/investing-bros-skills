@@ -48,3 +48,12 @@ def test_place_clears_a_small_face_and_flags_a_close_up():
     assert small["caption_y"] == 1173 and small["hook_y"] == 918 and not small["warnings"]   # moved up off the captions
     big = place([(96, 352, 1088, 1429)])                        # webcam close-up (episode 1)
     assert big["caption_y"] == 1470 and big["hook_y"] == 960 and any("chin" in w for w in big["warnings"])   # centre
+
+
+def test_callout_must_clear_captions_hook_and_end_card():
+    ok = {"caption_y": 1470, "duration": 32.68, "callouts": [{"window": [13.0, 15.2], "box": [1157, 1357]}]}
+    assert layout_problems(ok) == []
+    low = dict(ok, callouts=[{"window": [13.0, 15.2], "box": [1250, 1450]}])
+    assert any("captions" in p for p in layout_problems(low))
+    late = dict(ok, callouts=[{"window": [29.0, 31.2], "box": [1157, 1357]}])
+    assert any("end card" in p for p in layout_problems(late))

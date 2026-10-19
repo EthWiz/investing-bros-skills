@@ -84,3 +84,13 @@ def test_hook_box_keeps_clear_of_logo_and_captions():
     assert hook_box_problems([816, 1105], 1470) == []                 # centred hook, captions at 1470
     assert any("logo" in p for p in hook_box_problems([300, 590], 1470))
     assert any("captions" in p for p in hook_box_problems([816, 1105], 1150))
+
+
+def test_endcard_arrow_and_bobbing_callout():
+    cfg = dict(CFG, endcard_arrow=True, callouts=[{"at": 2120.0, "text": "הקישור לפרק המלא בתיאור", "dur": 2.2,
+                                                   "bottom": 1350, "bob": 7, "size": [794, 186]}])
+    ass = build_ass(cfg, _tl(), CHUNKS)
+    assert any("\\p1}m 20 0 l 40 0" in l and ",End," in l for l in ass.splitlines())   # drawn arrow, no glyph
+    cmd = build_command(cfg, _tl())
+    assert '-t 2.200 -i "ep7_asteroid_callout0.png"' in cmd and "setpts=PTS+14.000/TB" in cmd
+    assert "y='1164+7*sin(2*PI*2.0*(t-14.000))'" in cmd and "[s1]format=yuv420p[v]" in cmd
