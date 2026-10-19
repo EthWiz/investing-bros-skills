@@ -12,7 +12,7 @@ input video for a HyperFrames overlay with 1-2 animated explainer panels
 short.json:
 {
   "name": "short3_asteroid", "source": "raw.mp4", "fps": 24,
-  "pieces": [[2106.02, 2154.45, 0.0]],          # kept ranges (source order), optional gain dB
+  "pieces": [[2106.02, 2154.45, 0.0]],          # kept ranges in PLAY order (may open on a later line; never repeat one), optional gain dB
   "base": "R", "shots": [[2140.0, 2141.5, "L"]], # who fills the screen; shots = cuts to the other host (reactions)
   "crop_x": {"L": 176, "R": 170},               # x of the 608-px 9:16 crop inside each 960-px half (face_crop.py suggests it)
   "sources": {"L": "amitai.mp4", "R": "nadav.mp4"},   # optional: each host's own high-res Riverside track
@@ -22,7 +22,7 @@ short.json:
   "words": "aligned.json",                      # from align_words.py (proofread caption text + whisper timing)
   "hook": ["אסטרואיד אחד", "[יכול להכפיל]", "[את הזהב בעולם?]"],   # first ~2.7 s, faithful paraphrase
   "zooms": [[2114.5, 1.13], [2119.0, 1.0]],     # punch-ins: from this source time, this zoom (1.0 = none)
-  "endcard": ["לפרק המלא", "[אחים להשקעות · פרק 7]", "עקבו לעוד שורטים"],
+  "endcard": ["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק 7]", "הקישור לפרק כאן למעלה"],
   "logo": "logo.png", "fonts": "fonts"
 }
 [..] = gold. Captions: 2-3 words at a time, the spoken word gold, centre at y=1290
@@ -36,7 +36,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from brand import ACCENT, FONT_BLACK, FONT_EXTRABOLD, ass_colour  # noqa: E402
-from build_short import Timeline, ass_time, build_srt, close_gaps  # noqa: E402
+from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
 GOLD = ACCENT
@@ -193,8 +193,8 @@ def main():
         cards = close_gaps([(tl.map(s), tl.map(e), t) for s, e, t in cfg["cards"]])
         open(base + ".srt", "w", encoding="utf-8").write(build_srt(cards))
     print(f"{cfg['name']}: {tl.duration:.2f} s, {len(chunks)} caption chunks")
-    if not 30 <= tl.duration <= 60:
-        print(f"warning: {tl.duration:.1f} s is outside 30–60 s")
+    for w in check_packaging(cfg, tl.duration, "hook"):
+        print("warning:", w)
 
 
 if __name__ == "__main__":

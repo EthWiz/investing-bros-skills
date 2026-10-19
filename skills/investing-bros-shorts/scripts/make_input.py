@@ -95,8 +95,12 @@ def main() -> int:
     open(path, "w", encoding="utf-8").write(build_command(cfg))
     dur = sum(b - a for a, b, _ in pieces_of(cfg))
     print(f"{path}: {dur:.2f} s, {len(cfg['pieces'])} piece(s)")
-    if not 30 <= dur <= 60:
-        print(f"warning: {dur:.1f} s is outside 30–60 s")
+    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    from build_short import LENGTH_LIMIT, LENGTH_TARGET
+    if not LENGTH_TARGET[0] <= dur <= LENGTH_TARGET[1]:
+        hard = not LENGTH_LIMIT[0] <= dur <= LENGTH_LIMIT[1]
+        print(f"warning: {dur:.1f} s is outside the {LENGTH_TARGET[0]}–{LENGTH_TARGET[1]} s target"
+              + ("" if hard else "; say why in the hand-back"))
     return 0
 
 

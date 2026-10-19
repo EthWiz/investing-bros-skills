@@ -37,17 +37,20 @@ For audio-only recordings, also the archived square show cover (location in
 Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
 
 ## Steps
-1. **Propose moments.** Start from Riverside's auto-generated shorts when the host
-   supplied them. The box cannot pass Riverside's captcha; when those clips are not
-   already in Drive, pick candidates from the transcript instead of blocking on
-   Riverside. Prefer good ready-made clips when available. Give Amitai 3–6 candidates
-   as a table: start–end, opening line, why it works, a title. Episode 7 shipped 5 —
-   aim for that. Wait for his picks unless he said to just make them. Nadav approves
-   the cut before a rebuild or an upload (`investing-bros-show` → Roles). A good short:
-   - hooks in the first 3 seconds (a claim, a number, a story, a question — not "אז…", not "חווים את זה היום")
-   - makes sense with no episode context, and is **one idea** with a clean end line
-   - lands at 30–60 seconds
-   Skip crosstalk and anything that sounds like a buy/sell call out of context. Flag on-air mistakes instead of clipping them. Strong episode-6 shapes: a surprising fact ("SWIFT is a messaging system, not a payments system"), a story → concept ("pizza for 10,000 BTC → why stablecoins exist"), a host's question answered by the other ("So what? — liquidity").
+1. **Propose moments.** Follow [references/moment-scoring.md](references/moment-scoring.md).
+   Riverside's auto-generated shorts, when they are already in Drive, are candidates
+   like any other (the box cannot pass Riverside's captcha; don't block on it).
+   - Pull ~10 candidates from the transcript, at least 3 from the deep dive.
+   - Score each 1–5 on hook, standalone, payoff and friction, then rank them:
+     `python3 scripts/score_moments.py segments.json candidates.json --top 5`
+     (adds pace, flags filler openers and anything outside 20–45 s).
+   - Listen to the top picks, then give Amitai the table it prints (5 picks, at least 2
+     from the deep dive). Wait for his picks unless he said to just make them. Nadav
+     approves the cut before a rebuild or an upload (`investing-bros-show` → Roles).
+   - For each pick, plan the **opening** (the strongest line first, moved to the front if
+     it comes later), the **last line** (cut right after the payoff) and the **end card**
+     (what the full episode adds on this topic).
+   Skip crosstalk and anything that sounds like a buy/sell call out of context. Flag on-air mistakes instead of clipping them.
 2. **Find exact cut points.** Whisper segment times are only approximate. For every in/out point, look at the audio energy (20 ms frames) for the pause between words and cut inside it; re-transcribe a 1–3 s window around the point if unsure (whisper drops the last word of a window — give it ~1 s of tail). Never cut mid-word. Inside a clip you may drop a filler stretch, dead air or a phrase you can't make out — **only** if the sentence still says the same thing. Never drop a caveat or disclaimer to make a line punchier.
 3. **Graphic assets** (once per episode): request new artwork/specifications from `investing-bros-brand`. The commands below prepare assets for the existing renderer; they do not implement Financial Journal layouts:
    ```bash
@@ -55,11 +58,12 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    python3 scripts/brand.py fonts Heebo[wght].ttf fonts/
    python3 scripts/brand.py frame vertical logo.png frame_vertical.png
    ```
-4. **Edit list → render.** One JSON per short (format in `scripts/build_short.py`): kept pieces, which host is on screen per stretch (L/R halves of the side-by-side recording), the fixed hook headline, the end card, a name tag, and the caption cards.
+4. **Edit list → render.** One JSON per short (format in `scripts/build_short.py`): kept pieces in play order, which host is on screen per stretch (L/R halves of the side-by-side recording), the fixed hook headline, the end card, a name tag, and the caption cards. Both renderers warn on length, a missing hook and a generic end card; fix those before rendering.
    ```bash
    python3 scripts/build_short.py short1.json     # writes short1.ass / .srt / .sh, warns on length and long lines
    bash short1.sh                                 # run where raw.mp4, frame_vertical.png and fonts/ are
    ```
+   - **The first second:** frame 1 is the host mid-sentence with the hook on screen. No fade-in, no logo intro, no breath before the first word. The hook is an open question the short answers at the end.
    - **Framing:** close-up of whoever is talking (their half, 1080 wide); cut to the other host for his lines or a real reaction. Not the whole frame over blur.
    - **Headline:** a faithful paraphrase of what is said in the clip (e.g. "סוויפט היא בכלל לא מערכת תשלומים") — never a claim the hosts didn't make, never investment promises.
    - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[…]` (that markup currently renders as legacy gold `#F5B71F`). Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
@@ -70,7 +74,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 5. **Check the export.** For each short:
    - a strip of 6–8 frames across the clip: captions right-to-left (punctuation at the left end, English words in place), not over faces, inside the safe zone; the right host on screen
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
-   - duration 30–60 s; listen to every cut — no clipped words, no clicks
+   - duration 20–45 s (up to 60 s with a reason in the hand-back); listen to every cut — no clipped words, no clicks
 6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid:
    Request Financial Journal cover artwork from `investing-bros-brand`, supplying the hook, episode number and source frame if relevant. The command and layout notes below describe the legacy video-frame cover only; use them when retaining that deployed style. They are not an alternative brand system.
    ```bash
@@ -109,7 +113,7 @@ Episode 7 (video producer), on top of that look:
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
 
 **Link every short to the full episode** (this is what turns Short views into episode views):
-- End card: name the payoff and point up to the link, e.g. `["השיחה ממשיכה בפרק המלא", "[אחים להשקעות · פרק N]", "הקישור לפרק — כאן למעלה"]`. No arrow glyphs (Heebo has none).
+- End card: name what the full episode adds on this topic and point up to the link, e.g. `["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק N]", "הקישור לפרק כאן למעלה"]`. Not a generic "לפרק המלא" (the renderers warn). No arrow glyphs (Heebo has none).
 - Hand back a `youtube-שורט-NN.md` next to each short with: the **Related video** to set in YouTube Studio (the full episode — that is the tappable link on the Short), title, description with the episode link at the short's timestamp (`&t=<seconds>`), the pinned-comment text, and the `.srt` to upload. Worked example: [references/youtube-short-example.md](references/youtube-short-example.md).
 
 Add 1–2 animated explainer panels ([references/hyperframes.md](references/hyperframes.md)) only where they show the idea (episode 7: asteroid lands on Earth; supply ×2 → value ½).
@@ -131,7 +135,7 @@ Optional 5–10 min YouTube videos, each **one continuous standalone stretch** o
 - `check_short.py` passed on every short.
 
 ## Hand back
-Send Amitai the `shorts/` folder link and, per short: where it is in the episode, its length, its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
+Send Amitai the `shorts/` folder link and, per short: where it is in the episode, its scores, its length (and why, if over 45 s), its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
 ## Never
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
