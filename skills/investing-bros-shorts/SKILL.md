@@ -13,7 +13,12 @@ description: >-
 ---
 # Investing Bros shorts
 
-Load `investing-bros-show` first — brand palette, logo, fonts, loudness and the recording layout live there.
+Load `investing-bros-show` first — show facts, deployed asset paths, loudness and recording layout live there.
+
+Load `investing-bros-brand` for visual specifications and request graphic assets from it.
+It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
+Existing renderer defaults remain legacy implementations until a reviewed migration.
+Do not create competing brand rules or silently change approved artwork.
 
 ## When to use
 After the audio edit (`investing-bros-post-production`) for episode N: shorts are made for every episode, mid-form highlights when Amitai wants them. Every short this skill makes ends in Drive with its cover (steps 6–7). Video assets are made only by ליאורה (`investing-bros-show` → Roles).

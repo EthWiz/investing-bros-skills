@@ -85,17 +85,13 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 **Status = the folder.** Each skill's *Done when* lists the files it leaves in this tree. To see where an episode stands, list the folder; don't keep a separate tracker.
 
 ## Brand (video and graphics)
-- **Current visual identity:** Financial Journal, selected by Amitai on 2026-10-19. Use navy paper, cream/mustard torn title strips and engraved cutout illustrations. Calm, thoughtful long-term investing. This replaces cinematic cover-art prompts for new artwork.
-- **Guide and workflow:** [Brand workflow](references/brand/workflow.md), [rules](references/brand/brand-rules.md), [reference index](references/brand/asset-index.md), [layout specifications](references/brand/layouts.md), [prompt templates](references/brand/prompts.md), [quality checks](references/brand/quality-checks.md). All paths in those guides are relative to this skill root.
-- **Artwork palette targets:** navy `#09243B`, cream `#F5EBD5`, mustard `#D8A52E`. Reference PNGs include natural texture variation. Legacy video renderers still use gold `#F5B71F`; this documentation/assets change does not migrate their code or change existing videos.
-- **Selected references:** four flattened square covers under `assets/brand/references/`, including the corrected main cover and the latest digital-fragment tokenization edit. Layout JSON under `assets/brand/templates/layouts.json` is a composition guide, not a renderer or layered design file. Wide, vertical and lower-third layouts remain proposed adaptations.
-- **Existing deployed show cover:** `אחים להשקעות/Media Resources/אחים-להשקעות-cover-1400.jpg` remains in use by legacy logo/video scripts until explicitly replaced. Do not claim a Drive or channel migration from this PR.
-- **Logo:** use the cream-over-mustard torn-paper wordmark in the new reference covers for new artwork. Do not extract a clean vector logo from a flattened PNG by assumption. Existing `brand.py logo` still reads the deployed cover and is unchanged.
-- **Font:** Heebo static weights remain the production candidates (SemiBold / ExtraBold / Black). Generated reference lettering is not an identified font. Inspect a typeset sample before treating it as an exact match.
+- **Design owner:** load `investing-bros-brand` for all artwork and visual decisions. It owns the Financial Journal rules, palette, typography, templates, selected references and quality checks. Do not copy or redefine those rules here.
+- **Existing deployment:** `אחים להשקעות/Media Resources/אחים-להשקעות-cover-1400.jpg` and legacy `brand.py` remain in use until a reviewed renderer/asset migration. New brand documentation alone does not update Drive, channel artwork or existing videos.
+- **Production fonts:** static Heebo weights remain available through the existing `brand.py fonts` workflow. See the brand skill for how they relate to the generated reference lettering.
 - **Intro clip:** `אחים להשקעות/Media Resources/אינטרו - אחים להשקעות.mp4` — 6 s, stereo music; ends with `עם אמתי ונדב רסקין`. Square and 16:9 versions sit beside it (`investing-bros-intro-square_1.mp4`, `investing-bros-intro-16x9_1.mp4`). Since episode 7, Amitai's Grok Imagine intro (6 s) replaces the old intro — use it as-is, immediately after the cold open. Video order: cold open (~22 s) + intro, then the episode. Never use watermarked music (AudioJungle previews and the like). Keep the tone serious — no "get rich quick" vibe. Keep the correct **אמתי** spelling when adapting artwork or credits.
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
-- **YouTube thumbnails:** use the Financial Journal brand and the proposed widescreen composition; see `investing-bros-title-description` → Thumbnail. Recompose square art rather than stretching it.
+- **YouTube thumbnails:** use the Financial Journal brand and the proposed widescreen composition; `investing-bros-title-description` supplies the approved headline and `investing-bros-brand` creates/reviews the artwork. Recompose square art rather than stretching it.
 - **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
@@ -140,10 +136,12 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 |---|---|---|---|
 | 0 | Before recording | `investing-bros-episode-preparation` | — |
 | 1 | Audio edit | `investing-bros-post-production` | Nadav (cuts) |
-| 2 | Titles, description, thumbnail | `investing-bros-title-description` | Amitai (title) |
+| 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
 | 4 | Shorts, mid-form highlights | `investing-bros-shorts` | Nadav |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
+
+`investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.
 
 Stages 2–4 only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 

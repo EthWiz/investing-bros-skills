@@ -5,8 +5,7 @@ description: >-
   concise Hebrew title options that lead with a real question (no clickbait,
   no em or en dashes), the description (intro, disclaimer, time-first chapters
   that work on YouTube and Spotify), checked by a script and saved as .txt
-  files in the episode's Drive folder, and the YouTube thumbnail prompt and
-  headline. Use when Amitai asks for "titles", "a title", "description",
+  files in the episode's Drive folder, and thumbnail headline options handed to `investing-bros-brand` for artwork. Use when Amitai asks for "titles", "a title", "description",
   "כותרת", "כותרות", "תיאור", "cover art", "a thumbnail", "תמונה ממוזערת",
   "קאבר לפרק" or a prompt for an AI image tool, for episode N.
 ---
@@ -58,19 +57,19 @@ Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or m
 Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.
 
 ### 6. Thumbnail (when asked, or when there's a video episode)
-Write the AI image prompt and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md): the Financial Journal identity from `investing-bros-show`, using its selected artwork and format specifications. Keep supplied thumbnail copy exact; suggest alternatives only when requested or missing.
+Prepare the artwork brief and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md), preserving any supplied approved copy. Hand visual production to `investing-bros-brand`; load it to continue when the request includes finished artwork.
 
 ## Done when
 - Episode root has `כותרות-פרק-N.txt` (with Amitai's pick after `בחירה סופית:`) and `תיאור-פרק-N.txt`.
 - `check_copy.py --spotify` prints `0 error(s)` on both, and every claim is fact-checked.
-- Thumbnail (if asked): the prompt and headline are with Amitai; the finished image is in `promo/`.
+- Thumbnail (if asked): the copy brief is with Amitai or handed to `investing-bros-brand`; if artwork was also requested, brand owns its delivery.
 
 ## Hand back
 - Links to both files
 - The five titles, with your recommended one
 - `check_copy.py` result and any warnings you kept, with the reason
 - Any claim or number you removed because it couldn't be verified
-- Thumbnail prompt (in a code block) and headline options, if made
+- Artwork brief and headline options, plus any brand-skill deliverable if requested
 
 ## Never
 - Use an em dash `—` or en dash `–` anywhere public. Only the plain hyphen `-`.

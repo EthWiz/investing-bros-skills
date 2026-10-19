@@ -1,14 +1,14 @@
 # Selected visual references
 
-All paths are relative to the investing-bros-show skill root. Files are flattened raster references,
+All paths are relative to this skill root. Files are flattened raster references,
 not editable layered templates. Preserve originals and create new versions for edits.
 
 | Asset | Role | Status |
 | --- | --- | --- |
-| assets/brand/references/main-cover.png | Show masthead, chairs, paper, corrected host credit | Selected working reference |
-| assets/brand/references/episode-07-gold.png | Square episode hierarchy, texture, hero/footer treatment | Selected working reference |
-| assets/brand/references/episode-06-tokenization-digital.png | Physical certificate transitioning to digital tiles | Latest user-selected edit source, canonical tokenization example |
-| assets/brand/references/episode-04-cloud-wars.png | Technology episode in the same engraving language | Selected working reference |
+| assets/references/main-cover.png | Show masthead, chairs, paper, corrected host credit | Selected working reference |
+| assets/references/episode-07-gold.png | Square episode hierarchy, texture, hero/footer treatment | Selected working reference |
+| assets/references/episode-06-tokenization-digital.png | Physical certificate transitioning to digital tiles | Latest user-selected edit source, canonical tokenization example |
+| assets/references/episode-04-cloud-wars.png | Technology episode in the same engraving language | Selected working reference |
 
 The user selected theme 02, asked to refine these covers, then requested documentation
 of this system. This does not imply approval to publish or replace live channel assets.

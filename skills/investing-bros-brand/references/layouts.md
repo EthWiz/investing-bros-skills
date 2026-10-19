@@ -1,6 +1,6 @@
 # Layout templates
 
-Use `assets/brand/templates/layouts.json` as normalized compositional templates. Bounds are
+Use `assets/templates/layouts.json` as normalized compositional templates. Bounds are
 [x, y, width, height] from the TOP LEFT, in fractions of the full canvas. Zones are
 planning guides, not masks to crop existing art. Recompose for each aspect ratio.
 

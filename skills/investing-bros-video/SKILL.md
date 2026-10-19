@@ -11,7 +11,12 @@ description: >-
 ---
 # Investing Bros video
 
-Load `investing-bros-show` first: brand, logo, fonts, loudness, the intro clip and the recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts).
+Load `investing-bros-show` first: show facts, deployed assets, loudness, the intro clip and recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts).
+
+Load `investing-bros-brand` for visual specifications and request graphic assets from it.
+It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
+Existing renderer defaults remain legacy implementations until a reviewed migration.
+Do not create competing brand rules or silently change approved artwork.
 
 ## When to use
 After the audio edit (`investing-bros-post-production`), when the recording has video and Amitai wants the video episode, cold opens or a promo teaser.

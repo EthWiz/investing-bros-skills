@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "episode_number": null,
+  "artifacts": [
+    {
+      "id": "episode-cover-square",
+      "version": 1,
+      "status": "draft",
+      "output_path": null,
+      "source_reference": null,
+      "brand_git_commit": null,
+      "headline": null,
+      "width": null,
+      "height": null,
+      "approval_reference": null,
+      "supersedes": null
+    }
+  ]
+}

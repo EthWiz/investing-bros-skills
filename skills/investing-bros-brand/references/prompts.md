@@ -19,7 +19,7 @@ unrelated clippings. All Hebrew text exact and right-to-left. Preserve host cred
 Large two-strip masthead: 'אחים' on cream, 'להשקעות' on mustard. Below: two inward-facing
 midcentury chairs, one round table, two coffees and one folded newspaper, all as
 engraved cutouts. One rough mustard backing disc. Exact host strip at bottom.
-Follow assets/brand/references/main-cover.png. No portraits, extra title or episode number.
+Follow assets/references/main-cover.png. No portraits, extra title or episode number.
 
 ## Episode cover
 {BASE_STYLE}
