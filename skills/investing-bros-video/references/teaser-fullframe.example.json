@@ -1,0 +1,37 @@
+{
+  "layout": "fullframe",
+  "source": "investing-bros-episode-raw-untrimmed.mp4",
+  "audio": "episode-leveled.wav",
+  "out": "../promo/טיזר-פרק-N.mp4",
+  "assembly_audio": "teaser-assembly-audio.wav",
+  "logo": "logo_solid.png",
+  "fonts": "fonts",
+  "kicker": "פרק N",
+  "title": "שם הפרק",
+  "crops": {
+    "amitai": [90, 20, 1067, 600],
+    "nadav": [0, 60, 1067, 600]
+  },
+  "pieces": [
+    {
+      "host": "amitai",
+      "start": 100.0,
+      "end": 108.0,
+      "cards": [
+        [100.0, 100.4, "[המילה] הבאה עכשיו"],
+        [100.4, 100.8, "המילה [הבאה] עכשיו"],
+        [100.8, 101.2, "המילה הבאה [עכשיו]"]
+      ]
+    },
+    {
+      "host": "nadav",
+      "start": 200.0,
+      "end": 208.0,
+      "cards": [
+        [200.0, 200.4, "[כיתוב] מתוזמן כאן"],
+        [200.4, 200.8, "כיתוב [מתוזמן] כאן"],
+        [200.8, 201.2, "כיתוב מתוזמן [כאן]"]
+      ]
+    }
+  ]
+}

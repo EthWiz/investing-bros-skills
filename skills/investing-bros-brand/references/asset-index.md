@@ -3,7 +3,9 @@
 All paths are relative to this skill root. Files are flattened raster references,
 not editable layered templates. Preserve originals and create new versions for edits.
 
-All four supplied PNGs are 1254×1254 pixels. Export sizes in `layouts.json` are targets, not the dimensions of these references.
+The four cover references are 1254×1254 pixels. Export sizes in `layouts.json` are
+targets, not the dimensions of these references. The solid video logo is a separate
+1228×740 RGBA production asset. The teaser stills are 1920×1080 JPEG references.
 
 | Asset | Role | Status |
 | --- | --- | --- |
@@ -11,6 +13,9 @@ All four supplied PNGs are 1254×1254 pixels. Export sizes in `layouts.json` are
 | assets/references/episode-07-gold.png | Square episode hierarchy, texture, hero/footer treatment | Selected working reference |
 | assets/references/episode-06-tokenization-digital.png | Physical certificate transitioning to digital tiles | Latest user-selected edit source, canonical tokenization example |
 | assets/references/episode-04-cloud-wars.png | Technology episode in the same engraving language | Selected working reference |
+| assets/logo-solid.png | Solid torn-paper wordmark for live video | Approved production asset; navy letters remain opaque |
+| assets/references/teaser-v5-amitai.jpg | Full-frame teaser on a bright wall | Approved v5 production reference |
+| assets/references/teaser-v5-nadav.jpg | Full-frame teaser with second host | Approved v5 production reference |
 
 The user selected theme 02, asked to refine these covers, then requested documentation
 of this system. This does not imply approval to publish or replace live channel assets.

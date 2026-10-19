@@ -4,8 +4,10 @@
 Shared by investing-bros-shorts and investing-bros-video (identical copies).
 
 Usage:
-    python3 brand.py logo  COVER.jpg OUT_logo.png [--box navy|dark|x0,y0,x1,y1]
-                                                       # cut the wordmark out of the show cover (default: navy cover)
+    python3 brand.py logo  CURRENT_LOGO.png OUT_logo.png
+                                                       # solid newspaper logo (default)
+    python3 brand.py logo  COVER.jpg OUT_logo.png --transparent [--box navy|dark|x0,y0,x1,y1]
+                                                       # legacy keyed wordmark
     python3 brand.py fonts HEEBO_VARIABLE.ttf OUT_DIR  # static Heebo SemiBold/ExtraBold/Black
     python3 brand.py frame vertical LOGO.png OUT.png   # 1080x1920 shorts frame
     python3 brand.py frame panel-left LOGO.png OUT.png # 1920x1080 teaser, panel left (host video right)
@@ -19,13 +21,33 @@ weights with distinct family names ("Heebo ExtraBold") fixes that; pass the
 folder to the ass filter with fontsdir=.
 """
 import sys
+from pathlib import Path
 
-# Palette (from the navy/gold show cover; investing-bros-show -> Brand).
+# Shared deterministic motion palette and font names. Artwork palettes live in
+# investing-bros-brand; scripts import these values instead of redefining them.
 BLACK = (7, 9, 8)
 ACCENT = (245, 183, 31)           # house accent gold #F5B71F — key words, rules, pills
 ACCENT_DEEP = (122, 90, 14)       # bands
 NAVY_GLOW = (10, 22, 48)          # background glow behind the logo
+TITLE_NAVY = (19, 32, 62)          # teaser title outline #13203E
 WHITE = (255, 255, 255)
+FONT_SEMIBOLD = "Heebo SemiBold"
+FONT_EXTRABOLD = "Heebo ExtraBold"
+FONT_BLACK = "Heebo Black"
+
+# Approved 1920x1080 full-frame teaser (v5). Coordinates are top-left canvas
+# pixels unless an ASS anchor is noted.
+TEASER = {
+    "size": (1920, 1080),
+    "caption": {"font": FONT_EXTRABOLD, "size": 84, "x": 960, "y": 1000},
+    "kicker": {"font": FONT_BLACK, "size": 112, "x": 1862, "y": 22, "outline": 3, "shadow": 5},
+    "title": {"font": FONT_BLACK, "size": 72, "x": 1862, "y": 148, "outline": 2.5, "shadow": 4},
+    "logo": {"x": 60, "y": 48, "width": 300},
+    "caption_plate": (330, 880, 1590, 1060, 150),
+    "blur_plate": (380, 890, 1540, 1050, 255),
+    "title_plate": (1120, 20, 1910, 250, 120),
+    "bottom_plate": (0, 960, 1920, 1080, 60),
+}
 
 
 def ass_colour(rgb) -> str:
@@ -56,7 +78,7 @@ PANEL = {
 
 # Where the "אחים להשקעות" wordmark sits on each cover, as fractions (x0, y0, x1, y1).
 LOGO_BOXES = {
-    "navy": (0.215, 0.115, 0.785, 0.415),   # current cover: Media Resources/אחים-להשקעות-cover-1400.jpg
+    "navy": (0.215, 0.115, 0.785, 0.415),   # archived navy cover
     "dark": (160 / 900, 635 / 900, 750 / 900, 830 / 900),   # retired dark cover
 }
 LOGO_MAX_H = {"vertical": 100, "panel": 160}  # the wordmark is two lines; cap its height, not just its width
@@ -86,11 +108,12 @@ def _drop_specks(mask, min_px: int):
 
 
 def extract_logo(cover_path: str, out_path: str, box=LOGO_BOXES["navy"], min_speck: int = 400) -> None:
-    """Cut the 'אחים להשקעות' wordmark out of a square show cover with a soft alpha.
+    """Legacy colour-keyed wordmark extraction.
 
     box is (x0, y0, x1, y1) as fractions of the cover (LOGO_BOXES has the known covers).
     Opaque blobs smaller than min_speck pixels (stars, grain) are removed. Check the
-    result on black before using it.
+    result on black before using it. Do not use this for the current newspaper logo:
+    keying navy makes its navy letters transparent; use extract_solid_logo instead.
     """
     import numpy as np
     from PIL import Image
@@ -106,6 +129,96 @@ def extract_logo(cover_path: str, out_path: str, box=LOGO_BOXES["navy"], min_spe
     a[green] = np.clip(a[green] * 1.35, 0, 255)      # lift an emerald wordmark (old dark cover) for screens
     logo = Image.fromarray(np.dstack([a, alpha * 255]).astype(np.uint8), "RGBA")
     logo.crop(logo.getbbox()).save(out_path)
+
+
+def _fill_holes(mask):
+    """Return a boolean mask with enclosed transparent holes filled (Pillow only)."""
+    import numpy as np
+    from PIL import Image, ImageDraw
+    h, w = mask.shape
+    padded = Image.new("L", (w + 2, h + 2), 0)
+    padded.paste(Image.fromarray((mask * 255).astype("uint8")), (1, 1))
+    ImageDraw.floodfill(padded, (0, 0), 128, thresh=0)
+    a = np.asarray(padded)[1:-1, 1:-1]
+    return a != 128
+
+
+def _largest_component(mask):
+    """Keep the largest 4-connected foreground component."""
+    import numpy as np
+    h, w = mask.shape
+    seen = np.zeros_like(mask, dtype=bool)
+    largest = []
+    for y0, x0 in zip(*np.nonzero(mask)):
+        if seen[y0, x0]:
+            continue
+        seen[y0, x0] = True
+        stack, blob = [(y0, x0)], []
+        while stack:
+            y, x = stack.pop()
+            blob.append((y, x))
+            for yy, xx in ((y - 1, x), (y + 1, x), (y, x - 1), (y, x + 1)):
+                if 0 <= yy < h and 0 <= xx < w and mask[yy, xx] and not seen[yy, xx]:
+                    seen[yy, xx] = True
+                    stack.append((yy, xx))
+        if len(blob) > len(largest):
+            largest = blob
+    out = np.zeros_like(mask, dtype=bool)
+    if largest:
+        yy, xx = zip(*largest)
+        out[yy, xx] = True
+    return out
+
+
+def extract_solid_logo(source_path: str, out_path: str) -> None:
+    """Extract the current torn-paper logo while keeping its navy letters opaque.
+
+    Tuned for Media Resources/Investing-bros-logo.png. The source is the square
+    newspaper cover: the logo occupies its upper 59%, with the yellow strip
+    extending lower than the cream strip.
+    """
+    import numpy as np
+    from PIL import Image, ImageFilter
+    src = Image.open(source_path).convert("RGB")
+    crop_h = round(src.height * 740 / 1254)
+    yellow_from = round(src.height * 640 / 1254)
+    rgb = np.asarray(src)[:crop_h].astype(np.float32)
+    r, _, b = rgb[..., 0], rgb[..., 1], rgb[..., 2]
+    paper = rgb.mean(axis=2) > 120
+    yellow = (r - b > 90) & (r > 170)
+    paper[yellow_from:] = yellow[yellow_from:]
+    # Opening drops isolated newspaper texture before filling letter counters.
+    opened = Image.fromarray((paper * 255).astype("uint8")).filter(ImageFilter.MinFilter(3)).filter(ImageFilter.MaxFilter(3))
+    keep = _largest_component(_fill_holes(np.asarray(opened) > 0))
+    alpha = Image.fromarray((keep * 255).astype("uint8")).filter(ImageFilter.GaussianBlur(0.7))
+    logo = Image.fromarray(rgb.astype("uint8"), "RGB").convert("RGBA")
+    logo.putalpha(alpha)
+    bbox = logo.getbbox()
+    if not bbox:
+        raise ValueError("could not find the torn-paper logo in the supplied image")
+    logo.crop(bbox).save(out_path)
+
+
+def make_fonts(variable_path: str, out_dir: str) -> list:
+    """Instance the variable Heebo font into libass-safe static weights."""
+    from fontTools.ttLib import TTFont
+    from fontTools.varLib.instancer import instantiateVariableFont
+    out = Path(out_dir)
+    out.mkdir(parents=True, exist_ok=True)
+    made = []
+    for weight, label in ((600, "SemiBold"), (800, "ExtraBold"), (900, "Black")):
+        font = instantiateVariableFont(TTFont(variable_path), {"wght": weight}, inplace=False)
+        family = f"Heebo {label}"
+        names = font["name"]
+        for platform, encoding, language in ((3, 1, 0x409), (1, 0, 0)):
+            names.setName(family, 1, platform, encoding, language)
+            names.setName("Regular", 2, platform, encoding, language)
+            names.setName(f"{family} Regular", 4, platform, encoding, language)
+            names.setName(f"Heebo-{label}", 6, platform, encoding, language)
+        path = out / f"Heebo-{label}.ttf"
+        font.save(path)
+        made.append(str(path))
+    return made
 
 
 def fit_logo(logo, max_w: int, max_h: int):
@@ -159,10 +272,14 @@ def make_frame(kind: str, logo_path: str, out_path: str) -> None:
 
 def main(argv) -> int:
     if len(argv) >= 3 and argv[0] == "logo":
-        box = LOGO_BOXES["navy"]
-        if len(argv) >= 5 and argv[3] == "--box":
-            box = LOGO_BOXES[argv[4]] if argv[4] in LOGO_BOXES else tuple(float(v) for v in argv[4].split(","))
-        extract_logo(argv[1], argv[2], box)
+        if "--transparent" not in argv:
+            extract_solid_logo(argv[1], argv[2])
+        else:
+            box = LOGO_BOXES["navy"]
+            if "--box" in argv:
+                value = argv[argv.index("--box") + 1]
+                box = LOGO_BOXES[value] if value in LOGO_BOXES else tuple(float(v) for v in value.split(","))
+            extract_logo(argv[1], argv[2], box)
     elif len(argv) >= 3 and argv[0] == "fonts":
         print("\n".join(make_fonts(argv[1], argv[2])))
     elif len(argv) >= 4 and argv[0] == "frame":

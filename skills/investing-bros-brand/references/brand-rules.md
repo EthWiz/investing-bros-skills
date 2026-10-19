@@ -29,6 +29,12 @@ Permit natural tonal variation from paper grain and engraving. Keep the three-co
 family consistent. No new topic-specific neon palette. Gold is printed mustard,
 not glossy luxury metal. Use cream for comfortable contrast, not clinical white.
 
+The approved deterministic motion stack (teasers and Shorts captions) retains its
+screen-tested accent gold `#F5B71F`. The approved full-frame teaser also uses white
+type and a `#13203E` navy title outline for legibility over live video. These values
+are constants in both installed copies of `brand.py`; do not redefine them in an
+individual renderer.
+
 ## Typography
 Use heavy contemporary Hebrew sans-serif for titles, with compact but open counters.
 Do not use antique calligraphic lettering, serif display titles, bevels, thick outlines
@@ -71,3 +77,6 @@ If requested, use paper slides, gentle settling and restrained cuts. Keep type r
 on the final hold. Suggest subtle paper sounds and a warm understated instrumental
 sting. This package contains no licensed music, soundtrack, animation or video template.
 Do not claim those assets exist; source/create them through appropriate authorized tools.
+
+Episode cold opens use the approved full-frame teaser layout in
+[layouts](layouts.md), not the older half-frame speaker plus side panel.

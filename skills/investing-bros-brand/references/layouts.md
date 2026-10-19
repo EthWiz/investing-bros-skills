@@ -38,6 +38,18 @@ host name. Provide a transparent version if requested; no portrait or invented v
 frame. Generate paper texture with imagegen, then use appropriate existing text/layout
 tools for deterministic type when available. This package is not a rendering script.
 
+## Full-frame episode teaser (approved production layout)
+This is the default 16:9 cold open. Keep the active speaker full-frame at about 1.2×,
+with no side panel or split screen. Put the solid torn-paper logo at top-left, the
+gold `פרק N` and white episode name at top-right, and word-by-word captions over a
+soft feathered blurred lower-third band. The current word is gold; the others are
+white. Use Heebo Black for the title block and Heebo ExtraBold for captions.
+
+Do not add a speaker name, underline, hairline or hard caption box. Dip to black
+between moments. Exact production coordinates, type sizes and colors are in
+`assets/templates/layouts.json`; `investing-bros-video` owns the renderer and its
+portable per-episode config.
+
 ## Delivery and typography
 Target export sizes in JSON are production intentions. Inspect actual pixel dimensions
 and disclose deviations. Never claim a generated 1254px file is a 3000px master. Upscaling
