@@ -28,10 +28,15 @@ short.json:
                                                 # the captions; captions under the chin (face_crop.py suggests)
   "zooms": [[2114.5, 1.13], [2119.0, 1.0]],     # punch-ins: from this source time, this zoom (1.0 = none)
   "endcard": ["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק 7]", "הקישור לפרק כאן למעלה"],
+  "endcard_style": "cover",                     # optional: end card in the cover-art look (navy paper, logo, פרק N pill,
+                                                # endcard = [title with |, "פרק N", link line], bobbing arrow); default "text"
+  "endcard_at": 2150.3,                         # optional: source time the end card starts (default: last 2.8 s)
+  "endcard_captions": true,                     # cover style: keep burning the captions over the card (payoff stays readable)
   "endcard_arrow": true,                        # optional: mustard down arrow under the end card (link in the description)
   "callouts": [{"at": 2131.9, "text": "הקישור לפרק המלא בתיאור", "dur": 2.2, "bottom": 1350, "bob": 7}],
                                                 # optional: a paper-strip "look down" callout with a mustard arrow,
-                                                # fades in, bobs ~2x/s, fades out; "at" = source time
+                                                # fades in, bobs ~2x/s, fades out; "at" = source time, or
+                                                # "before_endcard": 4.0 = from 4 s before the end card, crossfading into it
   "logo": "logo.png", "fonts": "fonts"
 }
 [..] = gold in captions. Captions: 2-3 words at a time, the spoken word gold, centre at
@@ -47,7 +52,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import (ACCENT, ARROW_ASS, CALLOUT, JOURNAL_MUSTARD, JOURNAL_NAVY, callout_strip, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
+from brand import (ACCENT, ARROW_ASS, arrow_png, endcard_cover, CALLOUT, JOURNAL_MUSTARD, JOURNAL_NAVY, callout_strip, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
                    FONT_EXTRABOLD, HOOK_GAP, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, LOGO_BOX, ass_colour,
                    hook_strips)
 from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
@@ -56,7 +61,14 @@ from clip_captions import rtl  # noqa: E402
 GOLD = ACCENT
 G = "{\\c" + ass_colour(GOLD) + "}"
 W = "{\\c&H00FFFFFF}"
-LEGACY_HOOK_Y, END_S, HOOK_S = 700, 2.8, 2.7
+LEGACY_HOOK_Y, END_S, HOOK_S, XFADE = 700, 2.8, 2.7, 0.3
+
+
+def endcard_start(cfg, tl):
+    """Output time the end card starts: endcard_at (source time) or the last END_S seconds."""
+    if cfg.get("endcard_at") is not None:
+        return tl.map(cfg["endcard_at"])
+    return max(0.0, tl.duration - END_S)
 AUDIO = ("highpass=f=80,acompressor=threshold=0.06:ratio=2.5:attack=15:release=250:makeup=1.5,"
          "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000,aformat=sample_fmts=fltp:channel_layouts=stereo")
 
@@ -93,24 +105,37 @@ def hook_box_problems(box, caption_y):
 
 def callout_windows(cfg, tl):
     """[(start, end)] output time of each callout."""
-    return [(tl.map(c["at"]), tl.map(c["at"]) + c.get("dur", 2.2)) for c in cfg.get("callouts", [])]
+    out, end = [], endcard_start(cfg, tl)
+    for c in cfg.get("callouts", []):
+        if "before_endcard" in c:
+            out.append((end - c["before_endcard"], end + XFADE))      # hands over to the end card
+        else:
+            out.append((tl.map(c["at"]), tl.map(c["at"]) + c.get("dur", 2.2)))
+    return out
 
 
-def callout_problems(box, window, caption_y, duration):
+def callout_problems(box, window, caption_y, end_start):
     """A callout must sit between the logo and the captions (with HOOK_GAP) and never over the hook or end card."""
     out = []
     if box[0] < LOGO_BOX[3] + HOOK_GAP or box[1] > caption_y - CAPTION_HALF - HOOK_GAP:
         out.append(f"callout y {box[0]}-{box[1]} needs {HOOK_GAP} px clear of the logo and the captions (caption_y {caption_y})")
-    if window[0] < HOOK_S or window[1] > duration - END_S:
+    if window[0] < HOOK_S or window[1] > end_start + XFADE + 0.01:
         out.append(f"callout {window[0]:.2f}-{window[1]:.2f} s overlaps the hook (0-{HOOK_S}) or the end card")
     return out
 
 
-def build_ass(cfg, tl, chunks):
+def captions_over_card(cfg):
+    """Cover end card with endcard_captions: the last line's captions keep running on top of the card."""
+    return bool(cfg.get("endcard")) and cfg.get("endcard_style", "text") == "cover" and cfg.get("endcard_captions", False)
+
+
+def build_ass(cfg, tl, chunks, over_card=False):
+    """The burned-in ASS. over_card=True gives only the captions after the end card starts
+    (burned after the cover card overlay, so the payoff stays readable)."""
     lay = layout(cfg)
     CAP_Y, HOOK_Y = lay["caption_y"], lay["hook_y"]
     dur = tl.duration
-    end_t = max(0.0, dur - END_S)
+    end_t = endcard_start(cfg, tl)
     st = ("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
           "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
           f"Style: Cap,{FONT_BLACK},100,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,-1\n"
@@ -124,9 +149,10 @@ def build_ass(cfg, tl, chunks):
     if cfg.get("hook") and lay["hook_style"] == "legacy":
         out += ev(5, 0, HOOK_S, "Hook", f"{{\\pos(540,{HOOK_Y})\\fscx70\\fscy70\\t(0,180,\\fscx100\\fscy100)\\fad(0,200)}}"
                   + "\\N".join(gold(x) for x in cfg["hook"]))
+    lo, hi = (end_t, dur) if over_card else (0.0, end_t)
     for chunk in chunks:
-        gs, ge = tl.map(chunk[0]["s"]), min(tl.map(chunk[-1]["e"]), end_t)
-        if gs >= end_t:
+        gs, ge = max(tl.map(chunk[0]["s"]), lo), min(tl.map(chunk[-1]["e"]), hi)
+        if ge <= gs:
             continue
         for j, w in enumerate(chunk):
             s = tl.map(w["s"]) if j else gs
@@ -136,11 +162,13 @@ def build_ass(cfg, tl, chunks):
             on = "{\\c" + ass_colour(GOLD) + ("\\fscx112\\fscy112" if w["key"] else "") + "}"
             off = "{\\c&H00FFFFFF\\fscx100\\fscy100}"
             parts = [on + rtl(x["w"]) + off if k == j else rtl(x["w"]) for k, x in enumerate(chunk)]
-            pop = "\\fscx82\\fscy82\\t(0,90,\\fscx100\\fscy100)" if j == 0 else ""
+            pop = "\\fscx82\\fscy82\\t(0,90,\\fscx100\\fscy100)" if j == 0 and not (over_card and s <= lo + 0.01) else ""
             out += ev(1, s, e, "Cap", f"{{\\pos(540,{CAP_Y}){pop}}}" + " ".join(parts))
+    if over_card:
+        return out
     for a, b, name in cfg.get("tags", []):
         out += ev(4, tl.map(a), min(tl.map(b), end_t), "Tag", "{\\an9\\pos(1024,178)\\fad(150,150)}" + rtl(name))
-    if cfg.get("endcard"):
+    if cfg.get("endcard") and cfg.get("endcard_style", "text") == "text":
         out += ev(5, end_t, dur, "Dim", "{\\pos(0,0)\\an7\\c&H000000&\\alpha&H50&\\fad(250,0)\\p1}m 0 0 l 1080 0 1080 1920 0 1920{\\p0}")
         lines = [gold(x) for x in cfg["endcard"]]
         if len(lines) > 2:
@@ -241,7 +269,24 @@ def build_command(cfg, tl):
                  f"[s{k}][co{k}]overlay=x={540 - cw // 2}:y='{y0}+{c.get('bob', 7)}*sin(2*PI*{CALLOUT['bob_hz']}*(t-{t0:.3f}))'"
                  f":eof_action=pass[s{k + 1}]")
         co_in += f'-loop 1 -framerate {fps} -t {d:.3f} -i "{name}_callout{k}.png" '
-    hook += f";[s{len(cfg.get('callouts', []))}]format=yuv420p[v];"
+    last = len(cfg.get("callouts", []))
+    if cfg.get("endcard") and cfg.get("endcard_style", "text") == "cover":
+        e0, e1 = endcard_start(cfg, tl), tl.duration
+        ei = ci + last
+        aw, ah = cfg.get("_arrow_size", (104, 92))
+        hook += (f";[{ei}:v]format=rgba,fade=t=in:st=0:d={XFADE}:alpha=1,setpts=PTS+{e0:.3f}/TB[ec];"
+                 f"[s{last}][ec]overlay=0:0:eof_action=pass[ecv];"
+                 f"[{ei + 1}:v]format=rgba,fade=t=in:st=0:d={XFADE}:alpha=1,setpts=PTS+{e0:.3f}/TB[ea];"
+                 f"[ecv][ea]overlay=x={540 - aw // 2}:y='{cfg.get('_arrow_y', 1180)}+7*sin(2*PI*{CALLOUT['bob_hz']}*(t-{e0:.3f}))'"
+                 f":eof_action=pass[s{last}e]")
+        if captions_over_card(cfg):
+            hook += f";[s{last}e]ass={name}_fb_over.ass:fontsdir={cfg.get('fonts', 'fonts')}[s{last}e2]"
+            last = f"{last}e2"
+        else:
+            last = f"{last}e"
+        co_in += (f'-loop 1 -framerate {fps} -t {e1 - e0:.3f} -i "{name}_endcard.png" '
+                  f'-loop 1 -framerate {fps} -t {e1 - e0:.3f} -i "{name}_arrow.png" ')
+    hook += f";[s{last}]format=yuv420p[v];"
     f += (f"[vc]fps={fps},zoompan=z='{z}':x='(iw-iw/zoom)/2':y='(ih-ih/zoom)*0.35':d=1:s=1080x1920:fps={fps},"
           f"eq=contrast=1.05:saturation=1.1[z];[{g}:v]format=rgba[gr];[z][gr]overlay=0:0[g];"
           f"[{lg}:v]scale=210:-1[lg];[g][lg]overlay=56:150[l];[l]ass={name}_fb.ass:fontsdir={cfg.get('fonts', 'fonts')}"
@@ -263,6 +308,8 @@ def main():
     chunks = json.load(open(words_path, encoding="utf-8"))
     base = os.path.join(a.out_dir, cfg["name"])
     open(base + "_fb.ass", "w", encoding="utf-8").write(build_ass(cfg, tl, chunks))
+    if captions_over_card(cfg):
+        open(base + "_fb_over.ass", "w", encoding="utf-8").write(build_ass(cfg, tl, chunks, over_card=True))
     fonts_dir = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg.get("fonts", "fonts"))
     for k, (c, win) in enumerate(zip(cfg.get("callouts", []), callout_windows(cfg, tl))):
         c["size"] = callout_strip(c["text"], f"{base}_callout{k}.png", os.path.join(fonts_dir, "Heebo-Black.ttf"))
@@ -278,11 +325,19 @@ def main():
     for c, win in zip(cfg.get("callouts", []), callout_windows(cfg, tl)):
         b = c.get("bob", 7)
         box = [c.get("bottom", 1350) - c["size"][1] - b, c.get("bottom", 1350) + b]
-        bad = callout_problems(box, win, lay["caption_y"], tl.duration)
+        bad = callout_problems(box, win, lay["caption_y"], endcard_start(cfg, tl))
         if bad:
             raise SystemExit("; ".join(bad))
         lay["callouts"].append({"window": [round(win[0], 2), round(win[1], 2)], "box": box})
     lay["duration"] = round(tl.duration, 3)
+    lay["endcard_start"] = round(endcard_start(cfg, tl), 3)
+    if cfg.get("endcard") and cfg.get("endcard_style", "text") == "cover":
+        e = cfg["endcard"]
+        logo = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg.get("logo", "logo.png"))
+        card = endcard_cover(base + "_endcard.png", os.path.join(fonts_dir, "Heebo-Black.ttf"), logo, e[0], e[1], e[2])
+        cfg["_arrow_size"] = arrow_png(base + "_arrow.png")
+        cfg["_arrow_y"] = card["bottom"] + 30
+        lay["endcard_box"] = [card["box"][0], cfg["_arrow_y"] + cfg["_arrow_size"][1] + 7]
     open(base + "_fb.sh", "w", encoding="utf-8").write(build_command(cfg, tl))
     json.dump(lay, open(base + "_layout.json", "w"))
     if cfg.get("cards"):

@@ -94,3 +94,40 @@ def test_endcard_arrow_and_bobbing_callout():
     cmd = build_command(cfg, _tl())
     assert '-t 2.200 -i "ep7_asteroid_callout0.png"' in cmd and "setpts=PTS+14.000/TB" in cmd
     assert "y='1164+7*sin(2*PI*2.0*(t-14.000))'" in cmd and "[s1]format=yuv420p[v]" in cmd
+
+
+def test_cover_endcard_callout_hands_over_and_captions_stay():
+    from build_fullbleed import callout_windows, endcard_start
+    cfg = dict(CFG, endcard_style="cover", endcard_at=2150.0, endcard_captions=True,
+               endcard=["האם טסלה תנצח את המרוץ|של נהיגה אוטונומית?", "פרק 1", "הקישור לפרק המלא בתיאור"],
+               callouts=[{"before_endcard": 4.0, "text": "הקישור לפרק המלא בתיאור", "bottom": 1350, "bob": 7,
+                          "size": [794, 186]}])
+    tl = _tl()
+    e0 = endcard_start(cfg, tl)
+    assert abs(e0 - tl.map(2150.0)) < 1e-9
+    (w0, w1), = callout_windows(cfg, tl)
+    assert abs(w0 - (e0 - 4.0)) < 1e-9 and abs(w1 - (e0 + 0.3)) < 1e-9       # crossfades into the card
+    ass = build_ass(cfg, tl, CHUNKS)
+    assert ",End," not in ass and ",Dim," not in ass                          # no old text end card
+    over = build_ass(cfg, tl, CHUNKS, over_card=True)
+    caps = [l for l in over.splitlines() if l.startswith("Dialogue")]
+    assert caps and all(",Cap," in l for l in caps)
+    cmd = build_command(cfg, tl)
+    assert '_endcard.png"' in cmd and '_arrow.png"' in cmd and "_fb_over.ass" in cmd
+    assert f"setpts=PTS+{e0:.3f}/TB[ec]" in cmd
+
+
+def test_cover_endcard_png_renders(tmp_path):
+    import glob
+    import pytest
+    from PIL import features
+    from brand import endcard_cover
+    here = os.path.dirname(os.path.abspath(__file__))
+    fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True) + glob.glob("/usr/share/fonts/**/DejaVuSans.ttf", recursive=True)
+    logo = os.path.join(here, "..", "..", "investing-bros-brand", "assets", "logo-solid.png")
+    if not features.check("raqm") or not fonts:
+        pytest.skip("needs Pillow with raqm and a Hebrew font")
+    font = fonts[0]
+    card = endcard_cover(str(tmp_path / "ec.png"), font, logo, "האם טסלה תנצח את המרוץ|של נהיגה אוטונומית?",
+                         "פרק 1", "הקישור לפרק המלא בתיאור")
+    assert 150 <= card["box"][0] and card["bottom"] < 1400

@@ -189,6 +189,76 @@ def callout_strip(text, out_path, font_path, size=None):
     return W, H
 
 
+ENDCARD_COVER = {"logo_w": 500, "logo_top": 420, "pill": 60, "title": 72, "title_max_w": 740, "link": 52,
+                 "arrow": (96, 84), "background_alpha": 236}
+
+
+def _arrow_polygon(x, y, w, h):
+    return [(x + w * 0.33, y), (x + w * 0.67, y), (x + w * 0.67, y + h * 0.5), (x + w, y + h * 0.5),
+            (x + w / 2, y + h), (x, y + h * 0.5), (x + w * 0.33, y + h * 0.5)]
+
+
+def arrow_png(out_path, size=None):
+    """A mustard down arrow with a navy edge (Heebo has no arrow glyph). Returns (w, h)."""
+    from PIL import Image, ImageDraw
+    w, h = size or ENDCARD_COVER["arrow"]
+    img = Image.new("RGBA", (w + 8, h + 8), (0, 0, 0, 0))
+    ImageDraw.Draw(img).polygon(_arrow_polygon(4, 4, w, h), fill=JOURNAL_MUSTARD + (255,), outline=JOURNAL_NAVY + (255,), width=3)
+    img.save(out_path)
+    return img.size
+
+
+def endcard_cover(out_path, font_path, logo_path, title, episode_label, link):
+    """End card in the cover-art look: navy paper over the video, the torn-paper show logo,
+    a cream "פרק N" pill, the episode title in cream (title may hold "|" for the line break;
+    each line is shrunk to fit title_max_w) and the link line. Writes a 1080x1920 RGBA PNG
+    and returns {"bottom": y of the link line's bottom, "box": [top, bottom]}; the bobbing
+    arrow (arrow_png) goes under it."""
+    import zlib
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    c = ENDCARD_COVER
+    grain = np.random.default_rng(zlib.crc32(title.encode())).normal(0, 4, (1920, 1080, 1))
+    bg = np.clip(np.full((1920, 1080, 3), JOURNAL_NAVY, np.float32) + grain, 0, 255).astype(np.uint8)
+    img = Image.fromarray(bg, "RGB").convert("RGBA")
+    img.putalpha(c["background_alpha"])
+    logo = Image.open(logo_path).convert("RGBA")
+    logo = logo.resize((c["logo_w"], round(logo.height * c["logo_w"] / logo.width)), Image.LANCZOS)
+    img.alpha_composite(logo, (540 - logo.width // 2, c["logo_top"]))
+    d = ImageDraw.Draw(img)
+    kw = {"direction": "rtl", "language": "he"}
+
+    def centred(text, size, y, fill, max_w=None):
+        f = ImageFont.truetype(font_path, size)
+        x0, y0, x1, y1 = d.textbbox((0, 0), text, font=f, **kw)
+        while max_w and x1 - x0 > max_w and size > 30:
+            size -= 2
+            f = ImageFont.truetype(font_path, size)
+            x0, y0, x1, y1 = d.textbbox((0, 0), text, font=f, **kw)
+        d.text((540 - (x1 + x0) / 2, y - y0), text, font=f, fill=fill, **kw)
+        return y + (y1 - y0)
+
+    y = c["logo_top"] + logo.height + 46
+    f = ImageFont.truetype(font_path, c["pill"])
+    x0, y0, x1, y1 = d.textbbox((0, 0), episode_label, font=f, **kw)
+    pw, ph = x1 - x0 + 64, y1 - y0 + 30
+    d.rounded_rectangle((540 - pw / 2, y, 540 + pw / 2, y + ph), radius=ph // 2, fill=JOURNAL_CREAM + (255,))
+    d.text((540 - (x1 + x0) / 2, y + 15 - y0), episode_label, font=f, fill=JOURNAL_NAVY + (255,), **kw)
+    y += ph + 54
+    lines, size = [x.strip() for x in title.split("|")], c["title"]
+    for line in lines:                                   # one size for every title line: the widest one fits
+        while size > 30 and d.textlength(line, font=ImageFont.truetype(font_path, size), **kw) > c["title_max_w"]:
+            size -= 2
+    for line in lines:
+        y = centred(line, size, y, JOURNAL_CREAM + (255,)) + 22
+    y += 40
+    bottom = centred(link, c["link"], y, JOURNAL_MUSTARD + (255,), c["title_max_w"])
+    img.save(out_path)
+    return {"box": [c["logo_top"], bottom], "bottom": bottom}
+
+
 # Teaser (1920x1080): one host's half of the side-by-side recording at native
 # size (960x1080) next to a branded panel with logo, label, captions and name.
 PANEL = {

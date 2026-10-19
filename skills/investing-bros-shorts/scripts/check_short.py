@@ -94,8 +94,13 @@ def layout_problems(lay):
         cap = lay.get("caption_y", CAPTION_Y_BOUNDS[1])
         if top < LOGO_BOX[3] + HOOK_GAP or bottom > cap - CAPTION_HALF - HOOK_GAP:
             out.append(f"callout y {top}-{bottom} needs {HOOK_GAP} px clear of the logo and the captions")
-        if t0 < 2.7 or (lay.get("duration") and t1 > lay["duration"] - 2.8):
+        end = lay.get("endcard_start", lay["duration"] - 2.8 if lay.get("duration") else None)
+        if t0 < 2.7 or (end is not None and t1 > end + 0.31):     # 0.3 s crossfade into the card is fine
             out.append(f"callout {t0}-{t1} s overlaps the hook or the end card")
+    if lay.get("endcard_box"):
+        top, bottom = lay["endcard_box"]
+        if top < LOGO_BOX[1] or bottom > CAPTION_Y_BOUNDS[1] + CAPTION_HALF:
+            out.append(f"end card y {top}-{bottom} leaves the safe zone (y {LOGO_BOX[1]}-{CAPTION_Y_BOUNDS[1] + CAPTION_HALF})")
     return out
 
 
