@@ -173,7 +173,7 @@ def _largest_component(mask):
 def extract_solid_logo(source_path: str, out_path: str) -> None:
     """Extract the current torn-paper logo while keeping its navy letters opaque.
 
-    Tuned for Media Resources/Investing-bros-logo.png. The source is the square
+    Tuned for Brand Resources/Investing-bros-logo.png. The source is the square
     newspaper cover: the logo occupies its upper 59%, with the yellow strip
     extending lower than the cream strip.
     """

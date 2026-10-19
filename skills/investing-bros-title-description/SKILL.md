@@ -5,11 +5,13 @@ description: >-
   concise Hebrew title options that lead with a real question (no clickbait,
   no em or en dashes), the description (intro, disclaimer, time-first chapters
   that work on YouTube and Spotify), checked by a script and saved as .txt
-  files in the episode's Drive folder, and thumbnail headline options handed to `investing-bros-brand` for artwork. Use when Amitai asks for "titles", "a title", "description",
-  "כותרת", "כותרות", "תיאור", "cover art", "a thumbnail", "תמונה ממוזערת",
-  "קאבר לפרק" or a prompt for an AI image tool, for episode N.
+  files in the episode's Drive folder, and thumbnail headline options handed to
+  `investing-bros-brand`, which makes all artwork. Use when Amitai asks for
+  "titles", "a title", "description", "a thumbnail headline", "כותרת",
+  "כותרות" or "תיאור" for episode N. Cover art, thumbnails and image prompts
+  are `investing-bros-brand`.
 ---
-# Investing Bros titles, description and thumbnail
+# Investing Bros titles, description and thumbnail headline
 
 Load `investing-bros-show` first. Episode number, Drive tree, file names, Hebrew spellings, the disclaimer and the fact-check rule live there.
 
@@ -17,7 +19,7 @@ For every thumbnail or cover request, load `investing-bros-brand` for visual dec
 
 ## When to use
 - After the audio edit, once the transcript and `extras/edit.json` exist.
-- On its own, when Amitai wants new or better titles, a description or a thumbnail for an episode that's already edited.
+- On its own, when Amitai wants new or better titles, a description or a thumbnail headline for an episode that's already edited.
 
 Read [references/layout.md](references/layout.md) (layout, past titles, good and bad examples) before writing.
 
@@ -67,7 +69,7 @@ Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or m
 ### 5. Save to Drive and ask Amitai to pick
 Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.
 
-### 6. Thumbnail (when asked, or when there's a video episode)
+### 6. Thumbnail headline (when asked, or when there's a video episode)
 Prepare the artwork brief and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md), preserving any supplied approved copy. Hand visual production to `investing-bros-brand`; load it to continue when the request includes finished artwork.
 
 ## Done when
