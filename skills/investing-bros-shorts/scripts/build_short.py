@@ -18,10 +18,11 @@ short.json (times are seconds on the SOURCE timeline):
   "fps": 24,                      # the source frame rate (cuts snap to its frame grid)
   "frame": "frame_vertical.png",  # from brand.py frame vertical
   "fonts": "fonts",               # folder with static Heebo weights (brand.py fonts)
-  "pieces": [[843.69, 864.40], [866.48, 871.45, 0.0]],   # kept ranges, optional gain dB per piece
+  "pieces": [[843.69, 864.40], [866.48, 871.45, 0.0]],   # kept ranges in PLAY order, optional gain dB per piece;
+                                                         # may open on a later line (moved, never repeated)
   "shots": [[843.69, 871.45, "L"]],                      # which host fills the frame (L/R), by source time
   "headline": ["סוויפט היא בכלל", "[לא מערכת תשלומים]"],  # fixed hook text under the logo; [..] = gold accent
-  "endcard": ["הפרק המלא על טוקניזציה", "[אחים להשקעות]"],  # replaces the headline for the last seconds
+  "endcard": ["בפרק המלא: למה טוקניזציה", "[אחים להשקעות]"],  # last seconds; name what the episode adds
   "tags": [[843.69, 847.2, "אמיתי רסקין"]],              # name tag on the video
   "cards": [[843.69, 845.35, "אתה רוצה להעביר כסף|מישראל לארצות הברית —"]],  # | = line break
   "audio": "highpass=f=80,acompressor=threshold=0.06:ratio=2.5:attack=15:release=250:makeup=1.5"
@@ -74,6 +75,12 @@ class Timeline:
         for (a, b) in self.pieces:
             if b <= a:
                 raise ValueError(f"piece {a}-{b} is empty")
+        # Pieces may be reordered (open on the strongest line), but never repeated:
+        # a source time inside two pieces would map to the wrong one.
+        spans = sorted(self.pieces)
+        for (a1, b1), (a2, b2) in zip(spans, spans[1:]):
+            if a2 < b1:
+                raise ValueError(f"pieces {a1}-{b1} and {a2}-{b2} overlap; move a line, don't repeat it")
         self.duration = sum(b - a for a, b in self.pieces)
 
     def map(self, t: float) -> float:
@@ -93,6 +100,30 @@ def close_gaps(cards, max_gap=0.35):
         if 0 < gap < max_gap or gap < 0:
             cards[i][1] = cards[i + 1][0]
     return cards
+
+
+LENGTH_TARGET = (20, 45)   # seconds; shorter shorts finish more often
+LENGTH_LIMIT = (15, 60)
+GENERIC_ENDCARDS = {"לפרק המלא", "השיחה ממשיכה בפרק המלא", "הפרק המלא", "לצפייה בפרק המלא"}
+
+
+def check_packaging(cfg, duration, hook_key):
+    """Warnings for the length, the opening hook and the end card of one short."""
+    out = []
+    lo, hi = LENGTH_TARGET
+    if not LENGTH_LIMIT[0] <= duration <= LENGTH_LIMIT[1]:
+        out.append(f"{duration:.1f} s is outside {LENGTH_LIMIT[0]}–{LENGTH_LIMIT[1]} s")
+    elif not lo <= duration <= hi:
+        out.append(f"{duration:.1f} s is outside the {lo}–{hi} s target; say why in the hand-back")
+    if not cfg.get(hook_key):
+        out.append(f"no '{hook_key}': the first frame needs the hook on screen")
+    end = cfg.get("endcard") or []
+    first = end[0].strip("[]").strip() if end else ""
+    if not end:
+        out.append("no 'endcard': point viewers to the full episode")
+    elif first in GENERIC_ENDCARDS:
+        out.append(f"end card '{first}' is generic; name what the episode adds, e.g. 'בפרק המלא: למה סין קונה זהב'")
+    return out
 
 
 def check_cards(cards):
@@ -213,8 +244,8 @@ def main() -> int:
     open(base + ".srt", "w", encoding="utf-8").write(build_srt(cards))
     open(base + ".sh", "w", encoding="utf-8").write(build_command(cfg, tl))
     print(f"{cfg['name']}: {tl.duration:.2f} s, {len(tl.pieces)} piece(s), {len(cards)} caption card(s)")
-    if not 30 <= tl.duration <= 60:
-        print(f"warning: {tl.duration:.1f} s is outside 30–60 s")
+    for w in check_packaging(cfg, tl.duration, "headline"):
+        print("warning:", w)
     for w in check_cards(cfg["cards"]):
         print("warning:", w)
     return 0
