@@ -189,3 +189,34 @@ def test_youtube_chapter_rules():
     assert any("at least 10 s" in e for e in errors(check_description(close)))
     two = "למה זהב? שיחה על זהב.\n\nאין כאן המלצת השקעה. רק שיחה.\n\n0:00 פתיחה\n1:00 זהב\n"
     assert any("at least 3" in e for e in errors(check_description(two)))
+
+
+def _pad(desc):
+    for a, b in [("0:00 ", "00:00 "), ("1:05 ", "01:05 "), ("3:47 ", "03:47 "), ("8:14 ", "08:14 ")]:
+        desc = desc.replace("\n" + a, "\n" + b)
+    return desc
+
+
+def test_spotify_needs_zero_padded_times():
+    errs = errors(check_description(EP2_DESC, spotify=True))
+    assert any("'01:05' not '1:05'" in e for e in errs)
+    assert errors(check_description(_pad(EP2_DESC), spotify=True)) == []
+    assert errors(check_description(_pad(EP2_DESC))) == []   # padded times are fine on YouTube too
+
+
+def test_spotify_needs_30_seconds_between_chapters():
+    close = _pad(EP2_DESC).replace("01:05 מרוץ", "00:20 מרוץ")
+    assert errors(check_description(close)) == []
+    assert any("Spotify needs at least 30 s" in e for e in errors(check_description(close, spotify=True)))
+
+
+def test_spotify_warns_on_long_labels():
+    probs = check_description(_pad(EP2_DESC), spotify=True)
+    assert any("Spotify suggests under 40" in p for p in probs)   # the 08:14 label is 50 characters
+
+
+def test_cli_spotify_flag(tmp_path, capsys):
+    d = tmp_path / "description.txt"
+    d.write_text(EP2_DESC, encoding="utf-8")
+    assert main(["--description", str(d)]) == 0
+    assert main(["--description", str(d), "--spotify"]) == 1

@@ -10,6 +10,7 @@ from pathlib import Path
 
 NAME_RE = re.compile(r"^[a-z0-9]+(-[a-z0-9]+)*$")
 LINK_RE = re.compile(r"\]\(([^)#]+)\)")
+NO_DONE_WHEN = {"investing-bros-show"}  # shared conventions, not a step
 SECRET_RE = re.compile(r"(?i)(password|token|api[_-]?key|secret)\s*[:=]\s*['\"]?[A-Za-z0-9_\-]{8,}")
 
 
@@ -50,6 +51,8 @@ def check_skill(folder: Path) -> list:
         errs.append(f"{folder.name}: name '{name}' must match the folder name")
     if not desc or len(desc) > 1024:
         errs.append(f"{folder.name}: description must be 1-1024 characters (is {len(desc)})")
+    if folder.name not in NO_DONE_WHEN and not re.search(r"^## Done when\s*$", text, re.M):
+        errs.append(f"{folder.name}: SKILL.md needs a '## Done when' section listing the files it leaves")
     if len(text.splitlines()) > 500:
         errs.append(f"{folder.name}: SKILL.md over 500 lines; move detail to references/")
     for f in folder.rglob("*"):

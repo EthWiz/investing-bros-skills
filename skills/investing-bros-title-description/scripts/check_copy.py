@@ -1,12 +1,14 @@
 #!/usr/bin/env python3
-"""Check the two episode Docs (titles and description) against the house layout.
+"""Check the episode title options and description against the house layout.
 
 Usage:
   python3 check_copy.py --titles titles.txt [--episode N]
   python3 check_copy.py --description description.txt
-  python3 check_copy.py --titles titles.txt --description description.txt --episode N
+  python3 check_copy.py --titles titles.txt --description description.txt --episode N --spotify
 
-Input is the plain text of the Doc (`אפשרויות כותרת` / `תיאור הפרק`).
+Input is the plain text of the episode's title and description files (the .txt files
+in the episode's Drive folder). --spotify adds the rules Spotify needs to show chapters
+(the RedCircle description feeds Spotify): MM:SS timestamps, 30 s apart, short labels.
 Prints one line per problem: "error: ..." must be fixed, "warn: ..." needs a judgement call.
 Exit code 1 if there is any error, else 0.
 """
@@ -43,6 +45,9 @@ CALL_WORDS = ["לקנות", "למכור", "תקנו", "תמכרו", "קונים 
 HEBREW_RE = re.compile(r"[\u05D0-\u05EA]")
 LATIN_RE = re.compile(r"[A-Za-z]")
 MIN_CHAPTER_GAP = 10  # seconds; YouTube ignores chapters shorter than this
+SPOTIFY_MIN_GAP = 30  # seconds between chapter starts on Spotify
+SPOTIFY_LABEL_MAX = 40
+SPOTIFY_TIME_RE = re.compile(r"^(\d{2}:)?\d{2}:\d{2} ")  # MM:SS or HH:MM:SS, zero-padded
 BIDI_FIX = ("start it with a Hebrew word; a line that starts with English or a number turns "
             "left-to-right in a Hebrew description, and its timestamp, numbers and words land out of order")
 
@@ -70,7 +75,7 @@ def _common(text: str, where: str, out: list):
             out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or a plain hyphen '-'")
     for ch, name in DIRECTION_MARKS.items():
         if ch in text:
-            out.append(f"error: {where}: contains an invisible {name} mark - the Doc stays plain; "
+            out.append(f"error: {where}: contains an invisible {name} mark - the .txt stays plain; "
                        "marks are added only at upload (investing-bros-episode-upload)")
             break
     if EMOJI_RE.search(text):
@@ -116,7 +121,7 @@ def check_titles(text: str, episode=None) -> list:
     if not nonblank:
         return ["error: titles: empty"]
 
-    # A single title: Amitai cut the Doc down to his pick, or a published title is being checked.
+    # A single title: Amitai cut the file down to his pick, or a published title is being checked.
     if len(nonblank) == 1 and not NUMBERED_RE.match(nonblank[0]):
         return check_title(nonblank[0], "title", episode)
 
@@ -162,7 +167,13 @@ def _seconds(m) -> int:
     return h * 3600 + int(m.group(2)) * 60 + int(m.group(3))
 
 
-def check_description(text: str) -> list:
+def _padded(t: int) -> str:
+    h, rem = divmod(t, 3600)
+    m, s = divmod(rem, 60)
+    return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
+
+
+def check_description(text: str, spotify: bool = False) -> list:
     out = []
     _common(text, "description", out)
     lines = [l.strip() for l in text.splitlines()]
@@ -212,12 +223,21 @@ def check_description(text: str) -> list:
         elif prev >= 0 and t - prev < MIN_CHAPTER_GAP:
             out.append(f"error: chapter {i}: only {t - prev} s after the previous chapter "
                        f"(YouTube needs at least {MIN_CHAPTER_GAP} s, or it drops the chapters)")
+        elif spotify and prev >= 0 and t - prev < SPOTIFY_MIN_GAP:
+            out.append(f"error: chapter {i}: only {t - prev} s after the previous chapter "
+                       f"(Spotify needs at least {SPOTIFY_MIN_GAP} s)")
+        if spotify and not SPOTIFY_TIME_RE.match(l):
+            out.append(f"error: chapter {i}: Spotify reads zero-padded times, write "
+                       f"'{_padded(t)}' not '{l.split()[0]}'")
         prev = t
         label = m.group(4)
         if not HEBREW_RE.match(label[0]):
             out.append(f"error: chapter {i}: label '{label}' - {BIDI_FIX} "
                        f"(e.g. '1:05 מרוץ המודלים: OpenAI מול אנתרופיק')")
-        if _visible_len(label) > CHAPTER_LABEL_MAX:
+        if spotify and _visible_len(label) > SPOTIFY_LABEL_MAX:
+            out.append(f"warn: chapter {i}: label is {_visible_len(label)} characters "
+                       f"(Spotify suggests under {SPOTIFY_LABEL_MAX})")
+        elif _visible_len(label) > CHAPTER_LABEL_MAX:
             out.append(f"warn: chapter {i}: label is {_visible_len(label)} characters (aim for {CHAPTER_LABEL_MAX} or less)")
     if len(chapters) < 3:
         out.append(f"error: description: only {len(chapters)} chapters (YouTube needs at least 3 to show chapters)")
@@ -226,9 +246,11 @@ def check_description(text: str) -> list:
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("--titles", help="plain text of the 'אפשרויות כותרת' Doc")
-    ap.add_argument("--description", help="plain text of the 'תיאור הפרק' Doc")
+    ap.add_argument("--titles", help="the five title options + 'בחירה סופית:' (.txt)")
+    ap.add_argument("--description", help="the episode description (.txt)")
     ap.add_argument("--episode", type=int, help="episode number as Amitai stated it")
+    ap.add_argument("--spotify", action="store_true",
+                    help="also apply Spotify's chapter rules (use for the RedCircle copy)")
     a = ap.parse_args(argv)
     if not a.titles and not a.description:
         ap.error("give --titles and/or --description")
@@ -238,7 +260,7 @@ def main(argv=None) -> int:
             problems += check_titles(f.read(), a.episode)
     if a.description:
         with open(a.description, encoding="utf-8") as f:
-            problems += check_description(f.read())
+            problems += check_description(f.read(), spotify=a.spotify)
     for p in problems:
         print(p)
     errors = sum(p.startswith("error:") for p in problems)

@@ -1,4 +1,4 @@
-"""Tests for make_input.py and build_composition.py. Run: python3 -m pytest skills/investing-bros-hyperframes/scripts"""
+"""Tests for make_input.py and build_composition.py. Run: python3 -m pytest skills/investing-bros-shorts/scripts"""
 import json
 import os
 import re

@@ -1,79 +1,82 @@
 ---
 name: investing-bros-title-description
 description: >-
-  Write the Hebrew title options and episode description for an Investing
-  Bros / אחים להשקעות episode, in the show's layout: five concise, engaging
-  titles that lead with a real question (no clickbait, no em or en dashes), and the
-  description Doc (intro paragraph, disclaimer, time-first chapters), checked
-  by a script before they go in Drive. Use when Amitai asks for "titles",
-  "a title", "description", "כותרת", "כותרות", "אפשרויות כותרת", "תיאור הפרק"
-  or "תיאור" for episode N, and at step 7 of investing-bros-post-production.
+  Write the packaging for an Investing Bros / אחים להשקעות episode: five
+  concise Hebrew title options that lead with a real question (no clickbait,
+  no em or en dashes), the description (intro, disclaimer, time-first chapters
+  that work on YouTube and Spotify), checked by a script and saved as .txt
+  files in the episode's Drive folder, and the YouTube thumbnail prompt and
+  headline. Use when Amitai asks for "titles", "a title", "description",
+  "כותרת", "כותרות", "תיאור", "cover art", "a thumbnail", "תמונה ממוזערת",
+  "קאבר לפרק" or a prompt for an AI image tool, for episode N.
 ---
-# Investing Bros titles and description
+# Investing Bros titles, description and thumbnail
 
-Load `investing-bros-show` first. Episode number, Drive tree, Hebrew spellings, the disclaimer and the fact-check rule live there.
+Load `investing-bros-show` first. Episode number, Drive tree, file names, Hebrew spellings, the disclaimer and the fact-check rule live there.
 
 ## When to use
-- As step 7 of `investing-bros-post-production`, once the edited timeline (`extras/edit.json`) and the transcript exist.
-- On its own, when Amitai asks for new or better titles or a description for an episode that's already edited.
+- After the audio edit, once the transcript and `extras/edit.json` exist.
+- On its own, when Amitai wants new or better titles, a description or a thumbnail for an episode that's already edited.
 
-The full layout, past examples and good/bad titles are in [references/layout.md](references/layout.md). Read it before writing.
+Read [references/layout.md](references/layout.md) (layout, past titles, good and bad examples) before writing.
 
 ## Inputs
 - Episode number N **as Amitai states it**.
 - The transcript (`extras/transcript/segments.json` or `transcript.txt`) and `extras/edit.json` (`start` in raw seconds).
 - The episode's `brief/` docs, for the deep-dive topic and the sources behind any number.
-- Existing Docs `אפשרויות כותרת` / `תיאור הפרק`, if Amitai wants them redone (keep what he already marked).
+- Existing `כותרות-פרק-N.txt` / `תיאור-פרק-N.txt`, if Amitai wants them redone (keep what he already marked).
 
 ## Steps
 
 ### 1. Find the episode's story
-Read the transcript. Note: the deep-dive topic and the question the brothers actually argue about, the 3–5 news items that took real time, each brother's investment idea, and any line that would make a listener stop scrolling. The **deep dive is the title's subject**; news items go in the description, not the title.
+Read the transcript. Note the deep-dive topic and the question the brothers actually argue about, the 3–5 news items that took real time, each brother's investment idea, and any line that would make a listener stop scrolling. The **deep dive is the title's subject**; news items go in the description.
 
 ### 2. Write five titles
 Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 - ניו קלאודס: מי ינצח במלחמת העננים?`).
-- **Lead with a question.** At least three of the five are questions; the question goes at the end, after the topic. Question-first (`פרק N - <שאלה>?`) is fine for one or two options.
+- **Lead with a question.** At least three of the five are questions, at the end, after the topic.
 - **Concise.** 50 characters or less after `פרק N - `; 60 is the hard limit.
-- **Engaging, not clickbait.** The question must be one the episode really discusses, and a listener should feel the episode delivered on it. No secrets, no "you won't believe", no promised returns, no hype words, no `!`, no emoji.
-- **No buy or sell call.** "לקנות או לחכות?" only if the episode frames it as a debate, never as advice.
-- **No em dash `—` and no en dash `–`.** Both read as AI-written. Use `:` or `,`. The only dash is the plain hyphen `-` after the episode number.
-- Give five different angles, e.g. the debate, the stakes, the "what is it", the investor angle, the contrarian view.
-- English company and product names stay in English (`NVIDIA`, `CoreWeave`); Hebrew brand spellings from `investing-bros-show`.
-- A number goes in a title only if it was said in the episode **and** you've checked it against a source.
+- **Engaging, not clickbait.** A question the episode really discusses and delivers on. No secrets, no "you won't believe", no promised returns, no hype words, no `!`, no emoji.
+- **No buy or sell call.** "לקנות או לחכות?" only if the episode frames it as a debate.
+- **No em dash `—` or en dash `–`.** Use `:` or `,`. The only dash is the plain hyphen after the episode number.
+- Five different angles: the debate, the stakes, the "what is it", the investor angle, the contrarian view.
+- English company names stay in English (`NVIDIA`); Hebrew brand spellings from `investing-bros-show`. A number goes in a title only if it was said **and** checked against a source.
 
 ### 3. Write the description
-Three blocks, blank line between them (exact layout in references):
-1. **Intro.** One paragraph, about 450 characters or less. Open with a question when one fits naturally, then the deep dive, the main news items and the investment ideas, only as discussed.
+Three blocks, blank line between them:
+1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
-3. **Chapters**, time first, from `0:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 10 seconds apart, short labels, names spelled as in the brand list. **Every label starts with a Hebrew word**, never English or a number (`1:05 מרוץ המודלים: OpenAI מול אנתרופיק`, not `1:05 OpenAI מול אנתרופיק`): a line that starts with English flips left-to-right and scrambles its timestamp and numbers on YouTube. The intro starts with a Hebrew word too.
-
-No em dash or en dash anywhere: intro, chapters or titles. Plain hyphen only.
+3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
 
 ### 4. Check
-Save each as a plain `.txt` and run:
+Save as `כותרות-פרק-N.txt` and `תיאור-פרק-N.txt` (UTF-8, plain text) and run:
 ```bash
-python3 scripts/check_copy.py --titles titles.txt --description description.txt --episode N
+python3 scripts/check_copy.py --titles כותרות-פרק-N.txt --description תיאור-פרק-N.txt --episode N --spotify
 ```
-Fix every `error:` and rerun until it prints `0 error(s)`. Read each `warn:` and either fix it or mention it in the hand-back. Then fact-check every number and claim in both texts (`investing-bros-show` → Hebrew); anything you can't source comes out.
+Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or mention it in the hand-back. Then fact-check every number and claim in both files; anything you can't source comes out.
 
-### 5. Write the Docs
-Write the checked text into the two Google Docs in the episode root, `אפשרויות כותרת` and `תיאור הפרק` (Drive rules in `investing-bros-show`). Plain text: no direction marks, no bold. If the Docs already exist, update them in place; don't create a second copy. The `.txt` files go in `extras/`.
+### 5. Save to Drive and ask Amitai to pick
+Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.
 
-### 6. Ask Amitai to pick
-Send him the five titles in chat, numbered as in the Doc, with your recommendation and one line on why. He fills `בחירה סופית:` (or tells you, and you fill it). Don't pick for him.
+### 6. Thumbnail (when asked, or when there's a video episode)
+Write the AI image prompt and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md): the channel's dark cinematic layout, one focal object, one accent colour, a headline that adds to the title instead of repeating it.
+
+## Done when
+- Episode root has `כותרות-פרק-N.txt` (with Amitai's pick after `בחירה סופית:`) and `תיאור-פרק-N.txt`.
+- `check_copy.py --spotify` prints `0 error(s)` on both, and every claim is fact-checked.
+- Thumbnail (if asked): the prompt and headline are with Amitai; the finished image is in `promo/`.
 
 ## Hand back
-- Links to both Docs
+- Links to both files
 - The five titles, with your recommended one
-- `check_copy.py` result (0 errors) and any warnings you kept, with the reason
+- `check_copy.py` result and any warnings you kept, with the reason
 - Any claim or number you removed because it couldn't be verified
-- Next: `investing-bros-episode-upload` uses the text after `בחירה סופית:` and the full description
+- Thumbnail prompt (in a code block) and headline options, if made
 
 ## Never
-- Use an em dash `—` or en dash `–` in a title, description or chapter. Only the plain hyphen `-`.
+- Use an em dash `—` or en dash `–` anywhere public. Only the plain hyphen `-`.
 - Start a chapter label or the intro with English or a number.
 - Write a title the episode doesn't deliver on, or one that sounds like a buy/sell recommendation.
 - Put a number or claim in the copy that wasn't said in the episode or isn't fact-checked.
-- Add direction marks to the Docs (they're added only at upload).
-- Choose the final title yourself, or upload or publish anything (`investing-bros-episode-upload`, and only with Amitai's OK).
-- Skip `check_copy.py`, or edit it locally to make a draft pass. If a rule is wrong, propose the change as a PR (working rules in `investing-bros-show`).
+- Add direction marks to the `.txt` files (they're added only for RedCircle, at upload).
+- Save the copy as a Google Doc, or choose the final title yourself.
+- Skip `check_copy.py`, or edit it locally to make a draft pass. A wrong rule is a PR (show conventions → Working rules).

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Investing Bros brand assets for promo video: palette, logo, fonts, frames.
 
-Shared by investing-bros-shorts and investing-bros-teaser (identical copies).
+Shared by investing-bros-shorts and investing-bros-video (identical copies).
 
 Usage:
     python3 brand.py logo  COVER.jpg OUT_logo.png [--box navy|dark|x0,y0,x1,y1]

@@ -1,7 +1,7 @@
 {
   "name": "investing-bros",
-  "description": "Production skills for the Investing Bros / אחים להשקעות podcast: prep, post-production, promo clips, cover art, RedCircle upload and WhatsApp sharing.",
-  "version": "2.2.0",
+  "description": "Production skills for the Investing Bros / אחים להשקעות podcast: prep, audio edit, titles and description, video episode, shorts, uploads to RedCircle, YouTube and Spotify, and WhatsApp sharing.",
+  "version": "3.0.0",
   "author": {
     "name": "Amitai & Nadav Raskin"
   },

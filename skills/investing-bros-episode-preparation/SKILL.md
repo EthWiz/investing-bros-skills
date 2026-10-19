@@ -25,7 +25,7 @@ Before a recording: news ideas, a deep-dive brief, one-pagers or any other pre-s
 2. Inside it, create (or reuse) the subfolder `brief`.
 3. Create **every** prep Google Doc inside `brief/` — never in the show root, never loose in the episode root.
 
-Typical docs in `brief/`: news/topic ideas, deep-dive brief, any one-pagers. Leave the episode root otherwise empty; post-production fills it later.
+Typical docs in `brief/`: news/topic ideas, deep-dive brief, any one-pagers. Leave the episode root otherwise empty; the later skills fill it.
 
 ### 2. News segment (~10 ideas)
 - All-In / tech-investor angle (see show conventions). Don't lead with rates, oil or price action unless Amitai asks for macro.
@@ -41,11 +41,13 @@ Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחי
 2. Send the **Doc link(s)**, not a pasted brief.
 3. Give the exact caption text (ending with the show tag), the links and context; ask for yes/no confirmation.
 
-## Handoff checklist
-- [ ] `פרק N — נושא` exists under show root (no duplicate N)
-- [ ] `brief/` exists and holds every prep Doc; nothing in show root
-- [ ] Every factual claim has a source URL
-- [ ] WhatsApp owner given exact group + caption + links; confirmation reported
+## Done when
+- `פרק N — נושא` exists under the show root (no duplicate N), with `brief/` holding every prep Doc; nothing else in the episode root.
+- Every factual claim has a source URL.
+- The WhatsApp owner has the exact group, caption and links, and the send is confirmed.
+
+## Hand back
+Links to the episode folder and each Doc in `brief/`, and the WhatsApp send status.
 
 ## Never
 - Invent numbers, quotes or events.
