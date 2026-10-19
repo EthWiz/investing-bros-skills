@@ -107,7 +107,7 @@ Episode 7 (video producer), on top of that look:
 | Time the proofread captions word by word | `align_words.py short.json words.json -o aligned.json` | `cards` stay the proofread text |
 | Centre the face | `face_crop.py raw.mp4 --at t1 t2 t3` | prints `crop_x` for both hosts; confirm on one frame — hands in shot pull it off (episode 7: suggested L=64, the face needed ~100) |
 | Render the deployed video style | `build_fullbleed.py short.json` then `bash NAME_fb.sh` | also writes `NAME.srt`; `base` + `shots` cut to the other host for reactions; `tags` = name tag; `sources`/`crop` take each host's own high-res Riverside track. Worked example: [references/ep7-asteroid-fullbleed.json](references/ep7-asteroid-fullbleed.json). Its output is also the input for a HyperFrames overlay |
-| Check the export | `check_short.py NAME.mp4` | length, −14 LUFS, peak, and a frame strip you must look at |
+| Check the export | `check_short.py NAME.mp4` | length, −14 LUFS, peak, the first second (no black or faded frame 1, speech within 0.4 s), no dead air at the end, and a frame strip you must look at |
 | Legacy video-frame cover (explicit reuse only) | `make_cover.py --style fullbleed --crop x,y,w,h --logo logo.png …` | same crop as the short; new cover artwork comes from `investing-bros-brand` |
 | Upload to Drive | `drive.sh put FILE SHORTS_FOLDER_ID` | |
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
