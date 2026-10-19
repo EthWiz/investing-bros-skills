@@ -46,7 +46,6 @@ legacy styling is an explicit compatibility choice, not the default for new artw
    imagegen skill for tool invocation. Supply only relevant image references.
    Grokbot generates through Codex on Amitai's Mac when that machine is connected,
    and falls back to its own image tool otherwise (prompts → Codex backend).
-   Shorts cover headlines are Hebrew only, never a `|` or English words.
 5. Preserve the reference layout for localized edits. For a new topic change the
    central illustration and headline while maintaining the brand structure.
 6. Review with [quality checks](references/quality-checks.md). Correct text or visual
