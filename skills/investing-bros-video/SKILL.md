@@ -25,7 +25,7 @@ After the audio edit (`investing-bros-post-production`), when the recording has 
 From the episode's `extras/`:
 - `transcript/segments.json` and `edit.json` (raw timeline; `edited = raw − start`)
 - the raw master video (`investing-bros-episode-raw-untrimmed.mp4`) and `episode-leveled.wav` (same timeline)
-- brand assets from `scripts/brand.py` (logo, fonts, frames) and the intro clip (show conventions → Brand)
+- approved graphic assets from `investing-bros-brand`, or the existing `scripts/brand.py` logo/fonts/frames when retaining the deployed renderer; intro clip from show conventions → Brand
 - the description file `תיאור-פרק-N.txt` from the episode root, for the YouTube description (step 4)
 
 ## Steps
@@ -38,7 +38,7 @@ Tease, don't resolve: a question raised, a number dropped, a story started; cut 
 Cut in the pauses between words, never mid-word (audio energy, or re-transcribe a short window). Proofread every caption against the audio; leave out words you can't verify and report them.
 
 ### 2. Render the cold opens (1920×1080)
-The host's half of the recording at native size next to a branded panel (logo, episode label, big captions, name); the host stays on his side.
+The existing renderer places the host's half of the recording at native size next to a branded panel (logo, episode label, big captions, name); the host stays on his side. These commands retain the deployed visual style. New Financial Journal panels come from `investing-bros-brand` and need a reviewed renderer integration before use.
 ```bash
 python3 scripts/brand.py frame panel-left logo.png frame_panel_left.png    # host sits right (Nadav)
 python3 scripts/brand.py frame panel-right logo.png frame_panel_right.png  # host sits left (Amitai)
@@ -53,7 +53,7 @@ Order: cold open(s) → the intro, as-is → the episode. Hard cuts.
 scripts/assemble_episode.sh "$EP/פרק-N-וידאו.mp4" \
   --body "$EP/investing-bros-episode-raw-untrimmed.mp4" --body-audio "$EP/episode-leveled.wav" \
   --start START --end END \
-  --before "טיזר 1 - נדב.mp4" --before "טיזר 2 - אמיתי.mp4" --intro "<intro clip>.mp4"
+  --before "טיזר 1 - נדב.mp4" --before "טיזר 2 - אמתי.mp4" --intro "<intro clip>.mp4"
 ```
 `START`/`END` come from `edit.json`. Every segment uses the same x264 settings and the body goes in ~8-minute chunks; under a command time limit add `--max-seconds 150` and re-run until it stops printing `resume`. Never join separately encoded pieces with `-c copy`.
 

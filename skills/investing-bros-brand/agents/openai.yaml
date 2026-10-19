@@ -1,14 +1,11 @@
 interface:
-  display_name: Investing Bros Brand
-  short_description: Financial Journal artwork, templates and brand rules
-  default_prompt: Use $investing-bros-brand to create podcast artwork using the Financial
-    Journal identity.
-  icon_small: assets/icon.svg
-  icon_large: assets/icon.svg
+  display_name: "Investing Bros Brand"
+  short_description: "Financial Journal artwork, templates and brand rules"
+  default_prompt: "Use $investing-bros-brand to create podcast artwork using the Financial Journal identity."
 policy:
   products:
-  - chatgpt
-  - codex
-  - api
-  - atlas
+  - "chatgpt"
+  - "codex"
+  - "api"
+  - "atlas"
   allow_implicit_invocation: true

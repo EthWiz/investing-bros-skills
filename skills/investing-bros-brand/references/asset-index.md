@@ -3,6 +3,8 @@
 All paths are relative to this skill root. Files are flattened raster references,
 not editable layered templates. Preserve originals and create new versions for edits.
 
+All four supplied PNGs are 1254×1254 pixels. Export sizes in `layouts.json` are targets, not the dimensions of these references.
+
 | Asset | Role | Status |
 | --- | --- | --- |
 | assets/references/main-cover.png | Show masthead, chairs, paper, corrected host credit | Selected working reference |

@@ -25,6 +25,12 @@ Title-description supplies approved copy; video and Shorts consume this design s
 Do not maintain competing visual rules in those skills. GitHub is the canonical source;
 installed copies must be refreshed after changes merge.
 
+This includes every show cover, square episode cover, YouTube thumbnail, Shorts cover,
+discussion card, lower third, explainer graphic and intro artwork. Load this skill even
+when another workflow creates or uploads the file. Existing renderer code describes
+the deployed implementation; it cannot override this skill's design guidance. Reusing
+legacy styling is an explicit compatibility choice, not the default for new artwork.
+
 ## Steps
 1. Read [brand rules](references/brand-rules.md) and [asset index](references/asset-index.md).
 2. Inspect the relevant bundled PNG with an image-view tool. Use the exact attached

@@ -13,6 +13,8 @@ description: >-
 
 Load `investing-bros-show` first. Episode number, Drive tree, file names, Hebrew spellings, the disclaimer and the fact-check rule live there.
 
+For every thumbnail or cover request, load `investing-bros-brand` for visual decisions, prompts and artwork. This skill supplies the words and episode context only.
+
 ## When to use
 - After the audio edit, once the transcript and `extras/edit.json` exist.
 - On its own, when Amitai wants new or better titles, a description or a thumbnail for an episode that's already edited.

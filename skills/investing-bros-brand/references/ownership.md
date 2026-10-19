@@ -21,7 +21,7 @@ Brand returns the appropriate assets. No task silently redefines the global pale
 GitHub holds rules, templates and a small curated reference set. Finished per-episode
 outputs live in the episode's Drive folders defined by investing-bros-show. Do not
 commit every generated variation to Git. Reference images are not production masters.
-Record artwork in `extras/artwork-register.json` for the episode, using the schema in
+Record artwork in `extras/artwork-register.json` for the episode, using the example shape in
 `assets/templates/artifact-register.example.json`. Reuse an existing register. Record
 actual paths/URLs and dimensions, never guesses. Mark missing optional data null.
 Use versioned draft filenames. Promote a version to the final delivery filename only

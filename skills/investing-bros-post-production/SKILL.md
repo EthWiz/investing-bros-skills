@@ -14,7 +14,8 @@ description: >-
 Load `investing-bros-show` first: naming, Drive tree, roles and the episode flow live there.
 
 This skill ends at the edited audio. Everything after it reads the transcript and `edit.json` it leaves:
-- titles, description, thumbnail → `investing-bros-title-description`
+- titles, description, artwork copy brief → `investing-bros-title-description`
+- show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
 - cold opens, intro, video episode, teaser → `investing-bros-video`
 - shorts, mid-form → `investing-bros-shorts`
 - review ping, uploads, publish → `investing-bros-episode-upload`

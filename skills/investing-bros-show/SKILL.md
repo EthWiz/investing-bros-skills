@@ -9,7 +9,7 @@ description: >-
 ---
 # Investing Bros show conventions
 
-Single source of truth for everything the other `investing-bros-*` skills share. If a rule here and a rule in another skill disagree, this file wins — fix the other skill.
+Single source of truth for shared show facts and operating rules. If another skill disagrees on those facts or rules, this file wins. Visual identity and artwork specifications belong to `investing-bros-brand`.
 
 ## The show
 - **Name:** Investing Bros, Hebrew **אחים להשקעות**.
@@ -17,7 +17,7 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 - **Episode format:** ~10 min news, ~20 min deep dive, ~5 min each for one investment idea per host.
 - **News taste:** All-In-style tech (model releases, launches, big raises/IPOs, hacks, infra, fintech/platform moves) over macro/rates/oil/price action, unless Amitai asks for macro.
 - **Podcast host:** [RedCircle](https://app.redcircle.com). Not RSS.com unless Amitai says the host changed. RedCircle feeds Spotify automatically: [the show on Spotify](https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk). Video goes to YouTube only; uploading video to Spotify would cut that episode off from RedCircle (see `investing-bros-episode-upload`).
-- **Spotify, as of 2026-10-18:** the show's author line reads `אמתי ונדב רסקין` (old spelling, from RedCircle's show settings), and episode 7's title has an en dash. Fixing either changes public metadata, so it waits for Amitai's OK.
+- **Spotify, as of 2026-10-18:** the show's author line reads `אמתי ונדב רסקין`, matching the corrected spelling. Episode 7's title has an en dash; changing that public metadata waits for Amitai's OK.
 
 ## Hard rules (every skill)
 1. **Never invent** numbers, quotes, events or promo copy. Factual claims need a source URL.
@@ -64,6 +64,8 @@ Single source of truth for everything the other `investing-bros-*` skills share.
 ## Drive tree
 Show root `אחים להשקעות` already exists. Never create a second root.
 
+Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders/1IRRwUpB3n1SD3-Ltvj3bEiMQS-UfFxyO), formerly `Media Resources` (same folder ID, verified 2026-10-19). Reuse this folder and preserve existing files. Legacy asset paths below record historical filenames; inspect the folder and its archives before resolving an asset, rather than assuming the old path still exists.
+
 ```
 אחים להשקעות/                      show root (exists)
   פרק N — נושא/                    one per episode — created by prep, reused by everyone after
@@ -75,7 +77,7 @@ Show root `אחים להשקעות` already exists. Never create a second root.
     video/       full video episode + its YouTube description, when there is one ← video
     shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
-    promo/       promo teaser, cold opens, thumbnail                              ← video, title-description
+    promo/       promo teaser, cold opens, thumbnail                              ← video, brand
 ```
 
 The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.

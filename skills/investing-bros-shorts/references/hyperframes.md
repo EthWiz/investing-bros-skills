@@ -2,6 +2,8 @@
 
 Part of `investing-bros-shorts`: it replaces only the render step (step 4). Moment picking, cut points, caption proofreading, the cover and the Drive upload stay as in the main skill.
 
+`investing-bros-brand` owns visual specifications. The scripts and examples here retain the deployed styling; they do not yet implement Financial Journal cards. Obtain new artwork from brand and review an integrated render before migrating.
+
 [HyperFrames](https://github.com/heygen-com/hyperframes) (HeyGen, open source) renders video from an HTML page: the DOM declares timing with `data-*` attributes, a paused GSAP timeline drives the motion, and headless Chrome captures it frame by frame. Chrome lays out the text, so Hebrew right-to-left and mixed Hebrew/English come out right without the ASS workarounds.
 
 ## When to use
