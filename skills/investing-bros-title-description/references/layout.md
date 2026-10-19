@@ -52,7 +52,11 @@ Each line is laid out right-to-left or left-to-right by its **first letter**. A 
 - Spotify chapter rules (the RedCircle description feeds Spotify): `MM:SS` or `HH:MM:SS`, first at `00:00`, at least 3, at least 30 seconds apart, plain text, labels under 40 characters **(checked with `--spotify`)**. Spotify drops numbering like `1 -` from labels.
 - YouTube gets the plain file text. The RTL marks from `investing-bros-episode-upload` are for RedCircle only.
 
-The video episode has a cold open + intro (~28 s) in front. Its YouTube description (`video/תיאור-פרק-N-youtube.txt`, made by `investing-bros-video`) offsets every chapter by that length; `תיאור-פרק-N.txt` stays on the edited-audio timeline.
+The video episode has a cold open + intro in front. Its YouTube description
+(`video/תיאור-פרק-N-youtube.txt`, made by `investing-bros-video`) offsets every
+chapter by that length; `תיאור-פרק-N.txt` stays on the edited-audio timeline.
+The YouTube file also puts the clean per-episode Spotify link after the disclaimer
+and before the `00:00` chapter; `check_copy.py --youtube` checks its URL and position.
 
 ## Past episodes (for tone and length)
 

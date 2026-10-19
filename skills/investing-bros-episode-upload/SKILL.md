@@ -59,9 +59,31 @@ Follow [the Studio checklist](references/youtube-studio.md). In particular, swit
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
 brand channel before selecting files. Upload as **Private** and choose
 **No, it's not made for kids**.
-- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
-- **Shorts** (`shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
-- **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
+
+Every YouTube description uses the episode's Spotify **episode** link, never the
+show link:
+`🎧 להאזנה בספוטיפיי: https://open.spotify.com/episode/<id>`.
+Strip `?si=...` and anything after it. To obtain the URL:
+1. For the newest episode, Spotify's public [show embed](https://open.spotify.com/embed/show/4fREAemgQDMWIUK58N5Jjk)
+   exposes only the latest release.
+2. For a back-catalogue episode, open the public Spotify show page in the browser,
+   choose **Load more episodes** until the episode appears, open it, and copy its
+   episode URL.
+3. For a new episode, wait until RedCircle has distributed it to Spotify. If it is
+   not there yet, do **not** block the YouTube upload: upload without the line, record
+   the pending follow-up, and add it in Studio as soon as the episode appears.
+
+For the full video description, preserve this exact order: intro/hook first,
+disclaimer, blank line, Spotify line, blank line, then chapters beginning at
+`00:00`. Run `check_copy.py --description FILE --youtube`; only while distribution
+is pending may `--allow-missing-spotify` be used. Episode 1's worked URL is
+`https://open.spotify.com/episode/7gV79L2FqVTfr6f8TPZWMA` (YouTube:
+`https://youtu.be/fVpJXxn01CM`). YouTube descriptions cannot embed a logo or image;
+the `🎧` emoji is the only visual marker.
+
+- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks), with the Spotify line in the checked position above.
+- **Shorts** (`shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL; add the same Spotify line to the description when available.
+- **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link and the same Spotify line when available.
 - Thumbnail from `promo/`, if Amitai approved one.
 
 ### 4. Publish (only after Amitai's OK in chat)
@@ -74,6 +96,8 @@ Publish the RedCircle draft, and switch the YouTube uploads he named to Public (
   - the episode is there, with the exact title (no en dash, `?` at the end of the sentence)
   - the description lines read right-to-left and nothing visible is scrambled
   - chapters show in the Spotify app (episode page → chapters)
+  - every YouTube description that was uploaded while distribution was pending now
+    has this episode's clean Spotify episode link
 
   Wrong on Spotify but right on RedCircle: tell Amitai what you saw (screenshot) and open a GitHub issue on the repo; don't change show settings or re-publish to fix it.
 
@@ -83,13 +107,14 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
-- After the OK: live on RedCircle and YouTube, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
+- Before the OK: RedCircle draft saved and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent. A missing Spotify URL is explicitly listed as pending, not silently omitted.
+- After the OK: live on RedCircle and YouTube, the Spotify episode link is in every YouTube description once available, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
 - WhatsApp sends confirmed, when asked.
 
 ## Hand back
 - RedCircle draft URL (or public URL), title used, episode number
 - YouTube links, with each video's visibility
+- Spotify episode URL used, or the pending-distribution follow-up
 - The render checks: Spotify, RedCircle, YouTube, with anything that looked wrong
 - Upload retries or blockers
 - WhatsApp send status, when asked

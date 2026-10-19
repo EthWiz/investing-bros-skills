@@ -46,10 +46,17 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 - English company names stay in English (`NVIDIA`); Hebrew brand spellings from `investing-bros-show`. A number goes in a title only if it was said **and** checked against a source.
 
 ### 3. Write the description
-Three blocks, blank line between them:
+The RedCircle/Spotify description has three blocks, with a blank line between them:
 1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
 3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
+
+The YouTube variant adds the episode's clean Spotify episode URL after the
+disclaimer, never at the top. Its exact order is: intro/hook (keeps the first two
+visible lines useful for search and above the fold), disclaimer, blank line,
+`🎧 להאזנה בספוטיפיי: https://open.spotify.com/episode/<id>`, blank line, then
+chapters beginning at `00:00`. Never use the Spotify **show** URL or keep a `?si=`
+query. YouTube descriptions cannot contain a logo/image; use only the `🎧` emoji.
 
 When a finished YouTube video has a teaser and intro before that edited audio,
 re-time the copy with `scripts/find_offset_and_shift.py VIDEO AUDIO DESCRIPTION OUT`.
@@ -63,6 +70,12 @@ Save as `כותרות-פרק-N.txt` and `תיאור-פרק-N.txt` (UTF-8, plain 
 python3 scripts/check_copy.py --titles כותרות-פרק-N.txt --description תיאור-פרק-N.txt --episode N --spotify
 ```
 Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or mention it in the hand-back. Then fact-check every number and claim in both files; anything you can't source comes out.
+
+For `video/תיאור-פרק-N-youtube.txt`, run `check_copy.py --description FILE
+--youtube`. While a new episode is still distributing to Spotify,
+`--youtube --allow-missing-spotify` turns only the missing-link error into a warning;
+the upload may proceed, but the link must be added later by
+`investing-bros-episode-upload`.
 
 ### 5. Save to Drive and ask Amitai to pick
 Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.

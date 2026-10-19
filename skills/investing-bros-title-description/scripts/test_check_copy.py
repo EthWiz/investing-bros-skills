@@ -29,6 +29,12 @@ EP2_DESC = """למה חברות כמו ספייסאקס, פלנטיר ואנדו
 45:33 סייבר וזיסקיילר
 """
 
+SPOTIFY_EP1 = "🎧 להאזנה בספוטיפיי: https://open.spotify.com/episode/7gV79L2FqVTfr6f8TPZWMA"
+YOUTUBE_DESC = EP2_DESC.replace(
+    "אין כאן המלצת השקעה. רק שיחה.\n",
+    f"אין כאן המלצת השקעה. רק שיחה.\n\n{SPOTIFY_EP1}\n",
+)
+
 
 def errors(problems):
     return [p for p in problems if p.startswith("error:")]
@@ -191,6 +197,41 @@ def test_youtube_chapter_rules():
     assert any("at least 3" in e for e in errors(check_description(two)))
 
 
+def test_youtube_description_requires_clean_episode_spotify_link():
+    assert errors(check_description(YOUTUBE_DESC, youtube=True)) == []
+    missing = check_description(EP2_DESC, youtube=True)
+    assert any("per-episode Spotify line" in e for e in errors(missing))
+    pending = check_description(EP2_DESC, youtube=True, allow_missing_spotify=True)
+    assert not errors(pending)
+    assert any(p.startswith("warn:") and "Spotify" in p for p in pending)
+
+
+def test_youtube_description_rejects_show_url_query_and_wrong_order():
+    show = YOUTUBE_DESC.replace(
+        "https://open.spotify.com/episode/7gV79L2FqVTfr6f8TPZWMA",
+        "https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk",
+    )
+    assert any("per-episode URL" in e for e in errors(check_description(show, youtube=True)))
+    query = YOUTUBE_DESC.replace("7gV79L2FqVTfr6f8TPZWMA", "7gV79L2FqVTfr6f8TPZWMA?si=abc")
+    assert any("no ?si=" in e for e in errors(check_description(query, youtube=True)))
+    wrong_order = YOUTUBE_DESC.replace(
+        f"{SPOTIFY_EP1}\n\n0:00 ברוכים הבאים לפרק",
+        f"0:00 ברוכים הבאים לפרק\n\n{SPOTIFY_EP1}",
+    )
+    assert any("before the chapters" in e for e in errors(check_description(wrong_order, youtube=True)))
+    no_blank_before = YOUTUBE_DESC.replace(f"שיחה.\n\n{SPOTIFY_EP1}", f"שיחה.\n{SPOTIFY_EP1}")
+    assert any("between the disclaimer" in e for e in errors(check_description(no_blank_before, youtube=True)))
+    no_blank_after = YOUTUBE_DESC.replace(f"{SPOTIFY_EP1}\n\n0:00", f"{SPOTIFY_EP1}\n0:00")
+    assert any("after the Spotify line" in e for e in errors(check_description(no_blank_after, youtube=True)))
+
+
+def test_youtube_description_allows_only_headphone_emoji():
+    assert not any("emoji" in e for e in errors(check_description(YOUTUBE_DESC, youtube=True)))
+    assert any("emoji" in e for e in errors(check_description(YOUTUBE_DESC + "\n🚀", youtube=True)))
+    extra_headphones = YOUTUBE_DESC.replace("למה חברות", "🎧 למה חברות")
+    assert any("only on the Spotify" in e for e in errors(check_description(extra_headphones, youtube=True)))
+
+
 def _pad(desc):
     for a, b in [("0:00 ", "00:00 "), ("1:05 ", "01:05 "), ("3:47 ", "03:47 "), ("8:14 ", "08:14 ")]:
         desc = desc.replace("\n" + a, "\n" + b)
@@ -220,3 +261,12 @@ def test_cli_spotify_flag(tmp_path, capsys):
     d.write_text(EP2_DESC, encoding="utf-8")
     assert main(["--description", str(d)]) == 0
     assert main(["--description", str(d), "--spotify"]) == 1
+
+
+def test_cli_youtube_spotify_link_flags(tmp_path):
+    description = tmp_path / "youtube.txt"
+    description.write_text(YOUTUBE_DESC, encoding="utf-8")
+    assert main(["--description", str(description), "--youtube"]) == 0
+    description.write_text(EP2_DESC, encoding="utf-8")
+    assert main(["--description", str(description), "--youtube"]) == 1
+    assert main(["--description", str(description), "--youtube", "--allow-missing-spotify"]) == 0

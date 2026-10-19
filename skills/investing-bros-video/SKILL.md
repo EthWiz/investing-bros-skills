@@ -109,11 +109,15 @@ cross-correlate the body audio against the video or take a verified `--offset`:
 ```bash
 python3 <investing-bros-title-description>/scripts/find_offset_and_shift.py \
   פרק-N-וידאו.mp4 הקלטה-ערוכה-פרק-N.m4a תיאור-פרק-N.txt תיאור-פרק-N-youtube.txt
-python3 <investing-bros-title-description>/scripts/check_copy.py --description תיאור-פרק-N-youtube.txt
+python3 <investing-bros-title-description>/scripts/check_copy.py \
+  --description תיאור-פרק-N-youtube.txt --youtube --allow-missing-spotify
 ```
 Do not add `--spotify` to this check: the YouTube-only teaser chapter may be under
 30 seconds. A match score below 0.5 means the video body is a different edit; stop
-and re-time from that video's transcript.
+and re-time from that video's transcript. If the clean per-episode Spotify URL is
+already known, insert its required line after the disclaimer and remove
+`--allow-missing-spotify`; otherwise the upload skill obtains and adds it later
+without blocking the private upload.
 
 ### 5. Promo teaser (when asked)
 ```bash

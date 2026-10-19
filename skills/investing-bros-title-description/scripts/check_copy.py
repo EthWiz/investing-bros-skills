@@ -5,6 +5,7 @@ Usage:
   python3 check_copy.py --titles titles.txt [--episode N]
   python3 check_copy.py --description description.txt
   python3 check_copy.py --titles titles.txt --description description.txt --episode N --spotify
+  python3 check_copy.py --description video-description.txt --youtube
 
 Input is the plain text of the episode's title and description files (the .txt files
 in the episode's Drive folder). --spotify adds the rules Spotify needs to show chapters
@@ -21,6 +22,10 @@ EM_DASHES = {"—": "em dash", "―": "horizontal bar", "–": "en dash"}  # all
 DIRECTION_MARKS = {"‎": "LRM", "‏": "RLM", "‪": "LRE", "‫": "RLE",
                    "‬": "PDF", "⁦": "LRI", "⁧": "RLI", "⁩": "PDI"}
 DISCLAIMER = "אין כאן המלצת השקעה. רק שיחה."
+SPOTIFY_LINE_PREFIX = "🎧 להאזנה בספוטיפיי: "
+SPOTIFY_EPISODE_RE = re.compile(
+    r"^🎧 להאזנה בספוטיפיי: https://open\.spotify\.com/episode/[A-Za-z0-9]+$"
+)
 FINAL_LABEL = "בחירה סופית:"
 TITLE_RE = re.compile(r"^פרק (\d+) - (\S.*)$")          # plain hyphen, spaces both sides
 NUMBERED_RE = re.compile(r"^\s*(\d+)[.)]\s*(.+)$")
@@ -69,7 +74,7 @@ def _visible_len(s: str) -> int:
     return sum(1 for ch in s if unicodedata.category(ch) not in ("Cf", "Mn"))
 
 
-def _common(text: str, where: str, out: list):
+def _common(text: str, where: str, out: list, allowed_emoji: str = ""):
     for ch, name in EM_DASHES.items():
         if ch in text:
             out.append(f"error: {where}: contains an {name} '{ch}' - use ':' or ',' or a plain hyphen '-'")
@@ -78,7 +83,10 @@ def _common(text: str, where: str, out: list):
             out.append(f"error: {where}: contains an invisible {name} mark - the .txt stays plain; "
                        "marks are added only at upload (investing-bros-episode-upload)")
             break
-    if EMOJI_RE.search(text):
+    emoji_text = text
+    for emoji in allowed_emoji:
+        emoji_text = emoji_text.replace(emoji, "")
+    if EMOJI_RE.search(emoji_text):
         out.append(f"error: {where}: emoji - not in episode titles or descriptions")
     if "!" in text:
         out.append(f"error: {where}: '!' - keep the tone calm")
@@ -173,9 +181,14 @@ def _padded(t: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
 
 
-def check_description(text: str, spotify: bool = False) -> list:
+def check_description(
+    text: str,
+    spotify: bool = False,
+    youtube: bool = False,
+    allow_missing_spotify: bool = False,
+) -> list:
     out = []
-    _common(text, "description", out)
+    _common(text, "description", out, allowed_emoji="🎧" if youtube else "")
     lines = [l.strip() for l in text.splitlines()]
     nonblank = [l for l in lines if l]
     if not nonblank:
@@ -185,7 +198,41 @@ def check_description(text: str, spotify: bool = False) -> list:
         return out
 
     d = nonblank.index(DISCLAIMER)
-    intro, chapters = nonblank[:d], nonblank[d + 1:]
+    intro, tail = nonblank[:d], nonblank[d + 1:]
+    spotify_lines = [line for line in tail if line.startswith(SPOTIFY_LINE_PREFIX)]
+    chapters = [line for line in tail if not line.startswith(SPOTIFY_LINE_PREFIX)]
+
+    if youtube:
+        if any("🎧" in line and not line.startswith(SPOTIFY_LINE_PREFIX) for line in nonblank):
+            out.append("error: description: use the 🎧 emoji only on the Spotify episode line")
+        if not spotify_lines:
+            message = (
+                "description: missing the per-episode Spotify line "
+                f"'{SPOTIFY_LINE_PREFIX}https://open.spotify.com/episode/<id>'"
+            )
+            out.append(("warn: " if allow_missing_spotify else "error: ") + message)
+        elif len(spotify_lines) > 1:
+            out.append("error: description: more than one Spotify episode line")
+        else:
+            spotify_line = spotify_lines[0]
+            if not SPOTIFY_EPISODE_RE.fullmatch(spotify_line):
+                out.append(
+                    "error: description: Spotify line must use the clean per-episode URL "
+                    "'https://open.spotify.com/episode/<id>' with no ?si= query"
+                )
+            disclaimer_line = lines.index(DISCLAIMER)
+            spotify_line_index = lines.index(spotify_line)
+            chapter_line_indices = [i for i, line in enumerate(lines) if CHAPTER_RE.match(line)]
+            if chapter_line_indices and spotify_line_index > chapter_line_indices[0]:
+                out.append("error: description: Spotify line must be before the chapters")
+            if spotify_line_index != disclaimer_line + 2 or lines[disclaimer_line + 1] != "":
+                out.append("error: description: put one blank line between the disclaimer and Spotify line")
+            if (
+                spotify_line_index + 1 >= len(lines)
+                or lines[spotify_line_index + 1] != ""
+                or (spotify_line_index + 2 < len(lines) and not CHAPTER_RE.match(lines[spotify_line_index + 2]))
+            ):
+                out.append("error: description: put one blank line after the Spotify line, then start chapters")
 
     if not intro:
         out.append("error: description: no intro paragraph before the disclaimer")
@@ -251,16 +298,27 @@ def main(argv=None) -> int:
     ap.add_argument("--episode", type=int, help="episode number as Amitai stated it")
     ap.add_argument("--spotify", action="store_true",
                     help="also apply Spotify's chapter rules (use for the RedCircle copy)")
+    ap.add_argument("--youtube", action="store_true",
+                    help="require the clean per-episode Spotify link and YouTube block order")
+    ap.add_argument("--allow-missing-spotify", action="store_true",
+                    help="with --youtube, warn instead of fail while a new episode is still distributing")
     a = ap.parse_args(argv)
     if not a.titles and not a.description:
         ap.error("give --titles and/or --description")
+    if a.allow_missing_spotify and not a.youtube:
+        ap.error("--allow-missing-spotify requires --youtube")
     problems = []
     if a.titles:
         with open(a.titles, encoding="utf-8") as f:
             problems += check_titles(f.read(), a.episode)
     if a.description:
         with open(a.description, encoding="utf-8") as f:
-            problems += check_description(f.read(), spotify=a.spotify)
+            problems += check_description(
+                f.read(),
+                spotify=a.spotify,
+                youtube=a.youtube,
+                allow_missing_spotify=a.allow_missing_spotify,
+            )
     for p in problems:
         print(p)
     errors = sum(p.startswith("error:") for p in problems)
