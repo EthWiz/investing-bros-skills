@@ -48,13 +48,19 @@ python3 scripts/speaker_balance.py "$EP/investing-bros-episode-raw-untrimmed.m4a
 scripts/level_audio.sh "$EP/investing-bros-episode-raw-untrimmed.m4a" "$EP/episode-leveled.wav"
 ```
 `level_audio.sh` keeps the raw timeline, lifts the quiet host and lands the episode at −16 LUFS / −1.5 dBTP. Confirm with `speaker_balance.py --a START:END --b START:END` on 2–3 solo stretches per host: within 3 dB.
+It preserves packet timestamp gaps and fails if the output duration leaves the source
+clock. If an already-mastered back-catalogue source measures −16 ±0.5 LUFS and the
+hosts are already within 3 dB, use it as-is instead of processing it twice; report
+the measurements.
 
 ### 4. Transcribe the raw master
 ```bash
 python3 scripts/transcribe.py "$EP/investing-bros-episode-raw-untrimmed.m4a" "$EP/transcript"
 # Hugging Face unreachable: add --engine sherpa (weaker on Hebrew: proofread names, numbers, English terms)
+# CPU tuning: add --threads N (applies to either engine)
 ```
-Writes `segments.json`, `transcript.txt`, `transcript.srt` on the raw timeline. Every later skill uses this transcript.
+Writes `segments.json`, `transcript.txt`, `transcript.srt` on the raw timeline.
+Its analysis WAV also preserves packet timestamp gaps. Every later skill uses this transcript.
 
 ### 5. Build the cut list
 ```bash

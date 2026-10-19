@@ -27,6 +27,9 @@ Read [references/layout.md](references/layout.md) (layout, past titles, good and
 - The episode's `brief/` docs, for the deep-dive topic and the sources behind any number.
 - Existing `כותרות-פרק-N.txt` / `תיאור-פרק-N.txt`, if Amitai wants them redone (keep what he already marked).
 
+For a back-catalogue episode with no raw transcript or `edit.json`, transcribe the
+published RedCircle/Drive audio and treat it as the edited timeline (`start = 0`).
+
 ## Steps
 
 ### 1. Find the episode's story
@@ -47,6 +50,12 @@ Three blocks, blank line between them:
 1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
 3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
+
+When a finished YouTube video has a teaser and intro before that edited audio,
+re-time the copy with `scripts/find_offset_and_shift.py VIDEO AUDIO DESCRIPTION OUT`.
+It finds the body by audio correlation, adds `00:00 טעימה מהפרק`, and shifts every
+chapter. A score below 0.5 means the edits differ; stop and transcribe the video.
+`--offset S` uses a separately verified offset.
 
 ### 4. Check
 Save as `כותרות-פרק-N.txt` and `תיאור-פרק-N.txt` (UTF-8, plain text) and run:

@@ -27,14 +27,23 @@ After the audio edit (`investing-bros-post-production`) for episode N: shorts ar
 From the episode's `extras/` folder:
 - `segments.json` — the transcript
 - the raw master — `.mp4` if the recording has video, otherwise `.m4a`
-- the show cover (for the logo; location in `investing-bros-show`) and Heebo (`Heebo[wght].ttf` from google/fonts — fallback in `investing-bros-show` → references/environment.md)
+- the current newspaper logo source (location in `investing-bros-show`) and Heebo
+  (`Heebo[wght].ttf` from google/fonts — fallback in `investing-bros-show` →
+  references/environment.md)
 
-For audio-only recordings, also the show cover (location in `investing-bros-show`).
+For audio-only recordings, also the archived square show cover (location in
+`investing-bros-show`) for the audiogram background.
 
 Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
 
 ## Steps
-1. **Propose moments.** Start from Riverside's auto-generated shorts. Riverside makes clips automatically; prefer picking good ready-made ones and adding motion captions over cutting from scratch. Give Amitai 3–6 candidates as a table: start–end, opening line, why it works, a title. Episode 7 shipped 5 — aim for that. Wait for his picks unless he said to just make them. Nadav approves the cut before a rebuild or an upload (`investing-bros-show` → Roles). A good short:
+1. **Propose moments.** Start from Riverside's auto-generated shorts when the host
+   supplied them. The box cannot pass Riverside's captcha; when those clips are not
+   already in Drive, pick candidates from the transcript instead of blocking on
+   Riverside. Prefer good ready-made clips when available. Give Amitai 3–6 candidates
+   as a table: start–end, opening line, why it works, a title. Episode 7 shipped 5 —
+   aim for that. Wait for his picks unless he said to just make them. Nadav approves
+   the cut before a rebuild or an upload (`investing-bros-show` → Roles). A good short:
    - hooks in the first 3 seconds (a claim, a number, a story, a question — not "אז…", not "חווים את זה היום")
    - makes sense with no episode context, and is **one idea** with a clean end line
    - lands at 30–60 seconds
@@ -42,7 +51,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 2. **Find exact cut points.** Whisper segment times are only approximate. For every in/out point, look at the audio energy (20 ms frames) for the pause between words and cut inside it; re-transcribe a 1–3 s window around the point if unsure (whisper drops the last word of a window — give it ~1 s of tail). Never cut mid-word. Inside a clip you may drop a filler stretch, dead air or a phrase you can't make out — **only** if the sentence still says the same thing. Never drop a caveat or disclaimer to make a line punchier.
 3. **Graphic assets** (once per episode): request new artwork/specifications from `investing-bros-brand`. The commands below prepare assets for the existing renderer; they do not implement Financial Journal layouts:
    ```bash
-   python3 scripts/brand.py logo "<show cover>.jpg" logo.png      # cover location in investing-bros-show; check the logo on black
+   cp <investing-bros-brand>/assets/logo-solid.png logo.png
    python3 scripts/brand.py fonts Heebo[wght].ttf fonts/
    python3 scripts/brand.py frame vertical logo.png frame_vertical.png
    ```

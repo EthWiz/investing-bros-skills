@@ -88,9 +88,19 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 
 ## Brand (video and graphics)
 - **Design owner:** load `investing-bros-brand` for all artwork and visual decisions. It owns the Financial Journal rules, palette, typography, templates, selected references and quality checks. Do not copy or redefine those rules here.
-- **Existing deployment:** `אחים להשקעות/Media Resources/אחים-להשקעות-cover-1400.jpg` and legacy `brand.py` remain in use until a reviewed renderer/asset migration. New brand documentation alone does not update Drive, channel artwork or existing videos.
+- **Current logo:** `אחים להשקעות/Media Resources/Investing-bros-logo.png`
+  (newspaper-style square). `brand.py logo` extracts its torn-paper wordmark as a
+  solid logo; never color-key its navy letters transparent. Production video uses
+  the reviewed `logo-solid.png` asset owned by `investing-bros-brand`.
+- **Archived show cover:** `אחים להשקעות/Media Resources/ישנים/אחים-להשקעות-cover-1400.jpg`.
+  Use it only when a workflow explicitly needs the old square cover.
 - **Production fonts:** static Heebo weights remain available through the existing `brand.py fonts` workflow. See the brand skill for how they relate to the generated reference lettering.
-- **Intro clip:** `אחים להשקעות/Media Resources/אינטרו - אחים להשקעות.mp4` — 6 s, stereo music; ends with `עם אמתי ונדב רסקין`. Square and 16:9 versions sit beside it (`investing-bros-intro-square_1.mp4`, `investing-bros-intro-16x9_1.mp4`). Since episode 7, Amitai's Grok Imagine intro (6 s) replaces the old intro — use it as-is, immediately after the cold open. Video order: cold open (~22 s) + intro, then the episode. Never use watermarked music (AudioJungle previews and the like). Keep the tone serious — no "get rich quick" vibe. Keep the correct **אמתי** spelling when adapting artwork or credits.
+- **Intro clip:** `אחים להשקעות/Media Resources/Investing-bros-intro.mp4` —
+  8 s, 1280×720, 24 fps, stereo music. Use it as-is, immediately after the
+  cold open. `assemble_episode.sh` scales it and normalizes it with the episode.
+  Video order: cold open + intro + episode. Never use watermarked music
+  (AudioJungle previews and the like). Keep the tone serious and the correct
+  **אמתי** spelling when adapting artwork or credits.
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **YouTube thumbnails:** use the Financial Journal brand and the proposed widescreen composition; `investing-bros-title-description` supplies the approved headline and `investing-bros-brand` creates/reviews the artwork. Recompose square art rather than stretching it.
@@ -104,9 +114,13 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | Video producer | ליאורה | Shorts, cold opens, the intro, mid-form and the video episode. Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
-| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the file. Newer connector downloads are 100 MB ([references/environment.md](references/environment.md)); base64 uploads above a few MB are still impractical. Connectors are fine for Docs, folders and moves. Claude in Chrome's file upload takes at most 10 MB per call: for bigger video, upload a 2-pass sub-10 MB review copy and tell Amitai, or ask him to drag the full file in. |
-| Show cover art | `Media Resources/אחים-להשקעות-cover-1400.jpg` (see Brand) | Used for audiograms, logo cutting and WhatsApp artwork |
+| Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the upload. Base64 uploads above a few MB are impractical. Connectors are fine for Docs, folders and moves. |
+| YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns an empty personal channel named **Grok Bot**: switch to the **אחים להשקעות** brand channel before every Studio upload. For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
+| Show cover art | `Media Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Media Resources/Investing-bros-logo.png` |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
+
+The **אחים להשקעות** YouTube brand channel must be phone-verified by its owner
+before uploads over 15 minutes and custom thumbnails work. An Editor cannot verify it.
 
 ## WhatsApp
 **Every** message sent to a show group ends with the line `sent by Grokbot` (a fixed show tag, whichever agent prepared it).
