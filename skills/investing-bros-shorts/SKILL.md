@@ -84,7 +84,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
      --headline "סוויפט היא בכלל|[לא מערכת תשלומים]" --episode N \
      --frame frame_vertical.png --fonts fonts/ "שורט-01-סוויפט-cover.jpg"
    ```
-   - **Default (since episode 1, short 01): a dedicated cover per short made with the Codex CLI** on Amitai's Mac, in the `investing-bros-brand` vertical Shorts layout (recipe: `investing-bros-brand` → [references/codex-cli.md](../investing-bros-brand/references/codex-cli.md)). Copy the result to the box, resize to 1080×1920 JPEG, check the Hebrew letter by letter at full and thumbnail size, and use it both as `-cover.jpg` and as the YouTube custom thumbnail. `make_cover.py` below is the fallback when Codex is unavailable.
+   - **Default (since episode 1, short 01): a dedicated cover per short made with the Codex CLI** on Amitai's Mac, in the `investing-bros-brand` vertical Shorts layout (recipe: `investing-bros-brand` → [references/prompts.md](../investing-bros-brand/references/prompts.md), "Codex backend"). Copy the result to the box, resize to 1080×1920 JPEG, check the Hebrew letter by letter at full and thumbnail size, and use it both as `-cover.jpg` and as the YouTube custom thumbnail. `make_cover.py` below is the fallback when Codex is unavailable.
    - 1080×1920 JPEG (~100 KB), same look as the short: logo, host close-up, the hook headline, `פרק N` pill.
    - The headline and pill sit inside the centre 1080×1080 square, so Instagram's 4:5 and 1:1 grid crops keep them (TikTok/Shorts show the full 9:16).
    - Headline = the short's hook (same faithful paraphrase as its on-screen headline), 1–3 lines of ≤18 characters.
