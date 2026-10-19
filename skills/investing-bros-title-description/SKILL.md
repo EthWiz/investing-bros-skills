@@ -58,7 +58,7 @@ Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or m
 Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.
 
 ### 6. Thumbnail (when asked, or when there's a video episode)
-Write the AI image prompt and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md): the channel's dark cinematic layout, one focal object, one accent colour, a headline that adds to the title instead of repeating it.
+Write the AI image prompt and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md): the Financial Journal identity from `investing-bros-show`, using its selected artwork and format specifications. Keep supplied thumbnail copy exact; suggest alternatives only when requested or missing.
 
 ## Done when
 - Episode root has `כותרות-פרק-N.txt` (with Amitai's pick after `בחירה סופית:`) and `תיאור-פרק-N.txt`.

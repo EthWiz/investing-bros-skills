@@ -26,6 +26,15 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 - `investing-bros-show` holds what all of them share: hosts, naming, the Drive tree, brand, accounts, WhatsApp/Telegram destinations, working rules. Load it with every skill.
 - **Nothing goes public without Amitai's explicit OK in chat.**
 
+## Financial Journal brand
+
+The shared `investing-bros-show` skill includes the selected Financial Journal identity:
+four square cover references, reusable generation/edit prompts, quality checks and six
+format specifications. Start with its Brand section. Thumbnail production stays in
+`investing-bros-title-description`; video and Shorts keep their current render scripts.
+The new asset guide does not replace deployed Drive/channel assets or migrate video
+renderers. Non-square layouts are proposed adaptations, not layered design templates.
+
 ## Improving the skills
 
 The skills get better a little after every run, from whichever agent did the work. When a run teaches something:
