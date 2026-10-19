@@ -30,7 +30,8 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 
 `investing-bros-brand` is the single source for design rules, templates, selected artwork,
 prompts and visual QA. It serves the episode workflow across stages rather than adding
-another chronological stage. It includes four reference covers and six format specs.
+another chronological stage. It includes four reference covers, two approved teaser
+stills, the solid video logo and seven format specs.
 
 | Owner | Responsibility |
 |---|---|
@@ -41,9 +42,9 @@ another chronological stage. It includes four reference covers and six format sp
 
 GitHub holds the canonical design system. Episode files stay in the established Drive
 folders, with an `extras/artwork-register.json` recording version, status and source.
-Installed skill copies must be refreshed after merges. Existing video renderer defaults
-are unchanged until reviewed migration. Non-square layouts are proposed adaptations,
-not editable Canva/Figma files or implemented renderers.
+Installed skill copies must be refreshed after merges. The approved full-frame teaser is
+implemented in `investing-bros-video`; the other non-square layouts remain proposed
+adaptations, not editable Canva/Figma files or implemented renderers.
 
 ## Improving the skills
 

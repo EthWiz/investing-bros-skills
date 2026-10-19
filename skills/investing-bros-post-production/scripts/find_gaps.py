@@ -54,7 +54,9 @@ def context(segments: list, t0: float, t1: float):
 
 
 def _decode(path: str) -> np.ndarray:
-    raw = subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-i", path, "-ac", "1", "-ar", str(SR),
+    raw = subprocess.run(["ffmpeg", "-v", "error", "-nostdin", "-i", path, "-vn",
+                          "-af", "aresample=async=1:min_hard_comp=0.01:first_pts=0",
+                          "-ac", "1", "-ar", str(SR),
                           "-f", "f32le", "-"], check=True, capture_output=True).stdout
     return np.frombuffer(raw, dtype=np.float32)
 

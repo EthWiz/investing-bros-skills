@@ -6,7 +6,7 @@ import numpy as np
 from PIL import Image
 
 sys.path.insert(0, os.path.dirname(__file__))
-from brand import LOGO_BOXES, LOGO_MAX_H, VERTICAL, extract_logo, fit_logo  # noqa: E402
+from brand import LOGO_BOXES, LOGO_MAX_H, VERTICAL, extract_logo, extract_solid_logo, fit_logo, make_fonts  # noqa: E402
 
 
 def _cover(path):
@@ -35,3 +35,52 @@ def test_vertical_logo_clears_the_headline():
     logo = fit_logo(tall, VERTICAL["logo_w"], LOGO_MAX_H["vertical"])
     assert logo.height <= LOGO_MAX_H["vertical"] and logo.width <= VERTICAL["logo_w"]
     assert VERTICAL["logo_y"] + logo.height + 20 <= VERTICAL["headline_margin_v"]
+
+
+def test_solid_logo_keeps_dark_letters_opaque(tmp_path):
+    source, out = tmp_path / "newspaper.png", tmp_path / "solid.png"
+    navy = np.array([9, 36, 59], np.uint8)
+    pixels = np.zeros((125, 125, 3), np.uint8) + navy
+    pixels[5:42, 5:120] = np.array([245, 235, 213], np.uint8)   # cream torn-paper strip
+    pixels[35:70, 10:115] = np.array([245, 185, 36], np.uint8)  # connected yellow strip
+    pixels[15:30, 35:55] = navy                                # dark letter inside the paper
+    Image.fromarray(pixels).save(source)
+
+    extract_solid_logo(str(source), str(out))
+    logo = np.asarray(Image.open(out))
+    dark = (logo[:, :, :3] == navy).all(axis=2)
+    assert dark.any()
+    assert (logo[:, :, 3][dark] > 240).any()  # letter pixels are not keyed transparent
+
+
+def test_make_fonts_instances_all_static_weights(monkeypatch, tmp_path):
+    import fontTools.ttLib
+    import fontTools.varLib.instancer
+
+    weights = []
+
+    class Names:
+        def setName(self, *_args):
+            pass
+
+    class Font:
+        def __getitem__(self, key):
+            assert key == "name"
+            return Names()
+
+        def save(self, path):
+            path.write_bytes(b"font")
+
+    monkeypatch.setattr(fontTools.ttLib, "TTFont", lambda _path: Font())
+
+    def instance(font, axes, inplace=False):
+        assert not inplace
+        weights.append(axes["wght"])
+        return font
+
+    monkeypatch.setattr(fontTools.varLib.instancer, "instantiateVariableFont", instance)
+    made = make_fonts("Heebo[wght].ttf", str(tmp_path / "fonts"))
+    assert weights == [600, 800, 900]
+    assert [os.path.basename(path) for path in made] == [
+        "Heebo-SemiBold.ttf", "Heebo-ExtraBold.ttf", "Heebo-Black.ttf",
+    ]

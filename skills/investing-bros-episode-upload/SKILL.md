@@ -17,7 +17,7 @@ Load `investing-bros-show` first: accounts, naming, the Drive tree and the Whats
 Use approved artwork supplied through `investing-bros-brand` for every cover and thumbnail. If artwork needs creation or revision, continue with that skill; do not redesign assets or maintain separate design rules in the upload workflow.
 
 ## When to use
-When the episode folder is complete (audio, title and description files, plus whichever of video, shorts and mid-form were made), for the review ping and the uploads; again after Amitai's OK, to publish, check and share.
+When the episode folder is complete (audio, title and description files, plus whichever of video, shorts and mid-form were made), for the review ping and the uploads; again after Amitai's OK, to publish, check and share. Also use this for a private back-catalogue re-upload.
 
 ## Inputs
 1. Episode number N, confirmed with Amitai.
@@ -25,10 +25,19 @@ When the episode folder is complete (audio, title and description files, plus wh
 3. `video/`, `shorts/`, `mid-form/` contents, when made.
 4. RedCircle login from show conventions → Roles and accounts. Never echo the password or put it in chat or logs.
 
+### Back-catalogue re-upload
+An already-published episode may have only its published audio and a finished video,
+with no raw recording, transcript or `edit.json`. Download the RedCircle enclosure
+or final Drive audio, transcribe it with `investing-bros-post-production`, and treat
+that audio as the edited timeline (`start = 0`). Use the chapter offset tool in
+`investing-bros-title-description` to locate that body after the video's teaser and
+intro. Upload the replacement as Private and compare it with the current public
+episode; replacing or deleting the public upload still requires Amitai's explicit OK.
+
 ## Steps
 
 ### 1. Review ping
-List the episode folder and compare it with the show's Drive tree: the root holds only the audio and the two `.txt` files; every short has its four files. Then get a shareable link to the **episode folder** and ask the WhatsApp owner to send one message to `אחים להשקעות`: ready for review + link, ending with the show tag. Wait for Amitai's OK to upload.
+List the episode folder and compare it with the show's Drive tree: the root holds only the audio and the two `.txt` files; every short has its four files. Then get a shareable link to the **episode folder** and ask the WhatsApp owner to send one message to `אחים להשקעות`: ready for review + link, ending with the show tag. Wait for Amitai's OK to upload. If Amitai directly asked in chat for this upload, that request is the upload OK and no duplicate review ping is needed; it is not permission to publish.
 
 ### 2. RedCircle draft
 Make the RTL-safe copy with the script, never by hand:
@@ -46,7 +55,10 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
 ### 3. YouTube uploads (private)
-YouTube Studio in the box browser (already signed in). Upload as **Private**; "No, it's not made for kids".
+Follow [the Studio checklist](references/youtube-studio.md). In particular, switch
+from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
+brand channel before selecting files. Upload as **Private** and choose
+**No, it's not made for kids**.
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
 - **Shorts** (`shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.

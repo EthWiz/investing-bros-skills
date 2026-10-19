@@ -4,6 +4,12 @@ Read this before working around anything. Every line here cost an agent time to 
 
 ## Getting raw video and other big files
 - **Drive connector:** downloads Docs and files up to **100 MB** on the newer connector (episode 7). A raw episode (1–2 GB) still cannot come through it. The shorts run also hit an older **10 MB** cap — if a download between 10 and 100 MB is rejected, use the Mac or `drive.sh` (Drive API) path instead of retrying the connector. Browser upload (Claude in Chrome) is a separate **10 MB** per call; that limit is unchanged (show conventions → accounts).
+- **Box browser download:** for a Drive file over 100 MB, have Amitai share the
+  episode folder with the YouTube Editor account from show conventions, then open
+  Drive in that account's existing browser profile and choose Download (and
+  **Download anyway** on the large-file scan warning). Do not sign in as Amitai.
+  A `show:` rclone remote is not guaranteed to exist; test `drive.sh` once and use
+  the browser path when it reports that the remote is missing.
 - **Riverside** login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive. Nadav drags full episodes to Drive himself.
 - **Local-exec transfer** (CopyToBox/CopyFromBox) and a Drive upload of a big file are capped at **100 MB**. Split anything larger into 50 MB parts (`split -b 50M`), rejoin with `cat`, and check the sha256 of the original against the rejoined file.
 - **Never sign in to Amitai's Google account from a browser.** The account is in Advanced Protection: sign-in needs his passkey or security key; approving on the phone isn't enough, and a failed attempt locks browser sign-in for 48 hours.

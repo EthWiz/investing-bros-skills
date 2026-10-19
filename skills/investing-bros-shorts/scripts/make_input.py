@@ -65,7 +65,8 @@ def build_command(cfg) -> str:
     vt = "".join(f"[0:v]trim=start={a:.4f}:end={b:.4f},setpts=PTS-STARTPTS[v{i}];" for i, (a, b, _) in enumerate(P))
     ain = "1:a" if asrc else "0:a"
     at = "".join(
-        f"[{ain}]atrim=start={a:.4f}:end={b:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
+        f"[{ain}]aresample=async=1:min_hard_comp=0.01:first_pts=0,"
+        f"atrim=start={a:.4f}:end={b:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
         f"afade=t=out:st={b - a - 0.015:.4f}:d=0.015{'' if asrc else f',volume={g}dB'}[a{i}];"
         for i, (a, b, g) in enumerate(P))
     cat = "".join(f"[v{i}][a{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=1[vc][ac];"

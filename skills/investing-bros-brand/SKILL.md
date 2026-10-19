@@ -37,8 +37,9 @@ legacy styling is an explicit compatibility choice, not the default for new artw
    image when the user selects an edit target; never replace it with a nearby variant.
 3. Read [layouts](references/layouts.md) and load the matching entry in
    `assets/templates/layouts.json`. These are compositional specifications, not layered
-   Canva/Figma files or a renderer. Square covers have visual references; other formats
-   are proposed adaptations, not approved final templates.
+   Canva/Figma files. Square covers have visual references; the full-frame episode
+   teaser is an approved rendered layout owned by `investing-bros-video`; other
+   non-square formats remain proposed adaptations.
 4. Read [prompt templates](references/prompts.md). Fill the topic, exact Hebrew copy,
    number, format and subject. Use the built-in image-generation tool for raster
    creation/edits. Do not substitute code-drawn illustrations. Read the available

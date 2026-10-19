@@ -36,7 +36,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import ACCENT, VERTICAL, WHITE, ass_colour  # noqa: E402
+from brand import ACCENT, FONT_BLACK, FONT_EXTRABOLD, FONT_SEMIBOLD, VERTICAL, WHITE, ass_colour  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
 EM, WH = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
@@ -109,9 +109,9 @@ def check_cards(cards):
 
 def build_ass(cfg, tl: Timeline) -> tuple:
     L = VERTICAL
-    font = cfg.get("font_bold", "Heebo ExtraBold")
-    head_font = cfg.get("font_black", "Heebo Black")
-    tag_font = cfg.get("font_semibold", "Heebo SemiBold")
+    font = cfg.get("font_bold", FONT_EXTRABOLD)
+    head_font = cfg.get("font_black", FONT_BLACK)
+    tag_font = cfg.get("font_semibold", FONT_SEMIBOLD)
     deep = ass_colour((14, 61, 96))  # dark blue box behind the name tag
     head = f"""[Script Info]
 ScriptType: v4.00+
@@ -164,7 +164,11 @@ def build_command(cfg, tl: Timeline) -> str:
     if min(a for a, _ in P) < S:
         raise ValueError("pieces must be in source order for one input seek; split into two shorts otherwise")
     vs = f"[0:v]split={n}" + "".join(f"[v{i}]" for i in range(n)) + ";" if n > 1 else "[0:v]null[v0];"
-    as_ = f"[0:a]asplit={n}" + "".join(f"[a{i}]" for i in range(n)) + ";" if n > 1 else "[0:a]anull[a0];"
+    pts_audio = "aresample=async=1:min_hard_comp=0.01:first_pts=0"
+    as_ = (
+        f"[0:a]{pts_audio},asplit={n}" + "".join(f"[a{i}]" for i in range(n)) + ";"
+        if n > 1 else f"[0:a]{pts_audio}[a0];"
+    )
     vt = "".join(f"[v{i}]trim=start={a - S:.4f}:end={b - S:.4f},setpts=PTS-STARTPTS[t{i}];" for i, (a, b) in enumerate(P))
     at = "".join(
         f"[a{i}]atrim=start={a - S:.4f}:end={b - S:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"

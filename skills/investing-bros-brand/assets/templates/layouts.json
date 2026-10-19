@@ -1,5 +1,5 @@
 {
-  "version": 1,
+  "version": 2,
   "coordinate_system": "normalized top-left x,y,width,height",
   "palette": {
     "navy": "#09243B",
@@ -170,6 +170,39 @@
           0.6,
           0.26
         ]
+      }
+    },
+    "teaser-fullframe": {
+      "size": [
+        1920,
+        1080
+      ],
+      "status": "approved-production",
+      "renderer": "investing-bros-video/scripts/build_fullframe_teaser.py",
+      "zones": {
+        "logo": [
+          0.03125,
+          0.04444,
+          0.15625,
+          0.16759
+        ],
+        "title_plate": [
+          0.58333,
+          0.01852,
+          0.41146,
+          0.21296
+        ],
+        "caption_plate": [
+          0.17188,
+          0.81481,
+          0.65625,
+          0.16667
+        ]
+      },
+      "type": {
+        "kicker": "Heebo Black 112px, #F5B71F, #13203E outline",
+        "title": "Heebo Black 72px, white, #13203E outline",
+        "captions": "Heebo ExtraBold 84px, current word #F5B71F"
       }
     },
     "lower-third": {

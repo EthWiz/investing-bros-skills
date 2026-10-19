@@ -38,6 +38,7 @@ from pathlib import Path
 
 DEFAULT_MODEL = "ivrit-ai/whisper-large-v3-turbo-ct2"
 LEVEL_FILTER = "highpass=f=70,dynaudnorm=f=200:g=11:p=0.9:m=40:s=0"
+PTS_FILTER = "aresample=async=1:min_hard_comp=0.01:first_pts=0"
 SHERPA_RELEASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/"
 SHERPA_DIR = Path(os.environ.get("SHERPA_MODELS", Path.home() / ".cache" / "sherpa-onnx"))
 
@@ -159,9 +160,10 @@ def main() -> int:
     out = Path(args.out_dir)
     out.mkdir(parents=True, exist_ok=True)
     wav = out / "audio-16k-mono.wav"
-    level = [] if args.no_level else ["-af", LEVEL_FILTER]
+    analysis_filter = PTS_FILTER if args.no_level else f"{PTS_FILTER},{LEVEL_FILTER}"
     subprocess.run(["ffmpeg", "-hide_banner", "-loglevel", "error", "-nostdin", "-y",
-                    "-i", args.audio, "-vn", *level, "-ac", "1", "-ar", "16000", str(wav)], check=True)
+                    "-i", args.audio, "-vn", "-af", analysis_filter,
+                    "-ac", "1", "-ar", "16000", str(wav)], check=True)
 
     if args.engine == "sherpa":
         segments = transcribe_sherpa(wav, args.threads)
@@ -176,7 +178,7 @@ def main() -> int:
               "or use --engine sherpa", file=sys.stderr)
         return 1
 
-    model = WhisperModel(args.model, device="auto", compute_type="auto")
+    model = WhisperModel(args.model, device="auto", compute_type="auto", cpu_threads=args.threads)
     seg_iter, info = model.transcribe(str(wav), language="he", vad_filter=True)
     segments = []
     for seg in seg_iter:
