@@ -44,6 +44,8 @@ legacy styling is an explicit compatibility choice, not the default for new artw
    number, format and subject. Use the built-in image-generation tool for raster
    creation/edits. Do not substitute code-drawn illustrations. Read the available
    imagegen skill for tool invocation. Supply only relevant image references.
+   Grokbot generates through Codex on Amitai's Mac when that machine is connected,
+   and falls back to its own image tool otherwise (prompts → Codex backend).
 5. Preserve the reference layout for localized edits. For a new topic change the
    central illustration and headline while maintaining the brand structure.
 6. Review with [quality checks](references/quality-checks.md). Correct text or visual
