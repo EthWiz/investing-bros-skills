@@ -10,6 +10,8 @@ description: >-
 
 Load `investing-bros-show` first — it has the naming, Drive tree, roles and WhatsApp rules this skill relies on.
 
+For artwork requested during preparation, continue with `investing-bros-brand`, the single design source for show covers, episode covers, thumbnails and other graphics. Supply the topic and approved copy; do not define a separate visual style here.
+
 ## When to use
 Before a recording: news ideas, a deep-dive brief, one-pagers or any other pre-show material.
 

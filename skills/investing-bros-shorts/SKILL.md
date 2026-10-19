@@ -13,7 +13,12 @@ description: >-
 ---
 # Investing Bros shorts
 
-Load `investing-bros-show` first — brand palette, logo, fonts, loudness and the recording layout live there.
+Load `investing-bros-show` first — show facts, deployed asset paths, loudness and recording layout live there.
+
+Load `investing-bros-brand` for visual specifications and request graphic assets from it.
+It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
+Existing renderer defaults remain legacy implementations until a reviewed migration.
+Do not create competing brand rules or silently change approved artwork.
 
 ## When to use
 After the audio edit (`investing-bros-post-production`) for episode N: shorts are made for every episode, mid-form highlights when Amitai wants them. Every short this skill makes ends in Drive with its cover (steps 6–7). Video assets are made only by ליאורה (`investing-bros-show` → Roles).
@@ -35,7 +40,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - lands at 30–60 seconds
    Skip crosstalk and anything that sounds like a buy/sell call out of context. Flag on-air mistakes instead of clipping them. Strong episode-6 shapes: a surprising fact ("SWIFT is a messaging system, not a payments system"), a story → concept ("pizza for 10,000 BTC → why stablecoins exist"), a host's question answered by the other ("So what? — liquidity").
 2. **Find exact cut points.** Whisper segment times are only approximate. For every in/out point, look at the audio energy (20 ms frames) for the pause between words and cut inside it; re-transcribe a 1–3 s window around the point if unsure (whisper drops the last word of a window — give it ~1 s of tail). Never cut mid-word. Inside a clip you may drop a filler stretch, dead air or a phrase you can't make out — **only** if the sentence still says the same thing. Never drop a caveat or disclaimer to make a line punchier.
-3. **Brand assets** (once per episode):
+3. **Graphic assets** (once per episode): request new artwork/specifications from `investing-bros-brand`. The commands below prepare assets for the existing renderer; they do not implement Financial Journal layouts:
    ```bash
    python3 scripts/brand.py logo "<show cover>.jpg" logo.png      # cover location in investing-bros-show; check the logo on black
    python3 scripts/brand.py fonts Heebo[wght].ttf fonts/
@@ -48,7 +53,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    ```
    - **Framing:** close-up of whoever is talking (their half, 1080 wide); cut to the other host for his lines or a real reaction. Not the whole frame over blur.
    - **Headline:** a faithful paraphrase of what is said in the clip (e.g. "סוויפט היא בכלל לא מערכת תשלומים") — never a claim the hosts didn't make, never investment promises.
-   - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[…]` (that markup renders as gold `#F5B71F`, the house accent). Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
+   - **Captions:** proofread against the audio, max two lines, ~24 characters a line, key terms in `[…]` (that markup currently renders as legacy gold `#F5B71F`). Sit above the bottom 400 px and left of the right 170 px (platform UI). Words you can't make out: leave them out of the caption (don't guess) and list them in the hand-back.
    - **Audio:** if one host is quieter, give his pieces a gain (`[start, end, +dB]`) so both measure within ~2 dB; the render normalises to −14 LUFS.
    For a quick whole-frame clip or an audio-only audiogram, `scripts/clip_captions.py` + `scripts/make_clip.sh` still work.
 
@@ -58,6 +63,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
    - duration 30–60 s; listen to every cut — no clipped words, no clicks
 6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid:
+   Request Financial Journal cover artwork from `investing-bros-brand`, supplying the hook, episode number and source frame if relevant. The command and layout notes below describe the legacy video-frame cover only; use them when retaining that deployed style. They are not an alternative brand system.
    ```bash
    python3 scripts/make_cover.py --source raw.mp4 --at <source time of a good frame> --side L \
      --headline "סוויפט היא בכלל|[לא מערכת תשלומים]" --episode N \
@@ -72,12 +78,12 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - **Video (`.mp4`)** — the newer Drive connector takes a file up to **100 MB** (`investing-bros-show` → references/environment.md); `drive.sh put` uses the Drive API and is not bound by that cap. The browser path is still ≤10 MB per call, so for a browser upload first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
    - Check: list `shorts/` and confirm every short has its `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
 
-## House style and helper scripts (from episode 7)
-The default look is now the **full-screen style**: the speaking host fills the 9:16 frame, captions appear 2–3 words at a time with the spoken word in gold `#F5B71F`, punch-in zooms on new ideas, a hook title for the first ~2.7 s, the logo top-left, and a darkened end card. The split-frame `build_short.py` render stays available.
+## Existing renderer and helper scripts (from episode 7)
+The deployed **full-screen renderer** puts the speaking host in the 9:16 frame, captions 2–3 words at a time with the spoken word in legacy gold `#F5B71F`, punch-in zooms on new ideas, a hook title for the first ~2.7 s, the logo top-left, and a darkened end card. The split-frame `build_short.py` render stays available. These are implementation notes; `investing-bros-brand` owns new visual specifications, and migration requires a reviewed sample.
 
 Episode 7 (video producer), on top of that look:
 - **5 shorts** per episode, **1080×1920**. Fast cuts, no silences. Zooms alternate **100% / 112%**. Logo end card.
-- A complex idea gets a navy-blue motion animation ([references/hyperframes.md](references/hyperframes.md)) — still the navy / gold / white palette, no loud colours (show conventions → Tone).
+- A complex idea can use a motion animation ([references/hyperframes.md](references/hyperframes.md)). Its existing navy/gold/white implementation remains until a reviewed brand migration.
 - Captions are Heebo Black, active word in gold `#F5B71F`. The scripts render Hebrew with libass (Encoding −1). libass can reverse RTL word order; the video producer worked around that with PIL + raqm. If a script's captions come out in the wrong order, stop and propose a script change — don't ship a one-off renderer (working rules in `investing-bros-show`).
 
 | Step | Script | Notes |
@@ -87,9 +93,9 @@ Episode 7 (video producer), on top of that look:
 | Word timings for the picked windows only | `transcribe_clip.py WINDOW.wav --offset T0 --from a --to b --model small.pt` | never the whole episode; install notes in `investing-bros-show` → references/environment.md |
 | Time the proofread captions word by word | `align_words.py short.json words.json -o aligned.json` | `cards` stay the proofread text |
 | Centre the face | `face_crop.py raw.mp4 --at t1 t2 t3` | prints `crop_x` for both hosts; confirm on one frame — hands in shot pull it off (episode 7: suggested L=64, the face needed ~100) |
-| Render the house style | `build_fullbleed.py short.json` then `bash NAME_fb.sh` | also writes `NAME.srt`; `base` + `shots` cut to the other host for reactions; `tags` = name tag; `sources`/`crop` take each host's own high-res Riverside track. Worked example: [references/ep7-asteroid-fullbleed.json](references/ep7-asteroid-fullbleed.json). Its output is also the input for a HyperFrames overlay |
+| Render the deployed video style | `build_fullbleed.py short.json` then `bash NAME_fb.sh` | also writes `NAME.srt`; `base` + `shots` cut to the other host for reactions; `tags` = name tag; `sources`/`crop` take each host's own high-res Riverside track. Worked example: [references/ep7-asteroid-fullbleed.json](references/ep7-asteroid-fullbleed.json). Its output is also the input for a HyperFrames overlay |
 | Check the export | `check_short.py NAME.mp4` | length, −14 LUFS, peak, and a frame strip you must look at |
-| Cover in the house style | `make_cover.py --style fullbleed --crop x,y,w,h --logo logo.png …` | same crop as the short |
+| Legacy video-frame cover (explicit reuse only) | `make_cover.py --style fullbleed --crop x,y,w,h --logo logo.png …` | same crop as the short; new cover artwork comes from `investing-bros-brand` |
 | Upload to Drive | `drive.sh put FILE SHORTS_FOLDER_ID` | |
 | Post to Telegram (only when Amitai asks) | `send_telegram.py video short.mp4 --caption … --thumb cover.jpg` | token/chat ID from `telegram.env`; `delete ID` removes the bot's own post |
 

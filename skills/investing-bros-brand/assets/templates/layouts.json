@@ -1,0 +1,198 @@
+{
+  "version": 1,
+  "coordinate_system": "normalized top-left x,y,width,height",
+  "palette": {
+    "navy": "#09243B",
+    "cream": "#F5EBD5",
+    "mustard": "#D8A52E"
+  },
+  "layouts": {
+    "show-square": {
+      "size": [
+        3000,
+        3000
+      ],
+      "status": "selected-reference",
+      "zones": {
+        "masthead": [
+          0.07,
+          0.04,
+          0.86,
+          0.4
+        ],
+        "hero": [
+          0.035,
+          0.45,
+          0.93,
+          0.4
+        ],
+        "credit": [
+          0.17,
+          0.87,
+          0.66,
+          0.085
+        ]
+      }
+    },
+    "episode-square": {
+      "size": [
+        3000,
+        3000
+      ],
+      "status": "selected-reference",
+      "zones": {
+        "masthead": [
+          0.38,
+          0.025,
+          0.24,
+          0.1
+        ],
+        "headline": [
+          0.1,
+          0.14,
+          0.8,
+          0.28
+        ],
+        "number": [
+          0.42,
+          0.42,
+          0.16,
+          0.05
+        ],
+        "hero": [
+          0.08,
+          0.47,
+          0.84,
+          0.39
+        ],
+        "credit": [
+          0.2,
+          0.88,
+          0.6,
+          0.075
+        ]
+      }
+    },
+    "episode-wide": {
+      "size": [
+        1920,
+        1080
+      ],
+      "status": "proposed-adaptation",
+      "zones": {
+        "masthead": [
+          0.77,
+          0.05,
+          0.17,
+          0.13
+        ],
+        "headline": [
+          0.5,
+          0.22,
+          0.44,
+          0.44
+        ],
+        "hero": [
+          0.05,
+          0.14,
+          0.42,
+          0.68
+        ],
+        "number": [
+          0.53,
+          0.72,
+          0.13,
+          0.07
+        ],
+        "credit": [
+          0.3,
+          0.89,
+          0.4,
+          0.06
+        ]
+      }
+    },
+    "shorts-vertical": {
+      "size": [
+        1080,
+        1920
+      ],
+      "status": "proposed-adaptation",
+      "zones": {
+        "masthead": [
+          0.22,
+          0.09,
+          0.56,
+          0.09
+        ],
+        "headline": [
+          0.1,
+          0.22,
+          0.8,
+          0.21
+        ],
+        "hero": [
+          0.09,
+          0.45,
+          0.82,
+          0.32
+        ],
+        "number": [
+          0.38,
+          0.79,
+          0.24,
+          0.04
+        ]
+      }
+    },
+    "discussion-square": {
+      "size": [
+        1080,
+        1080
+      ],
+      "status": "proposed-adaptation",
+      "zones": {
+        "masthead": [
+          0.25,
+          0.06,
+          0.5,
+          0.09
+        ],
+        "question": [
+          0.1,
+          0.22,
+          0.8,
+          0.35
+        ],
+        "hero": [
+          0.2,
+          0.6,
+          0.6,
+          0.26
+        ]
+      }
+    },
+    "lower-third": {
+      "size": [
+        1600,
+        360
+      ],
+      "status": "proposed-adaptation",
+      "transparent": true,
+      "zones": {
+        "name": [
+          0.07,
+          0.15,
+          0.75,
+          0.4
+        ],
+        "show": [
+          0.4,
+          0.58,
+          0.48,
+          0.23
+        ]
+      }
+    }
+  }
+}

@@ -7,7 +7,7 @@ Shared, versioned agent skills for producing the **Investing Bros / אחים ל�
 From the finished recording to live on RedCircle, Spotify and YouTube. Each step is one skill; the Drive episode folder shows what's done.
 
 ```
-1 audio edit ──┬──► 2 titles + description (.txt) + thumbnail ──┐
+1 audio edit ──┬──► 2 titles + description (.txt) + artwork brief ──┐
                ├──► 3 cold opens + intro + video episode ────────┼──► 5 review ► upload ► publish ► check Spotify ► share
                └──► 4 shorts + covers, mid-form highlights ──────┘
 ```
@@ -16,15 +16,34 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 |---|---|---|---|---|
 | 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
 | 1 | Audio edit: combine, level the hosts, transcribe, cut start/end and silences, trim, loudness | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
-| 2 | Five question-led titles, description with chapters, thumbnail prompt | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, `promo/` thumbnail | Amitai (title) |
+| 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Amitai (title) |
 | 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
 | 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `shorts/`, `mid-form/` | Nadav |
 | 5 | Review ping, RedCircle draft, YouTube (private), then publish, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
 
 - Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
-- `investing-bros-show` holds what all of them share: hosts, naming, the Drive tree, brand, accounts, WhatsApp/Telegram destinations, working rules. Load it with every skill.
+- `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work.
 - **Nothing goes public without Amitai's explicit OK in chat.**
+
+## Design ownership
+
+`investing-bros-brand` is the single source for design rules, templates, selected artwork,
+prompts and visual QA. It serves the episode workflow across stages rather than adding
+another chronological stage. It includes four reference covers and six format specs.
+
+| Owner | Responsibility |
+|---|---|
+| `investing-bros-show` | Names, show facts, folders, approvals and publication rules |
+| `investing-bros-brand` | Visual identity, reference art, templates and artwork production |
+| `investing-bros-title-description` | Titles, descriptions and approved artwork headlines |
+| `investing-bros-video` / `investing-bros-shorts` | Video/clip production using the shared design system |
+
+GitHub holds the canonical design system. Episode files stay in the established Drive
+folders, with an `extras/artwork-register.json` recording version, status and source.
+Installed skill copies must be refreshed after merges. Existing video renderer defaults
+are unchanged until reviewed migration. Non-square layouts are proposed adaptations,
+not editable Canva/Figma files or implemented renderers.
 
 ## Improving the skills
 
@@ -64,7 +83,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
 
-Version 3.0 merged eleven skills into seven. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art` or `-share-new-episode`, it has an old copy: remove those and install the current set.
+Version 3.0 merged eleven production skills into seven. This change adds a shared brand capability. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art` or `-share-new-episode`, it has an old copy: remove those and install the current set.
 
 Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
 

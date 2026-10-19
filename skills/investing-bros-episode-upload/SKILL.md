@@ -14,6 +14,8 @@ description: >-
 
 Load `investing-bros-show` first: accounts, naming, the Drive tree and the WhatsApp destinations live there.
 
+Use approved artwork supplied through `investing-bros-brand` for every cover and thumbnail. If artwork needs creation or revision, continue with that skill; do not redesign assets or maintain separate design rules in the upload workflow.
+
 ## When to use
 When the episode folder is complete (audio, title and description files, plus whichever of video, shorts and mid-form were made), for the review ping and the uploads; again after Amitai's OK, to publish, check and share.
 

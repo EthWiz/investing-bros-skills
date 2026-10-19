@@ -11,7 +11,8 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 |---|---|
 | Before recording: folder, news, deep dive | `investing-bros-episode-preparation` |
 | Recording is in: combine, level, transcribe, cut list, trim | `investing-bros-post-production` |
-| Titles, description (.txt), YouTube thumbnail prompt | `investing-bros-title-description` |
+| Titles, description (.txt), artwork copy brief | `investing-bros-title-description` |
+| Visual identity, artwork, templates, covers and design QA | `investing-bros-brand` |
 | Cold opens, intro, full video episode, promo teaser | `investing-bros-video` |
 | Shorts with covers (incl. HyperFrames explainer cards), mid-form highlights | `investing-bros-shorts` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
@@ -28,9 +29,9 @@ Several agents (Amitai's, Nadav's, Grokbot) work on the same episodes, so improv
 6. Once a lesson is a check or a rule, drop the episode story behind it from the SKILL.md (keep it in a reference if it's still useful).
 
 ## Editing the skills
-- Shared facts go in `investing-bros-show` only. Other skills refer to it by name; don't copy facts into them.
+- Shared show facts go in `investing-bros-show` only. Visual rules, templates and curated artwork live only in `investing-bros-brand`. Other skills consume them by name; do not duplicate design specifications.
 - Each skill: frontmatter `name` = folder name (lowercase, hyphens), `description` says what it does **and** when to use it (include Amitai's Hebrew/English trigger phrases). Body sections: When to use → Inputs → Steps → Done when → Hand back → Never. **Done when** lists the files the skill leaves in the Drive folder (the validator requires the section).
-- One skill per stage of the episode flow. A variant of a step (HyperFrames for shorts, the thumbnail for the copy) is a `references/` file of that skill, not a new skill.
+- One skill per stage of the episode flow. `investing-bros-brand` is the cross-cutting design capability serving multiple stages, not an additional episode stage. A variant of a step (HyperFrames for shorts, the thumbnail for the copy) is a `references/` file of that skill, not a new skill.
 - Code an agent should run goes in the skill's `scripts/`, with tests (`test_*.py`) where it can be tested. Longer reference material goes in `references/`.
 - A script used by two skills is copied into both (`clip_captions.py`, `make_clip.sh`, `brand.py` in shorts and video): other scripts import them from their own folder, and skills may be installed separately. Edit both copies together — the validator fails if same-named scripts differ.
 - Refer to other skills by name, not by relative path — skills may be installed separately.
