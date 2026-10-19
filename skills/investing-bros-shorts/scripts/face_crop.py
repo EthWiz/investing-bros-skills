@@ -11,8 +11,9 @@ Side-by-side: takes frames, finds skin-coloured pixels in the upper two-thirds o
 half and centres the 608-px 9:16 crop on them; prints {"crop_x": {"L": x, "R": x}}.
 With OpenCV installed (pip install opencv-python-headless) it also finds the face in
 each crop, maps it to the 1080x1920 short and suggests "caption_y" (just under the chin)
-and "hook_y" (the hook block ending above the eyes), clamped to brand.CAPTION_Y_BOUNDS
-and brand.HOOK_Y_BOUNDS, with a warning when the face is too big to clear. These are
+and "hook_y" (the brief hook in the frame centre, moved up only if it would run into the
+captions), clamped to brand.CAPTION_Y_BOUNDS and brand.HOOK_Y_BOUNDS, with a warning when
+the face is too big for the captions to clear. These are
 heuristics: look at one frame of the render to confirm (hands in shot pull them off).
 """
 import argparse
@@ -24,9 +25,8 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import CAPTION_Y_BOUNDS, HOOK_STRIPS, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT  # noqa: E402
+from brand import CAPTION_HALF, CAPTION_Y_BOUNDS, HOOK_GAP, HOOK_STRIPS, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT  # noqa: E402
 
-CAPTION_HALF = 58          # half the height of a 100-px caption line with its outline
 HOOK_HALF = round(HOOK_STRIPS["size"] * 1.45)   # half a two-strip hook block (~290 px)
 
 
@@ -87,14 +87,12 @@ def face_boxes(path, times, crop, size):
 def place(boxes):
     """caption_y / hook_y for the median face box, clamped to the brand bounds."""
     x0, y0, x1, y1 = (float(np.median([b[i] for b in boxes])) for i in range(4))
-    eyes = y0 + 0.37 * (y1 - y0)
     cap = round(min(max(y1 + CAPTION_HALF + 15, CAPTION_Y_BOUNDS[0]), CAPTION_Y_BOUNDS[1]))
-    hook = round(min(max(min(HOOK_Y_DEFAULT, eyes - 30 - HOOK_HALF), HOOK_Y_BOUNDS[0]), HOOK_Y_BOUNDS[1]))
+    hook = round(min(max(min(HOOK_Y_DEFAULT, cap - CAPTION_HALF - HOOK_GAP - HOOK_HALF), HOOK_Y_BOUNDS[0]),
+                     HOOK_Y_BOUNDS[1]))
     warn = []
     if cap - CAPTION_HALF < y1:
         warn.append(f"chin at y~{y1:.0f}: captions at the lowest allowed {cap} still overlap the chin/neck")
-    if hook + HOOK_HALF > eyes:
-        warn.append(f"eyes at y~{eyes:.0f}: the hook block reaches them even at hook_y {hook}")
     return {"face_box": [round(v) for v in (x0, y0, x1, y1)], "caption_y": cap, "hook_y": hook, "warnings": warn}
 
 

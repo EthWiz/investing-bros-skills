@@ -23,8 +23,9 @@ short.json:
   "hook": ["למה לסייברקאב", "אין הגה?"],       # first ~2.7 s: ONE idea, as short as possible (<= ~6 words)
   "hook_style": "strips",                       # default: cream/mustard torn-paper strips, navy type (brand);
                                                 # "legacy" = the old white/gold ASS hook (rebuilding old exports only)
-  "hook_y": 440, "caption_y": 1290,             # centre y; bounds brand.HOOK_Y_BOUNDS / CAPTION_Y_BOUNDS,
-                                                # pick the spot that clears the face (face_crop.py suggests both)
+  "hook_y": 960, "caption_y": 1290,             # centre y; bounds brand.HOOK_Y_BOUNDS / CAPTION_Y_BOUNDS.
+                                                # brief hook -> centre of frame, padded below the logo and above
+                                                # the captions; captions under the chin (face_crop.py suggests)
   "zooms": [[2114.5, 1.13], [2119.0, 1.0]],     # punch-ins: from this source time, this zoom (1.0 = none)
   "endcard": ["בפרק המלא: למה דווקא זהב?", "[אחים להשקעות · פרק 7]", "הקישור לפרק כאן למעלה"],
   "logo": "logo.png", "fonts": "fonts"
@@ -42,8 +43,9 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import (ACCENT, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK, FONT_EXTRABOLD,  # noqa: E402
-                   HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, ass_colour, hook_strips)
+from brand import (ACCENT, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
+                   FONT_EXTRABOLD, HOOK_GAP, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, LOGO_BOX, ass_colour,
+                   hook_strips)
 from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
@@ -73,6 +75,16 @@ def layout(cfg):
     if style == "strips" and not lo <= hook_y <= hi:
         raise ValueError(f"hook_y {hook_y} is outside the top band {lo}-{hi}")
     return {"hook_style": style, "caption_y": cap_y, "hook_y": hook_y}
+
+
+def hook_box_problems(box, caption_y):
+    """The drawn hook block must keep HOOK_GAP clear below the logo and above the captions."""
+    out = []
+    if box[0] < LOGO_BOX[3] + HOOK_GAP:
+        out.append(f"hook starts at y={box[0]}: keep {HOOK_GAP} px below the logo (bottom {LOGO_BOX[3]})")
+    if box[1] > caption_y - CAPTION_HALF - HOOK_GAP:
+        out.append(f"hook ends at y={box[1]}: keep {HOOK_GAP} px above the captions (caption_y {caption_y})")
+    return out
 
 
 def build_ass(cfg, tl, chunks):
@@ -222,6 +234,9 @@ def main():
     if cfg.get("hook") and lay["hook_style"] == "strips":
         font = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg.get("fonts", "fonts"), "Heebo-Black.ttf")
         lay["hook_box"] = hook_strips(cfg["hook"], base + "_hook.png", font, lay["hook_y"])
+        bad = hook_box_problems(lay["hook_box"], lay["caption_y"])
+        if bad:
+            raise SystemExit("; ".join(bad) + " - move hook_y or shorten the hook")
     json.dump(lay, open(base + "_layout.json", "w"))
     open(base + "_fb.sh", "w", encoding="utf-8").write(build_command(cfg, tl))
     if cfg.get("cards"):

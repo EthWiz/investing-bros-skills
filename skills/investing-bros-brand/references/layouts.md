@@ -56,11 +56,12 @@ and disclose deviations. Never claim a generated 1254px file is a 3000px master.
 alone does not add detail. Keep reference images separate from final deliverables.
 
 ## Shorts video hook (approved production layout)
-The first 2.7 s of every full-bleed Short: the hook as two torn-paper strips centred
-horizontally in the top band (centre y 300–620 on 1920, default 440; under the top ~140 px
-of app chrome and below the logo), cream line 1 above mustard line 2, navy Heebo Black at
-about 108 px (line 2 ~10% larger), a soft navy paper shadow, fading out over 0.2 s. Keep
-it off the speaker's eyes. Captions sit at centre y 1100–1470, just under the chin.
+The first 2.7 s of every full-bleed Short: the hook as two torn-paper strips, cream line 1
+above mustard line 2, navy Heebo Black at about 108 px (line 2 ~10% larger), a soft navy
+paper shadow, fading out over 0.2 s. **Brief hook → centre of the frame:** centred
+horizontally with its block centred around y 960 on 1920 (allowed 300–1000), at least
+40 px clear below the logo's bottom edge (y 277) and above the caption line. Covering the
+face for those 2.7 s is accepted. Captions sit at centre y 1100–1470, just under the chin.
 `investing-bros-shorts` renders it (`brand.hook_strips`, `build_fullbleed.py`); the
 exact constants are in `brand.py` (`HOOK_STRIPS`, `HOOK_Y_BOUNDS`, `CAPTION_Y_BOUNDS`).
 

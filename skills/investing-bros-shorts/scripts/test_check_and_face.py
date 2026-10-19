@@ -35,15 +35,16 @@ def test_skin_centre_finds_the_face():
 
 
 def test_layout_bounds_fail_outside():
-    assert layout_problems({"caption_y": 1460, "hook_y": 440, "hook_style": "strips", "hook_box": [304, 590]}) == []
+    assert layout_problems({"caption_y": 1470, "hook_y": 960, "hook_style": "strips", "hook_box": [816, 1105]}) == []
     assert any("caption_y" in p for p in layout_problems({"caption_y": 1600, "hook_y": 440}))
-    assert any("hook_y" in p for p in layout_problems({"caption_y": 1290, "hook_y": 800, "hook_style": "strips"}))
-    assert any("chrome" in p for p in layout_problems({"caption_y": 1290, "hook_y": 300, "hook_box": [100, 500]}))
+    assert any("hook_y" in p for p in layout_problems({"caption_y": 1290, "hook_y": 1100, "hook_style": "strips"}))
+    assert any("logo" in p for p in layout_problems({"caption_y": 1290, "hook_y": 300, "hook_box": [290, 590]}))
+    assert any("captions" in p for p in layout_problems({"caption_y": 1100, "hook_y": 960, "hook_box": [816, 1105]}))
     assert layout_problems({"caption_y": 1290, "hook_y": 700, "hook_style": "legacy"}) == []   # old exports
 
 
 def test_place_clears_a_small_face_and_flags_a_close_up():
     small = place([(300, 500, 780, 1100)] * 3)                  # face well inside the frame
-    assert small["caption_y"] == 1173 and small["hook_y"] <= 440 and not small["warnings"]
+    assert small["caption_y"] == 1173 and small["hook_y"] == 918 and not small["warnings"]   # moved up off the captions
     big = place([(96, 352, 1088, 1429)])                        # webcam close-up (episode 1)
-    assert big["caption_y"] == 1470 and big["hook_y"] == 440 and any("chin" in w for w in big["warnings"])
+    assert big["caption_y"] == 1470 and big["hook_y"] == 960 and any("chin" in w for w in big["warnings"])   # centre

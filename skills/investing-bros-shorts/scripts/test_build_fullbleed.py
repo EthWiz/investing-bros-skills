@@ -4,7 +4,7 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
-from build_fullbleed import build_ass, build_command  # noqa: E402
+from build_fullbleed import build_ass, build_command, hook_box_problems  # noqa: E402
 from build_short import Timeline  # noqa: E402
 
 REF = os.path.join(os.path.dirname(__file__), "..", "references")
@@ -69,7 +69,7 @@ def test_caption_y_is_configurable_within_bounds():
     with pytest.raises(ValueError):
         build_ass(dict(CFG, caption_y=1600), _tl(), CHUNKS)      # under the platform UI
     with pytest.raises(ValueError):
-        build_ass(dict(CFG, hook_y=900), _tl(), CHUNKS)          # out of the top band
+        build_ass(dict(CFG, hook_y=1100), _tl(), CHUNKS)         # past the centre band
 
 
 def test_opening_on_a_later_line_seeks_to_the_earliest_piece():
@@ -78,3 +78,9 @@ def test_opening_on_a_later_line_seeks_to_the_earliest_piece():
     assert "-ss 2105.000" in cmd                                     # not 2139.0: the second piece is earlier
     assert "trim=start=35.0000" in cmd and "trim=start=1.0000" in cmd
     assert "zoompan=z='if(gte(it,11.000),1.0,if(gte(it,1.000),1.12,1.0))'" in cmd   # ordered by output time
+
+
+def test_hook_box_keeps_clear_of_logo_and_captions():
+    assert hook_box_problems([816, 1105], 1470) == []                 # centred hook, captions at 1470
+    assert any("logo" in p for p in hook_box_problems([300, 590], 1470))
+    assert any("captions" in p for p in hook_box_problems([816, 1105], 1150))

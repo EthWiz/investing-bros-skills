@@ -95,11 +95,11 @@ def test_hook_strips_cream_then_mustard_navy_type(tmp_path):
     if not features.check("raqm") or not fonts:
         pytest.skip("needs Pillow with raqm and a Hebrew font")
     out = tmp_path / "hook.png"
-    top, bottom = hook_strips(["למה לסייברקאב", "אין הגה?"], str(out), fonts[0], 440)
-    assert 140 < top < 440 < bottom < 760
+    top, bottom = hook_strips(["למה לסייברקאב", "אין הגה?"], str(out), fonts[0], 960)
+    assert 317 < top < 960 < bottom < 1470 - 58 - 40          # centred, clear of logo and captions
     im = Image.open(out).convert("RGBA")
     assert im.size == (1080, 1920) and im.getpixel((5, 5))[3] == 0          # transparent outside the strips
     px = set(im.crop((0, top, 1080, bottom)).getdata())
     near = lambda c: any(abs(p[0] - c[0]) < 14 and abs(p[1] - c[1]) < 14 and abs(p[2] - c[2]) < 14 and p[3] > 250 for p in px)
     assert near(JOURNAL_CREAM) and near(JOURNAL_MUSTARD) and near((9, 36, 59))
-    assert HOOK_Y_BOUNDS[0] <= 440 <= HOOK_Y_BOUNDS[1]
+    assert HOOK_Y_BOUNDS[0] <= 960 <= HOOK_Y_BOUNDS[1]

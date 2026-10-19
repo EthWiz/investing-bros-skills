@@ -237,9 +237,9 @@
       "zones": {
         "hook_band": [
           0.0,
-          0.073,
+          0.156,
           1.0,
-          0.323
+          0.365
         ],
         "captions": [
           0.0,
@@ -264,8 +264,14 @@
         "shown_s": 2.7,
         "centre_y_px": [
           300,
-          620
-        ]
+          1000
+        ],
+        "default_centre_y_px": 960,
+        "min_gap_px": {
+          "below_logo_bottom": 40,
+          "above_caption_line": 40
+        },
+        "logo_bottom_px": 277
       },
       "captions": {
         "colour": "#FFFFFF",

@@ -74,12 +74,16 @@ VERTICAL = {
 
 # Full-bleed short (1080x1920): where captions and the hook may sit (centre y, canvas px).
 # Captions stay above the bottom ~400 px of app UI (a 100 px line with outline needs
-# its centre <= 1470) and below the hook band; the hook stays in the top band, under
-# the top ~140 px of app chrome. Inside the bounds, put each where it clears the face
-# (face_crop.py suggests both). check_short.py fails a render outside them.
+# its centre <= 1470). The paper-strip hook is on screen only ~2.7 s, so by default it
+# sits in the centre of the frame (it may cover the face briefly), padded HOOK_GAP below
+# the logo's bottom edge and HOOK_GAP above the caption line. Captions go just under
+# the chin (face_crop.py suggests caption_y). check_short.py fails a render outside these.
 CAPTION_Y_BOUNDS = (1100, 1470)
-HOOK_Y_BOUNDS = (300, 620)
-CAPTION_Y_DEFAULT, HOOK_Y_DEFAULT = 1290, 440
+HOOK_Y_BOUNDS = (300, 1000)
+CAPTION_Y_DEFAULT, HOOK_Y_DEFAULT = 1290, 960
+LOGO_BOX = (56, 150, 266, 277)    # the full-bleed logo: 210 px wide at (56, 150), logo-solid.png aspect
+CAPTION_HALF = 58                 # half the height of a 100-px caption line with its outline
+HOOK_GAP = 40                     # minimum clear space between the hook block and logo / captions
 HOOK_STRIPS = {"size": 108, "second_scale": 1.1, "pad_x": 34, "pad_y": 14, "overlap": 8,
                "tilt": (-1.2, 1.0), "shadow": (6, 9, 7, 110)}   # shadow dx, dy, blur, alpha
 

@@ -10,7 +10,8 @@ within 0.4 s, and the short doesn't trail off in more than 1 s of silence. Lengt
 15-60 s fails; outside the 20-45 s target is a note to explain in the hand-back.
 If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
 given), the caption and hook positions must be inside brand.CAPTION_Y_BOUNDS and
-brand.HOOK_Y_BOUNDS, and the hook block must stay below the top app chrome.
+brand.HOOK_Y_BOUNDS, and the hook block must keep brand.HOOK_GAP below the logo and above
+the captions.
 Then LOOK at the strip: captions right-to-left and inside the safe zone, the right host
 on screen, nothing over the face, the hook readable on the first frame.
 """
@@ -33,10 +34,9 @@ def probe(path):
 
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import CAPTION_Y_BOUNDS, HOOK_Y_BOUNDS  # noqa: E402
+from brand import CAPTION_HALF, CAPTION_Y_BOUNDS, HOOK_GAP, HOOK_Y_BOUNDS, LOGO_BOX  # noqa: E402
 
 LIMIT, TARGET = (15, 60), (20, 45)
-TOP_CHROME = 140           # px of app UI at the top of a 1920-px frame
 DARK_FRAME = 25            # mean luma (0-255) below this reads as a black frame
 LEAD_SILENCE, TAIL_SILENCE = 0.4, 1.0
 
@@ -84,10 +84,11 @@ def layout_problems(lay):
         if not lo <= lay.get("hook_y", lo) <= hi:
             out.append(f"hook_y {lay['hook_y']} is outside the top band {lo}-{hi}")
         box = lay.get("hook_box")
-        if box and box[0] < TOP_CHROME:
-            out.append(f"hook starts at y={box[0]}, under the top {TOP_CHROME} px of app chrome")
-        if box and box[1] >= lay.get("caption_y", 1e9) - 60:
-            out.append("hook block runs into the captions")
+        if box and box[0] < LOGO_BOX[3] + HOOK_GAP:
+            out.append(f"hook starts at y={box[0]}: it needs {HOOK_GAP} px clear below the logo (bottom {LOGO_BOX[3]})")
+        cap = lay.get("caption_y")
+        if box and cap and box[1] > cap - CAPTION_HALF - HOOK_GAP:
+            out.append(f"hook ends at y={box[1]}: it needs {HOOK_GAP} px clear above the captions (caption_y {cap})")
     return out
 
 
