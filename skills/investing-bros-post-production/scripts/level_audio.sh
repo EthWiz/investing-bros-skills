@@ -26,7 +26,7 @@ target=-16
 pre="$(mktemp -t level-XXXXXX).wav"
 trap 'rm -f "$pre"' EXIT
 ffmpeg -hide_banner -loglevel error -nostdin -y -i "$in" -vn -map 0:a:0 \
-  -af "highpass=f=70,afftdn=nr=6:nf=-50,dynaudnorm=f=200:g=11:p=0.9:m=20,acompressor=threshold=0.1:ratio=2:attack=20:release=250,aresample=48000" \
+  -af "aresample=async=1:min_hard_comp=0.01:first_pts=0,highpass=f=70,afftdn=nr=6:nf=-50,dynaudnorm=f=200:g=11:p=0.9:m=20,acompressor=threshold=0.1:ratio=2:attack=20:release=250,aresample=48000" \
   -ac 1 -c:a pcm_s24le "$pre"
 
 measured=$(ffmpeg -hide_banner -nostdin -i "$pre" -af ebur128 -f null - 2>&1 | awk '/Integrated loudness:/{f=1} f && /I:/{print $2; exit}')
@@ -36,6 +36,23 @@ gain=$(awk -v t="$target" -v m="$measured" 'BEGIN { printf "%.2f", t - m }')
 ffmpeg -hide_banner -loglevel error -nostdin -i "$pre" \
   -af "volume=${gain}dB,alimiter=limit=0.84:attack=5:release=60:level=disabled,aformat=channel_layouts=stereo" \
   -ar 48000 -c:a pcm_s16le "$out"
+
+source_duration=$(ffprobe -v error -select_streams a:0 -show_entries stream=duration \
+  -of default=noprint_wrappers=1:nokey=1 "$in")
+[[ -n "$source_duration" && "$source_duration" != "N/A" ]] || \
+  source_duration=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$in")
+output_duration=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$out")
+python3 - "$source_duration" "$output_duration" <<'PY'
+import sys
+
+source, output = map(float, sys.argv[1:])
+drift = abs(source - output)
+if drift > 0.05:
+    raise SystemExit(
+        f"error: leveled audio lost sync: source {source:.3f}s, output {output:.3f}s, drift {drift:.3f}s"
+    )
+print(f"sync: source {source:.3f}s, output {output:.3f}s, drift {drift:.3f}s")
+PY
 
 ffmpeg -hide_banner -nostdin -i "$out" -af ebur128=peak=true -f null - 2>&1 \
   | awk '/Summary:/{f=1} f && /I:|LRA:|Peak:/{printf "%s ", $0} END{print ""}' | tr -s ' '

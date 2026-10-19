@@ -35,11 +35,11 @@ import os
 import sys
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from brand import ass_colour  # noqa: E402
+from brand import ACCENT, FONT_BLACK, FONT_EXTRABOLD, ass_colour  # noqa: E402
 from build_short import Timeline, ass_time, build_srt, close_gaps  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
-GOLD = (245, 183, 31)                       # house accent #F5B71F (investing-bros-show)
+GOLD = ACCENT
 G = "{\\c" + ass_colour(GOLD) + "}"
 W = "{\\c&H00FFFFFF}"
 CAP_Y, HOOK_Y, END_S = 1290, 700, 2.8
@@ -56,11 +56,11 @@ def build_ass(cfg, tl, chunks):
     end_t = max(0.0, dur - END_S)
     st = ("Format: Name, Fontname, Fontsize, PrimaryColour, SecondaryColour, OutlineColour, BackColour, Bold, Italic, Underline, "
           "StrikeOut, ScaleX, ScaleY, Spacing, Angle, BorderStyle, Outline, Shadow, Alignment, MarginL, MarginR, MarginV, Encoding\n"
-          "Style: Cap,Heebo Black,100,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,-1\n"
-          "Style: Hook,Heebo Black,118,&H00FFFFFF,&H00FFFFFF,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,9,4,5,60,60,0,-1\n"
-          "Style: End,Heebo Black,84,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,6,0,5,60,60,0,-1\n"
-          f"Style: Tag,Heebo ExtraBold,38,&H000B1006,&H000B1006,{ass_colour(GOLD)},{ass_colour(GOLD)},0,0,0,0,100,100,0,0,3,12,0,9,40,40,0,-1\n"
-          "Style: Dim,Heebo Black,20,&H00000000,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,-1\n")
+          f"Style: Cap,{FONT_BLACK},100,&H00FFFFFF,&H00FFFFFF,&H00000000,&H80000000,0,0,0,0,100,100,0,0,1,8,3,5,60,60,0,-1\n"
+          f"Style: Hook,{FONT_BLACK},118,&H00FFFFFF,&H00FFFFFF,&H00000000,&H90000000,0,0,0,0,100,100,0,0,1,9,4,5,60,60,0,-1\n"
+          f"Style: End,{FONT_BLACK},84,&H00FFFFFF,&H00FFFFFF,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,6,0,5,60,60,0,-1\n"
+          f"Style: Tag,{FONT_EXTRABOLD},38,&H000B1006,&H000B1006,{ass_colour(GOLD)},{ass_colour(GOLD)},0,0,0,0,100,100,0,0,3,12,0,9,40,40,0,-1\n"
+          f"Style: Dim,{FONT_BLACK},20,&H00000000,&H00000000,&H00000000,&H00000000,0,0,0,0,100,100,0,0,1,0,0,7,0,0,0,-1\n")
     out = ("[Script Info]\nScriptType: v4.00+\nPlayResX: 1080\nPlayResY: 1920\nWrapStyle: 2\nScaledBorderAndShadow: yes\n\n"
            "[V4+ Styles]\n" + st + "\n[Events]\nFormat: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text\n")
     ev = lambda layer, s, e, style, txt: f"Dialogue: {layer},{ass_time(s)},{ass_time(e)},{style},,0,0,0,,{txt}\n"
@@ -138,8 +138,12 @@ def build_command(cfg, tl):
     uses[(idx[asrc], "a")] = n
     f, taken = "", {}
     for (i, kind), k in uses.items():
-        f += (f"[{i}:{kind}]{'split' if kind == 'v' else 'asplit'}={k}" + "".join(f"[{kind}{i}_{j}]" for j in range(k)) + ";") if k > 1 \
-            else f"[{i}:{kind}]{'null' if kind == 'v' else 'anull'}[{kind}{i}_0];"
+        source_filter = "null" if kind == "v" else "aresample=async=1:min_hard_comp=0.01:first_pts=0"
+        split_filter = "split" if kind == "v" else "asplit"
+        f += (
+            f"[{i}:{kind}]{source_filter},{split_filter}={k}"
+            + "".join(f"[{kind}{i}_{j}]" for j in range(k)) + ";"
+        ) if k > 1 else f"[{i}:{kind}]{source_filter}[{kind}{i}_0];"
     def take(i, kind):
         j = taken.get((i, kind), 0)
         taken[(i, kind)] = j + 1

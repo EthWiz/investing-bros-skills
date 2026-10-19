@@ -136,7 +136,11 @@ def build_command(cfg, tl: Timeline) -> str:
         gain = "" if asrc else f",volume={tl.gains[i]}dB"
         parts += (f"[s{i}]atrim=start={a:.4f}:end={b:.4f},asetpts=PTS-STARTPTS,afade=t=in:d={0.3 if i == 0 else 0.012},"
                   f"afade=t=out:st={d - 0.015:.4f}:d=0.015{gain}[q{i}];")
-    split = f"[0:a]asplit={n}" + "".join(f"[s{i}]" for i in range(n)) + ";" if n > 1 else "[0:a]anull[s0];"
+    pts_audio = "aresample=async=1:min_hard_comp=0.01:first_pts=0"
+    split = (
+        f"[0:a]{pts_audio},asplit={n}" + "".join(f"[s{i}]" for i in range(n)) + ";"
+        if n > 1 else f"[0:a]{pts_audio}[s0];"
+    )
     tail = "" if asrc else ",loudnorm=I=-16:TP=-1.5:LRA=11"
     ac = split + parts + "".join(f"[q{i}]" for i in range(n)) + f"concat=n={n}:v=0:a=1{tail},apad,atrim=duration={tl.duration:.4f}[aout]"
     cmd += f'ffmpeg -v error -y -i "{asrc or src}" -filter_complex "{ac}" -map "[aout]" -c:a pcm_s16le -ar 48000 -ac 2 "aseg_{name}.wav"\n'

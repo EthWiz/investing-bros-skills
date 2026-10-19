@@ -29,7 +29,7 @@ done
 inputs=(); filt=""; n=$#; i=0
 for p in "$@"; do
   inputs+=(-i "$p")
-  filt+="[$i:a:0]aresample=48000,aformat=channel_layouts=stereo[a$i];"
+  filt+="[$i:a:0]aresample=48000:async=1:min_hard_comp=0.01:first_pts=0,aformat=channel_layouts=stereo[a$i];"
   i=$((i + 1))
 done
 for ((i = 0; i < n; i++)); do filt+="[a$i]"; done
@@ -43,7 +43,7 @@ if [[ -n "$video_out" ]]; then
   vf=""
   for ((i = 0; i < n; i++)); do
     vf+="[$i:v:0]scale=1920:1080:force_original_aspect_ratio=decrease,pad=1920:1080:(ow-iw)/2:(oh-ih)/2,setsar=1,fps=30[v$i];"
-    vf+="[$i:a:0]aresample=48000,aformat=channel_layouts=stereo[a$i];"
+    vf+="[$i:a:0]aresample=48000:async=1:min_hard_comp=0.01:first_pts=0,aformat=channel_layouts=stereo[a$i];"
   done
   for ((i = 0; i < n; i++)); do vf+="[v$i][a$i]"; done
   vf+="concat=n=$n:v=1:a=1[v][a]"

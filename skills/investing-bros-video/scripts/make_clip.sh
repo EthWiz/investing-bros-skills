@@ -55,23 +55,24 @@ fi
 
 if [[ -n "$has_video" ]]; then
   inputs=(-ss "$start" -to "$end" -i "$src")
-  graph="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=30:3,eq=brightness=-0.15[bg];"
+  graph="[0:a:0]aresample=async=1:min_hard_comp=0.01:first_pts=0[a];"
+  graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=30:3,eq=brightness=-0.15[bg];"
   graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease[fg];"
   graph+="[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30${sub_filter},format=yuv420p[v]"
-  amap="0:a:0"
 else
   [[ -n "$cover" ]] || { echo "error: audio-only source needs --cover IMAGE for an audiogram" >&2; exit 1; }
   [[ -f "$cover" ]] || { echo "error: cover not found: $cover" >&2; exit 1; }
   if [[ "$fmt" == vertical ]]; then C=960 CY=220 WY=1220 WH=140; else C=700 CY=40 WY=760 WH=110; fi
   inputs=(-loop 1 -framerate 30 -i "$cover" -ss "$start" -to "$end" -i "$src")
-  graph="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=40:4,eq=brightness=-0.3[bg];"
+  graph="[1:a:0]asplit=2[waveaudio][syncaudio];"
+  graph+="[syncaudio]aresample=async=1:min_hard_comp=0.01:first_pts=0[a];"
+  graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=40:4,eq=brightness=-0.3[bg];"
   graph+="[0:v]scale=${C}:${C}:force_original_aspect_ratio=increase,crop=${C}:${C}[art];"
-  graph+="[1:a:0]showwaves=s=${C}x${WH}:mode=cline:scale=sqrt:colors=white:rate=30,format=rgba[wave];"
+  graph+="[waveaudio]showwaves=s=${C}x${WH}:mode=cline:scale=sqrt:colors=white:rate=30,format=rgba[wave];"
   graph+="[bg][art]overlay=(W-w)/2:${CY}[b1];[b1][wave]overlay=(W-w)/2:${WY}:shortest=1,setsar=1${sub_filter},format=yuv420p[v]"
-  amap="1:a:0"
 fi
 
 ffmpeg -hide_banner -loglevel error -nostdin "${inputs[@]}" \
-  -filter_complex "$graph" -map "[v]" -map "$amap" -shortest \
+  -filter_complex "$graph" -map "[v]" -map "[a]" -shortest \
   -c:v libx264 -preset veryfast -crf 20 -r 30 -c:a aac -b:a 160k -ar 48000 -movflags +faststart "$out"
 echo "$out: $(ffprobe -v error -show_entries format=duration -of csv=p=0 "$out") s, ${W}x${H}"
