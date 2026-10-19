@@ -31,6 +31,11 @@ ACCENT_DEEP = (122, 90, 14)       # bands
 NAVY_GLOW = (10, 22, 48)          # background glow behind the logo
 TITLE_NAVY = (19, 32, 62)          # teaser title outline #13203E
 WHITE = (255, 255, 255)
+# Financial Journal print palette (investing-bros-brand -> brand-rules.md). Used for the
+# Shorts hook strips, which must look different from the white/gold captions.
+JOURNAL_NAVY = (9, 36, 59)        # #09243B headline ink, paper shadow
+JOURNAL_CREAM = (245, 235, 213)   # #F5EBD5 first strip
+JOURNAL_MUSTARD = (216, 165, 46)  # #D8A52E second strip
 FONT_SEMIBOLD = "Heebo SemiBold"
 FONT_EXTRABOLD = "Heebo ExtraBold"
 FONT_BLACK = "Heebo Black"
@@ -66,6 +71,193 @@ VERTICAL = {
     "caption_margin_v": 400,        # bottom-anchored captions sit above the UI zone
     "caption_margin_l": 110, "caption_margin_r": 170,
 }
+
+# Full-bleed short (1080x1920): where captions and the hook may sit (centre y, canvas px).
+# Captions stay above the bottom ~400 px of app UI (a 100 px line with outline needs
+# its centre <= 1470). The paper-strip hook is on screen only ~2.7 s, so by default it
+# sits in the centre of the frame (it may cover the face briefly), padded HOOK_GAP below
+# the logo's bottom edge and HOOK_GAP above the caption line. Captions go just under
+# the chin (face_crop.py suggests caption_y). check_short.py fails a render outside these.
+CAPTION_Y_BOUNDS = (1100, 1470)
+HOOK_Y_BOUNDS = (300, 1000)
+CAPTION_Y_DEFAULT, HOOK_Y_DEFAULT = 1290, 960
+LOGO_BOX = (56, 150, 266, 277)    # the full-bleed logo: 210 px wide at (56, 150), logo-solid.png aspect
+CAPTION_HALF = 58                 # half the height of a 100-px caption line with its outline
+HOOK_GAP = 40                     # minimum clear space between the hook block and logo / captions
+HOOK_STRIPS = {"size": 108, "second_scale": 1.1, "pad_x": 34, "pad_y": 14, "overlap": 8,
+               "tilt": (-1.2, 1.0), "shadow": (6, 9, 7, 110)}   # shadow dx, dy, blur, alpha
+
+
+def hook_strips(lines, out_path, font_path, centre_y=HOOK_Y_DEFAULT, size=None):
+    """Draw the Shorts hook as torn-paper strips (Financial Journal): line 1 on cream,
+    line 2 on mustard (then alternating), navy Heebo Black type, a soft paper shadow.
+
+    Writes a transparent 1080x1920 PNG and returns the block's (top, bottom) in px.
+    "[...]" accent markup is ignored: the strip colour is the accent. Deterministic
+    (edges are seeded from the text). Needs Pillow with raqm for Hebrew shaping.
+    """
+    import random
+    import zlib
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    cfg = HOOK_STRIPS
+    size = size or cfg["size"]
+    strips = []
+    for i, raw in enumerate(lines):
+        text = raw.replace("[", "").replace("]", "").strip()
+        rng = random.Random(zlib.crc32(f"{i}:{text}".encode()))
+        font = ImageFont.truetype(font_path, round(size * (cfg["second_scale"] if i % 2 else 1)))
+        probe = ImageDraw.Draw(Image.new("L", (10, 10)))
+        x0, y0, x1, y1 = probe.textbbox((0, 0), text, font=font, direction="rtl", language="he")
+        w, h = x1 - x0 + 2 * cfg["pad_x"], y1 - y0 + 2 * cfg["pad_y"]
+        jag = max(4, size // 13)
+        top = [(x, rng.uniform(0, jag)) for x in range(0, w + 1, 9)]
+        right = [(w - rng.uniform(0, jag), y) for y in range(0, h + 1, 9)]
+        bottom = [(x, h - rng.uniform(0, jag)) for x in range(w, -1, -9)]
+        left = [(rng.uniform(0, jag), y) for y in range(h, -1, -9)]
+        mask = Image.new("L", (w, h), 0)
+        ImageDraw.Draw(mask).polygon(top + right + bottom + left, fill=255)
+        colour = JOURNAL_MUSTARD if i % 2 else JOURNAL_CREAM
+        grain = np.random.default_rng(zlib.crc32(text.encode())).normal(0, 5, (h, w, 1))
+        paper = np.clip(np.asarray(Image.new("RGB", (w, h), colour), np.float32) + grain, 0, 255).astype(np.uint8)
+        strip = Image.fromarray(paper, "RGB").convert("RGBA")
+        ImageDraw.Draw(strip).text((cfg["pad_x"] - x0, cfg["pad_y"] - y0), text, font=font,
+                                   fill=JOURNAL_NAVY + (255,), direction="rtl", language="he")
+        strip.putalpha(mask)
+        strips.append(strip.rotate(cfg["tilt"][i % 2], resample=Image.BICUBIC, expand=True))
+    total = sum(s.height for s in strips) - cfg["overlap"] * (len(strips) - 1)
+    y = round(centre_y - total / 2)
+    block = (y, y + total)
+    canvas = Image.new("RGBA", (1080, 1920), (0, 0, 0, 0))
+    dx, dy, blur, alpha = cfg["shadow"]
+    for s in strips:
+        x = round(540 - s.width / 2)
+        shadow = Image.new("RGBA", s.size, JOURNAL_NAVY + (0,))
+        shadow.putalpha(s.getchannel("A").point(lambda a: a * alpha // 255))
+        layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+        layer.paste(shadow, (x + dx, y + dy))
+        canvas = Image.alpha_composite(canvas, layer.filter(ImageFilter.GaussianBlur(blur)))
+        layer = Image.new("RGBA", canvas.size, (0, 0, 0, 0))
+        layer.paste(s, (x, y))
+        canvas = Image.alpha_composite(canvas, layer)
+        y += s.height - cfg["overlap"]
+    canvas.save(out_path)
+    return block
+
+
+# Down arrow (Heebo has no arrow glyphs): an ASS vector drawing, 60x70 px, for the end card.
+ARROW_ASS = "m 20 0 l 40 0 l 40 36 l 60 36 l 30 70 l 0 36 l 20 36"
+CALLOUT = {"size": 58, "pad_x": 30, "pad_y": 12, "arrow": (84, 72), "gap": 10,
+           "fade_in": 0.25, "fade_out": 0.3, "bob_hz": 2.0}
+
+
+def callout_strip(text, out_path, font_path, size=None):
+    """A "look down" callout: one cream torn-paper strip with navy Heebo Black type and a
+    mustard down arrow (navy edge) under it. Writes a tight transparent PNG, returns (w, h)."""
+    import random
+    import zlib
+    from PIL import Image, ImageDraw, ImageFilter, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    c = CALLOUT
+    size = size or c["size"]
+    rng = random.Random(zlib.crc32(text.encode()))
+    font = ImageFont.truetype(font_path, size)
+    x0, y0, x1, y1 = ImageDraw.Draw(Image.new("L", (8, 8))).textbbox((0, 0), text, font=font, direction="rtl", language="he")
+    sw, sh = x1 - x0 + 2 * c["pad_x"], y1 - y0 + 2 * c["pad_y"]
+    aw, ah = c["arrow"]
+    W, H = sw + 24, sh + c["gap"] + ah + 24          # room for the shadow
+    img = Image.new("RGBA", (W, H), (0, 0, 0, 0))
+    jag = max(3, size // 13)
+    edge = ([(x, rng.uniform(0, jag)) for x in range(0, sw + 1, 9)] + [(sw - rng.uniform(0, jag), y) for y in range(0, sh + 1, 9)]
+            + [(x, sh - rng.uniform(0, jag)) for x in range(sw, -1, -9)] + [(rng.uniform(0, jag), y) for y in range(sh, -1, -9)])
+    ax, ay = (sw - aw) / 2, sh + c["gap"]
+    arrow = [(ax + aw * 0.33, ay), (ax + aw * 0.67, ay), (ax + aw * 0.67, ay + ah * 0.5), (ax + aw, ay + ah * 0.5),
+             (ax + aw / 2, ay + ah), (ax, ay + ah * 0.5), (ax + aw * 0.33, ay + ah * 0.5)]
+    shadow = Image.new("L", (W, H), 0)
+    d = ImageDraw.Draw(shadow)
+    d.polygon([(x + 5, y + 7) for x, y in edge], fill=110)
+    d.polygon([(x + 5, y + 7) for x, y in arrow], fill=110)
+    img.paste(Image.new("RGBA", (W, H), JOURNAL_NAVY + (255,)), (0, 0), shadow.filter(ImageFilter.GaussianBlur(6)))
+    d = ImageDraw.Draw(img)
+    d.polygon(edge, fill=JOURNAL_CREAM + (255,))
+    d.text((c["pad_x"] - x0, c["pad_y"] - y0), text, font=font, fill=JOURNAL_NAVY + (255,), direction="rtl", language="he")
+    d.polygon(arrow, fill=JOURNAL_MUSTARD + (255,), outline=JOURNAL_NAVY + (255,), width=3)
+    img.save(out_path)
+    return W, H
+
+
+ENDCARD_COVER = {"logo_w": 500, "logo_top": 420, "pill": 60, "title": 72, "title_max_w": 740, "link": 52,
+                 "arrow": (96, 84), "background_alpha": 236}
+
+
+def _arrow_polygon(x, y, w, h):
+    return [(x + w * 0.33, y), (x + w * 0.67, y), (x + w * 0.67, y + h * 0.5), (x + w, y + h * 0.5),
+            (x + w / 2, y + h), (x, y + h * 0.5), (x + w * 0.33, y + h * 0.5)]
+
+
+def arrow_png(out_path, size=None):
+    """A mustard down arrow with a navy edge (Heebo has no arrow glyph). Returns (w, h)."""
+    from PIL import Image, ImageDraw
+    w, h = size or ENDCARD_COVER["arrow"]
+    img = Image.new("RGBA", (w + 8, h + 8), (0, 0, 0, 0))
+    ImageDraw.Draw(img).polygon(_arrow_polygon(4, 4, w, h), fill=JOURNAL_MUSTARD + (255,), outline=JOURNAL_NAVY + (255,), width=3)
+    img.save(out_path)
+    return img.size
+
+
+def endcard_cover(out_path, font_path, logo_path, title, episode_label, link):
+    """End card in the cover-art look: navy paper over the video, the torn-paper show logo,
+    a cream "פרק N" pill, the episode title in cream (title may hold "|" for the line break;
+    each line is shrunk to fit title_max_w) and the link line. Writes a 1080x1920 RGBA PNG
+    and returns {"bottom": y of the link line's bottom, "box": [top, bottom]}; the bobbing
+    arrow (arrow_png) goes under it."""
+    import zlib
+    import numpy as np
+    from PIL import Image, ImageDraw, ImageFont, features
+    if not features.check("raqm"):
+        raise RuntimeError("Pillow has no raqm: Hebrew would render left-to-right")
+    c = ENDCARD_COVER
+    grain = np.random.default_rng(zlib.crc32(title.encode())).normal(0, 4, (1920, 1080, 1))
+    bg = np.clip(np.full((1920, 1080, 3), JOURNAL_NAVY, np.float32) + grain, 0, 255).astype(np.uint8)
+    img = Image.fromarray(bg, "RGB").convert("RGBA")
+    img.putalpha(c["background_alpha"])
+    logo = Image.open(logo_path).convert("RGBA")
+    logo = logo.resize((c["logo_w"], round(logo.height * c["logo_w"] / logo.width)), Image.LANCZOS)
+    img.alpha_composite(logo, (540 - logo.width // 2, c["logo_top"]))
+    d = ImageDraw.Draw(img)
+    kw = {"direction": "rtl", "language": "he"}
+
+    def centred(text, size, y, fill, max_w=None):
+        f = ImageFont.truetype(font_path, size)
+        x0, y0, x1, y1 = d.textbbox((0, 0), text, font=f, **kw)
+        while max_w and x1 - x0 > max_w and size > 30:
+            size -= 2
+            f = ImageFont.truetype(font_path, size)
+            x0, y0, x1, y1 = d.textbbox((0, 0), text, font=f, **kw)
+        d.text((540 - (x1 + x0) / 2, y - y0), text, font=f, fill=fill, **kw)
+        return y + (y1 - y0)
+
+    y = c["logo_top"] + logo.height + 46
+    f = ImageFont.truetype(font_path, c["pill"])
+    x0, y0, x1, y1 = d.textbbox((0, 0), episode_label, font=f, **kw)
+    pw, ph = x1 - x0 + 64, y1 - y0 + 30
+    d.rounded_rectangle((540 - pw / 2, y, 540 + pw / 2, y + ph), radius=ph // 2, fill=JOURNAL_CREAM + (255,))
+    d.text((540 - (x1 + x0) / 2, y + 15 - y0), episode_label, font=f, fill=JOURNAL_NAVY + (255,), **kw)
+    y += ph + 54
+    lines, size = [x.strip() for x in title.split("|")], c["title"]
+    for line in lines:                                   # one size for every title line: the widest one fits
+        while size > 30 and d.textlength(line, font=ImageFont.truetype(font_path, size), **kw) > c["title_max_w"]:
+            size -= 2
+    for line in lines:
+        y = centred(line, size, y, JOURNAL_CREAM + (255,)) + 22
+    y += 40
+    bottom = centred(link, c["link"], y, JOURNAL_MUSTARD + (255,), c["title_max_w"])
+    img.save(out_path)
+    return {"box": [c["logo_top"], bottom], "bottom": bottom}
+
 
 # Teaser (1920x1080): one host's half of the side-by-side recording at native
 # size (960x1080) next to a branded panel with logo, label, captions and name.

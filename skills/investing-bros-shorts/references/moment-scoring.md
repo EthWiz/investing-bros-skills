@@ -27,7 +27,7 @@ Include at least 3 candidates from the deep dive. The deep dive is what the epis
 - **Open on the strongest line.** If the best sentence comes 10 s in, move that piece to the front and let the context follow. Move it, don't repeat it (the renderer rejects overlapping pieces), and keep its meaning: the "Never" rules in the skill still apply.
 - **End on the payoff.** Cut right after the line that resolves the idea. No "so yeah", no wind-down.
 - **20–45 seconds.** Going longer needs a reason (a story that can't be shorter); say it in the hand-back.
-- **Hook title = an open question** the short answers only at the end ("אסטרואיד אחד יכול להכפיל את הזהב בעולם?"), a faithful paraphrase of what is said.
+- **Hook title = an open question** the short answers only at the end, a faithful paraphrase of what is said, and **as short as possible**: one idea, ideally ≤ 6 words. Drop secondary details: `למה לסייברקאב אין הגה?`, not `למה לסייברקאב אין הגה ורק שני מקומות?`.
 - **End card names what the episode adds**: "בפרק המלא: למה דווקא זהב?" and not a generic "לפרק המלא".
 
 ## Skip

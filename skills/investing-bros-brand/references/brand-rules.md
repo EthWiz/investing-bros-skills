@@ -35,6 +35,14 @@ type and a `#13203E` navy title outline for legibility over live video. These va
 are constants in both installed copies of `brand.py`; do not redefine them in an
 individual renderer.
 
+**Shorts hook vs captions (approved 2026-10-19).** On a Short the hook headline and the
+captions must never share a treatment. The hook is print: torn-paper strips (line 1
+cream `#F5EBD5`, line 2 mustard `#D8A52E`), navy `#09243B` Heebo Black type, a restrained
+paper shadow, up to ~1.2° tilt. Captions stay the screen-tested motion style: white type
+with the current word in `#F5B71F`. Hooks are as short as possible: one idea, ideally six
+words or fewer, two lines (`למה לסייברקאב` / `אין הגה?`, not `למה לסייברקאב אין הגה ורק
+שני מקומות?`). The Short's cover uses the same two-strip headline.
+
 ## Typography
 Use heavy contemporary Hebrew sans-serif for titles, with compact but open counters.
 Do not use antique calligraphic lettering, serif display titles, bevels, thick outlines
