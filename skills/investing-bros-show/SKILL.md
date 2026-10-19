@@ -90,14 +90,14 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 
 ## Brand (video and graphics)
 - **Design owner:** load `investing-bros-brand` for all artwork and visual decisions. It owns the Financial Journal rules, palette, typography, templates, selected references and quality checks. Do not copy or redefine those rules here.
-- **Current logo:** `אחים להשקעות/Media Resources/Investing-bros-logo.png`
+- **Current logo:** `אחים להשקעות/Brand Resources/Investing-bros-logo.png`
   (newspaper-style square). `brand.py logo` extracts its torn-paper wordmark as a
   solid logo; never color-key its navy letters transparent. Production video uses
   the reviewed `logo-solid.png` asset owned by `investing-bros-brand`.
-- **Archived show cover:** `אחים להשקעות/Media Resources/ישנים/אחים-להשקעות-cover-1400.jpg`.
+- **Archived show cover:** `אחים להשקעות/Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg`.
   Use it only when a workflow explicitly needs the old square cover.
 - **Production fonts:** static Heebo weights remain available through the existing `brand.py fonts` workflow. See the brand skill for how they relate to the generated reference lettering.
-- **Intro clip:** `אחים להשקעות/Media Resources/Investing-bros-intro.mp4` —
+- **Intro clip:** `אחים להשקעות/Brand Resources/Investing-bros-intro.mp4` —
   8 s, 1280×720, 24 fps, stereo music. Use it as-is, immediately after the
   cold open. `assemble_episode.sh` scales it and normalizes it with the episode.
   Video order: cold open + intro + episode. Never use watermarked music
@@ -118,7 +118,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
 | Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Use when a connector can't carry the upload. Base64 uploads above a few MB are impractical. Connectors are fine for Docs, folders and moves. |
 | YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns an empty personal channel named **Grok Bot**: switch to the **אחים להשקעות** brand channel before every Studio upload. For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
-| Show cover art | `Media Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Media Resources/Investing-bros-logo.png` |
+| Show cover art | `Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Brand Resources/Investing-bros-logo.png` |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
 
 The **אחים להשקעות** YouTube brand channel must be phone-verified by its owner
