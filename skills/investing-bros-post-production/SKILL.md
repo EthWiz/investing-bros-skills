@@ -64,14 +64,15 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
 - Listen for what else should go: long silences, false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
 - Send Nadav the list (raw times + the words around each) and wait for his OK. Ambiguous cut → ask Amitai.
-- `trim.sh` cuts only the start and end today. A cut inside the episode needs script support: say which cuts are waiting for it in the hand-back, don't make them by hand (show conventions → Working rules).
+- Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation.
 
 ### 6. Trim and check
 ```bash
-scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-edited.m4a"
+scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-edited.m4a" \
+  --cut 1203.4-1209.9 --cut 1830-1836.2      # the approved cuts inside the episode, if any
 ffmpeg -i "$EP/investing-bros-episode-edited.m4a" -af ebur128=peak=true -f null - 2>&1 | tail -12
 ```
-`trim.sh` writes `edit.json` (`start`/`end` in raw seconds). Chapters, shorts and the video map raw → edited time with it (`edited = raw − start`). Listen to the first and last 20 seconds and to every cut. Loudness: about −16 LUFS, true peak ≤ −1.5 dBTP.
+`trim.sh` writes `edit.json` (`start`, `end` and `cuts`, in raw seconds); each join gets a 10 ms fade. Chapters, shorts and the video map raw → edited time with it: `python3 scripts/edit_map.py edit.json --raw 754.2` (with no cuts that is `raw − start`). Listen to the first and last 20 seconds and to every cut. Loudness: about −16 LUFS, true peak ≤ −1.5 dBTP.
 
 ### 7. File in Drive
 Find the `פרק N` folder (prefix match; prep normally created it). Only create `פרק N — נושא` if none exists.
@@ -90,7 +91,7 @@ Large files: upload as the Drive upload account in the browser when the connecto
 
 ## Hand back
 - Drive folder link
-- Edited length, the start/end cut points, and any cut waiting for script support
+- Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
 - Loudness (integrated LUFS) and the host balance before → after leveling
 - Next: titles, video and shorts can start now, in parallel
 

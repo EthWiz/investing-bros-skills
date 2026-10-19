@@ -45,7 +45,7 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 Three blocks, blank line between them:
 1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
-3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
+3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline: map each raw transcript time with `python3 scripts/edit_map.py extras/edit.json --raw T…` (it also says when a time falls inside a cut). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
 
 ### 4. Check
 Save as `כותרות-פרק-N.txt` and `תיאור-פרק-N.txt` (UTF-8, plain text) and run:

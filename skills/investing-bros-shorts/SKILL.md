@@ -26,7 +26,7 @@ From the episode's `extras/` folder:
 
 For audio-only recordings, also the show cover (location in `investing-bros-show`).
 
-Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
+Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, or to link a short to it (`&t=`), map the time with `python3 scripts/edit_map.py edit.json --raw T` (plus the video's opening length on YouTube).
 
 ## Steps
 1. **Propose moments.** Start from Riverside's auto-generated shorts. Riverside makes clips automatically; prefer picking good ready-made ones and adding motion captions over cutting from scratch. Give Amitai 3–6 candidates as a table: start–end, opening line, why it works, a title. Episode 7 shipped 5 — aim for that. Wait for his picks unless he said to just make them. Nadav approves the cut before a rebuild or an upload (`investing-bros-show` → Roles). A good short:

@@ -19,7 +19,7 @@ jobs:
       - name: Validate skill frontmatter and layout
         run: python3 tools/validate_skills.py
       - name: Unit tests for skill scripts
-        run: python3 -m pytest -q skills
+        run: python3 -m pytest -q skills tools
       - name: Shell scripts parse
         run: for f in skills/*/scripts/*.sh; do bash -n "$f"; done
       - name: Scan for committed secrets
