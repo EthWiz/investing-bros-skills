@@ -8,7 +8,7 @@ like an independent financial journal. Avoid urgency, trading cues and wealth pr
 ## Exact copy
 - Show: `אחים להשקעות`
 - Main wordmark: `אחים` on cream above `להשקעות` on mustard.
-- Host credit: `עם אמתי ונדב רסקין`
+- Host credit: `עם אמתי ונדב רסקין` (show cover, Shorts covers; not on episode covers since episode 3)
 - Individual hosts: `אמתי רסקין`, `נדב רסקין`
 - Amitai is four Hebrew letters: א מ ת י. The extra yod in אמיתי is wrong here.
 - Number label: `פרק {N}`. Never auto-increment or infer N for a new episode.
@@ -68,6 +68,7 @@ This conveys the brothers without inventing portraits. Keep the show name domina
 Use the corrected main-cover.png, not the earlier extra-yod version.
 
 ## Episode illustrations
+Since episode 3 the subject stands on its own, big, with no newspaper base (see layouts → Square episode cover). The entries below describe past covers.
 - Gold: engraved ingot on newspaper; a small balance scale supplies a supporting
   concept of value. Keep the scale subordinate to the ingot.
 - Tokenization: intact cream engraved certificate transitioning on its right into
