@@ -104,6 +104,8 @@ Large files: upload as the Drive upload account in the browser when the connecto
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
 - `extras/` has `transcript/segments.json`, `edit.json` and the raw master (plus host tracks if shorts will use them).
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
+- Once the episode art is final, the folder also has `cover-פרק-N.png` and
+  `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
 - Nadav OK'd the cut list.
 
 ## Hand back

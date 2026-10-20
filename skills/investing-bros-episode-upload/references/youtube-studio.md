@@ -15,7 +15,7 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
 - Audience: **No, it's not made for kids**.
 - Visibility: **Private** until Amitai explicitly approves publication.
 - Video language: Hebrew.
-- Thumbnail: use only the approved final image in `promo/`. If the custom-thumbnail
+- Thumbnail: use only the approved final `promo/thumbnail-פרק-N.jpg` (16:9, from the square cover). If the custom-thumbnail
   control is unavailable, report the channel-verification blocker.
 - Altered-content answer: answer truthfully for the video. A generated thumbnail
   alone does not make a real-recording episode altered video content.

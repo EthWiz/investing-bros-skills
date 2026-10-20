@@ -62,7 +62,7 @@ brand channel before selecting files. Upload as **Private** and choose
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
 - **Shorts** (`shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
-- Thumbnail from `promo/`, if Amitai approved one.
+- Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 4. Publish (only after Amitai's OK in chat)
 Publish the RedCircle draft, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.

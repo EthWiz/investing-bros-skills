@@ -77,7 +77,7 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     video/       full video episode + its YouTube description, when there is one ← video
     shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
-    promo/       promo teaser, cold opens, thumbnail                              ← video, brand
+    promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
 ```
 
 The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
@@ -103,7 +103,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   **אמתי** spelling when adapting artwork or credits.
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
-- **YouTube thumbnails:** use the Financial Journal brand and the proposed widescreen composition; `investing-bros-title-description` supplies the approved headline and `investing-bros-brand` creates/reviews the artwork. Recompose square art rather than stretching it.
+- **Episode art:** every episode has a square cover and a 16:9 YouTube thumbnail made from it (square centred on a blurred background), both filed in the episode's Drive folder. `investing-bros-title-description` supplies the headline; `investing-bros-brand` owns the rules and the artwork.
 - **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 

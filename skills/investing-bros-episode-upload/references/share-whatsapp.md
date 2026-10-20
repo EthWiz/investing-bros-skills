@@ -6,7 +6,7 @@ Step 7 of `investing-bros-episode-upload`. The WhatsApp ownership rules, show ta
 1. **Public episode URL** (RedCircle).
 2. **Destinations** — only ids from the approved-destinations table that Amitai asked for. `achim` only when he explicitly wants a live ping there.
 3. **Text per destination** — ask Amitai for the copy if he hasn't given it. Don't invent promo copy.
-4. **Artwork** (optional, only if the run asks for it) — the show cover, or the episode's YouTube thumbnail (`promo/`) if Amitai has approved one.
+4. **Artwork** (optional, only if the run asks for it) — the show cover, or the episode's square cover or 16:9 thumbnail (`promo/`) once approved.
 
 ## Steps
 1. For each destination, prepare: exact group name, exact message text ending with the show tag, the public URL, artwork path or note (if any), and one line of context (which episode, why).

@@ -69,13 +69,13 @@ Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or m
 ### 5. Save to Drive and ask Amitai to pick
 Upload both files to the episode root (Drive connector, conversion to Google Docs **off**, `text/plain`). If they already exist, replace them; never make a second copy. Send Amitai the five titles in chat, numbered as in the file, with your recommendation and one line on why. He picks; you write his pick after `בחירה סופית:`, rerun the check and upload again. Don't pick for him.
 
-### 6. Thumbnail (when asked, or when there's a video episode)
+### 6. Cover and thumbnail headline (every episode)
 Prepare the artwork brief and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md), preserving any supplied approved copy. Hand visual production to `investing-bros-brand`; load it to continue when the request includes finished artwork.
 
 ## Done when
 - Episode root has `כותרות-פרק-N.txt` (with Amitai's pick after `בחירה סופית:`) and `תיאור-פרק-N.txt`.
 - `check_copy.py --spotify` prints `0 error(s)` on both, and every claim is fact-checked.
-- Thumbnail (if asked): the copy brief is with Amitai or handed to `investing-bros-brand`; if artwork was also requested, brand owns its delivery.
+- Cover/thumbnail: the headline brief is with Amitai or handed to `investing-bros-brand`; if artwork was also requested, brand owns its delivery.
 
 ## Hand back
 - Links to both files
