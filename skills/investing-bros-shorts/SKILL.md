@@ -86,10 +86,10 @@ All times are **output** seconds (after the edit in `make_base.py`).
 ```jsonc
 {
   "base": "ep3_dc_clean.mp4",                 // clean base in --work (from make_base.py)
-  "meta": {"episode": 3, "speaker": "אמתי רסקין",   // default tag when "tags" is absent
+  "meta": {"episode": 3, "speaker": "אמיתי רסקין",   // default tag when "tags" is absent
            "title": "…", "source": "episode file + kept/dropped ranges"},
   "hook": {"start": 0.0, "end": 3.0, "top_line": "דאטה סנטרים", "bottom_line": "בחלל?"},
-  "tags": [[0.0, 16.49, "אמתי רסקין"], [16.49, 17.78, "נדב רסקין"]],   // [start, end, name]; switch with speaker
+  "tags": [[0.0, 16.49, "אמיתי רסקין"], [16.49, 17.78, "נדב רסקין"]],   // [start, end, name]; switch with speaker
   "hyperframes": [{                            // explainer panels, ~1 per 20 s
     "id": "dc_1", "start": 8.3, "end": 23.5,
     "layout": "steps",                         // or "split_comparison" (last step = camera vs LiDAR split)

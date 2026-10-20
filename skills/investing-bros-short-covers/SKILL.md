@@ -19,7 +19,7 @@ Reference (Amitai's approved example): [assets/amitai-short-cover-example.png](a
   - **Rough torn edges with a white fringe** (paper fibre), soft drop shadow.
   - White **"פרק X" pill** sitting on the bottom edge of the mustard strip, navy text.
 - **Illustration:** gold/engraved (etching, line-hatched) illustration relevant to the Short's topic (e.g. robotaxi, robot, data-center satellite) over a large **mustard sun** with rays, centre/lower half.
-- **Credit strip:** cream torn strip "עם אמתי ונדב רסקין" (lower area, slight tilt).
+- **Credit strip:** cream torn strip "עם אמיתי ונדב רסקין" (lower area, slight tilt).
 - **Logo:** torn-paper podcast logo **bottom-left**.
 - Title = the Short's hook (faithful paraphrase, ≤ 2 lines, ≤ ~14 chars a line). No numbers that aren't in the clip.
 
@@ -29,7 +29,7 @@ Reference (Amitai's approved example): [assets/amitai-short-cover-example.png](a
    ```python
    from make_torn_title import title_block, torn_strip, shadow, CREAM
    tb = title_block("דאטה סנטרים", "בחלל?", "פרק 3", width=1010)   # cream+mustard strips + white pill
-   ns = torn_strip("עם אמתי ונדב רסקין", CREAM, 64, -0.8, pad=(30, 24), seed=11)
+   ns = torn_strip("עם אמיתי ונדב רסקין", CREAM, 64, -0.8, pad=(30, 24), seed=11)
    ```
    Then composite the logo bottom-left. `python3 scripts/make_torn_title.py ART.jpg OUT.jpg` reproduces the ep3 cover (it also paints over old text regions — adjust the boxes for new art).
    `RUBIK` points at the box font path; change it if Rubik lives elsewhere (Rubik variable font from google/fonts).

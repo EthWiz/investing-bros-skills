@@ -2,7 +2,7 @@
 
 ## Spec
 - **Hook:** two stacked torn-paper strips, cream on top and yellow below, heavy dark (navy/black) Heebo text, centred just above the vertical middle (top of strips ≈ 0.37 H). Static, on screen from frame 1. Spec says it fades at ~1 s; **in the reference frames it stays until ~2.5 s** (visible at 2.4 s, gone by 2.8 s).
-- **Persistent graphics:** the torn-paper podcast logo top-left (≈ x 56, y 150, 210 px wide at 1080). A small yellow name tag top-right with black text ("אמתי רסקין"). It appears ~0.5 s in and is **gone before the CTA** (absent from ~26 s in a 32.7 s ref).
+- **Persistent graphics:** the torn-paper podcast logo top-left (≈ x 56, y 150, 210 px wide at 1080). A small yellow name tag top-right with black text ("אמיתי רסקין"). It appears ~0.5 s in and is **gone before the CTA** (absent from ~26 s in a 32.7 s ref).
 - **Captions:** white heavy sans, subtle dark outline/shadow, NO box. Only keywords and numbers turn bright yellow (not every active word). 1–4 words per line, fast, lower third (≈ 0.76 H, above the platform UI).
 - **Framing:** static tight head-and-shoulders close-up, no zooms, no jump cuts except to remove silence. 
 - **No** b-roll, music or SFX.

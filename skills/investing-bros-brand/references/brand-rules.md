@@ -8,8 +8,8 @@ like an independent financial journal. Avoid urgency, trading cues and wealth pr
 ## Exact copy
 - Show: `אחים להשקעות`
 - Main wordmark: `אחים` on cream above `להשקעות` on mustard.
-- Host credit: `עם אמתי ונדב רסקין` (show cover, Shorts covers; not on episode covers since episode 3)
-- Individual hosts: `אמתי רסקין`, `נדב רסקין`
+- Host credit: `עם אמיתי ונדב רסקין` (show cover, Shorts covers; not on episode covers since episode 3)
+- Individual hosts: `אמיתי רסקין`, `נדב רסקין`
 - Amitai is four Hebrew letters: א מ ת י. The extra yod in אמיתי is wrong here.
 - Number label: `פרק {N}`. Never auto-increment or infer N for a new episode.
 - Established examples: 7 `למה דווקא זהב?`; 6 `וול סטריט עוברת לבלוקצ׳יין`;

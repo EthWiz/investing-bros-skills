@@ -8,7 +8,7 @@ Check the output itself, not just the prompt.
 - Appropriate format specification, actual output-size target and reference roles.
 
 ## After generation
-- Read every Hebrew word letter by letter. Check אמתי, רסקין and אחים להשקעות.
+- Read every Hebrew word letter by letter. Check אמיתי, רסקין and אחים להשקעות.
 - Confirm numbers and punctuation read in the right order.
 - Compare the headline/number against the supplied copy, not a guessed title.
 - Check dominant navy, cream paper and printed mustard; no palette/style drift.

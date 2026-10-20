@@ -89,7 +89,7 @@ def ep3_short(art_path, out):
     art = Image.composite(Image.new("RGBA", (W, H), navy + (255,)), art, m2.filter(ImageFilter.GaussianBlur(6)))
     tb = title_block("דאטה סנטרים", "בחלל?", "פרק 3", width=1010)
     art.alpha_composite(tb, ((W - tb.width) // 2 + 10, 330))
-    ns = torn_strip("עם אמתי ונדב רסקין", CREAM, 64, -0.8, pad=(30, 24), seed=11)
+    ns = torn_strip("עם אמיתי ונדב רסקין", CREAM, 64, -0.8, pad=(30, 24), seed=11)
     art.alpha_composite(shadow(ns, (4, 5), 5), (290, 1622))
     art.convert("RGB").save(out, quality=92); print(out)
 
