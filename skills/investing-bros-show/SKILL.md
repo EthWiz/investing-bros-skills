@@ -17,7 +17,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 - **Episode format:** ~10 min news, ~20 min deep dive, ~5 min each for one investment idea per host.
 - **News taste:** All-In-style tech (model releases, launches, big raises/IPOs, hacks, infra, fintech/platform moves) over macro/rates/oil/price action, unless Amitai asks for macro.
 - **Podcast host:** [RedCircle](https://app.redcircle.com). Not RSS.com unless Amitai says the host changed. RedCircle feeds Spotify automatically: [the show on Spotify](https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk). Video goes to YouTube only; uploading video to Spotify would cut that episode off from RedCircle (see `investing-bros-episode-upload`).
-- **Spotify, as of 2026-10-18:** the show's author line reads `אמתי ונדב רסקין`, matching the corrected spelling. Episode 7's title has an en dash; changing that public metadata waits for Amitai's OK.
+- **Spotify, as of 2026-10-18:** the show's author line read `אמתי ונדב רסקין` (old spelling); it should become `אמיתי ונדב רסקין` — changing that public metadata waits for Amitai's OK. Episode 7's title has an en dash; changing that public metadata waits for Amitai's OK.
 
 ## Hard rules (every skill)
 1. **Never invent** numbers, quotes, events or promo copy. Factual claims need a source URL.
@@ -56,7 +56,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 - Chapters are **time first, zero-padded**: `01:05 נושא` (`MM:SS`; `HH:MM:SS` past an hour). Spotify only turns timestamps into chapters in that form, 30 s apart; YouTube accepts it too.
 - Disclaimer line: `אין כאן המלצת השקעה. רק שיחה.`
 - **No em dash `—` and no en dash `–` in anything public**: titles, descriptions, chapters, captions, posts (decided 2026-10-15: both read as AI-written). The only dash is a plain hyphen `-`, e.g. `פרק N - `. The em dash stays only in private Drive folder names. Titles: concise, question-led, no clickbait; see `investing-bros-title-description`.
-- Host names on screen: **נדב רסקין**, **אמתי רסקין**. Latest user correction (2026-10-19): spell **אמתי** everywhere. Exact artwork credit: **עם אמתי ונדב רסקין**.
+- Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Latest user correction (2026-10-20, overrides 2026-10-19): spell **אמיתי** everywhere. Exact artwork credit: **עם אמיתי ונדב רסקין**.
 - **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
 - **Every public Hebrew line starts with a Hebrew word**, including chapter labels after the timestamp (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`). A line that starts with English or a number flips left-to-right and scrambles its timestamp and numbers (episode 5 on YouTube). Checked by `check_copy.py` in `investing-bros-title-description`.
@@ -100,7 +100,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   cold open. `assemble_episode.sh` scales it and normalizes it with the episode.
   Video order: cold open + intro + episode. Never use watermarked music
   (AudioJungle previews and the like). Keep the tone serious and the correct
-  **אמתי** spelling when adapting artwork or credits.
+  **אמיתי** spelling when adapting artwork or credits.
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **YouTube thumbnails:** use the Financial Journal brand and the proposed widescreen composition; `investing-bros-title-description` supplies the approved headline and `investing-bros-brand` creates/reviews the artwork. Recompose square art rather than stretching it.

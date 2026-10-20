@@ -34,13 +34,13 @@ Three blocks separated by blank lines:
 00:00 פתיחה
 01:05 חדשות השבוע: <נושא>
 11:30 <נושא הצלילה>: <שאלה>?
-31:10 רעיון השקעה - אמתי
+31:10 רעיון השקעה - אמיתי
 36:00 רעיון השקעה - נדב
 ```
 
 1. **Intro**: one cohesive paragraph, about 450 characters or less **(warned)**. Open with a question when one fits **(warned, not required)**. Name only what was actually discussed.
 2. **Disclaimer**: exactly `אין כאן המלצת השקעה. רק שיחה.` on its own line **(checked)**.
-3. **Chapters**: time first, zero-padded `MM:SS` (`HH:MM:SS` past an hour), start at `00:00`, times go up, at least 30 s apart **(checked with `--spotify`)**. On the **edited** audio timeline: `edited = raw − start`, with `start` from `extras/edit.json`. 8–14 chapters for a ~45 min episode. Short labels (under 40 characters for Spotify, **warned**); a chapter may be a question. A plain hyphen inside a chapter label (`רעיון השקעה - אמתי`) is fine; an em or en dash is not **(checked)**.
+3. **Chapters**: time first, zero-padded `MM:SS` (`HH:MM:SS` past an hour), start at `00:00`, times go up, at least 30 s apart **(checked with `--spotify`)**. On the **edited** audio timeline: `edited = raw − start`, with `start` from `extras/edit.json`. 8–14 chapters for a ~45 min episode. Short labels (under 40 characters for Spotify, **warned**); a chapter may be a question. A plain hyphen inside a chapter label (`רעיון השקעה - אמיתי`) is fine; an em or en dash is not **(checked)**.
 
 ### Hebrew next to English and numbers (YouTube, RedCircle, Spotify, WhatsApp)
 Each line is laid out right-to-left or left-to-right by its **first letter**. A line whose first letter is English flips to left-to-right, so in a Hebrew description its timestamp jumps to the other side and its numbers and words come out in the wrong order (episode 5 on YouTube: `00:46 Anthropic: ...`, `09:46 AMD ...`, `31:16 SMR: ...`, `47:45 Oracle: ...`).

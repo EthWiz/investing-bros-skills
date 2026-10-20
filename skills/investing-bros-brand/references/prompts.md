@@ -12,8 +12,8 @@ sans-serif, cream-and-navy engraved/halftone cutouts, controlled mustard accents
 One central subject, at most one supporting concept, generous navy breathing room.
 No glossy cinematic scene, metallic text, neon palette, market charts or crowded
 unrelated clippings. All Hebrew text exact and right-to-left. Where a format carries
-the host credit, it is exactly 'עם אמתי ונדב רסקין'. אמתי has four letters א מ ת י;
-do not add another י.
+the host credit, it is exactly 'עם אמיתי ונדב רסקין'. אמיתי has five letters א מ י ת י;
+do not drop the middle י.
 
 ## Main cover
 {BASE_STYLE}
@@ -51,7 +51,7 @@ or global holographic background. Use episode-06-tokenization-digital.png.
 ## Localized edit
 Edit this EXACT selected image. Change ONLY {REQUESTED_CHANGE_AND_REGION}. Preserve
 {INVARIANTS}, all other composition and text. Correct credit if explicitly requested
-or known wrong: 'עם אמתי ונדב רסקין'. Do not redesign unrelated elements. Maintain
+or known wrong: 'עם אמיתי ונדב רסקין'. Do not redesign unrelated elements. Maintain
 original aspect ratio and transparency unless the user asks otherwise.
 
 ## Vertical Shorts cover
@@ -73,7 +73,7 @@ Layout (top to bottom):
 - Middle: hero illustration — {HERO_AND_MEANING}, engraved mustard/cream halftone
   style like the reference. No brand logos.
 - Below the hero: small cream pill label exact 'פרק {EPISODE_NUMBER}'.
-- Bottom: small host strip exact 'עם אמתי ונדב רסקין' on cream.
+- Bottom: small host strip exact 'עם אמיתי ונדב רסקין' on cream.
 All Hebrew text must be exact, spelled exactly as given, right-to-left, no extra
 words, letters or numbers anywhere else. Keep important text away from the right edge.
 
