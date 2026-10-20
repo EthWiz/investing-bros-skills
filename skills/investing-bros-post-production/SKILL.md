@@ -62,6 +62,16 @@ python3 scripts/transcribe.py "$EP/investing-bros-episode-raw-untrimmed.m4a" "$E
 Writes `segments.json`, `transcript.txt`, `transcript.srt` on the raw timeline.
 Its analysis WAV also preserves packet timestamp gaps. Every later skill uses this transcript.
 
+**Required: put a readable transcript in Drive.** Right after transcribing, create a Google Doc
+named `תמלול - פרק N` in the episode's `אחים להשקעות > פרק N` folder (find it by prefix match).
+- Hebrew, UTF-8. First lines: `אחים להשקעות — פרק N`, the length, and
+  `תמלול אוטומטי — ייתכנו שגיאות בשמות, במספרים ובמונחים באנגלית.`
+- One line or paragraph per segment, each starting with its `[m:ss]` timestamp (raw timeline;
+  say so if the edit later shifts it). Add the speaker (`נדב:` / `עמיתי:`) when known.
+- Create it through the Google Drive connector as a text Google Doc (fine for text; only MP4s
+  must go through the browser). Don't overwrite or move other Drive files; if the Doc already
+  exists, update it rather than adding a duplicate.
+
 ### 5. Build the cut list
 ```bash
 python3 scripts/find_bounds.py "$EP/transcript/segments.json"             # suggested start and end
@@ -93,10 +103,12 @@ Large files: upload as the Drive upload account in the browser when the connecto
 ## Done when
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
 - `extras/` has `transcript/segments.json`, `edit.json` and the raw master (plus host tracks if shorts will use them).
+- The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
 - Nadav OK'd the cut list.
 
 ## Hand back
 - Drive folder link
+- Link to the `תמלול - פרק N` Doc
 - Edited length, the start/end cut points, and any cut waiting for script support
 - Loudness (integrated LUFS) and the host balance before → after leveling
 - Next: titles, video and shorts can start now, in parallel
