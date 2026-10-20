@@ -11,8 +11,9 @@ Rough torn-paper headline strips, subtle paper shadows, bold contemporary Hebrew
 sans-serif, cream-and-navy engraved/halftone cutouts, controlled mustard accents.
 One central subject, at most one supporting concept, generous navy breathing room.
 No glossy cinematic scene, metallic text, neon palette, market charts or crowded
-unrelated clippings. All Hebrew text exact and right-to-left. Preserve host credit
-'עם אמתי ונדב רסקין'. אמתי has four letters א מ ת י; do not add another י.
+unrelated clippings. All Hebrew text exact and right-to-left. Where a format carries
+the host credit, it is exactly 'עם אמתי ונדב רסקין'. אמתי has four letters א מ ת י;
+do not add another י.
 
 ## Main cover
 {BASE_STYLE}
@@ -23,12 +24,22 @@ Follow assets/references/main-cover.png. No portraits, extra title or episode nu
 
 ## Episode cover
 {BASE_STYLE}
-Follow the {LAYOUT_ID} compositional specification. Compact show masthead at top.
-Headline exact '{HEADLINE_LINE_1}' on cream and '{HEADLINE_LINE_2}' on mustard.
-Number label exact 'פרק {EPISODE_NUMBER}'. Main visual: {HERO_AND_MEANING}.
-Supporting detail, if useful: {SUPPORTING_DETAIL_OR_NONE}.
-Host strip at bottom. Keep text/number hierarchy like episode-07-gold.png.
-Do not reuse its gold ingot unless this episode is about gold.
+Square 1:1. Layout (top to bottom):
+- Headline at the top, centred: exact '{HEADLINE_LINE_1}' on a large cream torn strip
+  and '{HEADLINE_LINE_2}' on a large mustard torn strip, navy text, very large.
+- Directly under it: small cream number tab exact 'פרק {EPISODE_NUMBER}'.
+- Below: ONE BIG, dramatic, impactful main visual filling most of the lower area:
+  {HERO_AND_MEANING}. Supporting detail, if useful: {SUPPORTING_DETAIL_OR_NONE}.
+  Rough mustard backing disc allowed. NO folded newspaper or paper base under it.
+- Bottom-RIGHT corner: compact show mark, 'אחים' on a small cream strip above
+  'להשקעות' on a small mustard strip.
+- NO host credit strip and no names. No other text, letters or numbers anywhere.
+Keep strip/number hierarchy like episode-07-gold.png, but not its layout (masthead top,
+newspaper, host strip are the pre-episode-3 structure). Do not reuse its gold ingot
+unless this episode is about gold. A company wordmark (e.g. SPACEX with its X swoosh)
+in the headline strip only when Amitai asks for it.
+For the YouTube thumbnail, compose this square cover per layouts.md → Widescreen
+YouTube thumbnail; do not generate a separate wide image.
 
 ## Tokenization digital treatment
 Keep the intact left part of the certificate physical cream engraved paper. Transform
@@ -44,7 +55,8 @@ or known wrong: 'עם אמתי ונדב רסקין'. Do not redesign unrelated e
 original aspect ratio and transparency unless the user asks otherwise.
 
 ## Vertical Shorts cover
-Approved on episode 1 short 1. Attach the episode's approved square cover and
+Approved on episode 1 short 1. Unchanged by the episode 3 episode-cover rule (show mark
+at top and host strip stay here until Amitai says otherwise). Attach the episode's approved square cover and
 episode-07-gold.png as style references, named in the prompt by their file names.
 {BASE_STYLE}
 Vertical 9:16 Shorts / Reels cover, saved as {OUTPUT_NAME}. Match the attached

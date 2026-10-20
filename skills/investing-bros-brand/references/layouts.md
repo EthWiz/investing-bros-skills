@@ -9,17 +9,30 @@ Show masthead dominates upper region, two-chair illustration below, host strip a
 Keep the name legible at 160px. Background/texture may bleed, important text may not.
 
 ## Square episode cover
-Top compact two-line show masthead, two torn headline strips, small number tab, one
-central illustration and bottom host strip. Allow longer titles to occupy the title
-zone with two or three lines. Shorten only with user authorization; never silently
-rewrite supplied copy. Match selected reference proportions before chasing coordinates.
+Two torn headline strips at the top (cream, then mustard), a small cream `פרק N` tab
+under them, then ONE big, impactful subject illustration filling most of the lower
+area (rough mustard backing disc allowed). The compact two-strip show mark
+(`אחים` cream / `להשקעות` mustard) sits in the BOTTOM-RIGHT corner. No host credit
+strip and no folded-newspaper prop under the subject (Amitai, 2026-10-20, episode 3).
+Allow longer titles to occupy the title zone with two or three lines. Shorten only
+with user authorization; never silently rewrite supplied copy. Covers made before
+episode 3 (masthead top, newspaper base, host strip) are the older structure; reuse
+their palette, strips and engraving, not that layout. Reference:
+`episode-3/promo/cover-פרק-3-v3.png` once approved.
 
-## Widescreen thumbnail (proposed adaptation)
-Keep a compact show mark at top, large torn-paper headline on the RIGHT, illustration
-on the LEFT and small number/host credit along the bottom. Make the headline/subject
-read at small size. Never squeeze the entire square cover into a wide frame. Keep
-critical copy away from the bottom-right playback overlay area. This is a design
-convention, not a guarantee of platform UI behavior.
+A company name may appear in its own wordmark style (e.g. SPACEX with the X swoosh)
+in the headline strip ONLY when Amitai asks for it; otherwise no brand logos.
+
+## Widescreen YouTube thumbnail (approved, episode 1 and 3)
+Do not recompose a wide layout. Make the square episode cover first, then centre it
+at 720×720 on a blurred, darkened stretch of itself (as `episode-1/promo/youtube-thumbnail-פרק-1.jpg`):
+```bash
+ffmpeg -i cover-פרק-N.png -filter_complex \
+  "[0]scale=1280:1280,crop=1280:720,boxblur=30:3,eq=brightness=-0.25[bg];[0]scale=720:720:flags=lanczos[fg];[bg][fg]overlay=280:0" \
+  -q:v 2 promo/thumbnail-פרק-N.jpg
+```
+A headline-right / illustration-left wide composition (the old proposed adaptation)
+was rejected for episode 3 as not the regular cover structure.
 
 ## Vertical Shorts cover (proposed adaptation)
 Compact show mark above a short question, large central topic illustration and number.

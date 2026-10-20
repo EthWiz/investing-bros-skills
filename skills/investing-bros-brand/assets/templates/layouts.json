@@ -41,44 +41,39 @@
       ],
       "status": "selected-reference",
       "zones": {
-        "masthead": [
-          0.38,
-          0.025,
-          0.24,
-          0.1
-        ],
         "headline": [
-          0.1,
-          0.14,
-          0.8,
+          0.08,
+          0.04,
+          0.84,
           0.28
         ],
         "number": [
           0.42,
-          0.42,
+          0.32,
           0.16,
           0.05
         ],
         "hero": [
-          0.08,
-          0.47,
-          0.84,
-          0.39
+          0.04,
+          0.38,
+          0.92,
+          0.6
         ],
-        "credit": [
+        "masthead": [
+          0.76,
+          0.86,
           0.2,
-          0.88,
-          0.6,
-          0.075
+          0.11
         ]
-      }
+      },
+      "note": "Since episode 3: show mark bottom-right, no credit strip, no newspaper base."
     },
     "episode-wide": {
       "size": [
         1920,
         1080
       ],
-      "status": "proposed-adaptation",
+      "status": "deprecated",
       "zones": {
         "masthead": [
           0.77,
@@ -110,7 +105,8 @@
           0.4,
           0.06
         ]
-      }
+      },
+      "note": "Use the square cover centred on its blurred stretch (layouts.md -> Widescreen YouTube thumbnail)."
     },
     "shorts-vertical": {
       "size": [

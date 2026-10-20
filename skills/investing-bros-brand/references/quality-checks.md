@@ -4,7 +4,7 @@ Check the output itself, not just the prompt.
 
 ## Before generation
 - Correct exact reference and version, requested topic and supplied episode number.
-- Exact title and host credit; no invented quotations or data.
+- Exact title (and host credit where the format has one; episode covers have none); no invented quotations or data.
 - Appropriate format specification, actual output-size target and reference roles.
 
 ## After generation
@@ -17,6 +17,7 @@ Check the output itself, not just the prompt.
 - For tokenization, distinguish physical paper from digital ownership fragments.
 - At roughly 160px wide, show title/main headline and focal object remain identifiable.
   The host credit may be secondary. At full size it must be readable and correct.
+- Episode covers: show mark bottom-right, no host strip, no newspaper base, subject big.
 - Check safe margins, cropped letters, accidental extra text, invented logos and clutter.
 - For edits, compare unchanged regions against the exact source; do not claim perfect
   preservation if generation visibly changed unrelated areas.
