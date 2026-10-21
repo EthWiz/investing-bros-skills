@@ -58,13 +58,13 @@ legacy styling is an explicit compatibility choice, not the default for new artw
    episode's `אחים להשקעות > פרק N` folder (prefix match), next to `תמלול - פרק N`. Images
    can go through the Google Drive connector; confirm each shows as `image/png` /
    `image/jpeg`. If a file of that name exists, replace/update it instead of adding a
-   duplicate. Leave every other file and folder alone (e.g. `old coverart`).
+   duplicate. Leave every other file and folder alone (e.g. `old coverart`). Short covers are not episode art: they go in the episode's `Shorts/` subfolder (`investing-bros-short-covers`).
 9. Deliver requested files/previews using the active environment's persistence rules.
    Do not publish or send to other people without explicit authorization.
 
 ## Done when
 - Requested episode artwork is reviewed and saved to the owning episode folder under
-  the paths in `investing-bros-show` (for example `promo/` or `shorts/`).
+  the paths in `investing-bros-show` (for example `promo/` or `Shorts/`).
 - Both the square cover and the 16:9 thumbnail are in `promo/` and in the episode's
   Drive folder.
 - The artifact register records actual output paths, version, status and source refs.

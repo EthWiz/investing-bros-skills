@@ -18,7 +18,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | 1 | Audio edit: combine, level the hosts, transcribe, cut start/end and silences, trim, loudness | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
 | 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Amitai (title) |
 | 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
-| 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `shorts/`, `mid-form/` | Nadav |
+| 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
 | 5 | Review ping, RedCircle draft, YouTube (private), then publish, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
 
 - Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.

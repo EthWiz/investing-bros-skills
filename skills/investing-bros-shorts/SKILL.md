@@ -5,7 +5,7 @@ description: >-
   Investing Bros / אחים להשקעות episode: pick standalone moments, cut on
   pauses, speaker close-ups, logo + hook headline, burned-in Hebrew captions,
   leveled audio, plus a cover image sized for each short, all uploaded to the
-  episode's Drive shorts/ folder. Explainer shorts can get animated cards
+  episode's Drive Shorts/ folder. Explainer shorts can get animated cards
   (HyperFrames). Also cuts 5–10 min mid-form highlights for YouTube. Use when
   Amitai asks for "shorts", "clips", "reels", "רילס", "שורטס", "קליפים",
   "hyperframes", "כרטיסים", "גרפיקה מונפשת", "highlights", "mid-form" or
@@ -60,12 +60,12 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    `WORK` holds the clean base, `fonts/Heebo-{Black,ExtraBold,SemiBold}.ttf`, `logo.png` (torn-paper logo), `v5_cta.png`, `v5_end.png`. `scripts/end_gfx.py` is the ep3 variant of the end card only.
 6. **One QA pass, then Telegram for approval.** Check a strip of 8 frames + `check_short.py`: hook strips 0–3 s, logo on every frame, name tag matches who is speaking, captions RTL and verbatim, panels don't hide captions or logo, CTA + arrow, navy end card with no caption leaking onto it, −14 LUFS / peak < −1 dB. Fix what fails once, then send the Short to Telegram for Nadav/Amitai's approval (`send_telegram.py video short.mp4 --caption …`, destination from `investing-bros-show`). Do not upload or publish before approval.
    Cover: see `investing-bros-short-covers`. **Default (since episode 1, short 01): a dedicated cover per short made with the Codex CLI** on Amitai's Mac, in the `investing-bros-brand` vertical Shorts layout (recipe: `investing-bros-brand` → references/prompts.md, "Codex backend"). Copy the result to the box, resize to 1080×1920 JPEG, check the Hebrew letter by letter at full and thumbnail size, and use it both as `-cover.jpg` and as the YouTube custom thumbnail. `make_cover.py` below is the fallback when Codex is unavailable.
-7. **Upload to Drive** — the episode folder's `shorts/` (find the folder by its `פרק N` prefix as in `investing-bros-show`; create `shorts/` inside it if missing). File names follow `investing-bros-show` → Naming:
-   - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `shorts/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
+7. **Upload to Drive** — every Short's video and its cover/thumbnail go in the `Shorts/` subfolder of the current episode's Drive folder (`investing-bros-show` → Drive tree, Shorts rule; find the episode folder by its `פרק N` prefix; create `Shorts/` inside it if missing). File names follow `investing-bros-show` → Naming:
+   - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `Shorts/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
    - **Phone-friendly copy first:** re-encode every MP4 you hand over or upload with `-c:v libx264 -profile:v main -pix_fmt yuv420p -movflags +faststart -brand mp42 -c:a aac` (iPhone/WhatsApp/Drive preview all play it).
-   - **Video via the box browser, not the connector:** the Drive connector and `UploadFile` label MP4s `application/mp4`, which Drive shows as "unsupported file". Upload videos by dragging them into the `shorts/` folder in the box browser signed in as the bot Drive account (open Drive links with `?authuser=N` for that account, or the default account hits a verify page).
+   - **Video via the box browser, not the connector:** the Drive connector and `UploadFile` label MP4s `application/mp4`, which Drive shows as "unsupported file". Upload videos by dragging them into the `Shorts/` folder in the box browser signed in as the bot Drive account (open Drive links with `?authuser=N` for that account, or the default account hits a verify page).
    - **Video (`.mp4`)** — the newer Drive connector takes a file up to **100 MB** (`investing-bros-show` → references/environment.md); `drive.sh put` uses the Drive API and is not bound by that cap. The browser path is still ≤10 MB per call, so for a browser upload first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
-   - Check: list `shorts/` and confirm every short has its `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
+   - Check: list `Shorts/` and confirm every short has its `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
 
 ## Approved Shorts format (Amitai's Cybercab Short is the base template)
 Reference analysis: [references/style-from-amitai.md](references/style-from-amitai.md). Every template element stays as in Amitai's Short; our additions (explainer panels) are layered on top and never restyle it.
@@ -191,12 +191,12 @@ Optional 5–10 min YouTube videos, each **one continuous standalone stretch** o
 - File as `mid-form/מיד-פורם-NN-<נושא>.mp4` with its title and description in `מיד-פורם-NN-<נושא>.txt`. Share a review copy compressed under 100 MB (transfer caps in `investing-bros-show` → references/environment.md). Nadav approves it before upload.
 
 ## Done when
-- `shorts/` has every short Nadav approved (episode 7 shipped 5), each with `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
+- `Shorts/` has every short Nadav approved (episode 7 shipped 5), each with `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
 - `mid-form/` has each highlight that was asked for, with its `.txt`.
 - `check_short.py` passed on every short.
 
 ## Hand back
-Send Amitai the `shorts/` folder link and, per short: where it is in the episode, its scores, its length (and why, if over 45 s), its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
+Send Amitai the `Shorts/` folder link and, per short: where it is in the episode, its scores, its length (and why, if over 45 s), its opening line, a suggested title, its cover's headline, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
 
 ## Never
 - Post anywhere public unless Amitai asks in chat for that post (the Telegram approval send in step 6 is the exception), and only to a destination listed in `investing-bros-show`.
