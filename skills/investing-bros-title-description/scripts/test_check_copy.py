@@ -220,3 +220,11 @@ def test_cli_spotify_flag(tmp_path, capsys):
     d.write_text(EP2_DESC, encoding="utf-8")
     assert main(["--description", str(d)]) == 0
     assert main(["--description", str(d), "--spotify"]) == 1
+
+
+def test_clickbait_is_whole_word_not_substring():
+    from check_copy import _has_word
+    assert not _has_word("יסודות ההשקעה", "סודות")
+    assert _has_word("הסודות של וול סטריט", "סודות")
+    assert _has_word("וסודות", "סודות")
+    assert _has_word("רווח 100% מובטח", "100%")

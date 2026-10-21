@@ -86,3 +86,5 @@ and the distinction between selected references and approved published deliverab
 - Treat decorative newsprint as real data, claims or quotations.
 - Make a blanket ban on digital details: tokenization deliberately uses subtle warm
   gold wireframes and pixels on the detached fragments, as documented in the rules.
+
+See `references/cover-rules.md` for Amitai's cover and thumbnail rules and the Mac/Codex fallback.

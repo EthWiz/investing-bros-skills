@@ -92,3 +92,5 @@ Prepare the artwork brief and 2–3 headline options following [references/thumb
 - Add direction marks to the `.txt` files (they're added only for RedCircle, at upload).
 - Save the copy as a Google Doc, or choose the final title yourself.
 - Skip `check_copy.py`, or edit it locally to make a draft pass. A wrong rule is a PR (show conventions → Working rules).
+
+When a new teaser is prepended, follow `references/chapters-after-teaser.md` for chapter times.

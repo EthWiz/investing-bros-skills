@@ -66,3 +66,25 @@ def test_filter_keeps_fractional_native_frame_rate_exact():
     }
     graph = build_filter(config, Timeline(PIECES, 24000 / 1001), "24000/1001", "/tmp/teaser.ass")
     assert "fps=24000/1001" in graph
+
+
+def test_piece_without_crop_is_full_frame_not_zoomed():
+    graph = build_filter({"fonts": "/tmp/fonts"}, Timeline(PIECES, 25), "25", "/tmp/t.ass")
+    assert "crop=" not in graph and "force_original_aspect_ratio=decrease" in graph
+
+
+def test_piece_can_carry_its_own_source_and_crop():
+    pieces = [dict(PIECES[0], source="amitai-cam.mp4", crop=[0, 0, 1920, 1080]), PIECES[1]]
+    timeline = Timeline(pieces, 25)
+    assert timeline.segments[0]["source"] == "amitai-cam.mp4"
+    graph = build_filter({"fonts": "/tmp/fonts"}, timeline, "25", "/tmp/t.ass")
+    assert "crop=1920:1080:0:0" in graph
+
+
+def test_caption_order_rejects_backwards_highlight():
+    from build_fullframe_teaser import check_caption_order
+    bad = {"cards": [[1.0, 1.4, "עלה [15%] השנה"], [1.4, 1.8, "[עלה] 15% השנה"]]}
+    good = {"cards": [[1.0, 1.4, "[עלה] 15% השנה"], [1.4, 1.8, "עלה [15%] השנה"]]}
+    assert check_caption_order(bad) and not check_caption_order(good)
+    with pytest.raises(ValueError):
+        Timeline([dict(PIECES[0], cards=[[10.0, 10.4, "a [b] c"], [10.4, 10.8, "[a] b c"]])], 25)

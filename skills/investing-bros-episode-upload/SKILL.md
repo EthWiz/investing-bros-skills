@@ -104,3 +104,5 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Upload video to Spotify, or change RedCircle show settings, without Amitai's decision.
 - Drive WhatsApp Web yourself.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
+
+Publish order: `references/publish-order.md` (RedCircle, Spotify, YouTube Spotify line, then Shorts).
