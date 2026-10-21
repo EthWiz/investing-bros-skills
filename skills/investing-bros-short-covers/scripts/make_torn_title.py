@@ -46,8 +46,10 @@ def torn_strip(text, color, size, angle=0, pad=(40, 30), seed=1, wght=900, fg=NA
     f = font(size, wght); d = ImageDraw.Draw(Image.new("L", (1, 1)))
     l, t, r, b = d.textbbox((0, 0), text, font=f, direction="rtl", language="he", anchor="la")
     w, h = int(r - l + 2 * pad[0]), int(b - t + 2 * pad[1])
-    p = _paper(w, h, color, seed, fringe=fringe); dd = ImageDraw.Draw(p)
+    p = _paper(w, h, color, seed, fringe=fringe); alpha = p.getchannel("A")
+    p = p.convert("RGB"); dd = ImageDraw.Draw(p)  # draw on RGB so glyph AA doesn't punch holes in alpha
     dd.text((pad[0] - l, pad[1] - t), text, font=f, fill=fg, direction="rtl", language="he", anchor="la")
+    p.putalpha(alpha)
     return p.rotate(angle, resample=Image.BICUBIC, expand=True)
 
 def shadow(img, off=(6, 8), blur=8, alpha=120):

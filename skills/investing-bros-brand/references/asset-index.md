@@ -13,6 +13,8 @@ targets, not the dimensions of these references. The solid video logo is a separ
 | assets/references/episode-07-gold.png | Square episode hierarchy, texture, hero/footer treatment | Selected working reference |
 | assets/references/episode-06-tokenization-digital.png | Physical certificate transitioning to digital tiles | Latest user-selected edit source, canonical tokenization example |
 | assets/references/episode-04-cloud-wars.png | Technology episode in the same engraving language | Selected working reference |
+| assets/references/shorts-illustrated-example.png | Existing cut-newspaper headline crop (1280×505) | Existing selected illustrated reference |
+| assets/references/shorts-real-frame-layout.jpg | Borderless photo layout: top-left logo, title, centred episode tab | AI-assisted layout reference only; never a source face/background |
 | assets/logo-solid.png | Solid torn-paper wordmark for live video | Approved production asset; navy letters remain opaque |
 | assets/references/teaser-v5-amitai.jpg | Full-frame teaser on a bright wall | Approved v5 production reference |
 | assets/references/teaser-v5-nadav.jpg | Full-frame teaser with second host | Approved v5 production reference |
@@ -31,4 +33,6 @@ relevant. Use the user's exact selected image for any edit request.
 - Good: a topic illustration changes while masthead, hierarchy and host credit persist.
   Bad: applying the same gold-bar illustration to every investment topic.
 - Good: modern bold Hebrew and generous spacing.
-  Bad: tiny decorative subtitle, antique type or the misspelling אמיתי.
+  Bad: tiny decorative subtitle, antique type or host names that disagree with `investing-bros-show`.
+| assets/references/shorts-real-frame-nadav-ep8.png | v2 real-frame Short cover, Nadav, ep8 ("כשהריבית / עולה") | Approved layout reference ([Drive](https://drive.google.com/drive/folders/1Z2O0iYmq7XaZKSDQY6-LSnaux6INs7Ub)) |
+| assets/references/shorts-real-frame-amitai-ep8.png | v2 real-frame Short cover, Amitai, ep8 | Approved layout reference |

@@ -1,40 +1,66 @@
 ---
 name: investing-bros-short-covers
 description: >-
-  Make the vertical (1080×1920) cover image for an Investing Bros / אחים להשקעות
-  Short in the approved "cut newspaper" style: torn-paper title strips, navy
-  textured background, gold engraved illustration over a mustard sun. Use when
-  asked for a Short cover, "קאבר לשורט", "תמונת שער לשורט" or a Shorts thumbnail.
+  Produce two vertical (1080×1920) Investing Bros / אחים להשקעות Short covers:
+  the existing illustrated cut-newspaper theme and a natural podcast video-frame
+  theme with real speakers. Use for Short covers, קאבר לשורט, תמונת שער לשורט,
+  Shorts thumbnails, or selecting a real frame without editing the speaker's face.
 ---
-# Investing Bros Short covers (vertical)
+# Investing Bros Short covers
 
-Load `investing-bros-brand` first (palette, logo, ownership). This skill owns only the vertical Short cover layout; long-form thumbnails stay in the brand skill.
-Reference (Amitai's approved example): [assets/amitai-short-cover-example.png](assets/amitai-short-cover-example.png).
+## When to use
+Make covers for a new Short, or revise the specific variant Amitai identifies.
+Load `investing-bros-show` and `investing-bros-brand` first. Brand owns all visual
+specifications, including both cover styles in `references/shorts-covers.md`.
+This skill owns cover production and consumes those specifications.
 
-## Layout (1080×1920, top to bottom)
-- **Background:** dark navy (~#111B30) with subtle paper/print texture.
-- **Title — cut-newspaper torn strips** (upper third, inside the centre 1080×1080 safe square):
-  - Line 1 on a **cream** (#F6EEDE) strip, line 2 on a **mustard** (#F5B71F) strip; the strips **overlap slightly** and are **slightly tilted** in opposite directions (≈ ±1–2°).
-  - **Very heavy Rubik Black (wght 900)**, navy text, filling the strip (tight padding, big type).
-  - **Rough torn edges with a white fringe** (paper fibre), soft drop shadow.
-  - White **"פרק X" pill** sitting on the bottom edge of the mustard strip, navy text.
-- **Illustration:** gold/engraved (etching, line-hatched) illustration relevant to the Short's topic (e.g. robotaxi, robot, data-center satellite) over a large **mustard sun** with rays, centre/lower half.
-- **No hosts' name strip** (Amitai, Oct 2026: removed; it was the old "עם אמיתי ונדב רסקין" strip).
-- **Logo:** podcast logo **bottom-right**, high contrast against the art.
+## Inputs
+Use the episode number, Short identifier, faithful headline, clean source video,
+selected illustrated series reference and existing Short notes. Reuse session values.
 
-Follow the cover rules in `investing-bros-brand/references/cover-rules.md` (elegant but engaging, one bold main visual, topic props, Mac/Codex fallback).
-- Title = the Short's hook (faithful paraphrase, ≤ 2 lines, ≤ ~14 chars a line). No numbers that aren't in the clip.
-
-## Process
-1. **AI-generate the art text-free.** Prompt for: vertical 9:16, navy textured background, gold engraved-style illustration of <topic> over a mustard sun, empty space at the top third for a title and bottom-right for the logo, **no text, no letters, no logos**. Hebrew from image models is unreliable — never keep generated text.
-2. **Overlay the exact Hebrew text with scripts** (`scripts/make_torn_title.py`, PIL + raqm, RTL):
+## Steps
+1. Read `investing-bros-brand` → `references/shorts-covers.md`. Create both styles
+   for each new Short unless Amitai explicitly requests one. For a revision, edit
+   only the requested variant. Preserve the existing illustrated style.
+2. **Illustrated cover:** no host-name strip; logo bottom-right (Amitai, Oct 2026). Retain the text-free artwork generation and exact Hebrew
+   overlay flow. Use `scripts/make_torn_title.py` helpers (PIL + raqm, RTL):
    ```python
    from make_torn_title import title_block, torn_strip, shadow, CREAM
-   tb = title_block("דאטה סנטרים", "בחלל?", "פרק 3", width=1010)   # cream+mustard strips + white pill
+   tb = title_block("דאטה סנטרים", "בחלל?", "פרק 3", width=1010)
    ```
-   Then composite the logo bottom-right (no name strip). `python3 scripts/make_torn_title.py ART.jpg OUT.jpg` reproduces the old ep3 cover (it still has the retired credit strip and bottom-left logo; drop both) (it also paints over old text regions — adjust the boxes for new art).
-   `RUBIK` points at the box font path; change it if Rubik lives elsewhere (Rubik variable font from google/fonts).
-3. **Check:** view at ~200 px wide — title readable, Hebrew RTL with "?" on the left, pill not clipped, nothing important outside the centre square, logo bottom-right and readable, no name strip. Save JPEG q≈92 as `<short>-cover.jpg` and upload it next to its Short in the current episode's Drive `Shorts/` folder (create it if missing; `investing-bros-show` → Drive tree, Shorts rule).
+   Its CLI `python3 scripts/make_torn_title.py ART.jpg OUT.jpg` reproduces the old
+   episode-3 example, including hardcoded copy and paint-over regions; do not use
+   those defaults for another topic. `RUBIK` points at the box font path. Follow
+   the show's script-change rules when parameterization is needed. The existing
+   example stays at [assets/amitai-short-cover-example.png](assets/amitai-short-cover-example.png);
+   its design specification and canonical copy are now in the brand skill.
+3. **Real-frame cover:** select an actual frame and alternate the featured host
+   according to the brand reference. Composite graphic layers without regenerating
+   or retouching the photograph. Render with `scripts/make_real_frame_cover.py FRAME.jpg OUT.jpg "line1" "line2" "פרק N" [--face-cx 0.5]`
+   (v2 torn-strip hook; spec in brand `shorts-covers.md` → v2 measurements), one per host.
+   Use the brand's layout and QA, not the legacy `make_cover.py` layout. Record source video, timestamp/timebase, host and crop in
+   `youtube-שורט-NN.md`. If clean footage or a suitable compositor is unavailable,
+   report the missing input/capability; never substitute a synthetic face.
+4. Inspect both outputs at full and thumbnail size and in grid crops using the
+   brand checks. Verify actual dimensions and exact Hebrew. Export JPEGs using
+   `investing-bros-show` → Naming, then file both beside the Short in the current
+   episode's `Shorts/` folder. Keep existing variants; do not overwrite one with
+   the other. Record the selected publishing variant in the existing notes.
 
 ## Done when
-- `<short>-cover.jpg` (1080×1920 JPEG) sits next to each Short in the episode's `Shorts/` folder, with the exact Hebrew hook title, `פרק X` pill and bottom-right logo, no name strip, checked at ~200 px wide.
+- Both 1080×1920 JPEGs named in `investing-bros-show` sit beside each new Short in
+  its episode's `Shorts/` folder, and both pass the brand checks.
+- The existing Short notes identify both cover paths, the photographic host and
+  source timestamp/timebase, any alternation exception and selected variant
+  (or pending selection). Missing clean footage is reported as incomplete.
+
+## Hand back
+Show the two covers together, labelled illustrated and real-frame, with the latter's
+host and source timestamp. Include file links and any unresolved source/QA issue.
+
+## Never
+- Replace the existing illustrated deliverable with the photographic variant.
+- Alter a speaker's eyes, face, expression or room to improve a real-frame cover.
+- Treat an AI-assisted layout reference as an authentic podcast still.
+- Claim that documenting a layout implements a renderer, or bypass the show's
+  script-change rules when a required capability is missing.

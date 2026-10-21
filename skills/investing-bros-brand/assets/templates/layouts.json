@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 3,
   "coordinate_system": "normalized top-left x,y,width,height",
   "palette": {
     "navy": "#09243B",
@@ -277,6 +277,41 @@
           1470
         ]
       }
+    },
+    "shorts-real-frame": {
+      "size": [
+        1080,
+        1920
+      ],
+      "status": "user-selected-design",
+      "photo_source": "Actual podcast video frame; preserve face, expression and room. No generative editing.",
+      "zones": {
+        "masthead": [
+          0.06,
+          0.04,
+          0.22,
+          0.09
+        ],
+        "photo": [
+          0,
+          0,
+          1,
+          1
+        ],
+        "headline": [
+          0.12,
+          0.6,
+          0.76,
+          0.13
+        ],
+        "number": [
+          0.4,
+          0.73,
+          0.2,
+          0.045
+        ]
+      },
+      "note": "Adjust crop and title together to clear eyes/mouth. Cream then mustard torn headline strips; cream torn episode tab centred immediately below. No frame, silhouette outline, footer, company label or host credit. Keep headline and tab in centre square y=420–1500. See references/shorts-covers.md."
     }
   }
 }

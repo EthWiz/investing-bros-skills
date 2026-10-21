@@ -49,12 +49,17 @@ short right-angle links. Subtle warm edge light is allowed only here. No cyan ne
 or global holographic background. Use episode-06-tokenization-digital.png.
 
 ## Localized edit
+For illustrated artwork only; real-frame Shorts require deterministic overlays and
+untouched source photographs as specified in [Shorts covers](shorts-covers.md).
 Edit this EXACT selected image. Change ONLY {REQUESTED_CHANGE_AND_REGION}. Preserve
 {INVARIANTS}, all other composition and text. Correct credit if explicitly requested
 or known wrong: 'עם אמיתי ונדב רסקין'. Do not redesign unrelated elements. Maintain
 original aspect ratio and transparency unless the user asks otherwise.
 
-## Vertical Shorts cover
+## Vertical Shorts cover: illustrated variant
+Create this alongside the real-frame variant described in [Shorts covers](shorts-covers.md).
+The prompt below is the earlier top-logo illustrated variant; retain the selected
+series reference, including the cut-newspaper variant when that is in use.
 Approved on episode 1 short 1. Unchanged by the episode 3 episode-cover rule (show mark
 at top and host strip stay here until Amitai says otherwise). Attach the episode's approved square cover and
 episode-07-gold.png as style references, named in the prompt by their file names.
@@ -84,6 +89,8 @@ Exact text: {COPY}. Adapt illustration placement to this aspect ratio. Label thi
 proposed format adaptation until reviewed. Do not merely stretch a square image.
 
 ## Codex backend (Grokbot on Amitai's Mac)
+Use this generation route for illustrated artwork or separate paper assets only,
+not for the real-frame photograph or its final composite.
 When Grokbot makes artwork and Amitai's Mac (machine
 566a74b2-614d-458f-be63-660743243124) is connected, run the prompt through Codex there
 with the device shell (Shell with that machineId); otherwise use Grokbot's own image

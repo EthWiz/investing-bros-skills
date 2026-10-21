@@ -34,14 +34,14 @@ ffmpeg -i cover-פרק-N.png -filter_complex \
 A headline-right / illustration-left wide composition (the old proposed adaptation)
 was rejected for episode 3 as not the regular cover structure.
 
-## Vertical Shorts cover (proposed adaptation)
-Compact show mark above a short question, large central topic illustration and number.
-Keep essential elements in the central area with generous top/bottom clearance.
-Use real video frames only if supplied or sourced with authorization. Do not invent
-host faces. Preview in the target platform before locking placement.
-Keep the headline inside the centre square (1080×1080 at y=420 of 1080×1920) so 1:1
-and 4:5 grid crops still show it. Episode 1 short 1 (Cybercab) is the first approved
-generated example; its layout is the Vertical Shorts cover prompt.
+## Vertical Shorts covers (two required styles)
+For every new Short, produce both the existing illustrated cover and the real-frame
+speaker cover. Read [Shorts cover specifications](shorts-covers.md) for both layouts,
+source-frame selection, host alternation and QA. Preserve an existing series' chosen
+illustrated layout; its new photographic partner uses the actual video background,
+top-left logo, two torn headline strips and a centred torn episode tab below them.
+Use `shorts-real-frame` in the JSON for photographic composition guides. The old
+`shorts-vertical` entry describes the earlier illustrated adaptation only.
 
 ## Discussion card (proposed adaptation)
 Small masthead, one short question and a restrained subject detail. A discussion

@@ -42,7 +42,8 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Title options (episode root) | `כותרות-פרק-N.txt` | `כותרות-פרק-8.txt` |
 | Description (episode root) | `תיאור-פרק-N.txt` | `תיאור-פרק-8.txt` |
 | Short (in `Shorts/`) | `שורט-NN-<נושא>.mp4` | `שורט-01-סוויפט.mp4` |
-| Short cover (in `Shorts/`) | `שורט-NN-<נושא>-cover.jpg` (1080×1920) | `שורט-01-סוויפט-cover.jpg` |
+| Illustrated Short cover (in `Shorts/`) | `שורט-NN-<נושא>-cover.jpg` (1080×1920) | `שורט-01-סוויפט-cover.jpg` |
+| Real-frame Short cover (in `Shorts/`) | `שורט-NN-<נושא>-cover-photo-<host>.jpg` (`host` = `amitai` or `nadav`, 1080×1920) | `שורט-01-סוויפט-cover-photo-amitai.jpg` |
 | Short captions (in `Shorts/`) | `שורט-NN-<נושא>.srt` | `שורט-01-סוויפט.srt` |
 | Short YouTube notes (in `Shorts/`) | `youtube-שורט-NN.md` | `youtube-שורט-01.md` |
 | Mid-form (in `mid-form/`) | `מיד-פורם-NN-<נושא>.mp4` + `.txt` (title, description) | `מיד-פורם-01-זהב.mp4` |
@@ -76,13 +77,13 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     brief/       pre-recording docs (prep archive; keep)                     ← episode-preparation
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
-    Shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
+    Shorts/      every short: .mp4 + both covers + .srt + youtube-שורט-NN.md      ← shorts
     deep-dive/   standalone deep-dive video + .txt + thumb, every episode          ← deep-dive
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
 ```
 
-**Shorts rule (all episodes):** every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
+**Shorts rule (all episodes):** every Short's video (`.mp4`) and both cover variants (`-cover.jpg` and `-cover-photo-<host>.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
 
 The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
 

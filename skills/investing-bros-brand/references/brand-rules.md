@@ -8,9 +8,9 @@ like an independent financial journal. Avoid urgency, trading cues and wealth pr
 ## Exact copy
 - Show: `אחים להשקעות`
 - Main wordmark: `אחים` on cream above `להשקעות` on mustard.
-- Host credit: `עם אמיתי ונדב רסקין` (show cover, Shorts covers; not on episode covers since episode 3)
+- Host credit: `עם אמיתי ונדב רסקין` (show cover only; omit from all Shorts covers and episode covers)
 - Individual hosts: `אמיתי רסקין`, `נדב רסקין`
-- Amitai is four Hebrew letters: א מ ת י. The extra yod in אמיתי is wrong here.
+- Resolve host spellings from `investing-bros-show`; it is authoritative.
 - Number label: `פרק {N}`. Never auto-increment or infer N for a new episode.
 - Established examples: 7 `למה דווקא זהב?`; 6 `וול סטריט עוברת לבלוקצ׳יין`;
   4 `מלחמת העננים`.
@@ -42,6 +42,11 @@ paper shadow, up to ~1.2° tilt. Captions stay the screen-tested motion style: w
 with the current word in `#F5B71F`. Hooks are as short as possible: one idea, ideally six
 words or fewer, two lines (`למה לסייברקאב` / `אין הגה?`, not `למה לסייברקאב אין הגה ורק
 שני מקומות?`). The Short's cover uses the same two-strip headline.
+
+## Real-frame Shorts exception
+For real-frame Shorts covers, apply the palette and paper treatment to overlays only.
+Preserve the actual speaker and room photograph; do not apply the engraved subject,
+navy background or host-credit rules. Follow [both cover styles](shorts-covers.md).
 
 ## Typography
 Use heavy contemporary Hebrew sans-serif for titles, with compact but open counters.

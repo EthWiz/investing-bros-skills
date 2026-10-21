@@ -38,9 +38,14 @@ legacy styling is an explicit compatibility choice, not the default for new artw
 3. Read [layouts](references/layouts.md) and load the matching entry in
    `assets/templates/layouts.json`. These are compositional specifications, not layered
    Canva/Figma files. Square covers have visual references; the full-frame episode
-   teaser is an approved rendered layout owned by `investing-bros-video`; other
-   non-square formats remain proposed adaptations.
-4. Read [prompt templates](references/prompts.md). Fill the topic, exact Hebrew copy,
+   teaser is an approved rendered layout owned by `investing-bros-video`. The two
+   Shorts cover styles have user-selected design guidance; other non-square formats
+   remain proposed adaptations.
+4. For Shorts, read [both cover styles](references/shorts-covers.md) and create the
+   illustrated and real-frame variants. Preserve real-frame photographs through
+   deterministic compositing; the image-generation steps below apply to illustrated
+   artwork and separate graphic assets, never to speaker photos.
+   Read [prompt templates](references/prompts.md). Fill the topic, exact Hebrew copy,
    number, format and subject. Use the built-in image-generation tool for raster
    creation/edits. Do not substitute code-drawn illustrations. Read the available
    imagegen skill for tool invocation. Supply only relevant image references.
@@ -67,6 +72,8 @@ legacy styling is an explicit compatibility choice, not the default for new artw
   the paths in `investing-bros-show` (for example `promo/` or `Shorts/`).
 - Both the square cover and the 16:9 thumbnail are in `promo/` and in the episode's
   Drive folder.
+- Every requested new Short has both illustrated and real-frame covers in `Shorts/`,
+  with the real source timestamp and host recorded in its existing notes.
 - The artifact register records actual output paths, version, status and source refs.
 - For prompt-only requests, the filled prompt is delivered; no image is implied.
 - Brand changes update this skill and pass review before becoming canonical.
@@ -82,7 +89,7 @@ and the distinction between selected references and approved published deliverab
 ## Never
 - Revert to glossy cinematic finance, neon blue, 3D metallic headlines or busy market charts.
 - Infer actual font files, editable layers or isolated logos from a flattened PNG.
-- Spell Amitai as אמיתי or reverse the established host credit order.
+- Override the host spelling or credit order in `investing-bros-show`.
 - Treat decorative newsprint as real data, claims or quotations.
 - Make a blanket ban on digital details: tokenization deliberately uses subtle warm
   gold wireframes and pixels on the detached fragments, as documented in the rules.
