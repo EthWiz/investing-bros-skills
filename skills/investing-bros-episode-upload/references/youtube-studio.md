@@ -1,5 +1,7 @@
 # YouTube Studio checklist
 
+The preferred upload path is the YouTube Data API ([youtube-api.md](youtube-api.md)); this checklist is the fallback for uploads and is always used for the steps the API leaves to Studio (visibility change after Amitai's OK, Related video, captions, chapters check).
+
 Use the browser profile for the Editor account named in `investing-bros-show`.
 
 ## Before selecting a file
