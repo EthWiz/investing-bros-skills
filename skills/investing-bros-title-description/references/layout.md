@@ -54,6 +54,18 @@ Each line is laid out right-to-left or left-to-right by its **first letter**. A 
 
 The video episode has a cold open + intro (~28 s) in front. Its YouTube description (`video/תיאור-פרק-N-youtube.txt`, made by `investing-bros-video`) offsets every chapter by that length; `תיאור-פרק-N.txt` stays on the edited-audio timeline.
 
+The YouTube copy also carries a Spotify line between the disclaimer and the chapters (as on episode 4), Hebrew first:
+
+```
+אין כאן המלצת השקעה. רק שיחה.
+
+האזינו בספוטיפיי: https://open.spotify.com/episode/<id>
+
+00:00 טעימה מהפרק
+```
+
+Before Spotify lists the episode, use the show link `https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk`; `investing-bros-episode-upload` replaces it with the episode link once Spotify has it **(warned with `--youtube`: missing line, or still the show link)**. The RedCircle copy has no Spotify line.
+
 ## Past episodes (for tone and length)
 
 | Ep | Title as written | Note |

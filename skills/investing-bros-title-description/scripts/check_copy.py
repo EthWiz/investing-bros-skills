@@ -9,6 +9,8 @@ Usage:
 Input is the plain text of the episode's title and description files (the .txt files
 in the episode's Drive folder). --spotify adds the rules Spotify needs to show chapters
 (the RedCircle description feeds Spotify): MM:SS timestamps, 30 s apart, short labels.
+--youtube (for video/תיאור-פרק-N-youtube.txt) warns when the Spotify line is missing or
+still points at the show instead of the episode.
 Prints one line per problem: "error: ..." must be fixed, "warn: ..." needs a judgement call.
 Exit code 1 if there is any error, else 0.
 """
@@ -47,6 +49,8 @@ LATIN_RE = re.compile(r"[A-Za-z]")
 MIN_CHAPTER_GAP = 10  # seconds; YouTube ignores chapters shorter than this
 SPOTIFY_MIN_GAP = 30  # seconds between chapter starts on Spotify
 SPOTIFY_LABEL_MAX = 40
+SPOTIFY_LINE_RE = re.compile(r"open\.spotify\.com/(episode|show)/")
+SPOTIFY_SHOW = "https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk"
 SPOTIFY_TIME_RE = re.compile(r"^(\d{2}:)?\d{2}:\d{2} ")  # MM:SS or HH:MM:SS, zero-padded
 BIDI_FIX = ("start it with a Hebrew word; a line that starts with English or a number turns "
             "left-to-right in a Hebrew description, and its timestamp, numbers and words land out of order")
@@ -173,7 +177,7 @@ def _padded(t: int) -> str:
     return f"{h:02d}:{m:02d}:{s:02d}" if h else f"{m:02d}:{s:02d}"
 
 
-def check_description(text: str, spotify: bool = False) -> list:
+def check_description(text: str, spotify: bool = False, youtube: bool = False) -> list:
     out = []
     _common(text, "description", out)
     lines = [l.strip() for l in text.splitlines()]
@@ -186,6 +190,19 @@ def check_description(text: str, spotify: bool = False) -> list:
 
     d = nonblank.index(DISCLAIMER)
     intro, chapters = nonblank[:d], nonblank[d + 1:]
+    # Link lines (Spotify) sit between the disclaimer and the chapters.
+    links = []
+    while chapters and SPOTIFY_LINE_RE.search(chapters[0]):
+        links.append(chapters.pop(0))
+    for l in links:
+        if not HEBREW_RE.match(l.lstrip("🎧 ")[:1] or "a"):
+            out.append(f"error: description: link line '{l[:30]}...': {BIDI_FIX}")
+    if youtube:
+        if not links:
+            out.append("warn: description: no Spotify line after the disclaimer - add "
+                       f"'האזינו בספוטיפיי: <episode link>' (show link {SPOTIFY_SHOW} until the episode is on Spotify)")
+        elif not any("/episode/" in l for l in links):
+            out.append("warn: description: Spotify line uses the show link - swap in the episode link once Spotify lists it")
 
     if not intro:
         out.append("error: description: no intro paragraph before the disclaimer")
@@ -251,6 +268,8 @@ def main(argv=None) -> int:
     ap.add_argument("--episode", type=int, help="episode number as Amitai stated it")
     ap.add_argument("--spotify", action="store_true",
                     help="also apply Spotify's chapter rules (use for the RedCircle copy)")
+    ap.add_argument("--youtube", action="store_true",
+                    help="YouTube episode copy: warn when the Spotify line is missing or is the show link")
     a = ap.parse_args(argv)
     if not a.titles and not a.description:
         ap.error("give --titles and/or --description")
@@ -260,7 +279,7 @@ def main(argv=None) -> int:
             problems += check_titles(f.read(), a.episode)
     if a.description:
         with open(a.description, encoding="utf-8") as f:
-            problems += check_description(f.read(), spotify=a.spotify)
+            problems += check_description(f.read(), spotify=a.spotify, youtube=a.youtube)
     for p in problems:
         print(p)
     errors = sum(p.startswith("error:") for p in problems)

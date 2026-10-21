@@ -220,3 +220,26 @@ def test_cli_spotify_flag(tmp_path, capsys):
     d.write_text(EP2_DESC, encoding="utf-8")
     assert main(["--description", str(d)]) == 0
     assert main(["--description", str(d), "--spotify"]) == 1
+
+
+YT_DESC = EP2_DESC.replace("רק שיחה.\n", "רק שיחה.\n\nהאזינו בספוטיפיי: https://open.spotify.com/episode/40IwtQmwHA2CCIz434f6gn\n", 1)
+
+
+def test_spotify_line_before_chapters_is_allowed():
+    assert errors(check_description(YT_DESC)) == []
+
+
+def test_youtube_warns_without_spotify_line():
+    assert any("no Spotify line" in p for p in check_description(EP2_DESC, youtube=True))
+    assert not any("Spotify line" in p for p in check_description(YT_DESC, youtube=True))
+
+
+def test_youtube_warns_on_show_link_placeholder():
+    show = YT_DESC.replace("episode/40IwtQmwHA2CCIz434f6gn", "show/4fREAemgQDMWIUK58N5Jjk")
+    assert errors(check_description(show, youtube=True)) == []
+    assert any("show link" in p for p in check_description(show, youtube=True))
+
+
+def test_spotify_line_must_start_hebrew():
+    bad = YT_DESC.replace("האזינו בספוטיפיי:", "Spotify")
+    assert errors(check_description(bad))

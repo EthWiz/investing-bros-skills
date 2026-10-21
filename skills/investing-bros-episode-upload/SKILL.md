@@ -59,13 +59,13 @@ Follow [the Studio checklist](references/youtube-studio.md). In particular, swit
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
 brand channel before selecting files. Upload as **Private** and choose
 **No, it's not made for kids**.
-- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
+- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks). It must include the `האזינו בספוטיפיי:` line (show link until step 5 swaps in the episode link).
 - **Shorts** (`Shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 4. Publish (only after Amitai's OK in chat)
-Publish the RedCircle draft, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
+Order: RedCircle publish → Spotify ingests it (a few hours) → the YouTube description gets the Spotify episode link. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Publish the RedCircle draft, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
 
 ### 5. Check how it renders
 - **YouTube**: open the public watch page. Every description line right-aligned with its timestamp on the right, times in order, chapters on the progress bar. A wrong line almost always starts with English; reword it to start with Hebrew.
@@ -74,6 +74,7 @@ Publish the RedCircle draft, and switch the YouTube uploads he named to Public (
   - the episode is there, with the exact title (no en dash, `?` at the end of the sentence)
   - the description lines read right-to-left and nothing visible is scrambled
   - chapters show in the Spotify app (episode page → chapters)
+  - **then link it on YouTube**: copy the Spotify episode URL (`https://open.spotify.com/episode/<id>`, without `?si=`), edit the public episode's YouTube description to replace the show link on the `האזינו בספוטיפיי:` line with it, and do the same on that episode's shorts. Update `video/תיאור-פרק-N-youtube.txt` and each `youtube-שורט-NN.md` to match. Editing a Public video's description is part of the approved publish, not a new public action.
 
   Wrong on Spotify but right on RedCircle: tell Amitai what you saw (screenshot) and open a GitHub issue on the repo; don't change show settings or re-publish to fix it.
 
@@ -84,13 +85,14 @@ Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group
 
 ## Done when
 - Before the OK: RedCircle draft saved and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
-- After the OK: live on RedCircle and YouTube, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
+- After the OK: live on RedCircle and YouTube, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue); the YouTube episode and its shorts link the Spotify **episode** URL, not the show.
 - WhatsApp sends confirmed, when asked.
 
 ## Hand back
 - RedCircle draft URL (or public URL), title used, episode number
 - YouTube links, with each video's visibility
 - The render checks: Spotify, RedCircle, YouTube, with anything that looked wrong
+- The Spotify episode URL, and confirmation it replaced the show link in the YouTube descriptions (or that Spotify hasn't listed it yet, and when to retry)
 - Upload retries or blockers
 - WhatsApp send status, when asked
 

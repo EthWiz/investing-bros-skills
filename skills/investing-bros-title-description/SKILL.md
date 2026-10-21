@@ -51,6 +51,7 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 Three blocks, blank line between them:
 1. **Intro.** One paragraph, about 450 characters or less, starting with a Hebrew word. Open with a question when one fits, then the deep dive, the main news and the investment ideas, only as discussed.
 2. **Disclaimer**, exactly: `אין כאן המלצת השקעה. רק שיחה.`
+   **YouTube copy only** (`video/תיאור-פרק-N-youtube.txt`): after the disclaimer, a blank line and `האזינו בספוטיפיי: <Spotify episode link>` (Hebrew first so it stays right-to-left; same wording as the shorts; no emoji). Until Spotify lists the episode, use the show link `https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk`; `investing-bros-episode-upload` swaps in the episode link after publishing. The RedCircle copy (`תיאור-פרק-N.txt`) has no Spotify line.
 3. **Chapters**, time first and zero-padded, from `00:00`, on the edited timeline (`edited = raw − start`). 8–14 chapters, at least 30 seconds apart, labels under 40 characters. **Every label starts with a Hebrew word** (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`), or the line flips left-to-right on YouTube and Spotify.
 
 When a finished YouTube video has a teaser and intro before that edited audio,
@@ -64,6 +65,7 @@ Save as `כותרות-פרק-N.txt` and `תיאור-פרק-N.txt` (UTF-8, plain 
 ```bash
 python3 scripts/check_copy.py --titles כותרות-פרק-N.txt --description תיאור-פרק-N.txt --episode N --spotify
 ```
+For the YouTube copy, run `check_copy.py --description video/תיאור-פרק-N-youtube.txt --youtube`; it warns when the Spotify line is missing or is still the show link.
 Fix every `error:` and rerun until it prints `0 error(s)`. Fix each `warn:` or mention it in the hand-back. Then fact-check every number and claim in both files; anything you can't source comes out.
 
 ### 5. Save to Drive and ask Amitai to pick
