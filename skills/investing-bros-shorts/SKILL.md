@@ -186,7 +186,7 @@ Kept as on main for rebuilding older exports; the approved format above replaces
 
 ## Mid-form highlights
 Optional 5–10 min YouTube videos, each **one continuous standalone stretch** of the episode on one engaging subject (episode 7: "למה זהב?" 11:57–19:11, about 7 min). Not a montage. Elsewhere these are called highlights or clips.
-- The deep dive itself is **not** a mid-form: every episode's deep dive is its own video via `investing-bros-deep-dive` (required). Mid-form is for other stretches, e.g. an investment idea. Pick 1–3 with Amitai.
+- Full standalone segments (deep dive every episode, investment ideas, interviews, explainers) are segment videos via `investing-bros-segment-video`, not mid-form. Mid-form is for other stretches, e.g. an investment idea. Pick 1–3 with Amitai.
 - Start and end on sentence boundaries (`find_cuts.py`). Leave out any part that is being re-recorded.
 - **Title** with a few English keywords. **Description:** hook, link to the full episode, the disclaimer. Run `check_copy.py` from `investing-bros-title-description` on the description (`--description`).
 - File as `mid-form/מיד-פורם-NN-<נושא>.mp4` with its title and description in `מיד-פורם-NN-<נושא>.txt`. Share a review copy compressed under 100 MB (transfer caps in `investing-bros-show` → references/environment.md). Nadav approves it before upload.

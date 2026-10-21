@@ -9,6 +9,6 @@ The overall order after Amitai's OK. Detail in `../SKILL.md` step 4.
 3. **Spotify line in YouTube** - put `האזינו בספוטיפיי: <episode link>` (no `?si=`) in the
    episode description after the disclaimer, before chapters. Use the show link if Spotify
    hasn't listed it yet and swap it later; `check_copy.py --youtube` warns if the line is missing.
-4. **Deep-dive video** - Public after the full episode (with Amitai's OK); its description links
-   the episode, and the episode description gets `הצלילה לעומק כסרטון נפרד: <URL>`. See `investing-bros-deep-dive`.
+4. **Segment videos** (deep dive every episode) - Public after the full episode (with Amitai's OK); each description links
+   the episode, and the episode description gets a line per segment, e.g. `הצלילה לעומק כסרטון נפרד: <URL>`. See `investing-bros-segment-video`.
 5. **Then the Shorts** - with the episode's YouTube and Spotify links.
