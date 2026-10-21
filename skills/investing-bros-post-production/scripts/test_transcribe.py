@@ -41,4 +41,5 @@ def test_faster_whisper_honours_threads_and_pts(monkeypatch, tmp_path):
     )
     assert transcribe.main() == 0
     assert calls["model"]["cpu_threads"] == 7
+    assert calls["model"]["compute_type"] == "float32"
     assert PTS_FILTER in calls["ffmpeg"]

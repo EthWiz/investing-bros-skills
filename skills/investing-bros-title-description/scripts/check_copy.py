@@ -73,6 +73,15 @@ def _visible_len(s: str) -> int:
     return sum(1 for ch in s if unicodedata.category(ch) not in ("Cf", "Mn"))
 
 
+def _has_word(text: str, word: str) -> bool:
+    """Whole-word match that allows Hebrew prefix letters (ו/ה/ב/ל/מ/ש/כ) but not
+    other letters, so 'סודות' doesn't flag 'יסודות' (fundamentals)."""
+    if not HEBREW_RE.match(word[0]):
+        return word in text
+    pat = r"(?<![\u05D0-\u05EA])[ובלמשהכ]{0,3}" + re.escape(word) + r"(?![\u05D0-\u05EA])"
+    return re.search(pat, text) is not None
+
+
 def _common(text: str, where: str, out: list):
     for ch, name in EM_DASHES.items():
         if ch in text:
@@ -87,7 +96,7 @@ def _common(text: str, where: str, out: list):
     if "!" in text:
         out.append(f"error: {where}: '!' - keep the tone calm")
     for w in CLICKBAIT:
-        if w in text:
+        if _has_word(text, w):
             out.append(f"error: {where}: clickbait/hype wording '{w}'")
 
 

@@ -243,3 +243,11 @@ def test_youtube_warns_on_show_link_placeholder():
 def test_spotify_line_must_start_hebrew():
     bad = YT_DESC.replace("האזינו בספוטיפיי:", "Spotify")
     assert errors(check_description(bad))
+
+
+def test_clickbait_is_whole_word_not_substring():
+    from check_copy import _has_word
+    assert not _has_word("יסודות ההשקעה", "סודות")
+    assert _has_word("הסודות של וול סטריט", "סודות")
+    assert _has_word("וסודות", "סודות")
+    assert _has_word("רווח 100% מובטח", "100%")

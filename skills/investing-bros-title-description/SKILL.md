@@ -56,6 +56,9 @@ Three blocks, blank line between them:
 
 When a finished YouTube video has a teaser and intro before that edited audio,
 re-time the copy with `scripts/find_offset_and_shift.py VIDEO AUDIO DESCRIPTION OUT`.
+When a section was cut from the middle of the episode, move the later chapters back with
+`python3 scripts/shift_after_cut.py DESCRIPTION --cut A-B > shifted.txt` (cut times on the
+description's timeline; a chapter inside the cut snaps to the cut point).
 It finds the body by audio correlation, adds `00:00 טעימה מהפרק`, and shifts every
 chapter. A score below 0.5 means the edits differ; stop and transcribe the video.
 `--offset S` uses a separately verified offset.
@@ -94,3 +97,5 @@ Prepare the artwork brief and 2–3 headline options following [references/thumb
 - Add direction marks to the `.txt` files (they're added only for RedCircle, at upload).
 - Save the copy as a Google Doc, or choose the final title yourself.
 - Skip `check_copy.py`, or edit it locally to make a draft pass. A wrong rule is a PR (show conventions → Working rules).
+
+When a new teaser is prepended, follow `references/chapters-after-teaser.md` for chapter times.

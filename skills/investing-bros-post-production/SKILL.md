@@ -74,14 +74,19 @@ named `תמלול - פרק N` in the episode's `אחים להשקעות > פרק
 
 ### 5. Build the cut list
 ```bash
-python3 scripts/find_bounds.py "$EP/transcript/segments.json"             # suggested start and end
+python3 scripts/find_bounds.py "$EP/transcript/segments.json"             # suggested start and end (outro only near the end; lone ביי needs a pause)
 python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcript/segments.json" \
   --start START --end END                                                  # long silences, with context
 ```
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
 - Listen for what else should go: long silences, false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
 - Send Nadav the list (raw times + the words around each) and wait for his OK. Ambiguous cut → ask Amitai.
-- `trim.sh` cuts only the start and end today. A cut inside the episode needs script support: say which cuts are waiting for it in the hand-back, don't make them by hand (show conventions → Working rules).
+- **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
+  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with Amitai/Nadav (e.g. "remove the 40 s") before cutting.
+  2. Cut on a pause, not mid-word; listen to the join.
+  3. Make the cut in audio **and** video with the same times. `trim.sh` here cuts only the start and end; mid-episode cuts arrive with `trim.sh --cut A-B` / `assemble_episode.sh --edit` (PR #14). Until that is merged, say which cuts are waiting in the hand-back; don't splice by hand (show conventions → Working rules).
+  4. Shift every chapter after the cut: `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on the description's timeline).
+  5. Check A/V drift at the end of the assembled video (`assemble_episode.sh` prints the sync check) and spot-check lips right after the join.
 
 ### 6. Trim and check
 ```bash
@@ -122,3 +127,5 @@ Large files: upload as the Drive upload account in the browser when the connecto
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
+
+Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.
