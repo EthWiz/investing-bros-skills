@@ -34,7 +34,7 @@ From the episode's `extras/` folder:
 For audio-only recordings, also the archived square show cover (location in
 `investing-bros-show`) for the audiogram background.
 
-Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, subtract `start` from `edit.json`.
+Times are on the raw timeline, the same one as `segments.json`. To tell Amitai where a moment is in the published episode, or to link a short to it (`&t=`), map the time with `python3 scripts/edit_map.py edit.json --raw T` (plus the video's opening length on YouTube).
 
 ## Steps
 1. **Propose moments.** Follow [references/moment-scoring.md](references/moment-scoring.md).

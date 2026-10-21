@@ -24,7 +24,7 @@ After the audio edit (`investing-bros-post-production`), when the recording has 
 
 ## Inputs
 From the episode's `extras/`:
-- `transcript/segments.json` and `edit.json` (raw timeline; `edited = raw − start`)
+- `transcript/segments.json` and `edit.json` (raw timeline; map to edited time with `scripts/edit_map.py edit.json --raw T`)
 - the raw master video (`investing-bros-episode-raw-untrimmed.mp4`) and `episode-leveled.wav` (same timeline)
 - approved graphic assets from `investing-bros-brand`; the current newspaper logo
   and Heebo variable font are converted by `scripts/brand.py`; intro clip from show conventions → Brand
@@ -93,12 +93,12 @@ Order: cold open(s) → the intro, as-is → the episode. Hard cuts.
 scripts/assemble_episode.sh "$EP/video/פרק-N-וידאו.mp4" \
   --body "$EP/extras/investing-bros-episode-raw-untrimmed.mp4" \
   --body-audio "$EP/extras/episode-leveled.wav" \
-  --start START --end END \
+  --edit "$EP/extras/edit.json" \
   --before "$EP/promo/טיזר-פרק-N.mp4" \
   --before-audio "$EP/extras/teaser-assembly-audio.wav" \
   --intro "<Investing-bros-intro.mp4>"
 ```
-`START`/`END` come from `edit.json`. Every segment uses the same x264 settings and the body goes in ~8-minute chunks; under a command time limit add `--max-seconds 150` and re-run until it stops printing `resume`. Never join separately encoded pieces with `-c copy`.
+`--edit` applies the same start, end and inside cuts as the audio, so the video and the published audio match. Every segment uses the same x264 settings and the body goes in ~8-minute chunks; under a command time limit add `--max-seconds 150` and re-run until it stops printing `resume`. Never join separately encoded pieces with `-c copy`.
 
 The output keeps the body's native frame rate; use `--fps RATE` only for a deliberate
 conversion. `--force` replaces an existing output and rebuilds its cached parts.
