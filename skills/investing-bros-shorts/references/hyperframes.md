@@ -70,7 +70,7 @@ For the house style, the base video comes from `build_fullbleed.py` (full-screen
 The other card types work in the panel too. Worked example: [references/ep7-asteroid-overlay.json](ep7-asteroid-overlay.json). Labels are the hosts' words or a faithful label for them. Use the full-screen render (with `-g 24`) as `input-video.mp4`; it already has the logo and end card, so leave `endcard` out.
 
 ## After the render
-Make the short's cover and upload short + cover + `.srt` exactly as the main skill's steps 6–7 (sized cover, `shorts/` folder and naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
+Make the short's cover and upload short + cover + `.srt` exactly as the main skill's steps 6–7 (sized cover, `Shorts/` folder and naming); keep `short.json` and the project folder in `extras/` so a fix is a text edit plus a re-render. Tell Amitai, per short: where it is in the episode, its length, its cards (one line each), and any words you couldn't verify. Mention he can open `npx hyperframes preview PROJ/public` (Studio) to tweak text or timing himself.
 
 ## Never
 - Put a number, name or claim on a card that the hosts didn't say.

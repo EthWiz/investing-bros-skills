@@ -33,7 +33,7 @@ Reference (Amitai's approved example): [assets/amitai-short-cover-example.png](a
    ```
    Then composite the logo bottom-left. `python3 scripts/make_torn_title.py ART.jpg OUT.jpg` reproduces the ep3 cover (it also paints over old text regions — adjust the boxes for new art).
    `RUBIK` points at the box font path; change it if Rubik lives elsewhere (Rubik variable font from google/fonts).
-3. **Check:** view at ~200 px wide — title readable, Hebrew RTL with "?" on the left, pill not clipped, nothing important outside the centre square, logo and credit present. Save JPEG q≈92 next to the Short as `<short>-cover.jpg`.
+3. **Check:** view at ~200 px wide — title readable, Hebrew RTL with "?" on the left, pill not clipped, nothing important outside the centre square, logo and credit present. Save JPEG q≈92 as `<short>-cover.jpg` and upload it next to its Short in the current episode's Drive `Shorts/` folder (create it if missing; `investing-bros-show` → Drive tree, Shorts rule).
 
 ## Done when
-- `<short>-cover.jpg` (1080×1920 JPEG) sits next to each Short in the episode's `shorts/` folder, with the exact Hebrew hook title, `פרק X` pill, credit strip and logo, checked at ~200 px wide.
+- `<short>-cover.jpg` (1080×1920 JPEG) sits next to each Short in the episode's `Shorts/` folder, with the exact Hebrew hook title, `פרק X` pill, credit strip and logo, checked at ~200 px wide.

@@ -22,7 +22,7 @@ When the episode folder is complete (audio, title and description files, plus wh
 ## Inputs
 1. Episode number N, confirmed with Amitai.
 2. From the episode root: `הקלטה-ערוכה-פרק-N.m4a` (never anything from `extras/`), `כותרות-פרק-N.txt` (title = the text after `בחירה סופית:`; if the file holds a single title, that one) and `תיאור-פרק-N.txt`. Episodes 1–7: the Docs `אפשרויות כותרת` / `תיאור הפרק`.
-3. `video/`, `shorts/`, `mid-form/` contents, when made.
+3. `video/`, `Shorts/`, `mid-form/` contents, when made.
 4. RedCircle login from show conventions → Roles and accounts. Never echo the password or put it in chat or logs.
 
 ### Back-catalogue re-upload
@@ -60,7 +60,7 @@ from the Editor account's personal **Grok Bot** channel to the **אחים להש
 brand channel before selecting files. Upload as **Private** and choose
 **No, it's not made for kids**.
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
-- **Shorts** (`shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
+- **Shorts** (`Shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
