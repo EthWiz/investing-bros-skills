@@ -55,6 +55,8 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
 ### 3. YouTube uploads (private)
+**Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
+
 Follow [the Studio checklist](references/youtube-studio.md). In particular, switch
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
 brand channel before selecting files. Upload as **Private** and choose
