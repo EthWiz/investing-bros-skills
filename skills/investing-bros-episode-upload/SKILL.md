@@ -45,6 +45,10 @@ Make the RTL-safe copy with the script, never by hand:
 python3 scripts/rtl_fix.py --title  title.txt       > title-rtl.txt     # title.txt = the final title, one line
 python3 scripts/rtl_fix.py --description תיאור-פרק-N.txt > description-rtl.txt
 ```
+**Same title everywhere:** `title.txt` is the exact YouTube title; RedCircle gets that text plus only the marks `rtl_fix.py` adds. Check before saving and again before publishing:
+```bash
+python3 scripts/check_titles_match.py title.txt title-rtl.txt   # or paste the title from each site
+```
 Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rtl.md). Put both `-rtl.txt` files in `extras/`.
 1. Open `https://app.redcircle.com/shows`, sign in, open **אחים להשקעות**.
 2. **Add / New Episode** (a URL like `/shows/{showId}/ep/create`).
@@ -61,13 +65,13 @@ Follow [the Studio checklist](references/youtube-studio.md). In particular, swit
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
 brand channel before selecting files. Upload as **Private** and choose
 **No, it's not made for kids**.
-- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks).
+- **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks). It must include the `האזינו בספוטיפיי:` line (show link until step 5 swaps in the episode link).
 - **Shorts** (`Shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 4. Publish (only after Amitai's OK in chat)
-Publish the RedCircle draft, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
+Order ([references/publish-order.md](references/publish-order.md)): RedCircle publish (it feeds Spotify) → rerun `check_titles_match.py` on the live YouTube and RedCircle titles → Spotify ingests it (a few hours) → the YouTube description's `האזינו בספוטיפיי:` line (after the disclaimer, before the chapters; `check_copy.py --youtube`) gets the Spotify episode link, replacing the show link, on the episode and its shorts. Publishing always includes RedCircle. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
 
 ### 5. Check how it renders
 - **YouTube**: open the public watch page. Every description line right-aligned with its timestamp on the right, times in order, chapters on the progress bar. A wrong line almost always starts with English; reword it to start with Hebrew.
@@ -76,6 +80,7 @@ Publish the RedCircle draft, and switch the YouTube uploads he named to Public (
   - the episode is there, with the exact title (no en dash, `?` at the end of the sentence)
   - the description lines read right-to-left and nothing visible is scrambled
   - chapters show in the Spotify app (episode page → chapters)
+  - **then link it on YouTube**: copy the Spotify episode URL (`https://open.spotify.com/episode/<id>`, without `?si=`), edit the public episode's YouTube description to replace the show link on the `האזינו בספוטיפיי:` line with it, and do the same on that episode's shorts. Update `video/תיאור-פרק-N-youtube.txt` and each `youtube-שורט-NN.md` to match. Editing a Public video's description is part of the approved publish, not a new public action.
 
   Wrong on Spotify but right on RedCircle: tell Amitai what you saw (screenshot) and open a GitHub issue on the repo; don't change show settings or re-publish to fix it.
 
@@ -85,20 +90,22 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
-- After the OK: live on RedCircle and YouTube, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
+- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
+- After the OK: live on RedCircle **and** YouTube with identical titles, the episode listed on Spotify, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue); the YouTube episode and its shorts link the Spotify **episode** URL, not the show.
 - WhatsApp sends confirmed, when asked.
 
 ## Hand back
 - RedCircle draft URL (or public URL), title used, episode number
 - YouTube links, with each video's visibility
 - The render checks: Spotify, RedCircle, YouTube, with anything that looked wrong
+- The Spotify episode URL, and confirmation it replaced the show link in the YouTube descriptions (or that Spotify hasn't listed it yet, and when to retry)
 - Upload retries or blockers
 - WhatsApp send status, when asked
 
 Update this skill when the RedCircle or YouTube Studio click-path changes.
 
 ## Never
+- Publish on YouTube without also publishing the RedCircle episode, or with a RedCircle title that differs from the YouTube one.
 - Publish, set anything Public, submit to directories or post on WhatsApp/Telegram without Amitai's explicit OK in chat.
 - Echo or paste the password.
 - Upload raw or `extras/` audio.
@@ -106,3 +113,5 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Upload video to Spotify, or change RedCircle show settings, without Amitai's decision.
 - Drive WhatsApp Web yourself.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
+
+Publish order: `references/publish-order.md` (RedCircle, Spotify, YouTube Spotify line, then Shorts).

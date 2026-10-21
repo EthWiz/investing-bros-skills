@@ -27,7 +27,7 @@ def transcribe(wav, offset, a, b, model):
                 for s in r["segments"] for w in s["words"]]
     except ImportError:
         from faster_whisper import WhisperModel
-        m = WhisperModel(model, device="cpu", compute_type="int8")
+        m = WhisperModel(model, device="cpu", compute_type="float32")  # int8 garbles Hebrew
         segs, _ = m.transcribe(wav, language="he", word_timestamps=True, clip_timestamps=[a, b])
         return [{"w": w.word.strip(), "s": round(w.start + offset, 2), "e": round(w.end + offset, 2)} for s in segs for w in s.words]
 

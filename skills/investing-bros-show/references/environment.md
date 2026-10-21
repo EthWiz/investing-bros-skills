@@ -10,6 +10,23 @@ Read this before working around anything. Every line here cost an agent time to 
   **Download anyway** on the large-file scan warning). Do not sign in as Amitai.
   A `show:` rclone remote is not guaranteed to exist; test `drive.sh` once and use
   the browser path when it reports that the remote is missing.
+### Getting the full source video (step by step)
+1. **Not Telegram.** The Telegram Bot API downloads files only up to **20 MB**, so a full episode
+   posted in the group can't be fetched from there. Ask for it in Drive or as a Riverside link.
+2. **Drive (preferred for big files):** `drive.sh` needs `rclone`, which isn't installed on the box,
+   and the connector can't fetch a 1–2 GB file. Use the box browser signed in as the YouTube upload
+   account `investingbros.grokbot@gmail.com` (`?authuser=1`): open the file → Download →
+   **Download anyway** on the virus-scan warning. Other bot accounts (e.g. `ami.grokbot`) may hit
+   Google re-verification; don't fight it, switch to the upload account.
+3. **Riverside:** a shared `riverside.com/shared/exported-clip/...` link has one **Download** button
+   and no quality picker. Riverside's "1080p" cloud download was really 720p on episode 8.
+4. **Always check what you got** and keep the highest-quality copy:
+   `ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of compact FILE`.
+   If Riverside gives 720p, use Nadav's own Drive master (episode 8: `פרק 8 לא ערוך.mp4`, 1920×1080, 24 fps).
+   Say in the hand-back when only 720p exists (it gets upscaled).
+5. Downloads land in `/home/box/Downloads`; move them into the episode working folder (`$EP`)
+   and note which source and resolution you used.
+
 - **Riverside** login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive. Nadav drags full episodes to Drive himself.
 - **Local-exec transfer** (CopyToBox/CopyFromBox) and a Drive upload of a big file are capped at **100 MB**. Split anything larger into 50 MB parts (`split -b 50M`), rejoin with `cat`, and check the sha256 of the original against the rejoined file.
 - **Never sign in to Amitai's Google account from a browser.** The account is in Advanced Protection: sign-in needs his passkey or security key; approving on the phone isn't enough, and a failed attempt locks browser sign-in for 48 hours.
