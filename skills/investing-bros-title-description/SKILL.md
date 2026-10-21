@@ -55,6 +55,9 @@ Three blocks, blank line between them:
 
 When a finished YouTube video has a teaser and intro before that edited audio,
 re-time the copy with `scripts/find_offset_and_shift.py VIDEO AUDIO DESCRIPTION OUT`.
+When a section was cut from the middle of the episode, move the later chapters back with
+`python3 scripts/shift_after_cut.py DESCRIPTION --cut A-B > shifted.txt` (cut times on the
+description's timeline; a chapter inside the cut snaps to the cut point).
 It finds the body by audio correlation, adds `00:00 טעימה מהפרק`, and shifts every
 chapter. A score below 0.5 means the edits differ; stop and transcribe the video.
 `--offset S` uses a separately verified offset.
