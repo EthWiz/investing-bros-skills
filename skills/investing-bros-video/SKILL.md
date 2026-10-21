@@ -47,6 +47,13 @@ Tease, don't resolve: a question raised, a number dropped, a story started; cut 
 
 Cut in the pauses between words, never mid-word (audio energy, or re-transcribe a short window). Proofread every caption against the audio; leave out words you can't verify and report them.
 
+### 1b. Use each host's own camera track
+Riverside records each host's camera as a separate file (Individual tracks; 720p raw on episode 8) plus the combined side-by-side video. For cold opens, teasers and shorts, take each moment from **the speaker's own track**, full frame and sharp; never crop or zoom the combined video (Amitai rejected the zoomed look).
+- **Where:** Riverside → the recording → Individual tracks (highest resolution), or ask the host to drop them in Drive `extras/` as `track-amitai.mp4` / `track-nadav.mp4` (source-video notes in show conventions → environment).
+- **Align first:** the tracks are offset from the combined file (episode 8: combined ran 0.1666 s behind). `python3 scripts/align_tracks.py COMBINED.mp4 track-nadav.mp4 --start S` on a stretch where that host talks prints `OFFSET`; a moment at combined time T starts at `T − OFFSET` in the track. Run it per track.
+- **Verify:** render one clip and check lip sync on a hard consonant; mismatch over ~1 frame → re-run on another stretch.
+- Use the combined video only when no per-host track exists (then show the full frame, not a crop).
+
 ### 2. Render the cold opens (1920×1080)
 The default is the approved full-frame speaker layout: about 1.2× face crop, solid
 logo top-left, gold `פרק N` plus white episode name top-right, and word-by-word
