@@ -74,7 +74,7 @@ named `תמלול - פרק N` in the episode's `אחים להשקעות > פרק
 
 ### 5. Build the cut list
 ```bash
-python3 scripts/find_bounds.py "$EP/transcript/segments.json"             # suggested start and end
+python3 scripts/find_bounds.py "$EP/transcript/segments.json"             # suggested start and end (outro only near the end; lone ביי needs a pause)
 python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcript/segments.json" \
   --start START --end END                                                  # long silences, with context
 ```
@@ -127,3 +127,5 @@ Large files: upload as the Drive upload account in the browser when the connecto
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
+
+Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.
