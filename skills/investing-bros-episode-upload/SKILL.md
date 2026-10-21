@@ -45,6 +45,10 @@ Make the RTL-safe copy with the script, never by hand:
 python3 scripts/rtl_fix.py --title  title.txt       > title-rtl.txt     # title.txt = the final title, one line
 python3 scripts/rtl_fix.py --description תיאור-פרק-N.txt > description-rtl.txt
 ```
+**Same title everywhere:** `title.txt` is the exact YouTube title; RedCircle gets that text plus only the marks `rtl_fix.py` adds. Check before saving and again before publishing:
+```bash
+python3 scripts/check_titles_match.py title.txt title-rtl.txt   # or paste the title from each site
+```
 Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rtl.md). Put both `-rtl.txt` files in `extras/`.
 1. Open `https://app.redcircle.com/shows`, sign in, open **אחים להשקעות**.
 2. **Add / New Episode** (a URL like `/shows/{showId}/ep/create`).
@@ -65,7 +69,7 @@ brand channel before selecting files. Upload as **Private** and choose
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 4. Publish (only after Amitai's OK in chat)
-Publish the RedCircle draft, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
+Publishing always includes RedCircle: publish the RedCircle draft (it feeds Spotify), rerun `check_titles_match.py` on the live YouTube and RedCircle titles, and switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
 
 ### 5. Check how it renders
 - **YouTube**: open the public watch page. Every description line right-aligned with its timestamp on the right, times in order, chapters on the progress bar. A wrong line almost always starts with English; reword it to start with Hebrew.
@@ -83,8 +87,8 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
-- After the OK: live on RedCircle and YouTube, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
+- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
+- After the OK: live on RedCircle **and** YouTube with identical titles, the episode listed on Spotify, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue).
 - WhatsApp sends confirmed, when asked.
 
 ## Hand back
@@ -97,6 +101,7 @@ Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group
 Update this skill when the RedCircle or YouTube Studio click-path changes.
 
 ## Never
+- Publish on YouTube without also publishing the RedCircle episode, or with a RedCircle title that differs from the YouTube one.
 - Publish, set anything Public, submit to directories or post on WhatsApp/Telegram without Amitai's explicit OK in chat.
 - Echo or paste the password.
 - Upload raw or `extras/` audio.
