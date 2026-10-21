@@ -51,12 +51,22 @@ legacy styling is an explicit compatibility choice, not the default for new artw
 6. Review with [quality checks](references/quality-checks.md). Correct text or visual
    errors with a targeted edit, then re-inspect. Never assert exact typography,
    resolution or layered editability merely from the generation prompt.
-7. Deliver requested files/previews using the active environment's persistence rules.
+7. **Every episode gets both formats** (required): the square cover `cover-פרק-N.png` and
+   the 16:9 YouTube thumbnail `thumbnail-פרק-N.jpg` made from it (the square centred on a
+   blurred background, layouts → Widescreen YouTube thumbnail). Never a separate wide design.
+8. **Required: file both in Drive.** Once both are approved or final, upload them to the
+   episode's `אחים להשקעות > פרק N` folder (prefix match), next to `תמלול - פרק N`. Images
+   can go through the Google Drive connector; confirm each shows as `image/png` /
+   `image/jpeg`. If a file of that name exists, replace/update it instead of adding a
+   duplicate. Leave every other file and folder alone (e.g. `old coverart`).
+9. Deliver requested files/previews using the active environment's persistence rules.
    Do not publish or send to other people without explicit authorization.
 
 ## Done when
 - Requested episode artwork is reviewed and saved to the owning episode folder under
   the paths in `investing-bros-show` (for example `promo/` or `shorts/`).
+- Both the square cover and the 16:9 thumbnail are in `promo/` and in the episode's
+  Drive folder.
 - The artifact register records actual output paths, version, status and source refs.
 - For prompt-only requests, the filled prompt is delivered; no image is implied.
 - Brand changes update this skill and pass review before becoming canonical.
