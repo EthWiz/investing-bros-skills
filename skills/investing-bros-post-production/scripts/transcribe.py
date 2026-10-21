@@ -37,6 +37,9 @@ import urllib.request
 from pathlib import Path
 
 DEFAULT_MODEL = "ivrit-ai/whisper-large-v3-turbo-ct2"
+# float32 on purpose: the "auto" compute type picks int8 on CPU, which garbles Hebrew
+# (seen on episodes 5-8, Oct 2026). Slower, but the transcript is usable.
+COMPUTE_TYPE = "float32"
 LEVEL_FILTER = "highpass=f=70,dynaudnorm=f=200:g=11:p=0.9:m=40:s=0"
 PTS_FILTER = "aresample=async=1:min_hard_comp=0.01:first_pts=0"
 SHERPA_RELEASE = "https://github.com/k2-fsa/sherpa-onnx/releases/download/asr-models/"
@@ -155,6 +158,8 @@ def main() -> int:
     ap.add_argument("--no-level", action="store_true", help="don't level the analysis copy")
     ap.add_argument("--engine", choices=("faster-whisper", "sherpa"), default="faster-whisper")
     ap.add_argument("--threads", type=int, default=os.cpu_count() or 2)
+    ap.add_argument("--compute-type", default=COMPUTE_TYPE,
+                    help="faster-whisper compute type (default float32; int8/auto garble Hebrew)")
     args = ap.parse_args()
 
     out = Path(args.out_dir)
@@ -178,7 +183,7 @@ def main() -> int:
               "or use --engine sherpa", file=sys.stderr)
         return 1
 
-    model = WhisperModel(args.model, device="auto", compute_type="auto", cpu_threads=args.threads)
+    model = WhisperModel(args.model, device="auto", compute_type=args.compute_type, cpu_threads=args.threads)
     seg_iter, info = model.transcribe(str(wav), language="he", vad_filter=True)
     segments = []
     for seg in seg_iter:

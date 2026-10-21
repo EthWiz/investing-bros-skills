@@ -4,6 +4,10 @@
 The per-episode JSON format is documented in
 references/teaser-fullframe.example.json. Relative paths are resolved from the
 JSON file, so configs are portable and contain no machine-specific paths.
+Rules (Amitai, Oct 2026): the teaser is at most 30 s (TEASER_MAX_S); each
+piece may name its own `source`/`audio` (e.g. that host's own Riverside camera
+track, aligned first); a piece with no crop is shown full frame - never crop
+or zoom into a side-by-side frame; caption cards must follow speech order.
 When `assembly_audio` is set, the same normalized PCM samples used for the
 standalone AAC output are retained for sample-accurate episode assembly.
 """
@@ -28,6 +32,9 @@ AFADE_OUT = 0.04
 TITLE_FADE_MS = 500
 LOUDNESS = {"I": -14, "TP": -1.5, "LRA": 11}
 RLM = "\u200f"
+TEASER_MAX_S = 30.0
+TEASER_MIN_S = 15.0
+HIGHLIGHT_RE = re.compile(r"\[(.+?)\]")
 
 
 def resolve_path(config_path: Path, value: str) -> Path:
@@ -74,6 +81,22 @@ def validate_audio_clock(source: Path, audio: Path, fps: float) -> None:
         )
 
 
+def check_caption_order(piece: dict) -> list[str]:
+    """Cards must run in time order, and on a repeated line the highlighted word
+    must move forward - catches captions like '15%' showing before the words
+    spoken ahead of it. Compare against words.json by eye too."""
+    problems = []
+    cards = piece["cards"]
+    for (s0, e0, t0), (s1, _e1, t1) in zip(cards, cards[1:]):
+        if float(s1) < float(s0) or float(s1) < float(e0) - 0.05:
+            problems.append(f"cards out of time order: {t0!r} then {t1!r}")
+        plain0, plain1 = HIGHLIGHT_RE.sub(r"\1", t0), HIGHLIGHT_RE.sub(r"\1", t1)
+        m0, m1 = HIGHLIGHT_RE.search(t0), HIGHLIGHT_RE.search(t1)
+        if plain0 == plain1 and m0 and m1 and m1.start() <= m0.start():
+            problems.append(f"highlight goes backwards: {t0!r} then {t1!r}")
+    return problems
+
+
 class Timeline:
     def __init__(self, pieces: list[dict], fps: float):
         self.segments = []
@@ -89,8 +112,13 @@ class Timeline:
             for start, end, text in cards:
                 if start < -0.05 or end > duration + 0.05 or end <= start:
                     raise ValueError(f"caption card outside its piece: {text!r}")
+            for problem in check_caption_order(piece):
+                raise ValueError(f"caption order ({piece['host']} @ {piece['start']}): {problem}")
             self.segments.append({
                 "host": piece["host"],
+                "source": piece.get("source"),
+                "audio": piece.get("audio"),
+                "crop": piece.get("crop"),
                 "source_start": float(piece["start"]),
                 "duration": duration,
                 "output_start": output_start,
@@ -218,15 +246,18 @@ def build_filter(config: dict, timeline: Timeline, fps_expression: str, ass: Pat
     count = len(timeline.segments)
     filters = []
     for index, segment in enumerate(timeline.segments):
-        try:
-            x, y, crop_width, crop_height = config["crops"][segment["host"]]
-        except KeyError as exc:
-            raise ValueError(f"missing crop for host {segment['host']!r}") from exc
+        crop = segment.get("crop") or (config.get("crops") or {}).get(segment["host"])
+        if crop:
+            x, y, crop_width, crop_height = crop
+            frame = f"crop={crop_width}:{crop_height}:{x}:{y},scale={width}:{height}:flags=lanczos,"
+        else:  # full frame, no zoom: fit and pad
+            frame = (f"scale={width}:{height}:force_original_aspect_ratio=decrease:flags=lanczos,"
+                     f"pad={width}:{height}:(ow-iw)/2:(oh-ih)/2,setsar=1,")
         duration = segment["duration"]
         fade_in = FADE_FIRST_IN if index == 0 else FADE_JOIN
         filters.append(
             f"[{index}:v]trim=duration={duration:.4f},setpts=PTS-STARTPTS,fps={fps_expression},"
-            f"crop={crop_width}:{crop_height}:{x}:{y},scale={width}:{height}:flags=lanczos,"
+            + frame +
             "eq=contrast=1.04:saturation=1.06,unsharp=5:5:0.4,"
             f"fade=t=in:st=0:d={fade_in},fade=t=out:st={max(0, duration - FADE_JOIN):.4f}:d={FADE_JOIN},"
             f"format=yuv420p[v{index}]"
@@ -289,9 +320,19 @@ def render(config: dict, config_path: Path, force: bool = False, ass_only: bool 
     fps_expression = str(config.get("fps") or probe_fps(source))
     fps = float(Fraction(fps_expression))
     timeline = Timeline(config["pieces"], fps)
-    if not 30 <= timeline.duration <= 60:
-        print(f"warning: combined teaser should be 30-60 s (is {timeline.duration:.2f} s)", file=sys.stderr)
-    validate_audio_clock(source, audio, fps)
+    if timeline.duration > TEASER_MAX_S + 0.05:
+        print(f"warning: teaser is {timeline.duration:.2f} s; keep it to {TEASER_MAX_S:.0f} s or less",
+              file=sys.stderr)
+    elif timeline.duration < TEASER_MIN_S:
+        print(f"warning: teaser is only {timeline.duration:.2f} s", file=sys.stderr)
+    for segment in timeline.segments:
+        segment["source_path"] = resolve_path(config_path, segment["source"]) if segment["source"] else source
+        segment["audio_path"] = resolve_path(config_path, segment["audio"]) if segment["audio"] else audio
+        for path in (segment["source_path"], segment["audio_path"]):
+            if not path.exists():
+                raise FileNotFoundError(f"piece media not found: {path}")
+    for pair in {(s["source_path"], s["audio_path"]) for s in timeline.segments}:
+        validate_audio_clock(pair[0], pair[1], fps)
 
     with tempfile.TemporaryDirectory(prefix="investing-bros-teaser-") as temp:
         work_dir = Path(temp)
@@ -310,13 +351,13 @@ def render(config: dict, config_path: Path, force: bool = False, ass_only: bool 
             args += [
                 "-ss", f"{segment['source_start']:.4f}",
                 "-t", f"{segment['duration'] + 0.5:.4f}",
-                "-i", str(source),
+                "-i", str(segment["source_path"]),
             ]
         for segment in timeline.segments:
             args += [
                 "-ss", f"{segment['source_start']:.4f}",
                 "-t", f"{segment['duration']:.4f}",
-                "-i", str(audio),
+                "-i", str(segment["audio_path"]),
             ]
         args += ["-loop", "1", "-i", str(overlay), "-loop", "1", "-i", str(blur_mask)]
         raw = work_dir / "raw.mov"

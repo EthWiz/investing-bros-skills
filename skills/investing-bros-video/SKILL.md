@@ -151,3 +151,5 @@ Review copies over the transfer caps: compress (show conventions → references/
 - Cut a caveat to make a line punchier.
 - Add music or stock footage Amitai didn't supply, except a cold-open bed mixed per the reference.
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so (show conventions → Working rules).
+
+See `references/teaser-rules.md` for teaser length, framing, per-moment sources, caption order and approval.
