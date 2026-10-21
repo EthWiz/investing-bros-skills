@@ -46,6 +46,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Short captions (in `Shorts/`) | `שורט-NN-<נושא>.srt` | `שורט-01-סוויפט.srt` |
 | Short YouTube notes (in `Shorts/`) | `youtube-שורט-NN.md` | `youtube-שורט-01.md` |
 | Mid-form (in `mid-form/`) | `מיד-פורם-NN-<נושא>.mp4` + `.txt` (title, description) | `מיד-פורם-01-זהב.mp4` |
+| Deep dive (in `deep-dive/`) | `צלילה-פרק-N-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-צלילה.md` | `צלילה-פרק-7-זהב.mp4` |
 | Video episode (in `video/`) | `פרק-N-וידאו.mp4` + `תיאור-פרק-N-youtube.txt` | `פרק-8-וידאו.mp4` |
 
 **Finding an existing episode folder:** match on the `פרק N` prefix (followed by a space or dash), not the full name — the dash and topic may differ from what you would type. If one matches, reuse it. Never create a second folder for the same N.
@@ -76,6 +77,7 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
     Shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
+    deep-dive/   standalone deep-dive video + .txt + thumb, every episode          ← deep-dive
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
 ```
@@ -157,6 +159,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
 | 4 | Shorts, mid-form highlights | `investing-bros-shorts` | Nadav |
+| 4b | Deep-dive standalone video (every episode) | `investing-bros-deep-dive` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.

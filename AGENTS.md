@@ -15,6 +15,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Visual identity, artwork, templates, covers and design QA | `investing-bros-brand` |
 | Cold opens, intro, full video episode, promo teaser | `investing-bros-video` |
 | Shorts with covers (incl. HyperFrames explainer cards), mid-form highlights | `investing-bros-shorts` |
+| Deep dive as its own standalone YouTube video (every episode) | `investing-bros-deep-dive` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
 
 To see where an episode stands, list its Drive folder and compare it with each skill's **Done when**.
