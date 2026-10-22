@@ -142,10 +142,10 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 ## Telegram
 | Id | Group | Chat ID | Sent by | Use |
 |---|---|---|---|---|
-| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts |
+| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts; weekly analytics report (pre-approved, see `investing-bros-analytics`) |
 
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
-- **Each post needs Amitai's OK in chat**, like WhatsApp. Don't add destinations without his OK.
+- **Each post needs Amitai's OK in chat**, like WhatsApp (exception: the weekly analytics report, pre-approved). Don't add destinations without his OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
 - Cold opens, intros and drafts for review are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. Post drafts with the title only.
 - Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
@@ -161,6 +161,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 4 | Shorts, mid-form highlights | `investing-bros-shorts` | Nadav |
 | 4b | Segment videos (deep dive every episode) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
+| 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.
 

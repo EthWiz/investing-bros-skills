@@ -22,6 +22,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
 | 4b | Segment videos: standalone search-first YouTube videos (deep dive every episode; also ideas, interviews, explainers) | `investing-bros-segment-video` | `segments/` | Amitai |
 | 5 | Review ping, RedCircle draft, YouTube (private), then publish, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
+| 6 | After publish, weekly (Sunday): read-only Studio/RedCircle stats, report Page, Telegram summary, history CSV | `investing-bros-analytics` | `investing-bros-youtube-weekly.csv` in Drive (analytics folder TBD) | — (weekly post pre-approved) |
 
 - Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
