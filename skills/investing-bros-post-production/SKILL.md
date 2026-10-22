@@ -106,7 +106,10 @@ Find the `פרק N` folder (prefix match; prep normally created it). Only create
 | Episode root | Edited audio, renamed `הקלטה-ערוכה-פרק-N.m4a` |
 | `extras/` | Raw untrimmed audio (and video), leveled WAV, parts, host tracks, `transcript/` (`segments.json`, `.txt`, `.srt`), `edit.json`, the cut list |
 
-Large files: upload as the Drive upload account in the browser when the connector can't carry them (show conventions → Roles and accounts).
+Large files: if a final video must reach Amitai's Mac, use the verified
+10–20 MB chunked `CopyFromBox` handoff to `~/Downloads` (show conventions →
+references/environment.md → Delivering files); large Drive web uploads from the
+box can stall.
 
 ## Done when
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
