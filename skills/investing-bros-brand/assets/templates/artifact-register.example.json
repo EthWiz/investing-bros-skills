@@ -1,5 +1,5 @@
 {
-  "schema_version": 1,
+  "schema_version": 2,
   "episode_number": null,
   "artifacts": [
     {
@@ -13,7 +13,32 @@
       "width": null,
       "height": null,
       "approval_reference": null,
-      "supersedes": null
+      "supersedes": null,
+      "format": "episode-square",
+      "episode_tab": true,
+      "portraits": [
+        {
+          "host": "אמיתי רסקין",
+          "side": "left",
+          "source_path_or_url": null,
+          "timestamp_seconds": null,
+          "reused_from_artifact": null,
+          "touchups": []
+        },
+        {
+          "host": "נדב רסקין",
+          "side": "right",
+          "source_path_or_url": null,
+          "timestamp_seconds": null,
+          "reused_from_artifact": null,
+          "touchups": []
+        }
+      ],
+      "centerpiece": {
+        "concept": null,
+        "source_reference": null
+      },
+      "selected_components": []
     }
   ]
 }
