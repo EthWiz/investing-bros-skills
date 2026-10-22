@@ -80,6 +80,7 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     segments/    segment videos (deep dive every episode) + .txt + thumb each      ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
+  analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
 **Shorts rule (all episodes):** every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.

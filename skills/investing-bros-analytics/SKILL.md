@@ -80,7 +80,7 @@ Each weekly run appends to `investing-bros-youtube-weekly.csv` one row per video
 Columns: `week_start,week_end,video_id,title,type,thumbnail,published,views,watch_hours,avd,avg_pct_viewed,impressions,ctr,likes,subs_gained` (`thumbnail` = faces/no_faces/unknown from the map; dates ISO; `avd` as m:ss; `ctr`/`avg_pct_viewed` as percent numbers).
 
 - Local copy: `/workspace/analytics/weekly/investing-bros-youtube-weekly.csv` (append, never rewrite past rows).
-- Drive: folder **TBD** pending Amitai's OK; proposed an `analytics` subfolder of the episodes folder (`1Lk8WnfTWeIFLfw7ksQp3Uh62ukKCTz4a`). Until confirmed, use the Drive root or an `Investing Bros Analytics` folder. Upload the updated file each week (replace the previous version).
+- Drive: [`אחים להשקעות/analytics`](https://drive.google.com/drive/folders/1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) (folder id `1zd32riRkKuW7XjVNY4doCRbhwt49HdC7`, inside the show root `1Lk8WnfTWeIFLfw7ksQp3Uh62ukKCTz4a`; confirmed by Amitai 2026-10-22). Upload the updated file each week (replace the previous version). Seeded 2026-10-22 with a lifetime-baseline snapshot (week 2026-10-18..2026-10-22, titles tagged `[lifetime baseline]`); compute week-over-week deltas from the first real weekly run, not against this row set.
 - Week-over-week deltas in the report come from this CSV, not from Studio date ranges.
 
 ## Targets
