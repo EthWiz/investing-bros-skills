@@ -1,24 +1,28 @@
 ---
 name: investing-bros-post-production
 description: >-
-  Edit the audio of a finished Investing Bros / אחים להשקעות recording into
-  the upload-ready episode: fetch the parts, combine, level the two hosts,
-  transcribe (Hebrew), find the start, end and long silences, get the cut list
-  approved, trim, check loudness and file the edited audio and working files in
-  the episode's Drive folder. Use when Amitai says the recording is in, "edit
-  episode N", "ההקלטה מוכנה", "עריכה", or sends חלק 1 / חלק 2. Titles,
-  video and shorts come after this, from their own skills.
+  Start the full post-production pipeline for a finished Investing Bros /
+  אחים להשקעות recording: edit the upload-ready audio, then track the main
+  episode flow plus exactly two complete segment videos and exactly three
+  complete shorts through their owning skills. Use when Amitai says the
+  recording is in, "edit episode N", "ההקלטה מוכנה", "עריכה", or sends
+  חלק 1 / חלק 2.
 ---
 # Investing Bros post-production (audio edit)
 
 Load `investing-bros-show` first: naming, Drive tree, roles and the episode flow live there.
 
-This skill ends at the edited audio. Everything after it reads the transcript and `edit.json` it leaves:
+Starting post-production opens one standing deliverable bundle:
+1. the main episode flow;
+2. **exactly two segment videos**: segment 01 is the required deep-dive segment, and segment 02 is the next-best self-contained sub-question from the deep dive or another strong topic;
+3. **exactly three shorts**.
+
+This skill performs the audio edit and starts and tracks that complete bundle. The edited audio is the handoff to the downstream skills, not completion of post-production. Everything after the audio edit reads the transcript and `edit.json` it leaves:
 - titles, description, artwork copy brief → `investing-bros-title-description`
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
 - cold opens, intro, video episode, teaser → `investing-bros-video`
-- segment videos (deep dive every episode) → `investing-bros-segment-video`
-- shorts, mid-form → `investing-bros-shorts`
+- exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen/pinned comment, Drive, Unlisted review and Amitai's OK → `investing-bros-segment-video`
+- exactly three shorts, each through picks, render, Codex cover, Telegram approval, Drive, post-episode upload and links → `investing-bros-shorts`
 - review ping, uploads, publish → `investing-bros-episode-upload`
 
 ## When to use
@@ -109,6 +113,9 @@ Find the `פרק N` folder (prefix match; prep normally created it). Only create
 Large files: upload as the Drive upload account in the browser when the connector can't carry them (show conventions → Roles and accounts).
 
 ## Done when
+Post-production is not complete at the audio handoff. Every item below must be complete:
+
+**Audio edit**
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
 - `extras/` has `transcript/segments.json`, `edit.json` and the raw master (plus host tracks if shorts will use them).
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
@@ -116,12 +123,19 @@ Large files: upload as the Drive upload account in the browser when the connecto
   `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
 - Nadav OK'd the cut list.
 
+**Standing downstream deliverables**
+- The normal main episode flow has completed through its owning title/description, brand, video and upload skills as applicable.
+- `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Unlisted review, Amitai's OK and the pinned comment after publication.
+- `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow, including approved picks, render and QA, Codex cover, Telegram approval, Drive files, upload only after the full episode was live, and links back to the episode.
+- If an approval or publication step is still waiting, report the bundle as waiting, not done.
+
 ## Hand back
 - Drive folder link
 - Link to the `תמלול - פרק N` Doc
 - Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
 - Loudness (integrated LUFS) and the host balance before → after leveling
-- Next: titles, video and shorts can start now, in parallel
+- Next: start titles/artwork/video, both segment videos and all three shorts in parallel from the transcript and `edit.json`; publish in the order owned by `investing-bros-episode-upload`.
+- Pipeline status: main episode flow, segment 01, segment 02 and shorts 01–03, with the next incomplete approval or action for each.
 
 ## Never
 - Auto-number the episode or create a second `פרק N` folder.

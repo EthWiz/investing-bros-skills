@@ -9,22 +9,23 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 ```
 1 audio edit ──┬──► 2 titles + description (.txt) + artwork brief ──┐
                ├──► 3 cold opens + intro + video episode ────────┼──► 5 review ► upload ► publish ► check Spotify ► share
-               ├──► 4 shorts + covers, mid-form highlights ──────┤
-               └──► 4b segment videos (deep dive every episode) ─┘
+               ├──► 4 exactly 3 shorts + covers, mid-form ───────┤
+               └──► 4b 2 segments (01 deep dive + 02 next-best) ┘
 ```
 
 | # | Step | Skill | Leaves in the Drive folder `פרק N — נושא/` | Approves |
 |---|---|---|---|---|
 | 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
-| 1 | Audio edit: combine, level the hosts, transcribe, cut start/end and silences, trim, loudness | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
+| 1 | Start the standing bundle; combine, level, transcribe and trim the audio | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
 | 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Amitai (title) |
 | 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
-| 4 | ~5 shorts with a cover each; 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
-| 4b | Segment videos: standalone search-first YouTube videos (deep dive every episode; also ideas, interviews, explainers) | `investing-bros-segment-video` | `segments/` | Amitai |
-| 5 | Review ping, RedCircle draft, YouTube (private), then publish, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
+| 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
+| 4b | Exactly 2 standalone search-first segment videos: 01 is the deep-dive sub-question; 02 is the next-best deep-dive sub-question or strongest other self-contained topic | `investing-bros-segment-video` | `segments/` | Amitai |
+| 5 | Review ping, RedCircle draft, YouTube review uploads, then publish in order, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
 | 6 | After publish, weekly (Sunday): read-only Studio/RedCircle stats, report Page, Telegram summary, history CSV | `investing-bros-analytics` | `investing-bros-youtube-weekly.csv` in Drive (analytics folder TBD) | — (weekly post pre-approved) |
 
-- Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
+- Starting step 1 commits every episode to the main flow plus exactly 2 complete segment videos and exactly 3 complete shorts. The post-production checklist remains open until all three tracks finish their owning skills.
+- Steps 2–4b only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
 - `investing-bros-analytics` reads YouTube Studio stats (read-only) for the weekly Sunday report and ad-hoc analyses; posts a short text to Telegram.
 - `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work.

@@ -1,6 +1,6 @@
 # Publish order
 
-The overall order after Amitai's OK. Detail in `../SKILL.md` step 4.
+The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Every episode reaches this phase with exactly two completed segment videos (01 is the deep dive) and exactly three completed Shorts.
 
 1. **RedCircle first** - publish the episode (after Amitai's OK). Same title as YouTube
    (`check_titles_match.py` must pass).

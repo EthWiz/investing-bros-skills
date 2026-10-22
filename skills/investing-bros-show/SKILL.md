@@ -15,6 +15,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 - **Name:** Investing Bros, Hebrew **אחים להשקעות**.
 - **Hosts:** Amitai Raskin and Nadav Raskin. Amitai is the person you take instructions and approvals from.
 - **Episode format:** ~10 min news, ~20 min deep dive, ~5 min each for one investment idea per host.
+- **Standing post-production bundle (decided 2026-10-22):** starting post-production for any episode commits the pipeline to the main episode flow **plus exactly two segment videos plus exactly three shorts**, each completed through its owning skill. Segment 01 is the required deep-dive sub-question; segment 02 is the next-best self-contained deep-dive sub-question, or the strongest other self-contained topic when no second deep-dive cut qualifies.
 - **News taste:** All-In-style tech (model releases, launches, big raises/IPOs, hacks, infra, fintech/platform moves) over macro/rates/oil/price action, unless Amitai asks for macro.
 - **Podcast host:** [RedCircle](https://app.redcircle.com). Not RSS.com unless Amitai says the host changed. RedCircle feeds Spotify automatically: [the show on Spotify](https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk). Video goes to YouTube only; uploading video to Spotify would cut that episode off from RedCircle (see `investing-bros-episode-upload`).
 - **Spotify, as of 2026-10-18:** the show's author line read `אמתי ונדב רסקין` (old spelling); it should become `אמיתי ונדב רסקין` — changing that public metadata waits for Amitai's OK. Episode 7's title has an en dash; changing that public metadata waits for Amitai's OK.
@@ -76,14 +77,14 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     brief/       pre-recording docs (prep archive; keep)                     ← episode-preparation
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
-    Shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
-    segments/    segment videos (deep dive every episode) + .txt + thumb each      ← segment-video
+    Shorts/      exactly 3 shorts: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md  ← shorts
+    segments/    exactly 2 segments: 01 deep dive + 02 next-best topic; full package each ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
-**Shorts rule (all episodes):** every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
+**Shorts rule (all episodes):** exactly three Shorts are required. Every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
 
 The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
 
@@ -159,14 +160,14 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 1 | Audio edit | `investing-bros-post-production` | Nadav (cuts) |
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
-| 4 | Shorts, mid-form highlights | `investing-bros-shorts` | Nadav |
-| 4b | Segment videos (deep dive every episode) | `investing-bros-segment-video` | Amitai (title, publish) |
+| 4 | Exactly 3 shorts; optional mid-form highlights | `investing-bros-shorts` | Nadav |
+| 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
 | 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.
 
-Stages 2–4 only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
+Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 
 ## Never
 - Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.

@@ -3,8 +3,9 @@ name: investing-bros-episode-upload
 description: >-
   Take a finished Investing Bros / אחים להשקעות episode out: review ping,
   RedCircle draft (edited audio, final Hebrew title and description with the
-  RTL + "?" fix, episode number), YouTube uploads (video episode, shorts,
-  mid-form) as private, then, with Amitai's OK, publish and check how it
+  RTL + "?" fix, episode number), a Private full episode when made, exactly two
+  Unlisted segment evaluations, then exactly three shorts uploaded after the
+  episode is live, plus optional mid-form. With Amitai's OK, publish and check how it
   renders on Spotify, RedCircle and YouTube, and share it on WhatsApp. Use
   when Amitai says "upload episode N", "put it on RedCircle", "העלאה",
   "YouTube", "יוטיוב", "publish", "Spotify", "share the episode" or "תפיץ את
@@ -17,12 +18,12 @@ Load `investing-bros-show` first: accounts, naming, the Drive tree and the Whats
 Use approved artwork supplied through `investing-bros-brand` for every cover and thumbnail. If artwork needs creation or revision, continue with that skill; do not redesign assets or maintain separate design rules in the upload workflow.
 
 ## When to use
-When the episode folder is complete (audio, title and description files, plus whichever of video, shorts and mid-form were made), for the review ping and the uploads; again after Amitai's OK, to publish, check and share. Also use this for a private back-catalogue re-upload.
+When the episode folder is complete (audio, title and description files, exactly two segment packages and exactly three short packages, plus any full episode video or requested mid-form), for the review ping and uploads; again after Amitai's OK, to publish, check and share. Also use this for a private back-catalogue re-upload.
 
 ## Inputs
 1. Episode number N, confirmed with Amitai.
 2. From the episode root: `הקלטה-ערוכה-פרק-N.m4a` (never anything from `extras/`), `כותרות-פרק-N.txt` (title = the text after `בחירה סופית:`; if the file holds a single title, that one) and `תיאור-פרק-N.txt`. Episodes 1–7: the Docs `אפשרויות כותרת` / `תיאור הפרק`.
-3. `video/`, `segments/`, `Shorts/`, `mid-form/` contents, when made.
+3. Exactly two complete packages in `segments/`, exactly three complete packages in `Shorts/`, plus `video/` when made and `mid-form/` when requested.
 4. RedCircle login from show conventions → Roles and accounts. Never echo the password or put it in chat or logs.
 
 ### Back-catalogue re-upload
@@ -37,7 +38,7 @@ episode; replacing or deleting the public upload still requires Amitai's explici
 ## Steps
 
 ### 1. Review ping
-List the episode folder and compare it with the show's Drive tree: the root holds only the audio and the two `.txt` files; every short has its four files. Then get a shareable link to the **episode folder** and ask the WhatsApp owner to send one message to `אחים להשקעות`: ready for review + link, ending with the show tag. Wait for Amitai's OK to upload. If Amitai directly asked in chat for this upload, that request is the upload OK and no duplicate review ping is needed; it is not permission to publish.
+List the episode folder and compare it with the show's Drive tree: the root holds only the audio and the two `.txt` files; `segments/` has exactly two complete packages (01 deep dive and 02 next-best qualifying topic); `Shorts/` has exactly three complete four-file packages. Then get a shareable link to the **episode folder** and ask the WhatsApp owner to send one message to `אחים להשקעות`: ready for review + link, ending with the show tag. Wait for Amitai's OK to upload. If Amitai directly asked in chat for this upload, that request is the upload OK and no duplicate review ping is needed; it is not permission to publish.
 
 ### 2. RedCircle draft
 Make the RTL-safe copy with the script, never by hand:
@@ -58,16 +59,19 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 6. **Save as Draft** / leave **Unpublished**. Leave RedCircle's default ad insertion points unless Amitai asks.
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
-### 3. YouTube uploads (private)
+### 3. YouTube uploads (Private episode, Unlisted segments, Shorts after live)
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
 
 Follow [the Studio checklist](references/youtube-studio.md). In particular, switch
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
-brand channel before selecting files. Upload as **Private** and choose
-**No, it's not made for kids**.
+brand channel before selecting files. Upload the full episode as **Private** and
+the two segment evaluations as **Unlisted**; choose **No, it's not made for kids**.
+The API uploader creates Private uploads, so switch both segment videos to Unlisted
+in Studio before card/end-screen review. Do not upload the three Shorts until the
+full episode is live.
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks). It must include the `האזינו בספוטיפיי:` line (show link until step 5 swaps in the episode link).
-- **Shorts** (`Shorts/`): title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`. The full-episode link goes in once the episode has a URL.
-- **Segment videos** (`segments/`; the deep dive is required every episode): follow `investing-bros-segment-video`.
+- **Exactly three Shorts** (`Shorts/`): only after the full episode is live, upload with the title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`.
+- **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
@@ -91,8 +95,8 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; YouTube uploads private with titles and descriptions; review ping sent.
-- After the OK: live on RedCircle **and** YouTube with identical titles, the episode listed on Spotify, and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue); the YouTube episode and its shorts link the Spotify **episode** URL, not the show.
+- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; the full episode when made and both segment videos are uploaded for review, all three Shorts have completed Telegram approval and Drive filing, and the review ping was sent.
+- After the OK: live on RedCircle **and** YouTube with identical titles; both segment videos are Public after the full episode; all three Shorts were uploaded only after the episode went live; the episode is listed on Spotify; and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue). The YouTube episode and all three Shorts link the Spotify **episode** URL, not the show.
 - WhatsApp sends confirmed, when asked.
 
 ## Hand back
