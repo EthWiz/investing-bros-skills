@@ -1,5 +1,5 @@
 {
-  "version": 2,
+  "version": 4,
   "coordinate_system": "normalized top-left x,y,width,height",
   "palette": {
     "navy": "#09243B",
@@ -39,107 +39,138 @@
         3000,
         3000
       ],
-      "status": "selected-reference",
+      "status": "adaptation-review-required",
       "zones": {
         "headline": [
-          0.08,
+          0.06,
           0.04,
-          0.84,
+          0.88,
           0.28
         ],
         "number": [
-          0.42,
-          0.32,
-          0.16,
-          0.05
+          0.4,
+          0.33,
+          0.2,
+          0.08
         ],
-        "hero": [
+        "left_portrait": [
           0.04,
-          0.38,
-          0.92,
-          0.6
+          0.43,
+          0.46,
+          0.57
+        ],
+        "right_portrait": [
+          0.5,
+          0.43,
+          0.46,
+          0.57
+        ],
+        "backing_disc": [
+          0.12,
+          0.4,
+          0.76,
+          0.56
         ],
         "masthead": [
           0.76,
-          0.86,
+          0.85,
           0.2,
           0.11
+        ],
+        "centerpiece": [
+          0.35,
+          0.66,
+          0.3,
+          0.23
         ]
       },
-      "note": "Since episode 3: show mark bottom-right, no credit strip, no newspaper base."
+      "note": "Square adaptation of shared coin/facade family; review independently. Keep both faces, exact episode copy, number; topic image subordinate or omitted if crowded. No blurred padding."
     },
     "episode-wide": {
       "size": [
         1920,
         1080
       ],
-      "status": "deprecated",
+      "status": "selected-reference",
       "zones": {
-        "masthead": [
-          0.77,
+        "left_portrait": [
+          0,
           0.05,
-          0.17,
-          0.13
+          0.3,
+          0.95
+        ],
+        "right_portrait": [
+          0.7,
+          0.05,
+          0.3,
+          0.95
         ],
         "headline": [
-          0.5,
-          0.22,
-          0.44,
-          0.44
-        ],
-        "hero": [
-          0.05,
-          0.14,
-          0.42,
-          0.68
+          0.27,
+          0.18,
+          0.46,
+          0.38
         ],
         "number": [
-          0.53,
-          0.72,
-          0.13,
-          0.07
-        ],
-        "credit": [
-          0.3,
-          0.89,
-          0.4,
+          0.44,
+          0.57,
+          0.12,
           0.06
+        ],
+        "backing_disc": [
+          0.3,
+          0.1,
+          0.4,
+          0.72
+        ],
+        "masthead": [
+          0.82,
+          0.76,
+          0.15,
+          0.13
+        ],
+        "centerpiece": [
+          0.32,
+          0.64,
+          0.36,
+          0.32
         ]
       },
-      "note": "Use the square cover centred on its blurred stretch (layouts.md -> Widescreen YouTube thumbnail)."
+      "note": "Shared selected coin/facade photo-cutout family. Main episode includes supplied number tab. Original sources and distinct identities required; see covers.md. Zones are approximate."
     },
     "shorts-vertical": {
       "size": [
         1080,
         1920
       ],
-      "status": "proposed-adaptation",
+      "status": "approved",
       "zones": {
-        "masthead": [
-          0.22,
-          0.09,
-          0.56,
-          0.09
-        ],
         "headline": [
-          0.1,
-          0.22,
-          0.8,
-          0.21
-        ],
-        "hero": [
-          0.09,
-          0.45,
-          0.82,
-          0.32
+          0.04,
+          0.229,
+          0.92,
+          0.3
         ],
         "number": [
           0.38,
-          0.79,
+          0.47,
           0.24,
-          0.04
+          0.05
+        ],
+        "hero": [
+          0.06,
+          0.5,
+          0.88,
+          0.38
+        ],
+        "masthead": [
+          0.71,
+          0.88,
+          0.25,
+          0.09
         ]
-      }
+      },
+      "note": "Title strips and pill inside the centre square (y 420-1500 of 1920); Heebo Black via make_cover_title.py; engraved topic art over a mustard disc; show mark bottom-right; no host strip. See shorts-covers.md."
     },
     "discussion-square": {
       "size": [
@@ -277,6 +308,52 @@
           1470
         ]
       }
+    },
+    "segment-wide": {
+      "size": [
+        1280,
+        720
+      ],
+      "status": "selected-reference",
+      "zones": {
+        "left_portrait": [
+          0,
+          0.05,
+          0.3,
+          0.95
+        ],
+        "right_portrait": [
+          0.7,
+          0.05,
+          0.3,
+          0.95
+        ],
+        "headline": [
+          0.27,
+          0.18,
+          0.46,
+          0.38
+        ],
+        "backing_disc": [
+          0.3,
+          0.1,
+          0.4,
+          0.72
+        ],
+        "masthead": [
+          0.82,
+          0.76,
+          0.15,
+          0.13
+        ],
+        "centerpiece": [
+          0.32,
+          0.58,
+          0.36,
+          0.38
+        ]
+      },
+      "note": "Same photo-cutout family as episodes, topic plus question, no episode tab. Selected coin/facade references. Save in segments/; no square required."
     }
   }
 }

@@ -35,8 +35,10 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 
 `investing-bros-brand` is the single source for design rules, templates, selected artwork,
 prompts and visual QA. It serves the episode workflow across stages rather than adding
-another chronological stage. It includes four reference covers, two approved teaser
-stills, the solid video logo and seven format specs.
+another chronological stage. It owns every cover, including Shorts covers, and the only
+typeface is Heebo. Its reference images live in Drive (`Brand Resources/references`),
+indexed by file ID; the repo keeps only the rules, the layout specs, the solid video
+logo and the cover scripts.
 
 | Owner | Responsibility |
 |---|---|
@@ -48,8 +50,10 @@ stills, the solid video logo and seven format specs.
 GitHub holds the canonical design system. Episode files stay in the established Drive
 folders, with an `extras/artwork-register.json` recording version, status and source.
 Installed skill copies must be refreshed after merges. The approved full-frame teaser is
-implemented in `investing-bros-video`; the other non-square layouts remain proposed
-adaptations, not editable Canva/Figma files or implemented renderers.
+implemented in `investing-bros-video`, the Shorts video hook in `investing-bros-shorts`,
+and the Shorts cover title in `investing-bros-brand` (`make_cover_title.py`). The
+discussion card and lower third remain proposed adaptations, not editable Canva/Figma
+files or implemented renderers.
 
 ## Improving the skills
 
@@ -89,7 +93,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 - **Codex**: symlink into `~/.codex/skills/` (or point Codex at this repo; it reads `AGENTS.md`).
 - **Grokbot**: keeps its own copy in sync with this repo.
 
-Version 3.0 merged eleven production skills into seven. This change adds a shared brand capability. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art` or `-share-new-episode`, it has an old copy: remove those and install the current set.
+Version 3.0 merged eleven production skills into seven. This change adds a shared brand capability. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art`, `-share-new-episode` or `-short-covers` (folded into `investing-bros-brand` in October 2026), it has an old copy: remove those and install the current set.
 
 Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
 

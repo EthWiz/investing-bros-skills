@@ -1,7 +1,7 @@
 interface:
   display_name: "Investing Bros Brand"
-  short_description: "Financial Journal artwork, templates and brand rules"
-  default_prompt: "Use $investing-bros-brand to create podcast artwork using the Financial Journal identity."
+  short_description: "Episode, segment and Shorts covers, templates and brand rules"
+  default_prompt: "Use $investing-bros-brand to create consistent podcast artwork. For photo-cutout episodes and segments, follow the selected coin/facade references and verify both host identities. For Shorts covers, generate text-free art and set the title with make_cover_title.py (Heebo)."
 policy:
   products:
   - "chatgpt"
