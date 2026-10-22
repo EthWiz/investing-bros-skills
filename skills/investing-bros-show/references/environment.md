@@ -28,7 +28,8 @@ Read this before working around anything. Every line here cost an agent time to 
    and note which source and resolution you used.
 
 - **Riverside** login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive. Nadav drags full episodes to Drive himself.
-- **Local-exec transfer** (CopyToBox/CopyFromBox) and a Drive upload of a big file are capped at **100 MB**. Split anything larger into 50 MB parts (`split -b 50M`), rejoin with `cat`, and check the sha256 of the original against the rejoined file.
+- For moving a completed large file out of the box, use the chunked handoff under
+  [Delivering files](#delivering-files); do not assume a browser upload will be faster.
 - **Never sign in to Amitai's Google account from a browser.** The account is in Advanced Protection: sign-in needs his passkey or security key; approving on the phone isn't enough, and a failed attempt locks browser sign-in for 48 hours.
 - **Drive for desktop on Amitai's Mac streams files** (`~/Library/CloudStorage/GoogleDrive-…`). That folder shows up empty to the device shell, and listing it can hang the bridge. Don't use it.
 - **Until the Drive script exists:** ask Amitai to Option-drag the file from Finder into `~/Downloads` (a connected folder), then process it on the Mac.
@@ -69,3 +70,14 @@ Read this before working around anything. Every line here cost an agent time to 
 ## Delivering files
 - Chat attachments are capped at **30 MB**: send a re-encoded review copy (`-crf 21`) and keep the master.
 - Telegram bot uploads are capped at **50 MB**.
+- **Bot transfer tools (verified 2026-10-22):** `UploadFile` (box → Google
+  Drive) and `CopyFromBox` (box → Amitai's Mac) each cap a single file at
+  **100 MB**. Uploading a large video through Drive's web UI in the box browser
+  stalls on the box's slow connection.
+- **Working large-video handoff:** record the original sha256, split into
+  10–20 MB pieces (for example, `split -b 15M FILE FILE.part-`), then
+  `CopyFromBox` each piece to the Mac's `~/Downloads` one at a time, retrying a
+  failed piece. On the Mac, run `cat FILE.part-* > FILE`, then compare
+  `shasum -a 256 FILE` with the original checksum. This successfully delivered
+  final segment videos; Amitai can drag the verified reassembled file from
+  `~/Downloads` to Drive.
