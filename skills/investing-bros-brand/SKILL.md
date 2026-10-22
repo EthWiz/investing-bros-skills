@@ -19,8 +19,9 @@ creates or uploads the file.
 ## Inputs
 The format, topic, approved headline and episode number; reuse known session values and
 ask only for what blocks accurate work. Photo-cutout covers also need a separate usable
-photo or frame of each brother. Never invent episode numbers, quotes, claims, portraits
-or company logos.
+frame of each brother from that same episode's recording. Any point in the episode is
+valid, including outside a segment being covered; never use a portrait from another
+episode. Never invent episode numbers, quotes, claims, portraits or company logos.
 
 ## Authority and scope
 `investing-bros-show` owns names, episode numbering, Drive paths, approvals and
@@ -49,29 +50,36 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    inspect each. A missing reference stops the run: report it, don't substitute. For an
    edit, use the exact image the user selected, never a nearby variant.
 3. Fill the matching prompt with the exact copy, number, format and subject, and attach
-   only the relevant references. Generate with the built-in image tool; Grokbot runs it
-   through Codex on Amitai's Mac when connected (prompts → Codex backend) and otherwise
-   uses its own image tool with the same prompt; say which in the hand-back (Shorts
-   covers for the standing batch need Codex: report a blocker instead). No
-   code-drawn illustrations and no ad hoc Pillow renderers: the only typesetting script
-   is `scripts/make_cover_title.py` (Heebo Black).
-4. Photo-cutout covers: distinct original sources for each brother, a fresh portrait
-   pair, the approved two-line headline, one photographic centerpiece, only the allowed
-   touch-ups; verify both identities. Shorts covers: text-free art, then the title with
-   `make_cover_title.py`.
-5. Review against the quality checks; fix an isolated error with one targeted edit and
-   re-inspect. Never claim typography, resolution or layers from the prompt alone.
-6. Record the artifact in the episode's `extras/artwork-register.json` (actual path, size,
-   sources, `episode_tab`), then run
+   only the relevant references. Until Amitai says the design is dialed in, every main
+   episode, segment and individual Shorts cover is three clearly labeled options A/B/C,
+   made with Codex on Amitai's Mac through prompts → Codex backend. If Codex is
+   unavailable, report a blocker instead of switching generators. Other artwork may use
+   the built-in image tool with the same prompt; say which generator ran in the
+   hand-back. No code-drawn illustrations and no ad hoc Pillow renderers: the only
+   typesetting script is `scripts/make_cover_title.py` (Heebo Black).
+4. Photo-cutout covers: distinct original frames for each brother from the same episode
+   being covered, a fresh portrait pair, the approved two-line headline, one photographic
+   centerpiece and only the allowed touch-ups; verify both identities. Frames may come
+   from anywhere in the episode, not necessarily the segment. Shorts covers: three
+   text-free Codex art options, then the title with `make_cover_title.py`.
+5. Review all three labeled options against the quality checks; fix an isolated error
+   with one targeted edit and re-inspect. Keep each option in an A/B/C-labeled folder
+   under its final-form filename so `check_cover.py` can check all three before review.
+   Never put the option label inside the artwork or claim typography, resolution, layers
+   or source provenance from the prompt alone.
+6. Show Amitai the three labeled options; he picks. Promote only his selection to the
+   final filename.
+7. Record the selected artifact in the episode's `extras/artwork-register.json` (actual
+   path, size, sources, `episode_tab`), then run
    `scripts/check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json`.
    It must pass before filing.
-7. File the final artwork in Drive (find the episode folder by its `פרק N` prefix): main
+8. File the final artwork in Drive (find the episode folder by its `פרק N` prefix): main
    episodes get both `cover-פרק-N.png` and `thumbnail-פרק-N.jpg` in the episode root,
    next to `תמלול - פרק N`; segment thumbnails go in `segments/`, Shorts covers in
    `Shorts/`. Images can go through the Drive connector; confirm each shows as
    `image/png` or `image/jpeg`. Replace an existing file of the same name rather than
-   adding a duplicate, and preserve other files.
-8. Show Amitai; he picks. Nothing is published or sent to anyone without his explicit OK.
+   adding a duplicate, and preserve other files. Nothing is published or sent to anyone
+   without his explicit OK.
 
 ## Done when
 - The requested artwork sits in its Drive folder under the `investing-bros-show` name:
@@ -80,6 +88,8 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
   `Shorts/`; no copies in `promo/`.
 - `check_cover.py` passes for each file and `extras/artwork-register.json` records actual
   paths, sizes, version, status and sources.
+- Until Amitai says the design is dialed in, each requested cover was presented as three
+  labeled Codex options and the final filename is only Amitai's selected option.
 - For a prompt-only request, the filled prompt is delivered; no image is implied.
 - A brand change updates this skill and passes review. A new or replaced reference is in
   Drive `Brand Resources/references/` with its row in the asset index, and

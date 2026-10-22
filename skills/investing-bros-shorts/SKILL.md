@@ -60,7 +60,13 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    python3 scripts/build_amitai_short.py --config short.json --work WORK --output short.mp4
    `WORK` holds the clean base, `fonts/Heebo-{Black,ExtraBold,SemiBold}.ttf`, `logo.png` (torn-paper logo), `v5_cta.png`, `v5_end.png`. `scripts/end_gfx.py` is the ep3 variant of the end card only.
 6. **One QA pass, then Telegram for approval.** Check a strip of 8 frames + `check_short.py`: hook strips 0–3 s, logo on every frame, name tag matches who is speaking, captions RTL and verbatim, panels don't hide captions or logo, CTA + arrow, navy end card with no caption leaking onto it, −14 LUFS / peak < −1 dB. Fix what fails once, then send the Short to Telegram for Nadav/Amitai's approval (`send_telegram.py video short.mp4 --caption … --thumb cover.jpg`, destination from `investing-bros-show`). A vertical Short needs `width=1080`, `height=1920`, `supports_streaming=true` and a vertical `thumbnail` in `sendVideo`, or Telegram shows it landscape; the script sends the first three (from ffprobe) and the thumbnail only with `--thumb`, so never skip it or call the Bot API by hand. Do not upload or publish before approval.
-   Cover: every one of the three standing deliverables gets a dedicated cover from `investing-bros-brand` (Shorts covers): art generated with the Codex CLI on Amitai's Mac, the exact Hebrew title set in Heebo by `make_cover_title.py`, checked with `check_cover.py`. Use it both as `-cover.jpg` and as the YouTube custom thumbnail. If Codex is unavailable, report the blocker; a legacy `make_cover.py` rebuild does not complete the current standing batch.
+   Cover: every one of the three standing deliverables gets a dedicated cover from
+   `investing-bros-brand` (Shorts covers). Until Amitai says the design is dialed in,
+   brand delivers three clearly labeled Codex options A/B/C for each individual Short;
+   Amitai picks one. Set the exact Hebrew title in Heebo with `make_cover_title.py`,
+   check the selected option with `check_cover.py`, and use it both as `-cover.jpg` and
+   as the YouTube custom thumbnail. If Codex is unavailable, report the blocker; a
+   legacy `make_cover.py` rebuild does not complete the current standing batch.
 7. **Upload to Drive** — every Short's video and its cover/thumbnail go in the `Shorts/` subfolder of the current episode's Drive folder (`investing-bros-show` → Drive tree, Shorts rule; find the episode folder by its `פרק N` prefix; create `Shorts/` inside it if missing). File names follow `investing-bros-show` → Naming:
    - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `Shorts/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
    - **Phone-friendly copy first:** re-encode every MP4 you hand over or upload with `-c:v libx264 -profile:v main -pix_fmt yuv420p -movflags +faststart -brand mp42 -c:a aac` (iPhone/WhatsApp/Drive preview all play it).
@@ -166,6 +172,8 @@ Kept as on main for rebuilding older exports; the approved format above replaces
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
    - duration 20–45 s (up to 60 s with a reason in the hand-back); listen to every cut — no clipped words, no clicks
 6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid. It comes from `investing-bros-brand` (Shorts covers): give it the hook, the episode number and the Short's file name, and use the result both as `-cover.jpg` and as the YouTube custom thumbnail. Layout, font and checks live there only.
+   Until Amitai says the design is dialed in, brand returns three clearly labeled Codex
+   options A/B/C for each individual Short; show all three and use only Amitai's pick.
    Rebuilding an older Short in the legacy video-frame style is the only use of `make_cover.py`:
    ```bash
    python3 scripts/make_cover.py --source raw.mp4 --at <source time of a good frame> --side L \
@@ -191,7 +199,9 @@ Optional 5–10 min YouTube videos, each **one continuous standalone stretch** o
 - File as `mid-form/מיד-פורם-NN-<נושא>.mp4` with its title and description in `מיד-פורם-NN-<נושא>.txt`. Share a review copy compressed under 100 MB (transfer caps in `investing-bros-show` → references/environment.md). Nadav approves it before upload.
 
 ## Done when
-- `Shorts/` has **exactly three** shorts, each with a non-empty `.mp4`, Codex-made `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`.
+- `Shorts/` has **exactly three** shorts, each with a non-empty `.mp4`, Amitai's selected
+  Codex-made `-cover.jpg` from three labeled options, `.srt` and
+  `youtube-שורט-NN.md`.
 - All three were selected through the picks flow, rendered and passed `check_short.py`, sent to Telegram with their covers and approved.
 - All three were uploaded only after the full episode went live. Each has its custom cover, `.srt`, full-episode timestamp link and Spotify episode link in the description, Related video set to the full episode, its full-episode comment pinned once Public, and its URL/status recorded in `youtube-שורט-NN.md`.
 - `mid-form/` has each highlight that was asked for, with its `.txt`.
