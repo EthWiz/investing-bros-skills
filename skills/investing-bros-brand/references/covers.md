@@ -17,6 +17,16 @@ Segments need no square. File names follow `investing-bros-show` → Naming;
 Zones in `assets/templates/layouts.json` are planning guides (normalized
 [x, y, width, height] from the top left), not crop masks.
 
+## Standing option rule (2026-10-22)
+Until Amitai says the design is dialed in, make every main-episode cover set, segment
+thumbnail and individual Short cover as **three clearly labeled options: A, B and C**,
+using Codex through the backend recipe in [prompts](prompts.md). Amitai picks one; do
+not promote an option to the final delivery filename before his selection. For a main
+episode, each option includes a directly composed square cover and matching wide
+thumbnail. Put the option label in its filename, folder or review presentation, never
+inside the artwork. Codex being unavailable is a blocker, not permission to switch
+generators.
+
 ## Selected references
 Inspect both before every new cover (Drive `references/covers`, IDs in the
 [asset index](asset-index.md)). They define the family; the coin and facade are
@@ -42,10 +52,14 @@ topic examples, not mandatory props.
   headline hierarchy, face scale and logo placement stable. Do not reuse the same two
   cutouts by default.
 
-## Portraits and identity
-1. Collect a separate original photo or frame of each brother. Map identity by looking,
-   never by file name or seat. `host-amitai-ep08.png` and `host-nadav-ep08.png` (Drive
-   `references/hosts`) are identity anchors, not frames to reuse. Resolve any doubt first.
+## Portraits and identity (same-episode source rule, 2026-10-22)
+1. For an episode or segment cover, collect a separate original frame of each brother
+   from that same episode's recording. Any point in the episode is valid; a segment
+   thumbnail does not have to use a frame from the segment itself. Never use a portrait
+   or photo from another episode for a new cover. Map identity by looking, never by file
+   name or seat. `host-amitai-ep08.png` and `host-nadav-ep08.png` (Drive
+   `references/hosts`) are identity anchors only, not reusable production portraits.
+   Resolve any doubt first.
 2. Pick sharp, well-lit frames: open eyes, alert gaze, relaxed smile or engaged look. Reject
    blinks, droopy eyelids, motion blur and mid-word mouths. Prefer a sharper source
    recording over synthetic sharpening; don't claim a teaser frame came from the full recording.
@@ -74,9 +88,10 @@ selected coin and facade set the bar. No low-detail clip art, cartoon rays, glos
 objects, floating decorations, fake charts, invented numbers or unrelated props. Natural
 metallic detail on a gold object is fine; metallic headlines are not. A thematic
 stock-exchange photo is not a claim that an index is an exchange.
-When asked for alternatives, vary portraits and centerpiece as requested, label the
-options and record the exact selection. For a mixed selection, map each chosen portrait
-and centerpiece to its source and side, then combine them without redesigning faces.
+The required A/B/C options must vary portraits and centerpiece meaningfully; label all
+three and record Amitai's exact selection. For a mixed selection, map each chosen
+portrait and centerpiece to its source and side, then combine them without redesigning
+faces.
 
 ## Delivery checks
 Read the real pixel size and disclose it: a generated 1672×941 or 1254×1254 image is not

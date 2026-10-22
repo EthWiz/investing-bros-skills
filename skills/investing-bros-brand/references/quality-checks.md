@@ -10,12 +10,19 @@ for downloaded references. This list is what only eyes can check.
 - The exact approved title; no invented quotations, data or host credit.
 - The format's layout and size target from [covers](covers.md),
   [Shorts covers](shorts-covers.md) or [video graphics](video-graphics.md).
-- Photo-cutout covers: both selected references and a separate original photo of each
-  brother, identity and side recorded; blurred or blinking frames rejected; portraits
-  different from the recent covers.
+- Main-episode, segment and individual Shorts covers: Codex is available and the plan
+  calls for three clearly labeled options A/B/C. This is required until Amitai says the
+  design is dialed in.
+- Photo-cutout covers: both selected references and a separate original frame of each
+  brother from the same episode recording, with episode, timestamp, identity and side
+  recorded. Frames may come from any point in the episode, not necessarily the segment;
+  sources from another episode, blurred frames and blinking frames are rejected.
 - Mixed selections: the exact source image and side for every selected element.
 
 ## After generation
+- All three options are present, labeled A/B/C in filenames, folders or the review
+  presentation (never on the artwork), and made through the Codex backend. Review every
+  option; record Amitai's selection before assigning the final delivery filename.
 - Read every Hebrew word letter by letter (אמיתי, רסקין, אחים להשקעות); `?` on the
   left; numbers and Latin names (`S&P 500`) in the right order.
 - Headline and number match the supplied copy, not a guessed title.
@@ -25,7 +32,7 @@ for downloaded references. This list is what only eyes can check.
   scale; touch-ups within the [covers](covers.md) scope and disclosed. Two-strip
   headline, one polished photographic centerpiece, bottom-right show mark clear of the
   chin and duration badge; no name strip, clip art, cartoon rays or blurred sidebars.
-- Alternatives visibly differ in portraits and centerpieces; a recolour is not a new photo.
+- Options visibly differ in portraits and centerpieces; a recolour is not a new frame.
 - Restrained paper edges and breathing room around faces and headline; the topic reads.
 - Tokenization: physical paper is distinguishable from the digital fragments.
 - At 160–200 px wide the headline and focal object are still identifiable.
