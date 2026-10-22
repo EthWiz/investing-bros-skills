@@ -25,6 +25,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 
 - Steps 2–4 only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
+- `investing-bros-analytics` reads YouTube Studio stats (read-only) for the weekly Sunday report and ad-hoc analyses; posts a short text to Telegram.
 - `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work.
 - **Nothing goes public without Amitai's explicit OK in chat.**
 
