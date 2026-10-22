@@ -17,6 +17,9 @@
 
 ## Handoff
 Copy supplies: topic, episode number, approved headline, relevant transcript context.
+For main-episode and segment photo-cutout covers, it also supplies each host's original
+frame from that same episode recording and its timestamp; a segment may use any point in
+the episode. Never hand off a portrait from another episode.
 Brand supplies: artwork, actual format/dimensions, review status and source references.
 Video/Shorts supply: required placement, safe regions, duration/transparency needs.
 Brand returns the appropriate assets. No task silently redefines the global palette.
@@ -34,6 +37,8 @@ timestamps, identity/side, touch-ups and reuse; record exact component origins f
 selections. Mark missing optional data null.
 Use versioned draft filenames. Promote a version to the final delivery filename only
 once review is explicit; retain the previous version rather than overwriting silently.
+Until Amitai says the design is dialed in, keep the required Codex candidates clearly
+labeled A/B/C and record which one he selected.
 Do not treat visual approval as permission to publish or message anyone.
 
 ## Status

@@ -78,6 +78,8 @@ Upload both files to the episode root (Drive connector, conversion to Google Doc
 
 ### 6. Cover and thumbnail headline brief (every episode)
 Prepare the artwork brief and 2–3 headline options following [references/thumbnail.md](references/thumbnail.md), preserving any supplied approved copy. Hand visual production to `investing-bros-brand`; load it to continue when the request includes finished artwork.
+Until Amitai says the design is dialed in, finished artwork means three clearly labeled
+Codex options A/B/C for the main-episode cover set; Amitai picks the final.
 
 ## Done when
 - Episode root has `כותרות-פרק-N.txt` (with Amitai's pick after `בחירה סופית:`) and `תיאור-פרק-N.txt`.

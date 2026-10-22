@@ -21,26 +21,36 @@ engraved topic illustration. Reference: `shorts-title-strips-ep1.png` (Drive
 Title = the Short's hook, the same faithful paraphrase as its on-screen hook: one idea,
 two lines, ideally ≤14 characters a line. No numbers that aren't in the clip.
 
+## Standing option rule (2026-10-22)
+Until Amitai says the design is dialed in, every individual Short cover is delivered as
+three clearly labeled Codex options A/B/C for him to choose from. This means three
+options for each of the episode's three Shorts, not one option per Short.
+
 ## How to make it
-1. **Generate the art text-free with Codex on Amitai's Mac** (prompt: [prompts](prompts.md)
-   → Shorts cover art, run through prompts → Codex backend): vertical 9:16, navy textured
-   paper, engraved illustration of the topic over a mustard disc, empty top half for the
-   title, empty bottom-right corner, no text, letters or logos. The three standing Shorts
-   of an episode need Codex art (`investing-bros-shorts`); if Codex is unavailable, report
-   the blocker instead of switching generator. Image models misspell Hebrew; never keep
-   generated text.
+1. **Generate three labeled art options A/B/C, text-free, with Codex on Amitai's Mac**
+   (prompt: [prompts](prompts.md) → Shorts cover art, run through prompts → Codex
+   backend): vertical 9:16, navy textured paper, engraved illustration of the topic over
+   a mustard disc, empty top half for the title, empty bottom-right corner, no text,
+   letters or logos. If Codex is unavailable, report the blocker instead of switching
+   generator. Image models misspell Hebrew; never keep generated text.
 2. **Typeset the title with Heebo:**
    ```bash
-   python3 scripts/make_cover_title.py ART.png "שורט-NN-<נושא>-cover.jpg" \
+   python3 scripts/make_cover_title.py ART-A.png "option-A/שורט-NN-<נושא>-cover.jpg" \
      --line1 "מי ינצח" --line2 "במרוץ הרובוטקסי?" --pill "פרק 1" \
      --font fonts/Heebo-Black.ttf --logo assets/logo-solid.png
    ```
+   Repeat in `option-B/` and `option-C/`; the folder labels the option without adding a
+   label to the artwork.
    It crops the art to 1080×1920 without stretching, keeps both lines the same size, puts
    the pill and the logo in place, and fails if the title would leave the centre square.
-3. **Check:** `python3 scripts/check_cover.py "שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`,
-   then look at it full size and at ~200 px wide: title readable, `?` on the left, pill not
-   clipped, logo readable, nothing important outside the centre square.
-4. **File it** next to its Short in the episode's Drive `Shorts/` folder
+3. **Check all three options** with
+   `python3 scripts/check_cover.py "option-X/שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`,
+   then at full size and at ~200 px wide: title readable, `?` on the left, pill not
+   clipped, logo readable, nothing important outside the centre square. Show the labeled
+   set to Amitai and wait for his selection.
+4. **Promote and check the selected option:**
+   `python3 scripts/check_cover.py "שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`.
+   Then file it next to its Short in the episode's Drive `Shorts/` folder
    (`investing-bros-show` → Drive tree, Shorts rule), then hand it to `investing-bros-shorts`.
 
 A whole cover generated in one pass by Codex ([prompts](prompts.md) → one-pass cover) is
@@ -51,4 +61,5 @@ in `investing-bros-shorts`) is only for rebuilding older Shorts.
 ## Done when
 `שורט-NN-<נושא>-cover.jpg` (1080×1920 JPEG) sits next to its Short in `Shorts/` with the
 exact Hebrew hook, the `פרק N` pill and the bottom-right show mark, no name strip, and
-`check_cover.py` passes.
+`check_cover.py` passes. Until the design is dialed in, Amitai selected it from three
+clearly labeled Codex options.
