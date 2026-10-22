@@ -11,4 +11,5 @@ The overall order after Amitai's OK. Detail in `../SKILL.md` step 4.
    hasn't listed it yet and swap it later; `check_copy.py --youtube` warns if the line is missing.
 4. **Segment videos** (deep dive every episode) - Public after the full episode (with Amitai's OK); each description links
    the episode, and the episode description gets a line per segment, e.g. `הצלילה לעומק כסרטון נפרד: <URL>`. See `investing-bros-segment-video`.
-5. **Then the Shorts** - with the episode's YouTube and Spotify links.
+5. **Then the Shorts** - uploaded only once the full episode is live, with its YouTube link (`?t=`)
+   and the Spotify link from its YouTube description (ask Nadav if missing). See `investing-bros-shorts`.
