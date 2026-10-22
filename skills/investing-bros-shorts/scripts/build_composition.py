@@ -104,48 +104,48 @@ def close_gaps(items, max_gap=0.35):
     return items
 
 
-BASE_CSS = """CARD .root{width:100%;height:100%;box-sizing:border-box;padding:28px 36px;display:flex;flex-direction:column;justify-content:center;gap:14px;font-family:'Heebo ExtraBold','Heebo Black',sans-serif;color:#fff;background:rgba(7,9,8,0.92);border:2px solid rgba(245,183,31,0.55);border-radius:28px}
-CARD .kicker{font-family:'Heebo SemiBold',sans-serif;font-size:30px;color:var(--accent-0)}
-CARD .title{font-family:'Heebo Black',sans-serif;font-size:76px;line-height:1.02;margin:0}
+BASE_CSS = """CARD .root{width:100%;height:100%;box-sizing:border-box;padding:28px 36px;display:flex;flex-direction:column;justify-content:center;gap:14px;font-family:'Heebo ExtraBold','Heebo Black';color:#fff;background:rgba(7,9,8,0.92);border:2px solid rgba(245,183,31,0.55);border-radius:28px}
+CARD .kicker{font-family:'Heebo SemiBold';font-size:30px;color:var(--accent-0)}
+CARD .title{font-family:'Heebo Black';font-size:76px;line-height:1.02;margin:0}
 CARD .em{color:var(--accent-0)}"""
 
 TYPE_CSS = {
     "route": """CARD .route{display:flex;flex-direction:row;align-items:center;gap:22px}
-CARD .place{font-family:'Heebo Black',sans-serif;font-size:64px;line-height:1}
+CARD .place{font-family:'Heebo Black';font-size:64px;line-height:1}
 CARD .track{position:relative;flex:1;height:10px;background:rgba(255,255,255,0.12);border-radius:5px;overflow:hidden}
 CARD .fill{position:absolute;right:0;top:0;height:10px;width:0;background:var(--accent-0);border-radius:5px}""",
     "stat": """CARD .row{display:flex;flex-direction:row;align-items:baseline;gap:22px}
-CARD .num{opacity:0;font-family:'Heebo Black',sans-serif;font-size:150px;line-height:0.9;color:var(--accent-0);direction:ltr;unicode-bidi:isolate}
-CARD .label{font-family:'Heebo ExtraBold',sans-serif;font-size:44px;line-height:1.1}
-CARD .note{font-family:'Heebo SemiBold',sans-serif;font-size:36px;color:#C9D6CF;border-top:2px solid rgba(255,255,255,0.14);padding-top:14px}""",
+CARD .num{opacity:0;font-family:'Heebo Black';font-size:150px;line-height:0.9;color:var(--accent-0);direction:ltr;unicode-bidi:isolate}
+CARD .label{font-family:'Heebo ExtraBold';font-size:44px;line-height:1.1}
+CARD .note{font-family:'Heebo SemiBold';font-size:36px;color:#C9D6CF;border-top:2px solid rgba(255,255,255,0.14);padding-top:14px}""",
     "strike": """CARD .title{font-size:96px;direction:ltr;unicode-bidi:isolate;letter-spacing:4px}
 CARD .chips{display:flex;flex-direction:row;gap:18px}
-CARD .chip{font-family:'Heebo ExtraBold',sans-serif;font-size:36px;padding:12px 24px;border-radius:999px}
+CARD .chip{font-family:'Heebo ExtraBold';font-size:36px;padding:12px 24px;border-radius:999px}
 CARD .no{background:rgba(255,255,255,0.08);color:#9AA6A0;text-decoration:line-through;text-decoration-thickness:4px}
 CARD .yes{background:var(--accent-0);color:#06100B}""",
-    "statement": """CARD .chip{align-self:flex-start;font-family:'Heebo ExtraBold',sans-serif;font-size:40px;padding:10px 26px;border-radius:999px;border:3px solid var(--accent-0);color:var(--accent-0)}""",
+    "statement": """CARD .chip{align-self:flex-start;font-family:'Heebo ExtraBold';font-size:40px;padding:10px 26px;border-radius:999px;border:3px solid var(--accent-0);color:var(--accent-0)}""",
     "list": """CARD .rows{display:flex;flex-direction:column;gap:12px}
-CARD .r{display:flex;flex-direction:row;align-items:center;gap:16px;font-family:'Heebo ExtraBold',sans-serif;font-size:40px}
+CARD .r{display:flex;flex-direction:row;align-items:center;gap:16px;font-family:'Heebo ExtraBold';font-size:40px}
 CARD .dot{width:18px;height:18px;border-radius:9px;background:var(--accent-0);flex:0 0 auto}
 CARD .off{color:#9AA6A0}
 CARD .off .dot{background:transparent;border:3px solid #9AA6A0}
 CARD .title{font-size:62px;color:var(--accent-0)}""",
     "fly": """CARD .root{display:block;padding:0;position:relative}
 CARD svg{position:absolute;left:0;top:0;width:968px;height:420px}
-CARD .kick{position:absolute;right:40px;top:26px;font-family:'Heebo SemiBold',sans-serif;font-size:34px;color:var(--accent-0);white-space:nowrap}
-CARD .lab{position:absolute;font-family:'Heebo Black',sans-serif;font-size:46px;white-space:nowrap;opacity:0}
+CARD .kick{position:absolute;right:40px;top:26px;font-family:'Heebo SemiBold';font-size:34px;color:var(--accent-0);white-space:nowrap}
+CARD .lab{position:absolute;font-family:'Heebo Black';font-size:46px;white-space:nowrap;opacity:0}
 CARD .lab.gold{color:var(--accent-0)}""",
     "supply": """CARD .root{display:block;padding:0;position:relative}
 CARD svg{position:absolute;left:0;top:0;width:968px;height:420px}
-CARD .kick{position:absolute;top:26px;font-family:'Heebo SemiBold',sans-serif;font-size:34px;color:var(--accent-0);white-space:nowrap}
-CARD .big{position:absolute;font-family:'Heebo Black',sans-serif;line-height:1;white-space:nowrap;direction:ltr;unicode-bidi:isolate;opacity:0}
-CARD .lbl{position:absolute;font-family:'Heebo ExtraBold',sans-serif;font-size:40px;white-space:nowrap;opacity:0}
+CARD .kick{position:absolute;top:26px;font-family:'Heebo SemiBold';font-size:34px;color:var(--accent-0);white-space:nowrap}
+CARD .big{position:absolute;font-family:'Heebo Black';line-height:1;white-space:nowrap;direction:ltr;unicode-bidi:isolate;opacity:0}
+CARD .lbl{position:absolute;font-family:'Heebo ExtraBold';font-size:40px;white-space:nowrap;opacity:0}
 CARD .meter{position:absolute;left:130px;top:96px;width:110px;height:270px;border-radius:18px;background:rgba(255,255,255,0.08);border:2px solid rgba(255,255,255,0.18);overflow:hidden;opacity:0}
 CARD .fill{position:absolute;left:0;bottom:0;width:100%;height:100%;background:linear-gradient(to top,#C98A0B,#F5B71F 60%,#FFE08A)}
 CARD .half{position:absolute;left:-10px;right:-10px;top:50%;border-top:3px dashed rgba(255,255,255,0.55)}""",
     "end": """CARD .root{align-items:center;text-align:center;gap:10px;border-color:var(--accent-0);background:rgba(7,9,8,0.94)}
 CARD .a{font-size:44px}
-CARD .b{font-family:'Heebo Black',sans-serif;font-size:72px;color:var(--accent-0);line-height:1}""",
+CARD .b{font-family:'Heebo Black';font-size:72px;color:var(--accent-0);line-height:1}""",
 }
 
 
@@ -387,17 +387,17 @@ def build(cfg, speed=1.0):
 @font-face{{font-family:'Heebo SemiBold';src:url('fonts/Heebo-SemiBold.woff2') format('woff2');font-display:block}}
 :root{{--bg:#070908;--text:#ffffff;--accent-0:{ACCENT};--accent-1:#E8F5EE;--accent-2:#9AA6A0;--accent-3:#7A5A0E;--accent-4:#C9D6CF}}
 *{{box-sizing:border-box}}
-html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#070908;font-family:'Heebo ExtraBold','Heebo Black',sans-serif}}
+html,body{{margin:0;padding:0;width:100%;height:100%;overflow:hidden;background:#070908;font-family:'Heebo ExtraBold','Heebo Black'}}
 #stage{{position:relative;width:100%;height:100%;overflow:hidden;background:#070908}}
 .video-wrapper{{position:absolute;left:0;top:0;width:1080px;height:{1920 if overlay else 1216}px;overflow:hidden}}
 .video-wrapper video{{width:100%;height:100%;object-fit:cover}}
 #topfade{{position:absolute;left:0;top:0;width:1080px;height:380px;background:linear-gradient(to bottom,rgba(7,9,8,0.75),rgba(7,9,8,0))}}
 #fade{{position:absolute;left:0;top:936px;width:1080px;height:280px;background:linear-gradient(to bottom,rgba(7,9,8,0),rgba(7,9,8,1))}}
 #logo{{position:absolute;left:56px;top:150px;width:210px;height:auto;filter:drop-shadow(0 4px 14px rgba(0,0,0,0.6))}}
-#name-tag{{position:absolute;right:56px;top:170px;font-family:'Heebo ExtraBold',sans-serif;font-size:34px;color:#06100B;background:{ACCENT};padding:8px 22px;border-radius:999px;opacity:0}}
+#name-tag{{position:absolute;right:56px;top:170px;font-family:'Heebo ExtraBold';font-size:34px;color:#06100B;background:{ACCENT};padding:8px 22px;border-radius:999px;opacity:0}}
 .card-host{{position:absolute;pointer-events:none;overflow:hidden}}
 .card-host .card{{position:relative;width:100%;height:100%;overflow:hidden}}
-.cap{{position:absolute;left:56px;top:1010px;width:860px;height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Heebo ExtraBold',sans-serif;font-size:60px;line-height:1.15;color:#fff;text-shadow:0 3px 0 #000,0 0 18px rgba(0,0,0,0.85)}}
+.cap{{position:absolute;left:56px;top:1010px;width:860px;height:220px;display:flex;align-items:center;justify-content:center;text-align:center;font-family:'Heebo ExtraBold';font-size:60px;line-height:1.15;color:#fff;text-shadow:0 3px 0 #000,0 0 18px rgba(0,0,0,0.85)}}
 .cap .em{{color:{ACCENT}}}
 </style>
 </head>

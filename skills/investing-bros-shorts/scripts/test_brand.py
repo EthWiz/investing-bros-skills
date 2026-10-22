@@ -91,9 +91,9 @@ def test_hook_strips_cream_then_mustard_navy_type(tmp_path):
     import pytest
     from PIL import Image, features
     from brand import HOOK_Y_BOUNDS, JOURNAL_CREAM, JOURNAL_MUSTARD, hook_strips
-    fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True) + glob.glob("/usr/share/fonts/**/DejaVuSans.ttf", recursive=True)
+    fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True)
     if not features.check("raqm") or not fonts:
-        pytest.skip("needs Pillow with raqm and a Hebrew font")
+        pytest.skip("needs Pillow with raqm and Heebo")
     out = tmp_path / "hook.png"
     top, bottom = hook_strips(["למה לסייברקאב", "אין הגה?"], str(out), fonts[0], 960)
     assert 317 < top < 960 < bottom < 1470 - 58 - 40          # centred, clear of logo and captions

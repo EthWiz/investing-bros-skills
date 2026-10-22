@@ -39,7 +39,7 @@ def test_ass_time_format():
 
 
 def test_build_ass_uses_format_canvas():
-    ass = build_ass([(0.0, 1.0, "שלום")], "square", "DejaVu Sans")
+    ass = build_ass([(0.0, 1.0, "שלום")], "square", "Heebo")
     assert "PlayResX: 1080" in ass and "PlayResY: 1080" in ass
     assert "Dialogue: 0,0:00:00.00,0:00:01.00,Default,,0,0,0,,‏שלום‏" in ass
 
@@ -66,7 +66,7 @@ def test_rtl_leaves_numbers_and_pure_english_alone():
 
 
 def test_build_ass_keeps_auto_direction():
-    ass = build_ass([(0.0, 1.0, "שלום")], "vertical", "DejaVu Sans")
+    ass = build_ass([(0.0, 1.0, "שלום")], "vertical", "Heebo")
     style = next(line for line in ass.splitlines() if line.startswith("Style:"))
     assert style.endswith(",-1")   # Encoding -1 = auto base direction; anything else forces LTR
 
@@ -77,3 +77,10 @@ def test_make_clip_speeds_vertical_output_after_burning_captions():
     assert "[v0]setpts=PTS/${speed}[v]" in script
     assert "[a0]atempo=${speed}[a]" in script
     assert script.index("${sub_filter},format=yuv420p[v0]") < script.index("[v0]setpts=PTS/${speed}[v]")
+
+
+def test_build_ass_rejects_non_heebo_typeface():
+    import pytest
+
+    with pytest.raises(ValueError, match="Heebo is the only"):
+        build_ass([(0.0, 1.0, "שלום")], "vertical", "Other Typeface")

@@ -72,6 +72,9 @@ def logo_position(logo_size):
 def _font(path, size):
     from PIL import ImageFont
     f = ImageFont.truetype(path, size, layout_engine=ImageFont.Layout.RAQM)
+    family, _style = f.getname()
+    if "Heebo" not in family:
+        raise ValueError(f"Heebo is the only allowed typeface, got {family!r}")
     try:
         f.set_variation_by_axes([900])         # a variable Heebo: force Black
     except Exception:

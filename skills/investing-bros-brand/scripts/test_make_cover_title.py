@@ -37,6 +37,18 @@ def test_logo_bottom_right():
     assert (x + 260, y + 157) == (mct.W - mct.LOGO_MARGIN, mct.H - mct.LOGO_MARGIN)
 
 
+def test_rejects_non_heebo_typeface(monkeypatch):
+    from PIL import ImageFont
+
+    class OtherFont:
+        def getname(self):
+            return ("Other Typeface", "Black")
+
+    monkeypatch.setattr(ImageFont, "truetype", lambda *_args, **_kwargs: OtherFont())
+    with pytest.raises(ValueError, match="Heebo is the only"):
+        mct._font("other.ttf", 100)
+
+
 def test_renders_1080x1920(tmp_path):
     from PIL import Image, features
     fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True)
