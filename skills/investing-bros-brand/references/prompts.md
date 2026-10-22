@@ -9,7 +9,7 @@ Create a finished {FORMAT} artwork for Hebrew podcast אחים להשקעות in
 Financial Journal identity. Use the attached selected artwork as style reference.
 Deep navy textured paper #09243B, warm cream #F5EBD5, printed mustard #D8A52E.
 Rough torn-paper headline strips, subtle paper shadows, bold contemporary Hebrew
-sans-serif, cream-and-navy engraved/halftone cutouts, controlled mustard accents.
+Heebo Black, cream-and-navy engraved/halftone cutouts, controlled mustard accents.
 One central subject, at most one supporting concept, generous navy breathing room.
 No glossy cinematic scene, metallic text, neon palette, market charts or crowded
 unrelated clippings. All Hebrew text exact and right-to-left. Where a format carries
@@ -103,7 +103,7 @@ glossy cinematic scene, metallic shine, neon, charts or clutter.
 
 For a one-pass cover (Codex, when Hebrew comes out right), replace the NO-text sentence with:
 title line 1 exact '{HEADLINE_LINE_1}' on a cream torn strip and line 2 exact
-'{HEADLINE_LINE_2}' on a mustard torn strip, heavy navy sans-serif, inside the centre
+'{HEADLINE_LINE_2}' on a mustard torn strip, heavy navy Heebo Black, inside the centre
 square of the frame; a small white torn pill exact 'פרק {EPISODE_NUMBER}' on the bottom
 edge of the mustard strip; compact show mark bottom-right ('אחים' on cream above
 'להשקעות' on mustard). No host names. All Hebrew exact and right-to-left.

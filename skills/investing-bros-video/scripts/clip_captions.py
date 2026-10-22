@@ -3,7 +3,7 @@
 
 Usage:
     python3 clip_captions.py SEGMENTS.json START END OUT.ass
-        [--format vertical|square] [--font-family NAME] [--max-words N]
+        [--format vertical|square] [--font-family Heebo] [--max-words N]
 
 START / END are seconds on the RAW timeline (the same timeline as segments.json).
 Captions are cut to that range, shifted to start at 0, and split into short
@@ -25,8 +25,7 @@ FORMATS = {
     "vertical": ((1080, 1920), 72, 400, 6),
     "square":   ((1080, 1080), 60, 70, 7),
 }
-PREFERRED_FONTS = ("Heebo", "Rubik", "Assistant", "Noto Sans Hebrew", "Arimo",
-                   "Liberation Sans", "DejaVu Sans", "FreeSans")
+HEEBO_FAMILIES = ("Heebo ExtraBold", "Heebo")
 
 
 def detect_hebrew_family() -> str:
@@ -35,12 +34,10 @@ def detect_hebrew_family() -> str:
     except (OSError, subprocess.CalledProcessError):
         out = ""
     families = {f.strip() for line in out.splitlines() for f in line.split(",") if f.strip()}
-    for name in PREFERRED_FONTS:
+    for name in HEEBO_FAMILIES:
         if name in families:
             return name
-    if families:
-        return sorted(families)[0]
-    sys.exit("error: no font with Hebrew found; install Heebo or Rubik, or pass --font-family")
+    sys.exit("error: Heebo is required; install it or pass --font-family Heebo")
 
 
 def chunk_segments(segments, start, end, max_words):
@@ -91,6 +88,8 @@ def ass_time(t: float) -> str:
 
 
 def build_ass(chunks, fmt: str, family: str) -> str:
+    if family not in HEEBO_FAMILIES:
+        raise ValueError(f"Heebo is the only allowed typeface, got {family!r}")
     (w, h), size, margin_v, _ = FORMATS[fmt]
     head = f"""[Script Info]
 ScriptType: v4.00+
@@ -118,7 +117,7 @@ def main() -> int:
     ap.add_argument("end", type=float)
     ap.add_argument("out")
     ap.add_argument("--format", choices=FORMATS, default="vertical")
-    ap.add_argument("--font-family")
+    ap.add_argument("--font-family", choices=HEEBO_FAMILIES)
     ap.add_argument("--max-words", type=int)
     a = ap.parse_args()
     if a.end <= a.start:
