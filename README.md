@@ -10,13 +10,13 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 1 audio edit ──┬──► 2 titles + description (.txt) + artwork brief ──┐
                ├──► 3 cold opens + intro + video episode ────────┼──► 5 review ► upload ► publish ► check Spotify ► share
                ├──► 4 exactly 3 shorts + covers, mid-form ───────┤
-               └──► 4b exactly 2 segments (01 deep dive) ────────┘
+               └──► 4b 2 segments (01 deep dive + 02 next-best) ┘
 ```
 
 | # | Step | Skill | Leaves in the Drive folder `פרק N — נושא/` | Approves |
 |---|---|---|---|---|
 | 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
-| 1 | Audio edit: combine, level the hosts, transcribe, cut start/end and silences, trim, loudness | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
+| 1 | Start the standing bundle; combine, level, transcribe and trim the audio | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
 | 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Amitai (title) |
 | 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
 | 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |

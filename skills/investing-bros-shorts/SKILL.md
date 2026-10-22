@@ -66,7 +66,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - **Phone-friendly copy first:** re-encode every MP4 you hand over or upload with `-c:v libx264 -profile:v main -pix_fmt yuv420p -movflags +faststart -brand mp42 -c:a aac` (iPhone/WhatsApp/Drive preview all play it).
    - **Video via the box browser, not the connector:** the Drive connector and `UploadFile` label MP4s `application/mp4`, which Drive shows as "unsupported file". Upload videos by dragging them into the `Shorts/` folder in the box browser signed in as the bot Drive account (open Drive links with `?authuser=N` for that account, or the default account hits a verify page).
    - **Video (`.mp4`)** — the newer Drive connector takes a file up to **100 MB** (`investing-bros-show` → references/environment.md); `drive.sh put` uses the Drive API and is not bound by that cap. The browser path is still ≤10 MB per call, so for a browser upload first make an upload copy: `scripts/fit_size.sh short.mp4 "שורט-01-סוויפט.mp4"` (two-pass, under 9.5 MB; a short that already fits is copied as is). If no browser can reach Drive, give Amitai the exact files, names and folder link to drag in, and say so in the hand-back.
-   - Check: list `Shorts/` and confirm every short has its `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
+   - Check: list `Shorts/` and confirm all three shorts have their `.mp4`, `-cover.jpg`, `.srt` and `youtube-שורט-NN.md`, none empty.
 
 ## Approved Shorts format (Amitai's Cybercab Short is the base template)
 Reference analysis: [references/style-from-amitai.md](references/style-from-amitai.md). Every template element stays as in Amitai's Short; our additions (explainer panels) are layered on top and never restyle it.
