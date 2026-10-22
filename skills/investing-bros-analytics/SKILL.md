@@ -1,0 +1,71 @@
+---
+name: investing-bros-analytics
+description: >-
+  Read-only YouTube Studio analytics for the Investing Bros / אחים להשקעות
+  channel: lifetime or weekly stats for every episode and Short (views,
+  watch time, AVD, avg % viewed, impressions, CTR, subs), traffic sources,
+  retention and key moments, audience, plus RedCircle/Spotify stats when
+  available. Produces a report Page and a short Telegram text. Use when
+  Amitai asks for "analytics", "stats", "סטטיסטיקות", "how are the shorts
+  doing", the weekly Sunday report, or an ad-hoc comparison such as
+  thumbnails with faces vs without.
+---
+# Investing Bros analytics (YouTube Studio)
+
+Load `investing-bros-show` first: accounts and Telegram destinations live there.
+
+## When to use
+- Weekly report: Sunday around 10:00 Israel time, covering the last 7 days and comparing with the prior week.
+- Lifetime report on all uploads, on request.
+- Ad-hoc analyses (e.g. thumbnail A/B: faces vs no faces). Always normalize for video age (compare at the same hours/days since publish, or per-day rates).
+
+## Inputs
+1. Box browser signed in to Google as `investingbros.grokbot@gmail.com` (`authuser=1`; `ami.grokbot` is `authuser=0`). Manager role on the channel. No password is stored; the browser session is the login.
+2. Channel URL (always this one; Studio otherwise opens the account's empty **Grok Bot** channel):
+   `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw?authuser=1`
+3. Lifetime overview deep link:
+   `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/analytics/tab-overview/period-lifetime?authuser=1`
+4. A working notes file, e.g. `/workspace/analytics/studio_<range>_<YYYY-MM-DD>.md`.
+
+## Steps
+Save what you collected to the notes file **after every step**: long browser runs get interrupted and unsaved data is lost.
+
+1. **Access check.** Open the channel URL. Confirm the channel header says **אחים להשקעות**. At any sign-in, "verify it's you" or 2FA page: stop, enter nothing, ask Amitai, and post nothing to Telegram.
+2. **Overview** (Analytics → Overview, pick the range). Record views, watch time (h), subscribers, the Top content list (title, published, AVD with avg %, views), Realtime (subs, views last 48 h) and Latest content (first-N-hours views, CTR, AVD).
+3. **Advanced mode content table** (Overview → Advanced mode, Content dimension, same range). Collect per item: duration, views, watch time, AVD, avg % viewed, impressions, impressions CTR, likes, subscribers gained, plus the video ID.
+   - The metric picker errors when watch time and AVD are selected together: do two passes and merge by title/ID.
+   - The table has no Shorts/video type column: classify by duration (under 60 s = Short).
+   - Export to CSV includes only the metrics currently selected: pick metrics first, then Export (Table data, Chart data, Totals).
+4. **Content tab.** Record the Shorts vs videos split (views, %, number published, subs), the impressions funnel (impressions, % from YouTube recommending, CTR, views and watch time from impressions), traffic sources (views, %, watch h per source), External sources detail and YouTube search terms.
+5. **Audience tab.** Monthly audience, new vs returning, age/gender, device type, geography, subtitle/CC use. Mark values "low sample" when viewers are few: at tiny samples demographics show 100%/0% and are not meaningful.
+6. **Per-episode retention** (open each episode → Analytics → Engagement). Record AVD, avg % viewed, engaged views, the retention curve and the Key moments card.
+   - The chart samples about every 23 s and values only appear on mouse hover: hover each point and note `time → %`, especially the 0:00–0:30 drop and the point where half the viewers are gone.
+   - New videos show "No audience retention data available for this video yet. Processing can take up to two days." Record N/A and retry next run.
+7. **Cross-check sources.** The channel lifetime table lags the video pages (e.g. ep1 showed 17 views in the table vs 24 on its page). Brand-new uploads may be missing from the table entirely (seen with פרק 2 and פרק 7). Note which source each number came from and list missing items.
+8. **RedCircle/Spotify**, when access exists: plays/downloads per episode and Spotify follower and completion stats. If not reachable, write "not available" and say so in Hand back.
+9. **Build the report Page (Canvas)** in this order:
+   - Headline takeaway (one or two sentences).
+   - Channel totals row: views, watch time, subs, impressions, CTR.
+   - Every-upload table: type, title, published, duration, views, watch h, AVD, avg %, impressions, CTR, likes, subs, source.
+   - Best/worst Shorts and best/worst episodes by views and avg % viewed.
+   - Traffic sources.
+   - Episode retention (key points, half-gone time, key moments).
+   - Audience (with low-sample caveats).
+   - What to try next (concrete, tied to the numbers).
+   - Weekly runs: a vs-prior-week delta column. Ad-hoc: method and age normalization.
+10. **Telegram.** Only with Amitai's OK for this report type (the weekly report and requested ad-hoc reports count). Post only to chat `-5592316645` (`tg-achim`), as a concise text version: headline, 3–5 key numbers, the Page link, ending with `sent by Grokbot`. If Studio access failed, post nothing and tell Amitai instead.
+
+## Done when
+- Notes file with every step's raw numbers and sources (`/workspace/analytics/…md`) and any CSV exports.
+- Report Page link.
+- Telegram text posted to `-5592316645` (or a stated reason it was not).
+
+## Hand back
+Page link, headline takeaway, what's missing (processing retention, items not in the table, RedCircle/Spotify), and whether Telegram was posted.
+
+## Never
+- Change anything in Studio (titles, thumbnails, settings, comments). Strictly read-only.
+- Enter credentials or pass a verification prompt yourself; print or store secrets.
+- Report the Grok Bot channel's stats by mistake: check the header.
+- Post to any Telegram chat other than `-5592316645`, or post when access failed.
+- Rely on browser screenshots as records: they don't land in `/workspace`. Write numbers into the notes file.
