@@ -46,7 +46,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Short captions (in `Shorts/`) | `שורט-NN-<נושא>.srt` | `שורט-01-סוויפט.srt` |
 | Short YouTube notes (in `Shorts/`) | `youtube-שורט-NN.md` | `youtube-שורט-01.md` |
 | Mid-form (in `mid-form/`) | `מיד-פורם-NN-<נושא>.mp4` + `.txt` (title, description) | `מיד-פורם-01-זהב.mp4` |
-| Deep dive (in `deep-dive/`) | `צלילה-פרק-N-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-צלילה.md` | `צלילה-פרק-7-זהב.mp4` |
+| Segment video (in `segments/`) | `סגמנט-NN-<סוג>-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-סגמנט-NN.md` | `סגמנט-01-צלילה-זהב.mp4` |
 | Video episode (in `video/`) | `פרק-N-וידאו.mp4` + `תיאור-פרק-N-youtube.txt` | `פרק-8-וידאו.mp4` |
 
 **Finding an existing episode folder:** match on the `פרק N` prefix (followed by a space or dash), not the full name — the dash and topic may differ from what you would type. If one matches, reuse it. Never create a second folder for the same N.
@@ -77,9 +77,10 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
     Shorts/      every short: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md      ← shorts
-    deep-dive/   standalone deep-dive video + .txt + thumb, every episode          ← deep-dive
+    segments/    segment videos (deep dive every episode) + .txt + thumb each      ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
+  analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
 **Shorts rule (all episodes):** every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
@@ -142,10 +143,10 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 ## Telegram
 | Id | Group | Chat ID | Sent by | Use |
 |---|---|---|---|---|
-| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts |
+| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts; weekly analytics report (pre-approved, see `investing-bros-analytics`) |
 
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
-- **Each post needs Amitai's OK in chat**, like WhatsApp. Don't add destinations without his OK.
+- **Each post needs Amitai's OK in chat**, like WhatsApp (exception: the weekly analytics report, pre-approved). Don't add destinations without his OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
 - Cold opens, intros and drafts for review are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. Post drafts with the title only.
 - Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
@@ -159,8 +160,9 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
 | 4 | Shorts, mid-form highlights | `investing-bros-shorts` | Nadav |
-| 4b | Deep-dive standalone video (every episode) | `investing-bros-deep-dive` | Amitai (title, publish) |
+| 4b | Segment videos (deep dive every episode) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
+| 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.
 

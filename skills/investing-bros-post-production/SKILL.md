@@ -17,7 +17,7 @@ This skill ends at the edited audio. Everything after it reads the transcript an
 - titles, description, artwork copy brief → `investing-bros-title-description`
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
 - cold opens, intro, video episode, teaser → `investing-bros-video`
-- deep-dive standalone video (every episode) → `investing-bros-deep-dive`
+- segment videos (deep dive every episode) → `investing-bros-segment-video`
 - shorts, mid-form → `investing-bros-shorts`
 - review ping, uploads, publish → `investing-bros-episode-upload`
 
