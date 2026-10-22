@@ -10,12 +10,12 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Task | Skill |
 |---|---|
 | Before recording: folder, news, deep dive | `investing-bros-episode-preparation` |
-| Recording is in: combine, level, transcribe, cut list, trim | `investing-bros-post-production` |
+| Recording is in: start the main flow + 2 segments + 3 shorts; combine, level, transcribe, cut list, trim | `investing-bros-post-production` |
 | Titles, description (.txt), artwork copy brief | `investing-bros-title-description` |
 | Visual identity, artwork, templates, covers and design QA | `investing-bros-brand` |
 | Cold opens, intro, full video episode, promo teaser | `investing-bros-video` |
-| Shorts with covers (incl. HyperFrames explainer cards), mid-form highlights | `investing-bros-shorts` |
-| Segment videos: standalone search-first YouTube videos (deep dive every episode, plus ideas/interviews/explainers) | `investing-bros-segment-video` |
+| Exactly 3 shorts with Codex covers (incl. HyperFrames explainer cards), optional mid-form highlights | `investing-bros-shorts` |
+| Exactly 2 standalone search-first segment videos: 01 deep dive, 02 next-best qualifying topic | `investing-bros-segment-video` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
 
 To see where an episode stands, list its Drive folder and compare it with each skill's **Done when**.
