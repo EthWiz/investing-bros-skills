@@ -48,7 +48,7 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
    - **Verify** after saving: open the watch page fresh, check around 0:30 that the teaser appears and the card links to the full-episode video ID.
    - **End screen** over the last 20 s: the full episode as a video element + a Subscribe element.
    - **Pinned comment** once Public, posted as the channel **אחים להשקעות** (not Grok Bot), then pinned: `לפרק המלא על <short topic> 👈 https://youtu.be/<full-episode ID>`.
-   The card and end screen go in while Private (the full episode may be Private too); the pinned comment after Public. Report which were done.
+   The card and end screen go in while Unlisted (or Private; the full episode may be Private too); the pinned comment after Public. Report which were done.
 12. **Publish** only after Amitai's explicit OK: flip Unlisted → Public. Order: after the full episode is Public, before the shorts. Then edit the full episode's YouTube description: insert on its own line, after the Spotify line + a blank line and directly before the `00:00` chapter line, `🎬 קטע נבחר: <segment title> https://youtu.be/<segment ID>` (one line per segment). Change nothing else in the description. Update `video/תיאור-פרק-N-youtube.txt` to match. The Spotify show-to-episode link swap applies here too.
 
 ## Done when
