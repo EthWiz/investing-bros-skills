@@ -6,8 +6,8 @@ description: >-
   dive (required every episode), investment idea, interview, explainer, etc.
   Covers segment selection, full-frame cut, search-first title, description
   linking the full episode + Spotify line, thumbnail, on-screen nudge + card, Unlisted
-  evaluation upload to the אחים להשקעות channel, Public after Amitai's OK, and linking back from the
-  full episode. Use when Amitai asks for a "segment video", "deep dive video",
+  evaluation upload to the אחים להשקעות channel, and Public after Amitai's OK.
+  Use when Amitai asks for a "segment video", "deep dive video",
   "צלילה לעומק", "סרטון נפרד", or when publishing episode N.
 ---
 # Investing Bros segment videos
@@ -49,12 +49,12 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
    - **End screen** over the last 20 s: the full episode as a video element + a Subscribe element.
    - **Pinned comment** once Public: `לפרק המלא: <full-episode URL>`, posted as the channel and pinned.
    The card and end screen go in while Private (the full episode may be Private too); the pinned comment after Public. Report which were done.
-12. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. Then add to the full episode's YouTube description (after the disclaimer, by the Spotify line) one line per segment, e.g. `<נושא> בסרטון נפרד: <URL>`, and update `video/תיאור-פרק-N-youtube.txt`. The Spotify show-to-episode link swap applies here too.
+12. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. The Spotify show-to-episode link swap applies to the segment description too. Do not add the segment URL to the full episode's description.
 
 ## Done when
 - `segments/` has the deep dive (and any other segments asked for), each with `.mp4`, `.txt`, `-thumb.jpg`, `youtube-סגמנט-NN.md`.
 - Each has the card and end screen (and, once Public, the pinned comment) pointing to the full episode.
-- Each has the nudge at 0:30–0:35 and is Unlisted/Private on אחים להשקעות before the OK / Public after, and the full episode's description links it.
+- Each has the nudge at 0:30–0:35 and is Unlisted/Private on אחים להשקעות before the OK / Public after.
 
 ## Hand back
 Per segment: type, sub-question, in/out (and any internal cuts), length (≤10 min), alternative sub-question, title options, Unlisted URL, 0:31 nudge frame, anything waiting on Amitai.
