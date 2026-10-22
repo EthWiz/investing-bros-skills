@@ -42,10 +42,16 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
 7. **Thumbnail.** 16:9 1280×720 from `investing-bros-brand`, headline = the topic keyword (2–4 words). Save in the episode Drive folder.
 8. **Files** in `segments/`: `סגמנט-NN-<סוג>-<נושא>.mp4`, `.txt` (title, description), `-thumb.jpg`, `youtube-סגמנט-NN.md` (type, status, URL). The deep dive is `סגמנט-01-צלילה-<נושא>`.
 9. **Upload Private** to **אחים להשקעות** (Studio: Switch account off the personal Grok Bot channel first; or `yt_upload.py`), not made for kids, with title, description, thumbnail. See `investing-bros-episode-upload` step 3.
-10. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. Then add to the full episode's YouTube description (after the disclaimer, by the Spotify line) one line per segment, e.g. `<נושא> בסרטון נפרד: <URL>`, and update `video/תיאור-פרק-N-youtube.txt`. The Spotify show-to-episode link swap applies here too.
+10. **Link back to the full episode** (Studio → Editor; click-path in `investing-bros-episode-upload` [references/youtube-studio.md](../investing-bros-episode-upload/references/youtube-studio.md#segment-videos-cards-end-screen-pinned-comment)):
+   - **Cards:** 2 video cards to the full episode, at ~0:30 and at ~2/3 of the runtime (or at a natural "in the episode" mention instead). Custom message `לפרק המלא`, teaser text `צפו בפרק המלא`.
+   - **End screen** over the last 20 s: the full episode as a video element + a Subscribe element.
+   - **Pinned comment** once Public: `לפרק המלא: <full-episode URL>`, posted as the channel and pinned.
+   Cards and end screen go in while Private (the full episode may be Private too); the pinned comment after Public. Report which were done.
+11. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. Then add to the full episode's YouTube description (after the disclaimer, by the Spotify line) one line per segment, e.g. `<נושא> בסרטון נפרד: <URL>`, and update `video/תיאור-פרק-N-youtube.txt`. The Spotify show-to-episode link swap applies here too.
 
 ## Done when
 - `segments/` has the deep dive (and any other segments asked for), each with `.mp4`, `.txt`, `-thumb.jpg`, `youtube-סגמנט-NN.md`.
+- Each has the 2 cards and end screen (and, once Public, the pinned comment) pointing to the full episode.
 - Each is Private on אחים להשקעות before the OK / Public after, and the full episode's description links it.
 
 ## Hand back

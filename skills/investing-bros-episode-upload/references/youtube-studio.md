@@ -45,3 +45,10 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
   finishes.
 - Open the private watch page as the Editor and check title, description direction,
   increasing chapter times, the `00:00` teaser chapter and the progress-bar chapters.
+
+## Segment videos: cards, end screen, pinned comment
+On the אחים להשקעות channel (Switch account first), Content → the segment video → **Editor** (left menu).
+- **Cards:** Editor → **Cards** (ⓘ) → **Video** → pick the full episode (search its title, or *Choose a specific video* → paste the URL) → set **Custom message** `לפרק המלא` and **Teaser text** `צפו בפרק המלא` → drag the card on the timeline to ~0:30. Repeat for a second card at ~2/3 of the runtime (or at a natural "in the episode" mention). **Save**.
+- **End screen:** Editor → **End screen** → **+ Element** → **Video** → *Choose specific video* → the full episode; **+ Element** → **Subscribe**. On the timeline, make both run over the last 20 s (end screens can be 5–20 s and need a video ≥25 s). Arrange so they don't cover faces. **Save**.
+- **Pinned comment** (after Public only): open the watch page as the channel (avatar = אחים להשקעות), comment `לפרק המלא: <full-episode URL>` → ⋮ on the comment → **Pin** → confirm. Or Studio → Comments → the video → ⋮ → Pin.
+- Check: watch page shows the ⓘ teaser at ~0:30 and the end screen in the last 20 s.
