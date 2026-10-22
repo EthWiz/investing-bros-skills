@@ -1,6 +1,7 @@
 # Nudge v2: top-right, below YouTube card teaser. Writes strips, arrow, and combined overlay.
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
-import random
+import random, sys
+OUT=sys.argv[1] if len(sys.argv)>1 else "/workspace"  # usage: nudge_overlay.py [out_dir]
 random.seed(7)
 FONT="/usr/share/fonts/truetype/sand-box/google/Rubik/Rubik-VariableFont_wght.ttf"
 f=ImageFont.truetype(FONT,60); f.set_variation_by_name("Black")
@@ -30,5 +31,5 @@ def arrow(d):  # big up arrow, mustard fill + navy outline, right side above str
     pts=[(cx,top),(cx+47,top+51),(cx+19,top+51),(cx+19,bot),(cx-19,bot),(cx-19,top+51),(cx-47,top+51)]
     d.polygon(pts,fill=MUST,outline=NAVY,width=6)
 s=shadowed(strips); a=shadowed(arrow)
-s.save("/workspace/nudge-strips.png"); a.save("/workspace/nudge-arrow.png")
-c=s.copy(); c.alpha_composite(a); c.save("/workspace/nudge-overlay.png")
+s.save(f"{OUT}/nudge-strips.png"); a.save(f"{OUT}/nudge-arrow.png")
+c=s.copy(); c.alpha_composite(a); c.save(f"{OUT}/nudge-overlay.png")
