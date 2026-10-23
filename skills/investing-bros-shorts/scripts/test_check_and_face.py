@@ -26,6 +26,7 @@ def test_first_second_and_ending():
     assert any("before the first word" in p for p in opening_problems(30, 90, 95, [(0.0, 0.9)]))
     assert any("at the end" in p for p in opening_problems(30, 90, 95, [(28.4, None)]))
     assert opening_problems(30, 90, 95, [(0.0, 0.2), (29.5, None)]) == []
+    assert opening_problems(33, 90, 95, [(30.0, None)], silent_endcard_seconds=3.0) == []
 
 
 def test_skin_centre_finds_the_face():

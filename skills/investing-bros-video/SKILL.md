@@ -125,11 +125,11 @@ and re-time from that video's transcript.
 ### 5. Promo teaser (when asked)
 ```bash
 python3 scripts/clip_captions.py segments.json START END part-1.ass --format square
-scripts/make_clip.sh --source raw.mp4 --start START --end END --format square --captions part-1.ass part-1.mp4
+scripts/make_clip.sh --source raw.mp4 --start START --end END --format square --speed 1.0 --captions part-1.ass part-1.mp4
 # audio-only: --source raw.m4a --cover show-cover.png
 scripts/make_teaser.sh teaser.mp4 part-1.mp4 part-2.mp4 part-3.mp4
 ```
-Vertical (`--format vertical`) only if Amitai asks. An explainer moment can use the HyperFrames render from `investing-bros-shorts`.
+Square promo clips stay at 1.0x. Vertical (`--format vertical`) only if Amitai asks; it is Short-style output and defaults to the Shorts house speed of 1.25x (`--speed 1.0` disables). An explainer moment can use the HyperFrames render from `investing-bros-shorts`.
 
 ### 6. Check and file
 Watch each once: captions readable and right-to-left (English words in place), joins clean, no clipped words, nothing out of context that sounds like a buy/sell call. `ebur128`: −14 LUFS for teasers and cold opens, −16 for the episode body.

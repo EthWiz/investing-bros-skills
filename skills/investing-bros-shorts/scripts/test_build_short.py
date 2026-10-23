@@ -33,6 +33,22 @@ def test_timeline_maps_across_cut():
         tl.map(115.0)                               # inside the removed part
 
 
+def test_speed_shortens_timeline_and_keeps_mapped_captions_in_sync():
+    tl = Timeline(CFG["pieces"], 24, speed=1.25)
+    assert tl.duration == pytest.approx(12.0)
+    assert tl.map(120.0) == pytest.approx(8.0)
+    ass, cards = build_ass(CFG, tl)
+    assert cards[-1][1] == pytest.approx(12.0)
+    assert "0:00:12.00" in ass
+    cmd = build_command(CFG, tl)
+    assert "setpts=PTS/1.25" in cmd and "atempo=1.25" in cmd
+
+
+def test_speed_one_disables_tempo_filters():
+    cmd = build_command(CFG, Timeline(CFG["pieces"], 24, speed=1.0))
+    assert "setpts=PTS/1" not in cmd and "atempo=" not in cmd
+
+
 def test_close_gaps_fills_small_gaps_and_overlaps():
     cards = close_gaps([(0, 1.0, "a"), (1.2, 2.0, "b"), (1.9, 3.0, "c"), (4.0, 5.0, "d")])
     assert cards[0][1] == 1.2     # small gap filled

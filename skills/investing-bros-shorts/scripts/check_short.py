@@ -11,7 +11,8 @@ within 0.4 s, and the short doesn't trail off in more than 1 s of silence. Lengt
 If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
 given), the caption and hook positions must be inside brand.CAPTION_Y_BOUNDS and
 brand.HOOK_Y_BOUNDS, and the hook block must keep brand.HOOK_GAP below the logo and above
-the captions.
+the captions. Approved renders declare their intentional 3 s silent end card in
+NAME_layout.json, so it is not mistaken for trailing dead air.
 Then LOOK at the strip: captions right-to-left and inside the safe zone, the right host
 on screen, nothing over the face, the hook readable on the first frame.
 """
@@ -58,7 +59,7 @@ def silences(path, noise_db=-35, min_len=0.3):
     return [(s, ends[i] if i < len(ends) else None) for i, s in enumerate(starts)]
 
 
-def opening_problems(d, first_luma, later_luma, quiet):
+def opening_problems(d, first_luma, later_luma, quiet, silent_endcard_seconds=0.0):
     """The first second has to hook: a visible frame and speech straight away; no dead air at the end."""
     out = []
     if first_luma < DARK_FRAME:
@@ -68,8 +69,10 @@ def opening_problems(d, first_luma, later_luma, quiet):
     for s, e in quiet:
         if s <= 0.05 and (e if e is not None else d) > LEAD_SILENCE:
             out.append(f"{(e if e is not None else d):.1f} s of silence before the first word; start on the word")
-        if (e is None or e >= d - 0.05) and d - s > TAIL_SILENCE:
-            out.append(f"{d - s:.1f} s of silence at the end; cut right after the payoff")
+        speech_tail = max(0.0, d - s - silent_endcard_seconds)
+        if (e is None or e >= d - 0.05) and speech_tail > TAIL_SILENCE:
+            out.append(f"{d - s:.1f} s of silence at the end "
+                       f"({silent_endcard_seconds:.1f} s is the intentional end card); cut right after the payoff")
     return out
 
 
@@ -125,11 +128,12 @@ def main():
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", a.video, "-vf", f"fps={a.frames}/{d:.3f},scale=270:480,tile={a.frames}x1",
                     "-frames:v", "1", strip], check=True)
     print(f"{a.video}: {d:.2f} s, {lufs} LUFS, peak {peak} dB -> {strip}")
-    bad = problems(d, lufs, peak) + opening_problems(d, luma(a.video, 0), luma(a.video, min(0.5, d / 2)),
-                                                     silences(a.video))
     lay_path = a.layout or re.sub(r"\.[^.]+$", "", a.video) + "_layout.json"
-    if os.path.exists(lay_path):
-        lay = json.load(open(lay_path))
+    lay = json.load(open(lay_path)) if os.path.exists(lay_path) else None
+    silent_endcard = float(lay.get("silent_endcard_seconds", 0.0)) if lay else 0.0
+    bad = problems(d, lufs, peak) + opening_problems(
+        d, luma(a.video, 0), luma(a.video, min(0.5, d / 2)), silences(a.video), silent_endcard)
+    if lay is not None:
         print(f"layout: caption_y {lay.get('caption_y')}, hook_y {lay.get('hook_y')} ({lay.get('hook_style')})")
         bad += layout_problems(lay)
     elif a.layout:

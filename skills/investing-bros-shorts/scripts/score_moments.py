@@ -2,7 +2,7 @@
 """Rank short candidates: your scores for each moment plus what the transcript can measure.
 
 Usage:
-    python3 score_moments.py segments.json candidates.json [--top 5]
+    python3 score_moments.py segments.json candidates.json [--top 5] [--speed 1.25]
 
 candidates.json (times on the RAW timeline, same as segments.json):
 [
@@ -18,7 +18,7 @@ scores (1-5, see references/moment-scoring.md):
 
 The script adds, from the transcript:
   pace        words per second against the episode's median (a rough energy proxy), scored 1-5
-  length      flags candidates outside the 20-45 s target
+  length      flags candidates outside the 20-45 s target after playback speed
   opener      flags a first sentence that starts on filler ("אז", "כן", "אוקיי"...)
 and prints a markdown table, best first, to paste for Amitai.
 """
@@ -26,6 +26,8 @@ import argparse
 import json
 import statistics
 import sys
+
+from build_short import DEFAULT_SPEED, playback_speed, speed_arg
 
 FILLERS = ("אז", "כן", "אוקיי", "אוקי", "טוב", "בקיצור", "רגע", "אה", "אממ", "יאללה", "נו")
 RUBRIC = ("hook", "standalone", "payoff", "friction")
@@ -70,7 +72,8 @@ def starts_on_filler(line):
     return bool(w) and w[0].strip(",.?!…") in FILLERS
 
 
-def rank(segments, candidates):
+def rank(segments, candidates, speed=DEFAULT_SPEED):
+    speed = playback_speed(speed)
     median = episode_rate(segments)
     rows = []
     for c in candidates:
@@ -83,8 +86,9 @@ def rank(segments, candidates):
         pace = pace_score(ratio)
         line = opening_line(segments, start)
         flags = []
-        if not TARGET[0] <= end - start <= TARGET[1]:
-            flags.append(f"{end - start:.0f} s")
+        output_duration = (end - start) / speed
+        if not TARGET[0] <= output_duration <= TARGET[1]:
+            flags.append(f"{output_duration:.0f} s after {speed:g}x")
         if starts_on_filler(line):
             flags.append("filler opener")
         total = sum(int(sc[k]) for k in RUBRIC) + pace
@@ -113,9 +117,11 @@ def table(rows):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("segments"); ap.add_argument("candidates"); ap.add_argument("--top", type=int, default=0)
+    ap.add_argument("--speed", type=speed_arg, default=DEFAULT_SPEED,
+                    help=f"playback speed used for duration flags (default: {DEFAULT_SPEED}; 1.0 disables)")
     a = ap.parse_args()
     segments = json.load(open(a.segments, encoding="utf-8"))
-    rows = rank(segments, json.load(open(a.candidates, encoding="utf-8")))
+    rows = rank(segments, json.load(open(a.candidates, encoding="utf-8")), a.speed)
     print(table(rows[:a.top] if a.top else rows))
     deep = sum(1 for r in rows[:a.top or 5] if "deep" in str(r.get("part", "")).lower())
     if deep < 2:

@@ -26,7 +26,7 @@ def test_rank_orders_by_total_and_flags():
     assert rows[0]["start"] == 20                       # higher hook and faster pace win
     assert rows[0]["pace"] > rows[1]["pace"]
     assert "filler opener" in rows[0]["flags"]
-    assert "10 s" in rows[0]["flags"]                   # under the 20 s target
+    assert "8 s after 1.25x" in rows[0]["flags"]         # duration is checked after house speed
     assert rows[1]["flags"] == []
 
 
@@ -52,3 +52,8 @@ def test_packaging_warnings():
     assert len(check_packaging(good, 52, "hook")) == 1   # over target, under limit
     bad = check_packaging({"endcard": ["לפרק המלא"]}, 70, "hook")
     assert len(bad) == 3                                 # length, no hook, generic end card
+
+
+def test_candidate_speed_can_be_disabled():
+    rows = rank(SEGS, [cand(0, 20, 5)], speed=1.0)
+    assert not rows[0]["flags"]

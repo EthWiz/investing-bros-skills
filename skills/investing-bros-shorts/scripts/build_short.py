@@ -2,7 +2,7 @@
 """Build one branded vertical short from an edit decision list (JSON).
 
 Usage:
-    python3 build_short.py short.json [--out-dir DIR]
+    python3 build_short.py short.json [--out-dir DIR] [--speed 1.25]
 
 Writes NAME.ass (captions + headline + name tag + end card), NAME.srt (same
 captions, for the platform's own subtitle field) and NAME.sh (the ffmpeg
@@ -33,6 +33,7 @@ against the audio. Cut pieces at pauses, never mid-word.
 """
 import argparse
 import json
+import math
 import os
 import sys
 
@@ -43,6 +44,22 @@ from clip_captions import rtl  # noqa: E402
 EM, WH = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
 VIDEO_H = {"split": 1215, "full": 608}   # 960x1080 half -> 1080x1215; 1920x1080 -> 1080x608
 MAX_LINE = 26
+DEFAULT_SPEED = 1.25
+
+
+def playback_speed(value) -> float:
+    """Validate a pitch-preserving playback-speed multiplier."""
+    speed = float(value)
+    if not math.isfinite(speed) or not 0.5 <= speed <= 2.0:
+        raise ValueError("speed must be a finite number between 0.5 and 2.0")
+    return speed
+
+
+def speed_arg(value: str) -> float:
+    try:
+        return playback_speed(value)
+    except (TypeError, ValueError) as e:
+        raise argparse.ArgumentTypeError(str(e)) from e
 
 
 def snap(t: float, fps: float) -> float:
@@ -69,7 +86,8 @@ def srt_time(t: float) -> str:
 class Timeline:
     """Maps source time to output time across the kept pieces."""
 
-    def __init__(self, pieces, fps):
+    def __init__(self, pieces, fps, speed=1.0):
+        self.speed = playback_speed(speed)
         self.pieces = [(snap(p[0], fps), snap(p[1], fps)) for p in pieces]
         self.gains = [float(p[2]) if len(p) > 2 else 0.0 for p in pieces]
         for (a, b) in self.pieces:
@@ -81,14 +99,14 @@ class Timeline:
         for (a1, b1), (a2, b2) in zip(spans, spans[1:]):
             if a2 < b1:
                 raise ValueError(f"pieces {a1}-{b1} and {a2}-{b2} overlap; move a line, don't repeat it")
-        self.duration = sum(b - a for a, b in self.pieces)
+        self.duration = sum(b - a for a, b in self.pieces) / self.speed
 
     def map(self, t: float) -> float:
         out = 0.0
         for a, b in self.pieces:
             if a - 0.05 <= t <= b + 0.05:
-                return min(max(out + (t - a), out), out + (b - a))
-            out += b - a
+                return min(max(out + (t - a) / self.speed, out), out + (b - a) / self.speed)
+            out += (b - a) / self.speed
         raise ValueError(f"time {t} is not inside any piece")
 
 
@@ -204,8 +222,13 @@ def build_command(cfg, tl: Timeline) -> str:
     at = "".join(
         f"[a{i}]atrim=start={a - S:.4f}:end={b - S:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
         f"afade=t=out:st={b - a - 0.015:.4f}:d=0.015,volume={tl.gains[i]}dB[u{i}];" for i, (a, b) in enumerate(P))
-    cv = "".join(f"[t{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc];"
-    ca = "".join(f"[u{i}]" for i in range(n)) + f"concat=n={n}:v=0:a=1[ac];"
+    cv = "".join(f"[t{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=0[vc0];"
+    ca = "".join(f"[u{i}]" for i in range(n)) + f"concat=n={n}:v=0:a=1[ac0];"
+    speed = f"{tl.speed:g}"
+    if tl.speed == 1.0:
+        tempo = "[vc0]null[vc];[ac0]anull[ac];"
+    else:
+        tempo = f"[vc0]setpts=PTS/{speed}[vc];[ac0]atempo={speed}[ac];"
     vh, vy = VIDEO_H[layout], VERTICAL["video_y"]
     if layout == "split":
         crops = {"L": "crop=iw/2:ih:0:0", "R": "crop=iw/2:ih:iw/2:0"}
@@ -226,7 +249,7 @@ def build_command(cfg, tl: Timeline) -> str:
           "aformat=sample_fmts=fltp:channel_layouts=stereo[aout]")
     title = cfg.get("title", name).replace('"', "'")
     return (f'ffmpeg -v error -y -ss {S:.3f} -t {T:.3f} -i "{src}" -i "{cfg.get("frame", "frame_vertical.png")}" '
-            f'-filter_complex "{vs}{as_}{vt}{at}{cv}{ca}{vf}{af}" -map "[vout]" -map "[aout]" '
+            f'-filter_complex "{vs}{as_}{vt}{at}{cv}{ca}{tempo}{vf}{af}" -map "[vout]" -map "[aout]" '
             f"-c:v libx264 -preset medium -crf 18 -profile:v high -pix_fmt yuv420p -r {fps} "
             f'-c:a aac -b:a 192k -movflags +faststart -metadata title="{title}" "{name}.mp4"\n')
 
@@ -235,15 +258,18 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config")
     ap.add_argument("--out-dir", default=".")
+    ap.add_argument("--speed", type=speed_arg, default=DEFAULT_SPEED,
+                    help=f"video/audio playback speed (default: {DEFAULT_SPEED}; 1.0 disables)")
     a = ap.parse_args()
     cfg = json.load(open(a.config, encoding="utf-8"))
-    tl = Timeline(cfg["pieces"], cfg.get("fps", 24))
+    tl = Timeline(cfg["pieces"], cfg.get("fps", 24), a.speed)
     ass, cards = build_ass(cfg, tl)
     base = os.path.join(a.out_dir, cfg["name"])
     open(base + ".ass", "w", encoding="utf-8").write(ass)
     open(base + ".srt", "w", encoding="utf-8").write(build_srt(cards))
     open(base + ".sh", "w", encoding="utf-8").write(build_command(cfg, tl))
-    print(f"{cfg['name']}: {tl.duration:.2f} s, {len(tl.pieces)} piece(s), {len(cards)} caption card(s)")
+    print(f"{cfg['name']}: {tl.duration:.2f} s at {tl.speed:g}x, "
+          f"{len(tl.pieces)} piece(s), {len(cards)} caption card(s)")
     for w in check_packaging(cfg, tl.duration, "headline"):
         print("warning:", w)
     for w in check_cards(cfg["cards"]):
