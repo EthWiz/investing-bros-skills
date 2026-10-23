@@ -9,7 +9,7 @@ Create a finished {FORMAT} artwork for Hebrew podcast אחים להשקעות in
 Financial Journal identity. Use the attached selected artwork as style reference.
 Deep navy textured paper #09243B, warm cream #F5EBD5, printed mustard #D8A52E.
 Rough torn-paper headline strips, subtle paper shadows, bold contemporary Hebrew
-sans-serif, cream-and-navy engraved/halftone cutouts, controlled mustard accents.
+Heebo Black, cream-and-navy engraved/halftone cutouts, controlled mustard accents.
 One central subject, at most one supporting concept, generous navy breathing room.
 No glossy cinematic scene, metallic text, neon palette, market charts or crowded
 unrelated clippings. All Hebrew text exact and right-to-left. Where a format carries
@@ -27,10 +27,17 @@ Follow main-cover.png (Drive reference, see the asset index). No portraits, extr
 Read [covers](covers.md) and inspect both selected references.
 Use this complete prompt, not the illustration-oriented base style block above.
 
-Create one finished 16:9 {SEGMENT_OR_MAIN_EPISODE} thumbnail for אחים להשקעות.
-Input 1: {AMITAI_ORIGINAL_SOURCE}, Amitai identity/portrait source, LEFT.
-Input 2: {NADAV_ORIGINAL_SOURCE}, Nadav identity/portrait source, RIGHT.
+Create option {OPTION_LABEL} of three clearly labeled A/B/C options for one finished
+16:9 {SEGMENT_OR_MAIN_EPISODE} thumbnail for אחים להשקעות.
+The option label belongs in the output filename and review presentation, not in the art.
+Input 1: {AMITAI_ORIGINAL_SOURCE}, Amitai portrait frame from episode {EPISODE_NUMBER},
+LEFT.
+Input 2: {NADAV_ORIGINAL_SOURCE}, Nadav portrait frame from episode {EPISODE_NUMBER},
+RIGHT.
 Input 3: {SELECTED_COIN_OR_FACADE_REFERENCE}, layout and brand reference only.
+Both portraits must come from this same episode's recording; they may come from any
+point in the episode and, for a segment, need not come from the segment itself. Never
+substitute a photo or frame from another episode.
 Use exactly one of each distinct brother. Preserve their separate facial structure,
 age, hairlines, beard and eye shape. Use the fresh source frames rather than recycling
 reference-cover faces. Remove room backgrounds and video overlays. Natural-color,
@@ -52,6 +59,8 @@ Target {WIDTH}×{HEIGHT}; inspect actual output dimensions and faces afterward.
 Fill NUMBER_RULE with 'No episode number or badge' for segments. For a main episode,
 use a small supplied 'פרק {EPISODE_NUMBER}' tab below the title, clear of the centerpiece.
 Use the topic + short question for segment copy; use approved episode copy for episodes.
+Run the prompt separately for A, B and C through the Codex backend, with meaningfully
+different portraits and centerpieces while keeping the fixed visual system.
 For localized mixed selections, use the edit prompt below and list exact source/side
 for each selected portrait and centerpiece. Do not invent another pose during that edit.
 
@@ -81,7 +90,9 @@ approved cover and episode-07-gold.png as style references, named in the prompt.
 prompt is complete on its own; don't add the base style block, which asks for text.
 
 Create vertical 9:16 Shorts cover artwork for Hebrew podcast אחים להשקעות, saved as
-{OUTPUT_NAME}. NO text, letters, numbers, strips, labels or logos anywhere: the title is
+{OUTPUT_NAME}, option {OPTION_LABEL} of three clearly labeled A/B/C options for this
+Short. The option label belongs in the output filename and review presentation, not in
+the art. NO text, letters, numbers, strips, labels or logos anywhere: the title is
 typeset afterwards. Match the illustration style of the attached {EPISODE_COVER_FILE} and
 episode-07-gold.png (Financial Journal identity). Deep navy textured paper #09243B with
 subtle grain. Centre and lower half: {HERO_AND_MEANING}, one gold and cream #F5EBD5
@@ -92,7 +103,7 @@ glossy cinematic scene, metallic shine, neon, charts or clutter.
 
 For a one-pass cover (Codex, when Hebrew comes out right), replace the NO-text sentence with:
 title line 1 exact '{HEADLINE_LINE_1}' on a cream torn strip and line 2 exact
-'{HEADLINE_LINE_2}' on a mustard torn strip, heavy navy sans-serif, inside the centre
+'{HEADLINE_LINE_2}' on a mustard torn strip, heavy navy Heebo Black, inside the centre
 square of the frame; a small white torn pill exact 'פרק {EPISODE_NUMBER}' on the bottom
 edge of the mustard strip; compact show mark bottom-right ('אחים' on cream above
 'להשקעות' on mustard). No host names. All Hebrew exact and right-to-left.
@@ -104,17 +115,20 @@ Exact text: {COPY}. Adapt illustration placement to this aspect ratio. Label thi
 proposed format adaptation until reviewed. Do not merely stretch a square image.
 
 ## Codex backend (Grokbot on Amitai's Mac)
-When Grokbot makes artwork and Amitai's Mac (machine
-566a74b2-614d-458f-be63-660743243124) is connected, run the prompt through Codex there
-with the device shell (Shell with that machineId); otherwise use Grokbot's own image
-tool with the same prompt. Codex uses Amitai's ChatGPT plan, never an API key.
+Until Amitai says the design is dialed in, every main-episode, segment and individual
+Short cover is generated as three labeled options A/B/C through Codex on Amitai's Mac
+(machine 566a74b2-614d-458f-be63-660743243124) with the device shell (Shell with that
+machineId). If that backend is unavailable, report the blocker; do not switch generators.
+For non-cover artwork, Grokbot may use its own image tool with the same prompt when the
+Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
 1. Before a run, refresh the Mac's `~/.agents/skills` copies from this repo's `main`
    (Codex reads them), only after Amitai approves that exact command.
-2. Workdir `/Users/amitairuskin/Pictures/investing-bros/episode-<N>/short-<NN>/` (or
-   `episode-<N>/cover/` for main-episode artwork). Put the relevant references there
-   (for main episodes: the selected photo-cutout reference plus both original host
-   photos; for illustrated Shorts: the episode and gold style references) and the
-   filled prompt as `prompt.txt`. CopyToBox/CopyFromBox need
+2. Workdir `/Users/amitairuskin/Pictures/investing-bros/episode-<N>/short-<NN>/`,
+   `episode-<N>/cover/` for main-episode artwork, or
+   `episode-<N>/segment-<NN>/` for segment artwork. Put the relevant references there
+   (for main episodes and segments: the selected photo-cutout reference plus original
+   host frames from episode N; for illustrated Shorts: the episode and gold style
+   references) and the filled prompt as `prompt-{a|b|c}.txt`. CopyToBox/CopyFromBox need
    absolute `/Users/amitairuskin/...` paths; `~` is not expanded.
 3. For Shorts, start the prompt with `Use $imagegen to create`, then the Shorts cover art
    template above, and add: "Output will be upscaled to 1080x1920 afterwards;
@@ -127,8 +141,11 @@ tool with the same prompt. Codex uses Amitai's ChatGPT plan, never an API key.
    ```bash
    cd <workdir> && env -u OPENAI_API_KEY ~/.nvm/versions/node/v22.23.1/bin/codex exec \
      --skip-git-repo-check -i ref-episode-<N>-cover.png -i ref-episode-07-gold.png \
-     -- "$(cat prompt.txt)" < /dev/null > codex.log 2>&1
+     -- "$(cat prompt-a.txt)" < /dev/null > codex-a.log 2>&1
    ```
+   Repeat with the B and C prompt and log names. Replace the example Shorts reference
+   arguments with the matching style reference and both same-episode host frames for a
+   photo-cutout cover.
    `env -u OPENAI_API_KEY` keeps billing on the ChatGPT plan. `--skip-git-repo-check`
    is needed outside a trusted folder. `-i` takes several values, so `--` must come
    before the prompt or Codex fails with "a value is required for '--image'".
@@ -140,9 +157,11 @@ tool with the same prompt. Codex uses Amitai's ChatGPT plan, never an API key.
    (`ffmpeg -i in.png -vf scale=1080:1920:flags=lanczos out.jpg`); check the centre 1:1
    crop (`-vf crop=1080:1080:0:420`) still shows the title. Then run `check_cover.py`
    and the quality checks.
-For main episodes, use the main-episode prompts and their source image arguments, skip
-the Shorts steps, and inspect the real dimensions and both faces in each ratio; disclose
-the real size ([covers](covers.md) → Delivery checks).
+For main episodes and segments, use the photo-cutout prompts and their source image
+arguments, skip the Shorts steps, and inspect the real dimensions and both faces in each
+ratio; disclose the real size ([covers](covers.md) → Delivery checks). For every cover
+type, repeat the run for labeled options A, B and C and wait for Amitai's pick before
+promoting a final filename.
 Delivery stays under this skill's rules: nothing is published or sent without Amitai's OK.
 
 ## Example requests

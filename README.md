@@ -95,7 +95,7 @@ tools/validate_skills.py frontmatter/layout checks (run in CI)
 
 Version 3.0 merged eleven production skills into seven. This change adds a shared brand capability. If an agent still lists `investing-bros-teaser`, `-hyperframes`, `-cover-art`, `-share-new-episode` or `-short-covers` (folded into `investing-bros-brand` in October 2026), it has an old copy: remove those and install the current set.
 
-Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell) for HyperFrames renders, an installed Hebrew font (Heebo or Rubik) for the quick caption path.
+Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `faster-whisper` for transcription (fallback: `sherpa-onnx` + `soundfile` when Hugging Face is unreachable), Pillow + fontTools for brand frames and static Heebo weights, Node 18+ and the `hyperframes` npm CLI (Chrome Headless Shell), and installed Heebo for every caption and graphics path.
 
 ## Contributing
 

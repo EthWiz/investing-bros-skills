@@ -13,7 +13,8 @@ files, and a later decision here overrides an earlier one.
 - 2026-10-19: the Shorts hook and captions were split into print (torn strips) and screen
   (white captions, gold current word) treatments.
 - 2026-10-22: Heebo confirmed as the only typeface. The separate
-  `investing-bros-short-covers` skill (Rubik, its own palette) was folded into this skill.
+  `investing-bros-short-covers` skill (legacy type and its own palette) was folded into
+  this skill.
 - 2026-10-22: reference images moved from the repo to Drive `Brand Resources/references`,
   fetched by file ID.
 
@@ -40,8 +41,8 @@ files, and a later decision here overrides an earlier one.
 - Episode 1, Short 1 (Cybercab, `מי ינצח` / `במרוץ הרובוטקסי?`) was the first approved
   cover; `shorts-title-strips-ep1.png` is its title.
 - Covers were made with the Codex CLI on Amitai's Mac from episode 1; the episode-3 Short
-  used generated art plus a Rubik torn-strip overlay with a host strip and a bottom-left
-  logo.
+  used generated art plus a legacy torn-strip overlay with a host strip and a bottom-left
+  logo. New and rebuilt text uses Heebo only.
 - 2026-10-21: Amitai removed the host-name strip from Shorts covers and moved the show
   mark bottom-right.
 

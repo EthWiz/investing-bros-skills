@@ -8,8 +8,8 @@ description: >-
   investment idea, interview and explainer.
   Covers segment selection, full-frame cut, search-first title, description
   linking the full episode + Spotify line, thumbnail, on-screen nudge + card, Unlisted
-  evaluation upload to the אחים להשקעות channel, Public after Amitai's OK, and linking back from the
-  full episode. Use when Amitai asks for a "segment video", "deep dive video",
+  evaluation upload to the אחים להשקעות channel, and Public after Amitai's OK.
+  Use when Amitai asks for a "segment video", "deep dive video",
   "צלילה לעומק", "סרטון נפרד", or when publishing episode N.
 ---
 # Investing Bros segment videos
@@ -44,9 +44,15 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
 4. **Chapters** only when it has 3+ sub-topics: rebase to 00:00 (`shift_after_cut.py`), time first, Hebrew first word, ≥30 s apart.
 5. **Title (search-first).** Keyword up front (company/topic/guest), then the one sub-question the video answers. Hebrew, no clickbait, no en/em dash, no `פרק N -`; may differ from the episode title. E.g. `זהב: מה באמת מגבה את הכסף שלך?`. An English name (`Tesla`) may appear, but the line starts with Hebrew. RTL copy via `rtl_fix.py --title` (`investing-bros-episode-upload`); YouTube gets plain text. Offer Amitai 2–3 options.
 6. **Description.** Hook (≤450 chars, starts with Hebrew, has the search keywords), `לפרק המלא: <full-episode YouTube URL>`, disclaimer, the `האזינו בספוטיפיי:` line (after the disclaimer, before chapters, same rules as the episode), chapters. `check_copy.py --youtube`.
-7. **Thumbnail.** 16:9 1280×720 from `investing-bros-brand`, headline = the topic keyword (2–4 words). Save in the episode Drive folder.
-8. **Files** in `segments/`: `סגמנט-NN-<סוג>-<נושא>.mp4`, `.txt` (title, description), `-thumb.jpg`, `youtube-סגמנט-NN.md` (type, status, URL). The required deep dive is `סגמנט-01-צלילה-<נושא>`; the second deliverable is `סגמנט-02-<סוג>-<נושא>`.
-9. **Full-episode nudge (burned in).** Design C, from the 1080p segment source: cream `#FBEEDF` torn strip `לפרק המלא` above a mustard `#FCAF02` torn strip `לחצו כאן`, text `#011526`, Rubik Black ~60px at 1080p, soft drop shadow, plus a large mustard up-arrow with navy outline that bounces gently (~12px @ 1.5 Hz). **Right side** (~50px from the right edge), **below YouTube's card teaser** (top-right on Amitai's player): the arrow, bounce included, stays below y≈200 so the card never covers it. Visible 30.0–35.0 s in sync with the card, 0.3 s fade, slides in from the right. Keep spacing compact; check a frame at 0:31 that it doesn't cover a host's eyes (shrink/tuck if it does) and show Amitai the frame before uploading. Generate the overlay with [scripts/nudge_overlay.py](scripts/nudge_overlay.py) (reference: `assets/nudge-overlay.png`), then burn with ffmpeg overlay `enable='between(t,30,35)'`, `-crf 18`, `-c:a copy`.
+7. **Thumbnail.** 16:9 1280×720 from `investing-bros-brand`, headline = the topic
+   keyword (2–4 words). Supply each host's frame from this same episode recording; the
+   frames may come from anywhere in the episode and do not have to come from this
+   segment. Never use portraits from another episode. Until Amitai says the design is
+   dialed in, brand makes three clearly labeled options A/B/C with its Codex backend;
+   show all three to Amitai and use only his pick. Save the selected thumbnail in the
+   episode Drive folder.
+8. **Files** in `segments/`: `סגמנט-NN-<סוג>-<נושא>.mp4`, `.txt` (title, description), `-thumb.jpg`, `youtube-סגמנט-NN.md` (type, status, URL). The required deep dive is `סגמנט-01-צלילה-<נושא>`; the second deliverable is `סגמנט-02-<סוג>-<נושא>`. To deliver final segment videos from the box to Amitai, use the verified 10–20 MB chunked `CopyFromBox` handoff to `~/Downloads` (show conventions → references/environment.md → Delivering files); Amitai can drag each verified reassembled file to Drive.
+9. **Full-episode nudge (burned in).** Design C, from the 1080p segment source: cream `#FBEEDF` torn strip `לפרק המלא` above a mustard `#FCAF02` torn strip `לחצו כאן`, text `#011526`, Heebo Black ~60px at 1080p, soft drop shadow, plus a large mustard up-arrow with navy outline that bounces gently (~12px @ 1.5 Hz). **Right side** (~50px from the right edge), **below YouTube's card teaser** (top-right on Amitai's player): the arrow, bounce included, stays below y≈200 so the card never covers it. Visible 30.0–35.0 s in sync with the card, 0.3 s fade, slides in from the right. Keep spacing compact; check a frame at 0:31 that it doesn't cover a host's eyes (shrink/tuck if it does) and show Amitai the frame before uploading. Generate the overlay with `python3 scripts/nudge_overlay.py --font fonts/Heebo-Black.ttf` (reference: `assets/nudge-overlay.png`), then burn with ffmpeg overlay `enable='between(t,30,35)'`, `-crf 18`, `-c:a copy`.
 10. **Upload** to **אחים להשקעות** (or `yt_upload.py`), not made for kids, with title, description, thumbnail. See `investing-bros-episode-upload` step 3. Studio may open on the personal "Grok Bot" channel and drop `authuser`: always confirm the header shows אחים להשקעות before editing (direct URL `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw?authuser=1`). **Evaluation uploads go up Unlisted** (end screens don't show on Private). YouTube can't replace a video file, so any visual change = a new upload + re-adding card and end screen.
 11. **Link back to the full episode** (Studio → Editor; click-path in `investing-bros-episode-upload` [references/youtube-studio.md](../investing-bros-episode-upload/references/youtube-studio.md#segment-videos-cards-end-screen-pinned-comment)):
    - **Card:** exactly ONE Video card to the full episode at 0:30 (in sync with the nudge). YouTube rejects a second card to the same video. Set BOTH custom message and teaser text to `לפרק המלא`; never leave them blank (a blank teaser shows the full long title, which gets cut off). To pick the target, paste the full-episode URL into **Search videos from other channels** in the card picker (searching your own videos by URL returns nothing); verify title + thumbnail.
@@ -54,12 +60,12 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
    - **End screen** over the last 20 s: the full episode as a video element + a Subscribe element.
    - **Pinned comment** once Public: `לפרק המלא: <full-episode URL>`, posted as the channel and pinned.
    The card and end screen go in while Private (the full episode may be Private too); the pinned comment after Public. Report which were done.
-12. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. Then add to the full episode's YouTube description (after the disclaimer, by the Spotify line) one line per segment, e.g. `<נושא> בסרטון נפרד: <URL>`, and update `video/תיאור-פרק-N-youtube.txt`. The Spotify show-to-episode link swap applies here too.
+12. **Publish** only after Amitai's explicit OK. Order: after the full episode is Public, before the shorts. The Spotify show-to-episode link swap applies to the segment description too. Do not add the segment URL to the full episode's description.
 
 ## Done when
 - `segments/` has **exactly two** complete packages: segment 01 is the required deep-dive sub-question and segment 02 is the next-best qualifying deep-dive sub-question or strongest other self-contained topic. Each has `.mp4`, `.txt`, `-thumb.jpg` and `youtube-סגמנט-NN.md`.
 - Each has the card and end screen (and, once Public, the pinned comment) pointing to the full episode.
-- Each has the nudge at 0:30–0:35 and is Unlisted/Private on אחים להשקעות before the OK / Public after, and the full episode's description links it.
+- Each has the nudge at 0:30–0:35 and is Unlisted/Private on אחים להשקעות before the OK / Public after.
 
 ## Hand back
 For segments 01 and 02: type, sub-question, in/out (and any internal cuts), length (≤10 min), segment 02's alternative, title options, Unlisted URL, 0:31 nudge frame, card/end-screen/pinned-comment status, Drive status and anything waiting on Amitai.

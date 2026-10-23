@@ -133,10 +133,10 @@ def test_cover_endcard_png_renders(tmp_path):
     from PIL import features
     from brand import endcard_cover
     here = os.path.dirname(os.path.abspath(__file__))
-    fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True) + glob.glob("/usr/share/fonts/**/DejaVuSans.ttf", recursive=True)
+    fonts = glob.glob("/usr/share/fonts/**/Heebo*.ttf", recursive=True)
     logo = os.path.join(here, "..", "..", "investing-bros-brand", "assets", "logo-solid.png")
     if not features.check("raqm") or not fonts:
-        pytest.skip("needs Pillow with raqm and a Hebrew font")
+        pytest.skip("needs Pillow with raqm and Heebo")
     font = fonts[0]
     card = endcard_cover(str(tmp_path / "ec.png"), font, logo, "האם טסלה תנצח את המרוץ|של נהיגה אוטונומית?",
                          "פרק 1", "הקישור לפרק המלא בתיאור")
