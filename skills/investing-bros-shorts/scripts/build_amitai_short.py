@@ -6,9 +6,10 @@ Usage:
       [--work /workspace/podcast/ep1/shorts_skilltest/work] [--video IGNORED]
 
 --video is accepted for compatibility but ignored: burned-in inputs (e.g. v7) must not be reused.
-The base is WORK/ep1_lidar_clean.mp4 = the v5 edit (same pieces, crop, logo, -14 LUFS audio) with no
-captions/graphics, from build_fullbleed_patched.py short_clean.json. Reuses strips.py (torn strips),
-v5_gfx.py assets (v5_cta.png, v5_end.png) and mg.py easing. Icons are drawn vectors; emoji are stripped.
+The config's base is a clean edit made by make_base.py (same pieces, crop, logo,
+speed-adjusted -14 LUFS audio) with no captions/graphics. Reuses strips.py
+(torn strips), v5_gfx.py assets (v5_cta.png, v5_end.png) and mg.py easing.
+Icons are drawn vectors; emoji are stripped.
 """
 import argparse, json, math, os, re, subprocess, sys
 from PIL import Image, ImageDraw, ImageFont, ImageFilter
@@ -332,4 +333,7 @@ if not os.path.exists("end3.mp4"):
 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", body, "-i", "end3.mp4", "-filter_complex", "[0:v][0:a][1:v][1:a]concat=n=2:v=1:a=1[v][a]",
                 "-map", "[v]", "-map", "[a]", "-c:v", "libx264", "-preset", "veryfast", "-crf", "17", "-g", "24", "-c:a", "aac", "-b:a", "192k",
                 "-movflags", "+faststart", OUT], check=True)
+layout_path = os.path.splitext(OUT)[0] + "_layout.json"
+json.dump({"duration": dur + 3.0, "silent_endcard_seconds": 3.0, "hook_style": "approved-v5"},
+          open(layout_path, "w"))
 print(OUT)

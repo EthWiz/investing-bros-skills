@@ -8,7 +8,7 @@ import pytest
 
 HERE = os.path.dirname(__file__)
 sys.path.insert(0, HERE)
-from build_composition import Timeline, build, close_gaps, text  # noqa: E402
+from build_composition import Timeline, build, close_gaps, input_duration_problem, text  # noqa: E402
 from make_input import build_command, out_time, pieces_of  # noqa: E402
 
 EXAMPLE = json.load(open(os.path.join(HERE, "..", "references", "example-swift.json"), encoding="utf-8"))
@@ -20,6 +20,18 @@ def test_timeline_maps_through_cuts():
     assert tl.map(120) == pytest.approx(10)
     with pytest.raises(ValueError):
         tl.map(115)
+
+
+def test_speed_shortens_composition_and_syncs_source_times():
+    tl = Timeline([[100, 110], [120, 125]], 24, speed=1.25)
+    assert tl.duration == pytest.approx(12)
+    assert tl.map(120) == pytest.approx(8)
+    _, _, sb, _ = build(EXAMPLE, speed=1.25)
+    assert sb["composition"]["durationSeconds"] == pytest.approx(47.0833 / 1.25, abs=0.05)
+    end = sb["cards"][-1]
+    assert end["endSec"] - end["startSec"] == pytest.approx(2.6 / 1.25, abs=0.05)
+    assert input_duration_problem(sb["composition"]["durationSeconds"], sb["composition"]["durationSeconds"], 24) is None
+    assert "same --speed" in input_duration_problem(47.08, sb["composition"]["durationSeconds"], 24)
 
 
 def test_text_escapes_isolates_english_and_highlights():
@@ -62,6 +74,15 @@ def test_input_command_switches_host_and_uses_levelled_audio():
     assert '-i "lev.wav"' in cmd and "volume=2dB" in cmd and "loudnorm" not in cmd
     p = pieces_of(cfg)
     assert out_time(p, 15) == pytest.approx(11)
+
+
+def test_input_speed_changes_video_audio_and_duration_mapping():
+    cfg = {"name": "t", "fps": 24, "source": "raw.mp4",
+           "pieces": [[1, 12], [15, 30]], "shots": [[1, 12, "L"], [15, 30, "R"]]}
+    cmd = build_command(cfg, speed=1.25)
+    assert "setpts=PTS/1.25" in cmd and "atempo=1.25" in cmd
+    assert "between(t,8.800,20.800)" in cmd
+    assert out_time(pieces_of(cfg), 15, speed=1.25) == pytest.approx(8.8)
 
 
 def test_input_command_without_levelled_audio_applies_gain():

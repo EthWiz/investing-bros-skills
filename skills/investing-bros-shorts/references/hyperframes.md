@@ -30,7 +30,7 @@ For a punchline, a story or a quick reaction clip, the plain render is enough an
    Every `*_at` is the moment the word is **spoken** (source time). Card text is either the host's words or a faithful label for them — no numbers, names or claims he didn't say. Leave gaps where nothing needs a card; captions carry those stretches.
 2. **Cut the clean clip** (ffmpeg — HyperFrames plays its input untouched, so all editing happens here):
    ```bash
-   python3 scripts/make_input.py short.json      # -> NAME_input.sh
+   python3 scripts/make_input.py short.json --speed 1.25  # house default -> NAME_input.sh
    bash NAME_input.sh                             # -> NAME_input.mp4, 1080x1216, keyframe every second, ~-14 LUFS
    ```
 3. **Stage the project**:
@@ -41,8 +41,13 @@ For a punchline, a story or a quick reaction clip, the plain render is enough an
    for w in ('SemiBold','ExtraBold','Black'):
        f=F(f'fonts/Heebo-{w}.ttf'); f.flavor='woff2'; f.save(f'PROJ/public/fonts/Heebo-{w}.woff2')"
    npm i --no-save gsap@3 && cp node_modules/gsap/dist/gsap.min.js PROJ/public/vendor/
-   python3 scripts/build_composition.py short.json --project PROJ
+   python3 scripts/build_composition.py short.json --project PROJ --speed 1.25
    ```
+   Both scripts default to 1.25x; pass `--speed 1.0` to both to disable it.
+   They must use the same value so source-time captions and cards map onto the
+   speed-adjusted video; `build_composition.py` rejects an input whose duration
+   does not match its selected speed. Configured end-card seconds are also on
+   the source timeline and shorten with the rest of this legacy composition.
    The composition must not load anything from the network at render time — fonts, GSAP, logo and video are all local files.
 4. **Check before rendering**:
    ```bash
@@ -57,7 +62,7 @@ For a punchline, a story or a quick reaction clip, the plain render is enough an
    cd PROJ && PRODUCER_BROWSER_GPU_MODE=hardware npx hyperframes render public --skill=talking-head-recut -o output.mp4 --fps 24
    ```
    Drop `PRODUCER_BROWSER_GPU_MODE=hardware` on machines without a GPU. Episode 6 (47 s, 2 cores, software GL): ~3 minutes. Shells with a time limit: start it in the background and poll its log.
-6. **Check the export**: duration = the clip's; `ffmpeg -i output.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak ≤ −1 dB; frames at each card's key moment; listen to every cut.
+6. **Check the export**: duration = the speed-adjusted clip's and must satisfy the main skill's limits; `ffmpeg -i output.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak ≤ −1 dB; frames at each card's key moment; listen to every cut.
 
 ## Full-screen overlay (house style, episode 7)
 For the house style, the base video comes from `build_fullbleed.py` (full-screen host, word-by-word captions, logo). HyperFrames then adds only 1–2 animated panels in a compact top panel (left 56, top 262, 968×420 scaled to 0.74 so the host's eyes stay clear). Set `"layout": "overlay"` in short.json (no `captions` — they are burned into the input) and use these card types:
@@ -74,7 +79,9 @@ Make the short's cover and upload short + cover + `.srt` exactly as the main ski
 
 ## Never
 - Put a number, name or claim on a card that the hosts didn't say.
-- Cut, reorder or speed up the footage inside HyperFrames — edits belong in `make_input.py`, where the cuts are at pauses and the sound is levelled.
+- Cut, reorder or change playback speed inside HyperFrames — edits and the
+  shared `--speed` setting belong in `make_input.py` / `build_composition.py`,
+  where cuts stay at pauses and the sound is levelled.
 - Load fonts, scripts or images from a URL in the composition.
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination listed in `investing-bros-show`.
 - Hand-write a composition (`index.html`) or card. New layouts and card types go into `build_composition.py` through a PR; follow the working rules in `investing-bros-show`.

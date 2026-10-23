@@ -2,7 +2,8 @@
 """House style (episode 7 "option D" base): full-screen host, word-by-word gold captions.
 
 Usage:
-    python3 build_fullbleed.py short.json [--out-dir DIR]   # writes NAME_fb.ass, NAME_grad.png, NAME_fb.sh
+    python3 build_fullbleed.py short.json [--out-dir DIR] [--speed 1.25]
+                                                               # writes NAME_fb.ass, NAME_grad.png, NAME_fb.sh
     bash NAME_fb.sh                                         # run where source, logo.png and fonts/ are
 
 The output (1080x1920, keyframe every second) is a finished short, and also the
@@ -55,7 +56,7 @@ sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from brand import (ACCENT, ARROW_ASS, arrow_png, endcard_cover, CALLOUT, JOURNAL_MUSTARD, JOURNAL_NAVY, callout_strip, CAPTION_HALF, CAPTION_Y_BOUNDS, CAPTION_Y_DEFAULT, FONT_BLACK,  # noqa: E402
                    FONT_EXTRABOLD, HOOK_GAP, HOOK_Y_BOUNDS, HOOK_Y_DEFAULT, LOGO_BOX, ass_colour,
                    hook_strips)
-from build_short import Timeline, ass_time, build_srt, check_packaging, close_gaps  # noqa: E402
+from build_short import DEFAULT_SPEED, Timeline, ass_time, build_srt, check_packaging, close_gaps, speed_arg  # noqa: E402
 from clip_captions import rtl  # noqa: E402
 
 GOLD = ACCENT
@@ -242,11 +243,13 @@ def build_command(cfg, tl):
         for k, (a, b) in enumerate(P):
             f += (f"{take(idx[srcs[sd]], 'v')}trim=start={a - S:.4f}:end={b - S:.4f},setpts=PTS-STARTPTS,"
                   f"crop={w}:{h}:{x}:{y},scale=1080:1920:flags=lanczos,setsar=1[{sd}{k}];")
-        f += "".join(f"[{sd}{k}]" for k in range(n)) + f"concat=n={n}:v=1:a=0[V{sd}];"
+        f += "".join(f"[{sd}{k}]" for k in range(n)) + f"concat=n={n}:v=1:a=0[V{sd}0];"
+        f += f"[V{sd}0]{'null' if tl.speed == 1.0 else f'setpts=PTS/{tl.speed:g}'}[V{sd}];"
     for k, (a, b) in enumerate(P):
         f += (f"{take(idx[asrc], 'a')}atrim=start={a - S:.4f}:end={b - S:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
               f"afade=t=out:st={b - a - 0.015:.4f}:d=0.015,volume={gains[k]}dB[a{k}];")
-    f += "".join(f"[a{k}]" for k in range(n)) + f"concat=n={n}:v=0:a=1[ac];"
+    f += "".join(f"[a{k}]" for k in range(n)) + f"concat=n={n}:v=0:a=1[ac0];"
+    f += f"[ac0]{'anull' if tl.speed == 1.0 else f'atempo={tl.speed:g}'}[ac];"
     if shots:
         en = "+".join(f"between(t,{tl.map(a):.3f},{tl.map(b):.3f})" for a, b, _ in shots)
         f += f"[V{base}][V{other}]overlay=0:0:enable='{en}'[vc];"
@@ -301,9 +304,11 @@ def build_command(cfg, tl):
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config"); ap.add_argument("--out-dir", default=".")
+    ap.add_argument("--speed", type=speed_arg, default=DEFAULT_SPEED,
+                    help=f"video/audio playback speed (default: {DEFAULT_SPEED}; 1.0 disables)")
     a = ap.parse_args()
     cfg = json.load(open(a.config, encoding="utf-8"))
-    tl = Timeline([p[:3] for p in cfg["pieces"]], cfg.get("fps", 24))
+    tl = Timeline([p[:3] for p in cfg["pieces"]], cfg.get("fps", 24), a.speed)
     words_path = os.path.join(os.path.dirname(os.path.abspath(a.config)), cfg["words"])
     chunks = json.load(open(words_path, encoding="utf-8"))
     base = os.path.join(a.out_dir, cfg["name"])
@@ -330,6 +335,7 @@ def main():
             raise SystemExit("; ".join(bad))
         lay["callouts"].append({"window": [round(win[0], 2), round(win[1], 2)], "box": box})
     lay["duration"] = round(tl.duration, 3)
+    lay["speed"] = tl.speed
     lay["endcard_start"] = round(endcard_start(cfg, tl), 3)
     if cfg.get("endcard") and cfg.get("endcard_style", "text") == "cover":
         e = cfg["endcard"]
@@ -343,7 +349,7 @@ def main():
     if cfg.get("cards"):
         cards = close_gaps([(tl.map(s), tl.map(e), t) for s, e, t in cfg["cards"]])
         open(base + ".srt", "w", encoding="utf-8").write(build_srt(cards))
-    print(f"{cfg['name']}: {tl.duration:.2f} s, {len(chunks)} caption chunks")
+    print(f"{cfg['name']}: {tl.duration:.2f} s at {tl.speed:g}x, {len(chunks)} caption chunks")
     for w in check_packaging(cfg, tl.duration, "hook"):
         print("warning:", w)
 

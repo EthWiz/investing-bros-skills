@@ -5,7 +5,7 @@ import sys
 
 sys.path.insert(0, os.path.dirname(__file__))
 from build_fullbleed import build_ass, build_command, hook_box_problems  # noqa: E402
-from build_short import Timeline  # noqa: E402
+from build_short import Timeline, ass_time  # noqa: E402
 
 REF = os.path.join(os.path.dirname(__file__), "..", "references")
 CFG = json.load(open(os.path.join(REF, "ep7-asteroid-fullbleed.json"), encoding="utf-8"))
@@ -21,6 +21,16 @@ def test_zooms_latest_is_outermost():
     z = cmd.split("zoompan=z='")[1].split("'")[0]
     assert z.startswith("if(gte(it,41.250),1.1,")          # 2147.25 - 2106.0
     assert "crop=608:1080:1130:0" in cmd and "channel_layouts=stereo" in cmd and "-g 24" in cmd
+
+
+def test_speed_changes_video_audio_and_all_overlay_timings():
+    tl = Timeline([p[:3] for p in CFG["pieces"]], 24, speed=1.25)
+    cmd = build_command(CFG, tl)
+    assert cmd.count("setpts=PTS/1.25") >= 1
+    assert "atempo=1.25" in cmd
+    assert f'-t {tl.duration:.4f} "ep7_asteroid.mp4"' in cmd
+    ass = build_ass(CFG, tl, CHUNKS)
+    assert ass_time(tl.duration) in ass
 
 
 def test_ass_highlights_one_word_at_a_time_in_gold_rtl():

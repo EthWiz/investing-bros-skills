@@ -2,7 +2,7 @@
 """Cut the clean input clip for a HyperFrames short: kept pieces, host framing, levelled audio.
 
 Usage:
-    python3 make_input.py short.json [--out-dir DIR]     # writes NAME_input.sh
+    python3 make_input.py short.json [--out-dir DIR] [--speed 1.25]     # writes NAME_input.sh
 
 HyperFrames' talking-head-recut layer plays its input clip untouched, so every
 edit happens here, in ffmpeg: the cuts (pieces), which host is on screen
@@ -21,6 +21,9 @@ import argparse
 import json
 import os
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_short import DEFAULT_SPEED, playback_speed, speed_arg  # noqa: E402
 
 # Riverside exports are often mono AAC; without an explicit output layout ffmpeg fails with
 # "Cannot select channel layout for the link between filters aresample and format_out".
@@ -45,16 +48,18 @@ def pieces_of(cfg):
     return out
 
 
-def out_time(pieces, t: float) -> float:
+def out_time(pieces, t: float, speed=1.0) -> float:
+    speed = playback_speed(speed)
     o = 0.0
     for a, b, _ in pieces:
         if a - 0.05 <= t <= b + 0.05:
-            return min(max(o + t - a, o), o + b - a)
-        o += b - a
+            return min(max(o + (t - a) / speed, o), o + (b - a) / speed)
+        o += (b - a) / speed
     raise ValueError(f"time {t} is not inside any piece")
 
 
-def build_command(cfg) -> str:
+def build_command(cfg, speed=1.0) -> str:
+    speed = playback_speed(speed)
     fps = cfg.get("fps", 24)
     P = pieces_of(cfg)
     n = len(P)
@@ -69,9 +74,14 @@ def build_command(cfg) -> str:
         f"atrim=start={a:.4f}:end={b:.4f},asetpts=PTS-STARTPTS,afade=t=in:d=0.012,"
         f"afade=t=out:st={b - a - 0.015:.4f}:d=0.015{'' if asrc else f',volume={g}dB'}[a{i}];"
         for i, (a, b, g) in enumerate(P))
-    cat = "".join(f"[v{i}][a{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=1[vc][ac];"
+    cat = "".join(f"[v{i}][a{i}]" for i in range(n)) + f"concat=n={n}:v=1:a=1[vc0][ac0];"
+    if speed == 1.0:
+        tempo = "[vc0]null[vc];[ac0]anull[ac];"
+    else:
+        tempo = f"[vc0]setpts=PTS/{speed:g}[vc];[ac0]atempo={speed:g}[ac];"
     shots = cfg.get("shots", [[P[0][0], P[-1][1], base]])
-    en = "+".join(f"between(t,{out_time(P, a):.3f},{out_time(P, b):.3f})" for a, b, side in shots if side == other) or "0"
+    en = "+".join(f"between(t,{out_time(P, a, speed):.3f},{out_time(P, b, speed):.3f})"
+                  for a, b, side in shots if side == other) or "0"
     vf = (f"[vc]split[x1][x2];[x1]{CROP[base]},scale={VIDEO_W}:{VIDEO_H}:flags=lanczos[B];"
           f"[x2]{CROP[other]},scale={VIDEO_W}:{VIDEO_H}:flags=lanczos[O];[B][O]overlay=0:0:enable='{en}',fps={fps},format=yuv420p[v];")
     if asrc:
@@ -81,7 +91,7 @@ def build_command(cfg) -> str:
               "loudnorm=I=-14:TP=-1.5:LRA=9,aresample=48000," + STEREO + "[a]")
     inputs = f'-i "{src}"' + (f' -i "{asrc}"' if asrc else "")
     # -g = fps: every second seekable, otherwise the renderer freezes frames on seek
-    return (f'ffmpeg -v error -y {inputs} -filter_complex "{vt}{at}{cat}{vf}{af}" -map "[v]" -map "[a]" '
+    return (f'ffmpeg -v error -y {inputs} -filter_complex "{vt}{at}{cat}{tempo}{vf}{af}" -map "[v]" -map "[a]" '
             f'{X264} -r {fps} -g {fps} -keyint_min {fps} -c:a aac -b:a 192k -movflags +faststart "{cfg["name"]}_input.mp4"\n')
 
 
@@ -89,13 +99,14 @@ def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config")
     ap.add_argument("--out-dir", default=".")
+    ap.add_argument("--speed", type=speed_arg, default=DEFAULT_SPEED,
+                    help=f"video/audio playback speed (default: {DEFAULT_SPEED}; 1.0 disables)")
     a = ap.parse_args()
     cfg = json.load(open(a.config, encoding="utf-8"))
     path = os.path.join(a.out_dir, cfg["name"] + "_input.sh")
-    open(path, "w", encoding="utf-8").write(build_command(cfg))
-    dur = sum(b - a for a, b, _ in pieces_of(cfg))
-    print(f"{path}: {dur:.2f} s, {len(cfg['pieces'])} piece(s)")
-    sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+    open(path, "w", encoding="utf-8").write(build_command(cfg, a.speed))
+    dur = sum(b - a for a, b, _ in pieces_of(cfg)) / a.speed
+    print(f"{path}: {dur:.2f} s at {a.speed:g}x, {len(cfg['pieces'])} piece(s)")
     from build_short import LENGTH_LIMIT, LENGTH_TARGET
     if not LENGTH_TARGET[0] <= dur <= LENGTH_TARGET[1]:
         hard = not LENGTH_LIMIT[0] <= dur <= LENGTH_LIMIT[1]

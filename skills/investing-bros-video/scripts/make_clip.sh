@@ -3,7 +3,8 @@
 #
 # Usage:
 #   make_clip.sh --source FILE --start S --end E [--format vertical|square]
-#                [--captions FILE.ass] [--cover IMAGE] [--fonts-dir DIR] OUT.mp4
+#                [--captions FILE.ass] [--cover IMAGE] [--fonts-dir DIR]
+#                [--speed RATE] OUT.mp4
 #
 #   --source   raw recording: video (.mp4/.mov/...) or audio-only (.m4a/.mp3/.wav)
 #   --start/--end  seconds (or HH:MM:SS) on the source's (raw) timeline
@@ -11,11 +12,12 @@
 #   --cover    required for audio-only sources: renders an audiogram (cover + waveform)
 #   --captions .ass from clip_captions.py (same --format)
 #   --fonts-dir  folder with the caption font, if it isn't installed system-wide
+#   --speed    playback speed; defaults to 1.25 for vertical Shorts and 1.0 for square teasers
 #
 # Video sources keep the whole frame (both hosts visible) over a blurred fill.
 set -euo pipefail
 
-src="" start="" end="" fmt="vertical" subs="" cover="" fontsdir="" out=""
+src="" start="" end="" fmt="vertical" subs="" cover="" fontsdir="" speed="" out=""
 while (( $# )); do
   case "$1" in
     --source) src="$2"; shift 2 ;;
@@ -25,6 +27,7 @@ while (( $# )); do
     --captions) subs="$2"; shift 2 ;;
     --cover) cover="$2"; shift 2 ;;
     --fonts-dir) fontsdir="$2"; shift 2 ;;
+    --speed) speed="$2"; shift 2 ;;
     -h|--help) sed -n '2,17p' "$0"; exit 0 ;;
     -*) echo "error: unknown option $1" >&2; exit 2 ;;
     *) out="$1"; shift ;;
@@ -40,6 +43,11 @@ case "$fmt" in
   square)   W=1080 H=1080 ;;
   *) echo "error: --format must be vertical or square" >&2; exit 2 ;;
 esac
+[[ -n "$speed" ]] || { [[ "$fmt" == "vertical" ]] && speed="1.25" || speed="1.0"; }
+speed=$(python3 -c 'import math,sys
+x=float(sys.argv[1])
+assert math.isfinite(x) and 0.5 <= x <= 2.0
+print(f"{x:g}")' "$speed") || { echo "error: --speed must be between 0.5 and 2.0" >&2; exit 2; }
 
 has_video=$(ffprobe -v error -select_streams v:0 -show_entries stream=codec_type -of csv=p=0 "$src" | head -n1 || true)
 # Cover art embedded in an m4a/mp3 shows up as a video stream; treat those as audio-only.
@@ -55,21 +63,26 @@ fi
 
 if [[ -n "$has_video" ]]; then
   inputs=(-ss "$start" -to "$end" -i "$src")
-  graph="[0:a:0]aresample=async=1:min_hard_comp=0.01:first_pts=0[a];"
+  graph="[0:a:0]aresample=async=1:min_hard_comp=0.01:first_pts=0[a0];"
   graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=30:3,eq=brightness=-0.15[bg];"
   graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=decrease[fg];"
-  graph+="[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30${sub_filter},format=yuv420p[v]"
+  graph+="[bg][fg]overlay=(W-w)/2:(H-h)/2,setsar=1,fps=30${sub_filter},format=yuv420p[v0]"
 else
   [[ -n "$cover" ]] || { echo "error: audio-only source needs --cover IMAGE for an audiogram" >&2; exit 1; }
   [[ -f "$cover" ]] || { echo "error: cover not found: $cover" >&2; exit 1; }
   if [[ "$fmt" == vertical ]]; then C=960 CY=220 WY=1220 WH=140; else C=700 CY=40 WY=760 WH=110; fi
   inputs=(-loop 1 -framerate 30 -i "$cover" -ss "$start" -to "$end" -i "$src")
   graph="[1:a:0]asplit=2[waveaudio][syncaudio];"
-  graph+="[syncaudio]aresample=async=1:min_hard_comp=0.01:first_pts=0[a];"
+  graph+="[syncaudio]aresample=async=1:min_hard_comp=0.01:first_pts=0[a0];"
   graph+="[0:v]scale=${W}:${H}:force_original_aspect_ratio=increase,crop=${W}:${H},boxblur=40:4,eq=brightness=-0.3[bg];"
   graph+="[0:v]scale=${C}:${C}:force_original_aspect_ratio=increase,crop=${C}:${C}[art];"
   graph+="[waveaudio]showwaves=s=${C}x${WH}:mode=cline:scale=sqrt:colors=white:rate=30,format=rgba[wave];"
-  graph+="[bg][art]overlay=(W-w)/2:${CY}[b1];[b1][wave]overlay=(W-w)/2:${WY}:shortest=1,setsar=1${sub_filter},format=yuv420p[v]"
+  graph+="[bg][art]overlay=(W-w)/2:${CY}[b1];[b1][wave]overlay=(W-w)/2:${WY}:shortest=1,setsar=1${sub_filter},format=yuv420p[v0]"
+fi
+if [[ "$speed" == "1" ]]; then
+  graph+=";[v0]null[v];[a0]anull[a]"
+else
+  graph+=";[v0]setpts=PTS/${speed}[v];[a0]atempo=${speed}[a]"
 fi
 
 ffmpeg -hide_banner -loglevel error -nostdin "${inputs[@]}" \

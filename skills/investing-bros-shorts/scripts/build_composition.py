@@ -2,7 +2,7 @@
 """Build the HyperFrames composition (public/index.html) for an Investing Bros short.
 
 Usage:
-    python3 build_composition.py short.json --project DIR
+    python3 build_composition.py short.json --project DIR [--speed 1.25]
 
 DIR/public must already hold: input-video.mp4 (from make_input.py), logo.png
 (brand wordmark), fonts/Heebo-{SemiBold,ExtraBold,Black}.woff2 and
@@ -45,7 +45,11 @@ import html
 import json
 import os
 import re
+import subprocess
 import sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from build_short import DEFAULT_SPEED, playback_speed, speed_arg  # noqa: E402
 
 ACCENT = "#F5B71F"                  # house accent gold (investing-bros-show -> Brand)
 BAND = "left:56px;top:1250px;width:840px;height:300px"
@@ -62,17 +66,18 @@ def snap(t, fps):
 
 
 class Timeline:
-    def __init__(self, pieces, fps):
+    def __init__(self, pieces, fps, speed=1.0):
+        self.speed = playback_speed(speed)
         self.fps = fps
         self.pieces = [(snap(p[0], fps), snap(p[1], fps)) for p in pieces]
-        self.duration = round(sum(b - a for a, b in self.pieces) * fps) / fps
+        self.duration = round(sum(b - a for a, b in self.pieces) / self.speed * fps) / fps
 
     def map(self, t):
         o = 0.0
         for a, b in self.pieces:
             if a - 0.05 <= t <= b + 0.05:
-                return min(max(o + t - a, o), o + b - a)
-            o += b - a
+                return min(max(o + (t - a) / self.speed, o), o + (b - a) / self.speed)
+            o += (b - a) / self.speed
         raise ValueError(f"time {t} is not inside any piece")
 
     def q(self, t):
@@ -323,15 +328,15 @@ def gsap(kind, sel, t, p):
     raise ValueError(kind)
 
 
-def build(cfg):
+def build(cfg, speed=1.0):
     fps = cfg.get("fps", 24)
-    tl = Timeline(cfg["pieces"], fps)
+    tl = Timeline(cfg["pieces"], fps, speed)
     D = tl.duration
     cards = []
     for i, c in enumerate(cfg["cards"]):
         cards.append((c.get("id", f"c{i + 1}"), c, tl.q(tl.map(c["start"])), tl.q(tl.map(c["end"]))))
     if cfg.get("endcard"):
-        secs = cfg["endcard"].get("seconds", 2.6)
+        secs = cfg["endcard"].get("seconds", 2.6) / tl.speed
         cards.append(("end", {"type": "end", "lines": cfg["endcard"]["lines"]}, tl.q(D - secs), tl.q(D)))
     for (a_id, _, _, a_end), (b_id, _, b_start, _) in zip(cards, cards[1:]):
         if b_start < a_end:
@@ -440,24 +445,41 @@ REQUIRED = ["input-video.mp4", "logo.png", "vendor/gsap.min.js", "fonts/Heebo-Ex
             "fonts/Heebo-Black.woff2", "fonts/Heebo-SemiBold.woff2"]
 
 
+def input_duration_problem(actual, expected, fps):
+    tolerance = max(0.1, 2 / fps)
+    if abs(actual - expected) > tolerance:
+        return (f"input-video.mp4 is {actual:.3f} s but this --speed expects {expected:.3f} s; "
+                "run make_input.py and build_composition.py with the same --speed")
+    return None
+
+
 def main() -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("config")
     ap.add_argument("--project", required=True)
+    ap.add_argument("--speed", type=speed_arg, default=DEFAULT_SPEED,
+                    help=f"must match make_input.py (default: {DEFAULT_SPEED}; 1.0 disables)")
     a = ap.parse_args()
     cfg = json.load(open(a.config, encoding="utf-8"))
     pub = os.path.join(a.project, "public")
     missing = [f for f in REQUIRED if not os.path.exists(os.path.join(pub, f))]
     if missing:
         sys.exit("error: missing in public/: " + ", ".join(missing) + " (see the skill's Steps 2–3)")
-    index, files, sb, words = build(cfg)
+    index, files, sb, words = build(cfg, a.speed)
+    input_video = os.path.join(pub, "input-video.mp4")
+    actual_duration = float(subprocess.check_output([
+        "ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", input_video
+    ], text=True))
+    mismatch = input_duration_problem(actual_duration, sb["composition"]["durationSeconds"], cfg.get("fps", 24))
+    if mismatch:
+        sys.exit("error: " + mismatch)
     os.makedirs(os.path.join(pub, "cards"), exist_ok=True)
     for cid, h in files.items():
         open(os.path.join(pub, "cards", f"{cid}.html"), "w", encoding="utf-8").write(h)
     open(os.path.join(pub, "index.html"), "w", encoding="utf-8").write(index)
     json.dump(sb, open(os.path.join(a.project, "storyboard.json"), "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     json.dump(words, open(os.path.join(a.project, "transcript.json"), "w", encoding="utf-8"), ensure_ascii=False)
-    print(f"{cfg['name']}: {sb['composition']['durationSeconds']:.2f} s, {len(files)} card(s), "
+    print(f"{cfg['name']}: {sb['composition']['durationSeconds']:.2f} s at {a.speed:g}x, {len(files)} card(s), "
           f"{len(cfg.get('captions', []))} caption(s) -> {pub}/index.html")
     return 0
 
