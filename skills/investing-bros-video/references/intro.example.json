@@ -1,0 +1,13 @@
+{
+  "fps": 24,
+  "duration": 8.0,
+  "line": "עשור של השקעות",
+  "logo": "logo-solid.png",
+  "music": "intro-music.wav",
+  "fonts": "fonts/",
+  "gsap": "gsap.min.js",
+  "hosts": [
+    {"name": "אמיתי רסקין", "image": "host-amitai-ep08.png"},
+    {"name": "נדב רסקין", "image": "host-nadav-ep08.png"}
+  ]
+}

@@ -60,10 +60,11 @@ Read this before working around anything. Every line here cost an agent time to 
 - Transcribe only the picked clip windows (with `word_timestamps=True`), never the whole episode — the Drive transcript already covers that.
 
 ## Fonts
+- `raw.githubusercontent.com` is reachable from the cloud workspace: `curl -o 'Heebo[wght].ttf' 'https://raw.githubusercontent.com/google/fonts/main/ofl/heebo/Heebo%5Bwght%5D.ttf'`, then `brand.py fonts`. fontTools can't write WOFF2 without `brotli`; HyperFrames pages can load the TTF directly.
 - The skills need static Heebo weights (`brand.py fonts`). If `github.com/google/fonts` isn't reachable: `npm pack @fontsource-variable/heebo`, then instance the Hebrew and Latin `*-wght-normal.woff2` subsets at 600/800/900 with fontTools and merge each pair (`fontTools.merge`), naming the families `Heebo SemiBold` / `Heebo ExtraBold` / `Heebo Black`.
 
 ## HyperFrames in the cloud workspace
-- Use the preinstalled headless shell: `export PRODUCER_HEADLESS_SHELL_PATH=$(ls -d /opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell | head -1)`. `doctor` complains about Docker; it isn't needed.
+- Use the preinstalled headless shell: `export PRODUCER_HEADLESS_SHELL_PATH=$(ls /opt/pw-browsers/chromium_headless_shell-*/chrome-linux/headless_shell /opt/pw-browsers/chromium_headless_shell-*/chrome-headless-shell-linux64/chrome-headless-shell 2>/dev/null | head -1)` (the folder was `chrome-headless-shell-linux64/` on 2026-10-25). `doctor` complains about Docker; it isn't needed.
 - A 48 s render takes about 3 minutes on 2 cores; run it in the background and poll its log.
 - The input video needs a keyframe every second (`-g 24 -keyint_min 24`), or seeks freeze frames.
 

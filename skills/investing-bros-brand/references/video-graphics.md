@@ -36,6 +36,18 @@ Navy-and-cream torn-paper name strip with a small mustard show strip. One exact 
 name. Transparent version on request; no portrait or invented video frame. Generate the
 paper texture, then set the name in Heebo with a deterministic tool.
 
+## Show intro (proposed adaptation, 2026-10-25)
+8 s, 1920×1080, rendered by `investing-bros-video` (`build_intro.py`). One scene on
+navy paper, no stock collage: the experience line Amitai approved (`עשור של השקעות`)
+wipes in large in cream Heebo Black between two mustard hairlines; the hosts rise in
+as natural-colour cut-outs from one episode's recording, first host on the right, each
+with a small cream torn-paper name strip (`אמיתי רסקין`, `נדב רסקין`); the line
+shrinks into a mustard subtitle with short rules; the approved `logo-solid.png`
+wordmark lands upper centre (top strip at 3.0 s, full mark at 3.5 s), then a slow
+push-in hold. No credit strip (the names are already on screen), no fabricated
+newsprint, charts, skylines or glossy gold. Review notes on the previous intro: its
+large newsprint letters read as broken Hebrew, and five symbols competed for focus.
+
 ## Motion and sound direction
 Paper slides, gentle settling and restrained cuts; type readable on the final hold.
 Subtle paper sounds and a warm understated instrumental sting. This skill contains no

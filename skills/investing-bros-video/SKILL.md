@@ -131,6 +131,23 @@ scripts/make_teaser.sh teaser.mp4 part-1.mp4 part-2.mp4 part-3.mp4
 ```
 Square promo clips stay at 1.0x. Vertical (`--format vertical`) only if Amitai asks; it is Short-style output and defaults to the Shorts house speed of 1.25x (`--speed 1.0` disables). An explainer moment can use the HyperFrames render from `investing-bros-shorts`.
 
+### 5b. Rebuild the show intro (when asked)
+Only when Amitai asks for a new intro; episodes otherwise use the deployed clip as-is.
+Fill a copy of [the intro config](references/intro.example.json): the experience line
+Amitai approved, both host cut-outs from one episode's recording (transparent PNGs,
+first host on the right) and `logo-solid.png` from `investing-bros-brand`. Music is a
+track Amitai supplied, or the original score rendered from a General MIDI SoundFont
+(GeneralUser GS, free for commercial music) that lands on the wordmark at 3.0 and 3.5 s:
+```bash
+python3 scripts/compose_intro_music.py GeneralUser-GS.sf2 "$W/intro-music.wav"
+python3 scripts/build_intro.py "$W/intro.json" --project "$W/proj"
+npx hyperframes snapshot "$W/proj/public" --at 0.4,1.5,2.9,3.2,3.6,7.9   # check the frames
+python3 scripts/build_intro.py "$W/intro.json" --project "$W/proj" --render "$W/Investing-bros-intro-v2.mp4"
+```
+Output: 8.0 s, 1920×1080, 24 fps, AAC stereo, music at −16 LUFS / ≤ −1.5 dBTP. Send it
+for review; it replaces `Brand Resources/Investing-bros-intro.mp4` only after Nadav's
+and Amitai's OK.
+
 ### 6. Check and file
 Watch each once: captions readable and right-to-left (English words in place), joins clean, no clipped words, nothing out of context that sounds like a buy/sell call. `ebur128`: −14 LUFS for teasers and cold opens, −16 for the episode body.
 
@@ -156,7 +173,7 @@ Review copies over the transfer caps: compress (show conventions → references/
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination in `investing-bros-show`.
 - Put words on screen the hosts didn't say, captions you haven't proofread, or splice lines so a host seems to say something he didn't.
 - Cut a caveat to make a line punchier.
-- Add music or stock footage Amitai didn't supply, except a cold-open bed mixed per the reference.
+- Add music or stock footage Amitai didn't supply, except a cold-open bed mixed per the reference or the intro score from `compose_intro_music.py` when he asks for intro music.
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so (show conventions → Working rules).
 
 See `references/teaser-rules.md` for teaser length, framing, per-moment sources, caption order and approval.
