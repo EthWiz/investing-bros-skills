@@ -238,7 +238,11 @@ def ic_scale(d, cx, cy, s, t, a=255):
 
 # ---------- hyperframe panel ----------
 PX, PW, PH = 40, 1000, 700; PY = (1920 - PH) // 2 - 40   # large, centred (v9); captions stay below
-def panel_base():
+FULL_W, FULL_H, FULL_BLEED = Wd, Ht + 80, 40   # "panel": "full" covers the frame; torn edges sit 40 px off-screen
+# Step geometry inside a panel: icon centre/size, title strip top/size, subtitle centre/size.
+GEOM = {"card": dict(icy=220, s=150, ty=440, tsz=(84, 72), sy=620, ssz=52),
+        "full": dict(icy=FULL_BLEED + 640, s=280, ty=FULL_BLEED + 930, tsz=(116, 88), sy=FULL_BLEED + 1215, ssz=64)}
+def panel_base(PW=PW, PH=PH):
     im = Image.new("RGBA", (PW, PH), (0, 0, 0, 0))
     m = Image.new("L", (PW, PH), 0); dm = ImageDraw.Draw(m); import random; random.seed(3)
     pts = [(x, 6 + random.uniform(-4, 4)) for x in range(0, PW + 1, 40)] + [(PW - 6 + random.uniform(-3, 3), y) for y in range(0, PH, 60)] \
@@ -249,6 +253,8 @@ def panel_base():
     sh = Image.new("RGBA", (PW, PH), (0, 0, 0, 255)); sh.putalpha(m.filter(ImageFilter.GaussianBlur(8)).point(lambda v: v // 2))
     im.alpha_composite(sh, (0, 0)); im.alpha_composite(paper); return im
 PANEL = panel_base()
+FULL_PANEL = panel_base(FULL_W, FULL_H) if any(h.get("panel") == "full" for h in CFG.get("hyperframes", [])) else None
+LOGO = Image.open("logo.png").convert("RGBA"); LOGO = LOGO.resize((210, round(LOGO.height * 210 / LOGO.width)), Image.LANCZOS)
 _strip_cache = {}
 def tstrip(s, bg, size):
     k = (s, bg, size)
@@ -257,21 +263,22 @@ def tstrip(s, bg, size):
 def draw_step(lay, hf, i, lt, a):
     st = hf["steps"][i]; d = ImageDraw.Draw(lay); title, sub = clean(st["title"]), clean(st["subtitle"])
     split = hf["layout"] == "split_comparison" and i == len(hf["steps"]) - 1
+    g = GEOM["full" if hf.get("panel") == "full" else "card"]; PW = lay.width
     ka = int(255 * a); k = ease_out(seg(lt, 0, .4))
-    ts = tstrip(title, CREAM, 84 if len(title) < 18 else 72)
+    ts = tstrip(title, CREAM, g["tsz"][0] if len(title) < (14 if g is GEOM["full"] else 18) else g["tsz"][1])
     sw = ts.copy(); sw.putalpha(sw.getchannel("A").point(lambda v: int(v * a * k)))
     subc = CREAM + (int(255 * a * clamp(seg(lt, .25, .6))),)
     if not split:
-        icx, icy = PW / 2, 220
-        if st.get("visual") in VIS: LABEL['pct'] = st.get('pct', 95); VIS[st["visual"]](d, icx, icy, 150, lt, ka)
+        icx, icy, S = PW / 2, g["icy"], g["s"]
+        if st.get("visual") in VIS: LABEL['pct'] = st.get('pct', 95); VIS[st["visual"]](d, icx, icy, S, lt, ka)
         elif hf["layout"] == "split_comparison":
             if i == 0: q = ease_back(seg(lt, 0, .45), 2); ic_warning(d, icx, icy - 10, 150 * q + 1, ka)
             elif i == 1: ic_lidar(d, icx, icy, 170, lt, ka); ic_x(d, icx, icy, 115, ease_out(seg(lt, 1.2, 1.7)), ka)
         else:
-            if st.get("visual") == "bars_down": ic_bars(d, icx, icy, 150, lt, ka)
-            else: LABEL['multiplier'] = st.get('multiplier'); ic_scale(d, icx, icy - 20, 150, lt, ka)
-        lay.alpha_composite(sw, (int(PW / 2 - sw.width / 2), int(440 + 25 * (1 - k))))
-        text(d, (PW / 2, 620), sub, font(52, "SemiBold"), subc)
+            if st.get("visual") == "bars_down": ic_bars(d, icx, icy, S, lt, ka)
+            else: LABEL['multiplier'] = st.get('multiplier'); ic_scale(d, icx, icy - 20, S, lt, ka)
+        lay.alpha_composite(sw, (int(PW / 2 - sw.width / 2), int(g["ty"] + 25 * (1 - k))))
+        text(d, (PW / 2, g["sy"]), sub, font(g["ssz"], "SemiBold"), subc)
     else:
         lay.alpha_composite(sw, (int(PW / 2 - sw.width / 2), 40))
         d.line([(PW / 2, 200), (PW / 2, 540)], fill=CREAM + (ka // 2,), width=4)
@@ -283,13 +290,17 @@ def draw_step(lay, hf, i, lt, a):
 def hyper(fr, t):
     for hf in CFG["hyperframes"]:
         if not (hf["start"] <= t < hf["end"]): continue
-        lt0 = t - hf["start"]; dur = hf["end"] - hf["start"]
+        lt0 = t - hf["start"]; dur = hf["end"] - hf["start"]; full = hf.get("panel") == "full"
+        if full and hf["layout"] == "split_comparison": raise SystemExit('"panel": "full" supports the "steps" layout only')
         tin = ease_back(seg(lt0, 0, .35), 1.3); tout = ease_out(seg(lt0, dur - .3, dur))
-        lay = PANEL.copy(); steps = hf["steps"]
+        lay = (FULL_PANEL if full else PANEL).copy(); steps = hf["steps"]
         i = max(j for j, s in enumerate(steps) if s["at"] <= t + 1e-6)
         x = clamp(seg(t - steps[i]["at"], 0, .3)) if i else 1      # crossfade from previous step
         if i and x < 1: draw_step(lay, hf, i - 1, t - steps[i - 1]["at"], 1 - x)
         draw_step(lay, hf, i, t - steps[i]["at"], x)
+        if full:                                    # paper slides up over the host, then on up and out
+            y = -FULL_BLEED + Ht * (1 - ease_out(seg(lt0, 0, .35))) - FULL_H * ease_inout(seg(lt0, dur - .35, dur))
+            fr.alpha_composite(lay, (0, int(y))); fr.alpha_composite(LOGO, (56, 150)); return True
         sc = (0.9 + .1 * tin) * (1 - .05 * tout); al = clamp(seg(lt0, 0, .2)) * (1 - tout)
         p = lay.resize((int(PW * sc), int(PH * sc)), Image.BICUBIC)
         if al < 1: p.putalpha(p.getchannel("A").point(lambda v: int(v * al)))
@@ -315,11 +326,11 @@ for n in range(N):
         h = HOOK if a >= 1 else HOOK.copy(); 
         if a < 1: h.putalpha(h.getchannel("A").point(lambda v: int(v * a)))
         fr.alpha_composite(h)
+    shown = hyper(fr, t)                       # before the tag: a full-screen panel keeps the logo and name tag on top
     if TAGS:
         for a_, b_, im_ in TAGS:
             if a_ <= t < b_: fr.alpha_composite(im_, (1024 - im_.width, 150))
     elif t < cta["start"] - 0.1: fr.alpha_composite(TAG, (1024 - TAG.width, 150))
-    shown = hyper(fr, t)
     if True:                                   # v9: captions always on, below the panel
         for s, e, im in CAPS:
             if s <= t < e: fr.alpha_composite(im, (0, 1480 - im.height // 2)); break
