@@ -15,8 +15,9 @@ timemap.json from make_base.py: [[source_start, source_end, output_start], ...]
 
 Whisper's words are matched to the proofread words by sequence alignment (Whisper's
 spelling may differ); proofread words it missed get times shared out between their
-matched neighbours. Words are grouped into captions of 1-4 words, one line (<= 18
-characters), breaking at punctuation and pauses. Each caption keeps its words' times, so
+matched neighbours. Words are grouped into captions: --lines 1 gives 1-4 words on one line
+(<= 18 characters) breaking at punctuation and pauses; --lines 2 gives up to two lines
+(<= 8 words, ~2-3 s each) breaking at sentence ends and pauses, never under 1.2 s. Each caption keeps its words' times, so
 the Remotion template shows each word as it is spoken. Output: the `captions` list for
 the short's config (output seconds).
 """
@@ -26,7 +27,12 @@ import re
 import sys
 from difflib import SequenceMatcher
 
-MAX_WORDS, MAX_CHARS, PAUSE = 4, 18, 0.35
+PAUSE = 0.35
+# Caption sizes. lines=1: the original one-line 1-4 words. lines=2: up to two lines, ~2-3 s
+# each, breaking at sentence ends and real pauses (commas only once 4+ words are up), and
+# never on screen for less than min_seconds (a short leftover joins its neighbour).
+LAYOUTS = {1: dict(max_words=4, max_chars=18, comma_min=1, min_seconds=0.0),
+           2: dict(max_words=8, max_chars=36, comma_min=4, min_seconds=1.2)}
 PUNCT = re.compile(r"[.,?!:;״׳\"'()\-–—]")
 
 
@@ -146,22 +152,47 @@ def to_output(t, timemap, speed):
     return None
 
 
-def chunk(words):
+def chunk(words, max_words=4, max_chars=18, comma_min=1, min_seconds=0.0):
     groups, cur = [], []
-    for k, w in enumerate(words):
+    for w in words:
         if cur:
             text = " ".join(x["w"] for x in cur + [w])
             pause = w["s"] - cur[-1]["e"] > PAUSE
-            if len(cur) >= MAX_WORDS or len(text) > MAX_CHARS or pause or re.search(r"[.,?!:;]$", cur[-1]["w"]):
+            sentence = re.search(r"[.?!]$", cur[-1]["w"])
+            comma = re.search(r"[,:;]$", cur[-1]["w"]) and len(cur) >= comma_min
+            if len(cur) >= max_words or len(text) > max_chars or pause or sentence or comma:
                 groups.append(cur)
                 cur = []
         cur.append(w)
     if cur:
         groups.append(cur)
+    if min_seconds:
+        groups = merge_short(groups, max_words, max_chars, min_seconds)
     return groups
 
 
-def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0):
+def merge_short(groups, max_words, max_chars, min_seconds):
+    """Join a caption shorter than min_seconds to the next (else the previous) if it fits."""
+    fits = lambda g: len(g) <= max_words and len(" ".join(x["w"] for x in g)) <= max_chars
+    dur = lambda g: g[-1]["e"] - g[0]["s"]
+    changed = True
+    while changed:
+        changed = False
+        for k, g in enumerate(groups):
+            if dur(g) >= min_seconds:
+                continue
+            if k + 1 < len(groups) and fits(g + groups[k + 1]):
+                groups[k:k + 2] = [g + groups[k + 1]]
+            elif k > 0 and fits(groups[k - 1] + g):
+                groups[k - 1:k + 1] = [groups[k - 1] + g]
+            else:
+                continue
+            changed = True
+            break
+    return groups
+
+
+def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=1):
     captions = []
     for p in pieces:
         hs = [h for h in heard if p["from"] - 0.25 <= h["s"] <= p["to"] + 0.1]
@@ -171,7 +202,7 @@ def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, qu
         for w in words:
             w["s"], w["e"] = to_output(w["s"], timemap, speed), to_output(w["e"], timemap, speed)
         words = [w for w in words if w["s"] is not None and w["e"] is not None]
-        for g in chunk(words):
+        for g in chunk(words, **LAYOUTS[lines]):
             captions.append({"start": g[0]["s"], "end": g[-1]["e"], "text": " ".join(w["w"] for w in g),
                              "highlight": [norm(w["w"]) for w in g if w["key"]],
                              "words": [{"w": w["w"], "start": w["s"], "end": w["e"]} for w in g]})
@@ -190,12 +221,14 @@ def main(argv=None) -> int:
     ap.add_argument("-o", "--output", required=True)
     ap.add_argument("--speed", type=float, default=1.25)
     ap.add_argument("--wav"); ap.add_argument("--wav-offset", type=float, default=0.0)
+    ap.add_argument("--lines", type=int, choices=sorted(LAYOUTS), default=1,
+                    help="1: one line of 1-4 words; 2: up to two lines, 2-3 s each, at least 1.2 s on screen")
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
     env, quiet = (None, 0.0)
     if a.wav:
         env, quiet = wav_envelope(a.wav)
-    caps = build(load(a.text), load(a.words), load(a.timemap), a.speed, env, 100, a.wav_offset, quiet)
+    caps = build(load(a.text), load(a.words), load(a.timemap), a.speed, env, 100, a.wav_offset, quiet, a.lines)
     json.dump(caps, open(a.output, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"{a.output}: {len(caps)} captions, {sum(len(c['words']) for c in caps)} words")
     return 0

@@ -15,7 +15,7 @@ export const Short: React.FC<ShortProps> = (p) => (
     {p.cards.map((c) => <Card key={c.id} spec={c} />)}
     <Hook hook={p.hook} />
     <NameTag tags={p.tags} />
-    <Captions captions={p.captions} highlight={p.captionHighlight} />
+    <Captions captions={p.captions} highlight={p.captionHighlight} style={p.captionStyle} />
     <Cta cta={p.cta} />
   </AbsoluteFill>
 );

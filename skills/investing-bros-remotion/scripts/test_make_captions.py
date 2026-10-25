@@ -66,3 +66,24 @@ def test_to_output_maps_through_the_kept_pieces():
     assert to_output(15.0, tm, 1.25) == pytest.approx(4.0)
     assert to_output(32.0, tm, 1.25) == pytest.approx(9.6)
     assert to_output(25.0, tm, 1.25) is None                           # dropped between pieces
+
+
+def test_two_line_captions_are_longer_and_never_flash():
+    from make_captions import LAYOUTS
+    fast = [{"w": w, "s": i * 0.25, "e": i * 0.25 + 0.22, "key": False} for i, w in
+            enumerate(["אחת,", "שתיים", "שלוש,", "ארבע", "חמש", "שש,", "שבע", "שמונה", "תשע."])]
+    one = chunk(fast, **LAYOUTS[1])
+    two = chunk(fast, **LAYOUTS[2])
+    assert len(two) < len(one)
+    assert all(len(g) <= 8 and len(" ".join(w["w"] for w in g)) <= 36 for g in two)
+    assert [w["w"] for w in two[0]][:2] == ["אחת,", "שתיים"]          # no break at the first comma
+    for a, b in zip(two, two[1:]):                                     # a short one only stays if joining overflows
+        if a[-1]["e"] - a[0]["s"] < 1.2:
+            assert len(a + b) > 8 or len(" ".join(w["w"] for w in a + b)) > 36
+
+
+def test_short_leftover_joins_its_neighbour():
+    from make_captions import merge_short
+    g1 = [{"w": "אחת", "s": 0.0, "e": 0.3}]
+    g2 = [{"w": "שתיים", "s": 0.3, "e": 1.0}, {"w": "שלוש", "s": 1.0, "e": 2.0}]
+    assert merge_short([g1, g2], 8, 36, 1.2) == [g1 + g2]

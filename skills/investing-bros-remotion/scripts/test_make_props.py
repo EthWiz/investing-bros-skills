@@ -95,6 +95,19 @@ def test_house_rules_are_enforced(change, message):
         build_props(cfg, 25.75)
 
 
+def test_two_line_style_allows_up_to_eight_words():
+    cfg = copy.deepcopy(CFG)
+    cfg["captions"].insert(2, {"start": 1.0, "end": 3.0, "text": "אחת שתיים שלוש ארבע חמש שש", "highlight": []})
+    with pytest.raises(ValueError, match="1-4 words"):
+        build_props(cfg, 25.75)
+    cfg.update(caption_style="line", caption_highlight="spoken")
+    p = build_props(cfg, 25.75)
+    assert p["captionStyle"] == "line" and p["captionHighlight"] == "spoken"
+    cfg["caption_style"] = "bounce"
+    with pytest.raises(ValueError, match="caption_style"):
+        build_props(cfg, 25.75)
+
+
 def test_a_subtitle_that_adds_something_is_fine():
     cfg = copy.deepcopy(CFG)
     cfg["cards"][0]["steps"][0]["subtitle"] = "בבית"

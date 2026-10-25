@@ -26,6 +26,7 @@ export type ShortProps = {
   tags: [number, number, string][];
   captions: Caption[];
   captionHighlight: 'keywords' | 'spoken';   // gold on the caption's keywords, or on the word being said
+  captionStyle: 'build' | 'line';            // words pop in one by one, or the whole caption at once (two lines)
   cards: CardSpec[];
   cta: {start: number; end: number; text: string};
 };

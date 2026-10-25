@@ -76,7 +76,7 @@ def card_problems(cards, hook, cta, duration):
     return errs
 
 
-def caption_problems(captions, duration):
+def caption_problems(captions, duration, max_words=4):
     errs, prev = [], -1.0
     for c in captions:
         if not 0 <= c["start"] < c["end"] <= duration + 1e-6:
@@ -84,8 +84,8 @@ def caption_problems(captions, duration):
         if c["start"] < prev - 1e-6:
             errs.append(f"caption {c['text']!r}: out of order or overlapping")
         prev = c["end"]
-        if not 1 <= len(c["text"].split()) <= 4:
-            errs.append(f"caption {c['text']!r}: must be 1-4 words")
+        if not 1 <= len(c["text"].split()) <= max_words:
+            errs.append(f"caption {c['text']!r}: must be 1-{max_words} words")
         words = c.get("words")
         if words is not None:
             if [w["w"] for w in words] != c["text"].split():
@@ -130,10 +130,13 @@ def build_props(cfg: dict, duration: float) -> dict:
                       "start": c["start"], "end": c["end"], "steps": steps})
     if not isinstance(meta.get("episode"), int):
         raise ValueError("meta.episode (the number Amitai stated) is required")
-    errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration)
+    max_words = 8 if cfg.get("caption_style") == "line" else 4
+    errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration, max_words)
             + repeat_problems(cards, cfg["captions"]))
     if cfg.get("caption_highlight", "keywords") not in ("keywords", "spoken"):
         errs.append("caption_highlight must be 'keywords' or 'spoken'")
+    if cfg.get("caption_style", "build") not in ("build", "line"):
+        errs.append("caption_style must be 'build' or 'line'")
     if not 0 <= cta["start"] < cta["end"] <= duration + 1e-6:
         errs.append(f"CTA {cta['start']}-{cta['end']} outside the video")
     elif cta["end"] < duration - 0.35:
@@ -148,6 +151,7 @@ def build_props(cfg: dict, duration: float) -> dict:
         "captions": [{"start": c["start"], "end": c["end"], "text": c["text"], "highlight": c.get("highlight", []),
                       **({"words": c["words"]} if c.get("words") else {})} for c in cfg["captions"]],
         "captionHighlight": cfg.get("caption_highlight", "keywords"),
+        "captionStyle": cfg.get("caption_style", "build"),
         "cards": cards,
         "cta": {"start": cta["start"], "end": cta["end"], "text": cta["text"]},
     }

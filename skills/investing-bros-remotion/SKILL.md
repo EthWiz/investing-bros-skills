@@ -58,6 +58,11 @@ done before this skill starts.
    proofread ones even when misspelt, starts that fall in silence move to where the
    speech begins, and the words are grouped into one-line captions of 1–4 words that
    break at punctuation and pauses. On screen each word appears as it is spoken.
+   **Caption look (being decided, episode 8 short 05 v2/v3/v4):** set in the short's config.
+   - `caption_style: "build"` (default): one line, words pop in as spoken.
+   - `caption_style: "line"` with `make_captions.py --lines 2`: up to two lines (≤ 8 words,
+     ~2–3 s, never under 1.2 s unless it can't join a neighbour), shown whole and still.
+   - `caption_highlight: "keywords"` (default) or `"spoken"` (the word being said is gold).
 3. **Make the props** — this also checks the house rules:
    ```bash
    python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \

@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
-  CAPTION_Y, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, TAG_RIGHT_EDGE, WHITE, clamp,
+  CAPTION_Y, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, TAG_RIGHT_EDGE, WHITE, clamp,
 } from '../brand';
 import type {ShortProps} from '../props';
 import {Arrow, Strip} from './Strip';
@@ -47,8 +47,13 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
 // Captions: verbatim, 1-4 words on one line, white Heebo Black, keywords gold.
 // With word timings each word pops in as it is spoken (the line builds up, space for the
 // rest is kept so nothing shifts); without them the whole caption pops in at its start.
-// highlight 'spoken': the word being said is gold and the rest white (keywords get no colour of their own).
-export const Captions: React.FC<{captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']}> = ({captions, highlight = 'keywords'}) => {
+// style 'build': each word pops in as it is spoken (one line of 1-4 words).
+// style 'line': the whole caption (up to two lines) fades in at once and stays still; only the
+//   highlight moves. Calmer at fast speech: fewer, longer captions and nothing popping.
+// highlight 'spoken': the word being said is gold, the rest white; 'keywords': the caption's keywords.
+export const Captions: React.FC<{
+  captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']; style?: ShortProps['captionStyle'];
+}> = ({captions, highlight = 'keywords', style = 'build'}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;
@@ -57,14 +62,20 @@ export const Captions: React.FC<{captions: ShortProps['captions']; highlight?: S
   const words = c.words ?? c.text.split(' ').map((w) => ({w, start: c.start, end: c.end}));
   const spoken = words.reduce((acc, w, i) => (t >= w.start - 1e-6 ? i : acc), -1);
   const gold = (w: {w: string}, i: number) => (highlight === 'spoken' ? i === spoken : hl.has(norm(w.w)));
+  const line = style === 'line';
+  const fadeIn = interpolate(t, [c.start, c.start + 0.12], [0, 1], clamp);
   return (
-    <div style={{position: 'absolute', top: CAPTION_Y, width: '100%', display: 'flex', justifyContent: 'center'}}>
+    <div style={{position: 'absolute', top: line ? CAPTION_Y_TWO_LINES : CAPTION_Y, width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div style={{
-        transform: 'translateY(-50%)', direction: 'rtl', textAlign: 'center', maxWidth: 940, whiteSpace: 'nowrap',
-        fontFamily: FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.25,
+        transform: 'translateY(-50%)', direction: 'rtl', textAlign: 'center', maxWidth: 940,
+        whiteSpace: line ? 'normal' : 'nowrap', textWrap: line ? 'balance' : undefined,
+        fontFamily: FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.22, opacity: line ? fadeIn : 1,
         textShadow: '0 4px 10px rgba(0,0,0,.6), 0 0 3px rgba(0,0,0,.9)',
-      }}>
+      } as React.CSSProperties}>
         {words.map((w, i) => {
+          if (line) {
+            return <span key={i} style={{color: gold(w, i) ? GOLD : WHITE}}>{w.w}{i < words.length - 1 ? ' ' : ''}</span>;
+          }
           const k = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 13, stiffness: 240}});
           const shown = t >= w.start - 1e-6;
           return (

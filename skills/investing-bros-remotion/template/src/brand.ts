@@ -21,7 +21,8 @@ export const fontFaces = () =>
 // Fixed frame positions from the approved template (1080x1920).
 export const LOGO_BOX = {left: 56, top: 150, width: 210};
 export const TAG_RIGHT_EDGE = 1024;
-export const CAPTION_Y = 1480;
+export const CAPTION_Y = 1480;            // one-line captions (centre)
+export const CAPTION_Y_TWO_LINES = 1410;  // two-line captions: centre raised so line 2 stays above the platform UI
 export const CTA_Y = 1130;
 export const HOOK_Y = 700;
 
