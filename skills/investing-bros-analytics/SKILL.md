@@ -42,7 +42,7 @@ Save what you collected to the notes file **after every step**: long browser run
    - The chart samples about every 23 s and values only appear on mouse hover: hover each point and note `time → %`, especially the 0:00–0:30 drop and the point where half the viewers are gone.
    - New videos show "No audience retention data available for this video yet. Processing can take up to two days." Record N/A and retry next run.
 7. **Cross-check sources.** The channel lifetime table lags the video pages (e.g. ep1 showed 17 views in the table vs 24 on its page). Brand-new uploads may be missing from the table entirely (seen with פרק 2 and פרק 7). The per-video page's "since published" numbers are fresher than the lifetime table: prefer them, and record the source of every number (`video page` / `lifetime table` / `realtime`) in the report and History. Per-video Key moments cards may lack timestamps; record what's shown and mark the time N/A rather than guessing. List missing items.
-8. **RedCircle / Spotify.** RedCircle: box browser, saved login (see `investing-bros-show`), show id `c798e000-7934-4f82-a0e3-59b78f0894c6` (RSS `https://feeds.redcircle.com/c798e000-7934-4f82-a0e3-59b78f0894c6`). Read the analytics dashboard only: per-episode downloads, totals for the range, and its export. Never edit episodes or settings. Spotify: the show is claimed on Spotify for Creators (owner: Amitai's personal account). `investingbros.grokbot@gmail.com` is a team member since 2026-10-22 with **Analytics: Reader** (all other tabs No access), via its own free Spotify account (signed up with "Continue with Google" in the box browser). Open the show home `https://creators.spotify.com/home/show/4fREAemgQDMWIUK58N5Jjk`. Try the analytics page (`/pod/show/.../analytics`); on 22 Oct it showed "Unable to load details", so fall back to the show home stats: all-time plays, followers, 30-day plays and consumption time, latest-episode plays and consumption. Baseline 2026-10-22: 1 play, 1 follower; ep8 1 play / 7m12s. Read-only. At any sign-in or verification page: stop, enter nothing, ask Amitai.
+8. **RedCircle / Spotify.** RedCircle: box browser, saved login (see `investing-bros-show`), show id `c798e000-7934-4f82-a0e3-59b78f0894c6` (RSS `https://feeds.redcircle.com/c798e000-7934-4f82-a0e3-59b78f0894c6`). Read the analytics dashboard only: per-episode downloads, totals for the range, and its export. Never edit episodes or settings. Spotify: the show is claimed on Spotify for Creators (owner: Amitai's personal account). `investingbros.grokbot@gmail.com` is a team member since 2026-10-22 with **Analytics: Reader** (all other tabs No access), via its own free Spotify account (signed up with "Continue with Google" in the box browser). Analytics pages: `https://creators.spotify.com/analytics/show/4fREAemgQDMWIUK58N5Jjk/overview` and `.../audience` (the old `/home/show/.../analytics` URL 404s). The show home `https://creators.spotify.com/home/show/4fREAemgQDMWIUK58N5Jjk` shows all-time plays, followers, 30-day plays and consumption time, and latest-episode plays and consumption. A play counts after 30 s of listening. Baseline 2026-10-22: 1 play, 1 follower; ep8 1 play / 7m12s. Read-only. At any sign-in or verification page: stop, enter nothing, ask Amitai.
 9. **Build the report Page (Canvas)** in this order:
    - Headline takeaway (one or two sentences).
    - Channel totals row: views, watch time, subs, impressions, CTR.
@@ -57,27 +57,23 @@ Save what you collected to the notes file **after every step**: long browser run
 10. **Telegram.** See the Telegram section below.
 11. **History.** Append the week's rows to the History CSV (see below) and upload it.
 
-## Video ID map
-`references/video-map.csv` (`video_id,title,type,published,thumbnail,thumbnail_since`) lists every public upload. `type` is `episode`, `short` or `clip` (segment videos). Studio's **Content** tab is the authoritative episode vs Short split.
+## Video list
+No hand-kept map: each weekly run builds the video list fresh from Studio's **Content** tab (`https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos?authuser=1`).
+1. Include only **Public** videos. Skip Unlisted/Private review copies and test duplicates (e.g. the gold / S&P review copies); leave them out of totals.
+2. Type: under 60 s = `short`; segment videos = `clip`; full episodes = `episode` (the table has no Shorts column).
+3. Record YouTube's canonical video ID (the 11 characters after `watch?v=`, never changes with title or thumbnail edits) with title, type and publish date in every History CSV row, so videos are tracked across weeks by ID. A deleted and re-uploaded video gets a **new** ID and counts as a new video (e.g. the "האוטו שלך" Short `ovrrnhhiuuM` became `YZ4dXhQy8LY`).
+4. Studio's lifetime/advanced table can silently omit videos. For any Public video from the Content tab missing from it, open `https://studio.youtube.com/video/<id>/analytics/tab-overview/period-default?authuser=1` and take its numbers from there (mark the source).
 
-Why it exists: Studio's lifetime/advanced table can silently omit videos (on 22 Oct פרק 2 and פרק 7 were missing; ep7 was re-uploaded recently, which may explain it). Each run:
-1. Compare the table with the map. For any mapped video not in the table, open it by ID: `https://studio.youtube.com/video/<id>/analytics/tab-overview/period-default?authuser=1` and take its numbers from there (mark the source).
-2. Add new uploads from the Content tab to the map (ID, title, type, publish date, thumbnail). פרק 2's ID is still unknown: read it from the Studio Content list and fill it in.
-3. Record thumbnail changes: `thumbnail` = `faces` / `no_faces` / `unknown`, `thumbnail_since` = when the current thumbnail went live. Ep8 switched from a signpost graphic (no people) to the hosts' faces on 2026-10-22 ~09:57 Israel time; the channel is moving to faces on every thumbnail. For faces-vs-no-faces comparisons, split ep8's numbers at `thumbnail_since`.
-Thumbnail A/B method (the channel is moving to faces thumbnails on every episode, so most tests will be swaps on existing videos):
-- When a thumbnail changes on an existing video, log the swap in the map (`thumbnail`, `thumbnail_since`) first.
-- Compare **before vs after on the same video**: CTR and views per hour from Studio's hourly / realtime data (Reach tab and Realtime card), using equal windows either side of `thumbnail_since` where possible.
+Thumbnails: record `thumbnail` = `faces` / `no_faces` / `unknown` per row, and note any swap (video ID, time it went live) in the run's notes file. Ep8 (`6chKVe8nQ8A`) switched from a signpost graphic to the hosts' faces on 2026-10-22 ~09:57 Israel time; the channel is moving to faces on every thumbnail.
+Thumbnail A/B method (most tests will be swaps on existing videos):
+- Compare **before vs after on the same video**: CTR and views per hour from Studio's hourly / realtime data (Reach tab and Realtime card), using equal windows either side of the swap where possible.
 - Plus compare against other videos **at the same age** (same hours/days since publish).
 - Report it as an early read until each side has enough impressions; note the sample sizes.
-
-4. Ignore test duplicates: Unlisted `VwkS1mnR1uI` and `CujyQKAJ-U8`, and the Private gold / S&P copies.
-
-Commit map updates with the skill improvements (PR, as usual).
 
 ## History
 Each weekly run appends to `investing-bros-youtube-weekly.csv` one row per video plus one channel-totals row (`video_id` = `CHANNEL`, `type` = `total`).
 
-Columns: `week_start,week_end,video_id,title,type,thumbnail,published,views,watch_hours,avd,avg_pct_viewed,impressions,ctr,likes,subs_gained` (`thumbnail` = faces/no_faces/unknown from the map; dates ISO; `avd` as m:ss; `ctr`/`avg_pct_viewed` as percent numbers).
+Columns: `week_start,week_end,video_id,title,type,thumbnail,published,views,watch_hours,avd,avg_pct_viewed,impressions,ctr,likes,subs_gained` (`video_id` = YouTube's 11-char ID; `thumbnail` = faces/no_faces/unknown; dates ISO; `avd` as m:ss; `ctr`/`avg_pct_viewed` as percent numbers).
 
 - Local copy: `/workspace/analytics/weekly/investing-bros-youtube-weekly.csv` (append, never rewrite past rows).
 - Drive: [`אחים להשקעות/analytics`](https://drive.google.com/drive/folders/1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) (folder id `1zd32riRkKuW7XjVNY4doCRbhwt49HdC7`, inside the show root `1Lk8WnfTWeIFLfw7ksQp3Uh62ukKCTz4a`; confirmed by Amitai 2026-10-22). Upload the updated file each week (replace the previous version). Seeded 2026-10-22 with a lifetime-baseline snapshot (week 2026-10-18..2026-10-22, titles tagged `[lifetime baseline]`); compute week-over-week deltas from the first real weekly run, not against this row set.
@@ -114,7 +110,7 @@ The weekly report posts automatically (Amitai OK'd it on 22 Oct; no per-week app
 ## Done when
 - Notes file with every step's raw numbers and sources (`/workspace/analytics/…md`) and any CSV exports.
 - Report Page link.
-- History CSV appended (local + Drive) and video map updated.
+- History CSV appended (local + Drive), with every Public video's ID, title, type and publish date.
 - Telegram text posted to `-5592316645` (or a stated reason it was not).
 
 ## Hand back
