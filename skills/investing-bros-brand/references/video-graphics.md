@@ -36,6 +36,13 @@ Navy-and-cream torn-paper name strip with a small mustard show strip. One exact 
 name. Transparent version on request; no portrait or invented video frame. Generate the
 paper texture, then set the name in Heebo with a deterministic tool.
 
+## Full-episode outro callout
+The canonical clip and its Drive ID live in `investing-bros-show`. YouTube's previous-
+episode and Subscribe elements sit over its final 20 seconds. An on-video callout is
+optional; when a build includes one, set `פרקים קודמים` in Heebo only, using the
+navy/cream/mustard paper language, and keep it clear of the clickable end-screen
+elements. Standalone segment videos do not use this outro.
+
 ## Motion and sound direction
 Paper slides, gentle settling and restrained cuts; type readable on the final hold.
 Subtle paper sounds and a warm understated instrumental sting. This skill contains no

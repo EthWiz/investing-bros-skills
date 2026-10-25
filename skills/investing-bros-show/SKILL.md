@@ -68,8 +68,16 @@ Show root `אחים להשקעות` already exists. Never create a second root.
 
 Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders/1IRRwUpB3n1SD3-Ltvj3bEiMQS-UfFxyO), formerly `Media Resources` (same folder ID, verified 2026-10-19). Reuse this folder and preserve existing files. Legacy asset paths below record historical filenames; inspect the folder and its archives before resolving an asset, rather than assuming the old path still exists.
 
+The canonical intro/outro asset is `investing-bro-intro-with-beat.mp4`
+([Drive file ID `1knRZzjQc7I5OT65_ZH46oklv4wwbij1U`](https://drive.google.com/file/d/1knRZzjQc7I5OT65_ZH46oklv4wwbij1U/view),
+modified 2026-10-25). Fetch it fresh by ID immediately before every full-episode
+build; never reuse a cached copy or resolve it by filename. If Amitai later names a
+replacement, his latest named file wins and this entry must be updated.
+
 ```
 אחים להשקעות/                      show root (exists)
+  Brand Resources/                 shared production assets (exists; never duplicate)
+    investing-bro-intro-with-beat.mp4  canonical intro and outro; fetch by ID above
   לוח נושאי עומק (טנטטיבי)         single tentative deep-dive queue (Google Doc)
   פרק N — נושא/                    one per episode — created by prep, reused by everyone after
     הקלטה-ערוכה-פרק-N.m4a   edited, upload-ready audio                     ← post-production
@@ -104,10 +112,11 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Archived show cover:** `אחים להשקעות/Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg`.
   Use it only when a workflow explicitly needs the old square cover.
 - **Production fonts:** static Heebo weights remain available through the existing `brand.py fonts` workflow. See the brand skill for how they relate to the generated reference lettering.
-- **Intro clip:** `אחים להשקעות/Brand Resources/Investing-bros-intro.mp4` —
-  8 s, 1280×720, 24 fps, stereo music. Use it as-is, immediately after the
-  cold open. `assemble_episode.sh` scales it and normalizes it with the episode.
-  Video order: cold open + intro + episode. Never use watermarked music
+- **Canonical intro/outro clip:** the Drive-ID asset above. Use the same freshly
+  fetched clip as-is immediately after the cold open and again after the episode.
+  `assemble_episode.sh` scales and normalizes it with the episode and holds the
+  outro's last frame when needed to make the final 20 seconds available for the
+  YouTube end screen. Video order: cold open + intro + episode + outro. Never use watermarked music
   (AudioJungle previews and the like). Keep the tone serious and the correct
   **אמיתי** spelling when adapting artwork or credits.
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.

@@ -33,8 +33,7 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
 
 ## Checks and elements
 - Wait for YouTube's copyright check. Report a claim; do not dispute it.
-- Add an end screen only when a suitable published episode, playlist or subscribe
-  target exists.
+- The full episode always gets the end screen below over its canonical outro.
 - Thumbnail, title and description go in before saving.
 - While HD processes the row shows **Pending**/processing and the watch page may be
   SD only; that's normal, wait before reporting quality.
@@ -45,6 +44,16 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
   finishes.
 - Open the private watch page as the Editor and check title, description direction,
   increasing chapter times, the `00:00` teaser chapter and the progress-bar chapters.
+
+## Full episode: previous episodes end screen
+Content → the full episode → **Editor** → **End screen**. Add one or two **Video**
+elements for previous episodes (best related episode first; one is enough when no
+second episode is a good match) plus **Subscribe**. Make every element span the final
+20 seconds, exactly over the canonical outro, and arrange them clear of any burned-in
+`פרקים קודמים` callout. Save, then verify the entire window and every target in the
+Editor preview while the upload is Private; end screens do not appear on a Private
+watch page. Verify again on the watch page after publication. The video build holds
+the outro's last frame when its source clip is shorter than 20 seconds.
 
 ## Segment videos: cards, end screen, pinned comment
 On the אחים להשקעות channel (Switch account first), Content → the segment video → **Editor** (left menu).

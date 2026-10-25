@@ -70,6 +70,9 @@ The API uploader creates Private uploads, so switch both segment videos to Unlis
 in Studio before card/end-screen review. Do not upload the three Shorts until the
 full episode is live.
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks). It must include the `האזינו בספוטיפיי:` line (show link until step 5 swaps in the episode link).
+  Add one or two previous-episode video elements (best related first) plus Subscribe
+  across the final 20 seconds, exactly over the canonical outro; verify them on the
+  Studio Editor preview while Private, then on the watch page after publication.
 - **Exactly three Shorts** (`Shorts/`): only after the full episode is live, upload with the title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`.
 - **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
@@ -95,7 +98,7 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; the full episode when made and both segment videos are uploaded for review, all three Shorts have completed Telegram approval and Drive filing, and the review ping was sent.
+- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; the full episode when made is uploaded with its previous-episode + Subscribe end screen over the canonical outro, both segment videos are uploaded for review, all three Shorts have completed Telegram approval and Drive filing, and the review ping was sent.
 - After the OK: live on RedCircle **and** YouTube with identical titles; both segment videos are Public after the full episode; all three Shorts were uploaded only after the episode went live; the episode is listed on Spotify; and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue). The YouTube episode and all three Shorts link the Spotify **episode** URL, not the show.
 - WhatsApp sends confirmed, when asked.
 
