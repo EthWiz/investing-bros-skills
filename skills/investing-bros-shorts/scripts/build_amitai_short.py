@@ -241,7 +241,10 @@ PX, PW, PH = 40, 1000, 700; PY = (1920 - PH) // 2 - 40   # large, centred (v9); 
 FULL_W, FULL_H, FULL_BLEED = Wd, Ht + 80, 40   # "panel": "full" covers the frame; torn edges sit 40 px off-screen
 # Step geometry inside a panel: icon centre/size, title strip top/size, subtitle centre/size.
 GEOM = {"card": dict(icy=220, s=150, ty=440, tsz=(84, 72), sy=620, ssz=52),
-        "full": dict(icy=FULL_BLEED + 640, s=280, ty=FULL_BLEED + 930, tsz=(116, 88), sy=FULL_BLEED + 1215, ssz=64)}
+        "full": dict(icy=FULL_BLEED + 640, s=280, ty=FULL_BLEED + 930, tsz=(116, 88), sy=FULL_BLEED + 1215, ssz=64),
+        "inset": dict(icy=360, s=220, ty=630, tsz=(100, 80), sy=850, ssz=58)}
+# "panel": "inset": a big card that leaves a frame of the host video around it, between logo and captions.
+BOX = {"card": (PX, PY, PW, PH), "inset": (60, 300, 960, 1060)}
 def panel_base(PW=PW, PH=PH):
     im = Image.new("RGBA", (PW, PH), (0, 0, 0, 0))
     m = Image.new("L", (PW, PH), 0); dm = ImageDraw.Draw(m); import random; random.seed(3)
@@ -254,6 +257,7 @@ def panel_base(PW=PW, PH=PH):
     im.alpha_composite(sh, (0, 0)); im.alpha_composite(paper); return im
 PANEL = panel_base()
 FULL_PANEL = panel_base(FULL_W, FULL_H) if any(h.get("panel") == "full" for h in CFG.get("hyperframes", [])) else None
+INSET_PANEL = panel_base(*BOX["inset"][2:]) if any(h.get("panel") == "inset" for h in CFG.get("hyperframes", [])) else None
 LOGO = Image.open("logo.png").convert("RGBA"); LOGO = LOGO.resize((210, round(LOGO.height * 210 / LOGO.width)), Image.LANCZOS)
 _strip_cache = {}
 def tstrip(s, bg, size):
@@ -263,9 +267,9 @@ def tstrip(s, bg, size):
 def draw_step(lay, hf, i, lt, a):
     st = hf["steps"][i]; d = ImageDraw.Draw(lay); title, sub = clean(st["title"]), clean(st["subtitle"])
     split = hf["layout"] == "split_comparison" and i == len(hf["steps"]) - 1
-    g = GEOM["full" if hf.get("panel") == "full" else "card"]; PW = lay.width
+    g = GEOM[hf.get("panel", "card")]; PW = lay.width
     ka = int(255 * a); k = ease_out(seg(lt, 0, .4))
-    ts = tstrip(title, CREAM, g["tsz"][0] if len(title) < (14 if g is GEOM["full"] else 18) else g["tsz"][1])
+    ts = tstrip(title, CREAM, g["tsz"][0] if len(title) < (18 if g is GEOM["card"] else 14) else g["tsz"][1])
     sw = ts.copy(); sw.putalpha(sw.getchannel("A").point(lambda v: int(v * a * k)))
     subc = CREAM + (int(255 * a * clamp(seg(lt, .25, .6))),)
     if not split:
@@ -291,9 +295,11 @@ def hyper(fr, t):
     for hf in CFG["hyperframes"]:
         if not (hf["start"] <= t < hf["end"]): continue
         lt0 = t - hf["start"]; dur = hf["end"] - hf["start"]; full = hf.get("panel") == "full"
-        if full and hf["layout"] == "split_comparison": raise SystemExit('"panel": "full" supports the "steps" layout only')
+        mode = hf.get("panel", "card")
+        if mode not in GEOM: raise SystemExit(f'unknown "panel": {mode!r} (card, inset or full)')
+        if mode != "card" and hf["layout"] == "split_comparison": raise SystemExit(f'"panel": "{mode}" supports the "steps" layout only')
         tin = ease_back(seg(lt0, 0, .35), 1.3); tout = ease_out(seg(lt0, dur - .3, dur))
-        lay = (FULL_PANEL if full else PANEL).copy(); steps = hf["steps"]
+        lay = {"card": PANEL, "inset": INSET_PANEL, "full": FULL_PANEL}[mode].copy(); steps = hf["steps"]
         i = max(j for j, s in enumerate(steps) if s["at"] <= t + 1e-6)
         x = clamp(seg(t - steps[i]["at"], 0, .3)) if i else 1      # crossfade from previous step
         if i and x < 1: draw_step(lay, hf, i - 1, t - steps[i - 1]["at"], 1 - x)
@@ -302,9 +308,10 @@ def hyper(fr, t):
             y = -FULL_BLEED + Ht * (1 - ease_out(seg(lt0, 0, .35))) - FULL_H * ease_inout(seg(lt0, dur - .35, dur))
             fr.alpha_composite(lay, (0, int(y))); fr.alpha_composite(LOGO, (56, 150)); return True
         sc = (0.9 + .1 * tin) * (1 - .05 * tout); al = clamp(seg(lt0, 0, .2)) * (1 - tout)
-        p = lay.resize((int(PW * sc), int(PH * sc)), Image.BICUBIC)
+        bx, by, bw, bh = BOX[mode]
+        p = lay.resize((int(bw * sc), int(bh * sc)), Image.BICUBIC)
         if al < 1: p.putalpha(p.getchannel("A").point(lambda v: int(v * al)))
-        fr.alpha_composite(p, (int(PX + (PW - p.width) / 2), int(PY + (PH - p.height) / 2 + 30 * (1 - tin))))
+        fr.alpha_composite(p, (int(bx + (bw - p.width) / 2), int(by + (bh - p.height) / 2 + 30 * (1 - tin))))
         return True
     return False
 
