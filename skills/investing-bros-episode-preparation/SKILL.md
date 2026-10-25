@@ -17,33 +17,41 @@ Before a recording: news ideas, a deep-dive brief, one-pagers or any other pre-s
 
 ## Inputs
 - Episode number N **as Amitai states it** (don't derive it).
-- Topic / deep-dive subject, if decided.
+- Topic / deep-dive subject, if decided; otherwise take the week's plan from the deep-dive schedule.
 - Language for group-facing docs (default Hebrew). Amitai may want English drafts in chat first — follow his ask for each send.
 
 ## Steps
 
-### 1. Drive folder
+### 1. Deep-dive schedule
+1. First, find and read the single tentative deep-dive schedule Google Doc at the show root (suggested name: `לוח נושאי עומק (טנטטיבי)`). If none exists, create it there; never put it inside an episode folder.
+2. Before each week's prep, confirm or update that week's planned subject and one-line angle with Amitai. All entries are tentative.
+3. Treat later subjects as a queue: if Amitai chooses a different subject this week, shift the planned subject and every later one back one week. Drop nothing unless he says so.
+4. Append new candidates, including ideas from the Tuesday ideas routine, to the end of the queue.
+5. After the episode records, mark that week done with the actual subject and roll the queue forward.
+
+### 2. Drive folder
 1. Under the show root, find an existing `פרק N` folder (prefix match — see show conventions). Reuse it if found; otherwise create `פרק N — נושא`.
 2. Inside it, create (or reuse) the subfolder `brief`.
-3. Create **every** prep Google Doc inside `brief/` — never in the show root, never loose in the episode root.
+3. Create **every** prep Google Doc inside `brief/` — never in the show root, never loose in the episode root. The schedule above is the sole root-level working Doc, not a prep Doc.
 
 Typical docs in `brief/`: news/topic ideas, deep-dive brief, any one-pagers. Leave the episode root otherwise empty; the later skills fill it.
 
-### 2. News segment (~10 ideas)
+### 3. News segment (~10 ideas)
 - All-In / tech-investor angle (see show conventions). Don't lead with rates, oil or price action unless Amitai asks for macro.
 - Each idea: one crisp line + why it matters for investors + source URL.
 - Preferred sources: Globes, Calcalist, TheMarker, Bank of Israel, Bloomberg, Reuters, Jerusalem Post, and primary company posts/blogs.
 
-### 3. Deep dive
+### 4. Deep dive
 Structured brief: what it is → why now → key numbers (each sourced) → bull case / bear case → open questions for the hosts.
 
-### 4. Share
+### 5. Share
 Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחים להשקעות`:
 1. Set the Doc(s) to anyone-with-link Viewer.
 2. Send the **Doc link(s)**, not a pasted brief.
 3. Give the exact caption text (ending with the show tag), the links and context; ask for yes/no confirmation.
 
 ## Done when
+- The schedule has this week's confirmed planned subject and one-line angle, with later subjects preserved in queue order.
 - `פרק N — נושא` exists under the show root (no duplicate N), with `brief/` holding every prep Doc; nothing else in the episode root.
 - Every factual claim has a source URL.
 - The WhatsApp owner has the exact group, caption and links, and the send is confirmed.

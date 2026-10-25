@@ -70,6 +70,7 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
 
 ```
 אחים להשקעות/                      show root (exists)
+  לוח נושאי עומק (טנטטיבי)         single tentative deep-dive queue (Google Doc)
   פרק N — נושא/                    one per episode — created by prep, reused by everyone after
     הקלטה-ערוכה-פרק-N.m4a   edited, upload-ready audio                     ← post-production
     כותרות-פרק-N.txt        five titles + "בחירה סופית:" (plain UTF-8 text) ← title-description
@@ -83,6 +84,8 @@ Shared resource folder: [Brand Resources](https://drive.google.com/drive/folders
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
+
+`לוח נושאי עומק (טנטטיבי)` is the only root-level working Doc. It lists upcoming episodes week by week, with one line for each planned deep-dive angle; all entries are tentative. If Amitai chooses another subject, move that week's planned subject and every later one back one week without dropping any, unless he says otherwise. Append new deep-dive candidates to the end. Episode prep reads and confirms or updates the queue first; after recording, mark the week done with the actual subject and roll the queue forward.
 
 **Shorts rule (all episodes):** exactly three Shorts are required. Every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
 
