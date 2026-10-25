@@ -26,7 +26,11 @@ After the audio edit (`investing-bros-post-production`) for episode N: make **ex
 ## Inputs
 From the episode's `extras/` folder:
 - `segments.json` — the transcript
-- the raw master — `.mp4` if the recording has video, otherwise `.m4a`
+- the raw master — `.mp4` if the recording has video, otherwise `.m4a` (timeline and audio)
+- **each host's own Riverside video track** for the picture, never the side-by-side
+  export: Riverside recording share link → Tracks → <host> → download → **Aligned video**
+  (`investing-bros-show` → Recording layout). No tracks yet: ask Amitai for the
+  recording's share link; don't fall back to cropping the side-by-side
 - the current newspaper logo source (location in `investing-bros-show`) and Heebo
   (`Heebo[wght].ttf` from google/fonts — fallback in `investing-bros-show` →
   references/environment.md)
@@ -53,7 +57,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
      (what the full episode adds on this topic).
    Skip crosstalk and anything that sounds like a buy/sell call out of context. Flag on-air mistakes instead of clipping them.
 2. **Find exact cut points.** Whisper segment times are only approximate. For every in/out point, look at the audio energy (20 ms frames) for the pause between words and cut inside it; re-transcribe a 1–3 s window around the point if unsure (whisper drops the last word of a window — give it ~1 s of tail). Never cut mid-word. Inside a clip you may drop a filler stretch, dead air or a phrase you can't make out — **only** if the sentence still says the same thing. Never drop a caveat or disclaimer to make a line punchier.
-3. **Cut fresh from the final episode file.** Always start from the published/final episode master, never from an earlier Short or a burned-in render. Edit the kept pieces with `scripts/make_base.py`: copy it, set `SRC` and the `K` list of `(audio_start, audio_end, video_delay)`, then run `python3 make_base.py --speed 1.25 --output <name>_clean.mp4`. It crops to a **static** head-and-shoulders close-up (no zooms, no jump cuts except removing silence), scales to 1080×1920 at 24 fps, places the logo at x 56 y 150 (210 px wide), and applies highpass + gentle compressor + two-pass `loudnorm` to **−14 LUFS**, true peak ≤ −1.5 dB. It writes the named clean MP4 (no captions/graphics) and `timemap.json`. No music, no SFX, no b-roll.
+3. **Cut fresh from the final episode file.** Always start from the published/final episode master, never from an earlier Short or a burned-in render. Edit the kept pieces with `scripts/make_base.py`: copy it, set `SRC` (the master: timeline and audio), `TRACKS` (each host's Aligned video track) and the `K` list of `(audio_start, audio_end, video_delay, crop, track)` with the speaking host's track and a centred 9:16 crop in that track's pixels, then run `python3 make_base.py --speed 1.25 --output <name>_clean.mp4`. It crops to a **static** head-and-shoulders close-up (no zooms, no jump cuts except removing silence), scales to 1080×1920 at 24 fps, places the logo at x 56 y 150 (210 px wide), and applies highpass + gentle compressor + two-pass `loudnorm` to **−14 LUFS**, true peak ≤ −1.5 dB. It writes the named clean MP4 (no captions/graphics) and `timemap.json`. No music, no SFX, no b-roll. It syncs each track to the master from the audio and prints the offset, and it refuses a side-by-side picture (episode 8: cropping one half came out tight, soft and off-centre); `--allow-side-by-side` only with Amitai's OK, listed in the hand-back.
    **House playback speed is 1.25x** (chosen by Amitai on 2026-10-23 after testing 1.25x against 1.5x). The scripts default to `--speed 1.25`; pass `--speed 1.0` only to disable it. They speed video with `setpts=PTS/1.25` and audio with `atempo=1.25`, which preserves natural voice pitch. Source cut points stay on the raw timeline; `timemap.json` and every caption/overlay time are on the shortened output timeline.
 4. **Captions = exactly what was said.** Transcribe every kept piece word by word (`transcribe_clip.py`, then listen). Captions must match the audio verbatim. If a phrase is unclear after re-transcribing and listening, **cut it out of the edit** (step 3) rather than guess — record what was dropped in `meta.source`. 1–4 words per caption, white heavy Heebo with soft shadow, no box, at y≈1480. Only keywords/numbers go **#F5B71F** (`highlight` list), never every word.
 5. **Write the config and render** — one JSON per Short (schema below; full example `references/configs/example-ep3-datacenters.json`), then:
@@ -215,6 +219,7 @@ Send Amitai the `Shorts/` folder link and, for shorts 01–03: where each is in 
 - Post anywhere public unless Amitai asks in chat for that post (the Telegram approval send in step 6 is the exception), and only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.
+- Crop a Short's picture from the side-by-side export; use each host's own Riverside track.
 - Use an ASS style `Encoding` other than `-1` — any other value forces left-to-right and Hebrew punctuation lands on the wrong side.
 - Add music, SFX or stock footage.
 - Put emoji or invented numbers on a panel, or guess an unclear phrase in a caption — cut it instead.
