@@ -77,6 +77,5 @@ def test_commands():
     assert "--frame=228" in still_cmd(Path("/s.png"), Path("/p.json"), 228)
 
 
-def test_layout_marks_the_silent_end_card_for_check_short():
-    lay = layout({"baseDuration": 25.8, "endcardSeconds": 3.0})
-    assert lay == {"duration": 28.8, "silent_endcard_seconds": 3.0, "hook_style": "remotion"}
+def test_layout_has_no_end_card_so_check_short_checks_the_tail():
+    assert layout({"baseDuration": 25.8}) == {"duration": 25.8, "silent_endcard_seconds": 0.0, "hook_style": "remotion"}

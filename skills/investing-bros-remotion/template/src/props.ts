@@ -13,14 +13,15 @@ export type Step = {
 
 export type CardSpec = {id: string; mode: CardMode; start: number; end: number; steps: Step[]};
 
-export type Caption = {start: number; end: number; text: string; highlight: string[]};
+export type Word = {w: string; start: number; end: number};
+
+// A caption is 1-4 words on one line; with `words`, each word appears when it is spoken.
+export type Caption = {start: number; end: number; text: string; highlight: string[]; words?: Word[]};
 
 export type ShortProps = {
   base: string;                 // clean base video in public/ (from make_base.py)
-  baseDuration: number;         // seconds
-  endcardSeconds: number;       // silent end card appended after the base
+  baseDuration: number;         // seconds; the short ends here (no end card: the CTA runs to the last frame)
   episode: number;
-  endTitle: [string, string];   // episode title in two lines for the end card
   hook: {start: number; end: number; top: string; bottom: string};
   tags: [number, number, string][];
   captions: Caption[];

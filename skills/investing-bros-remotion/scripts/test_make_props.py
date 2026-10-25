@@ -9,20 +9,22 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_props import ICONS, build_props, end_title, main  # noqa: E402
+from make_props import ICONS, build_props, main  # noqa: E402
 
 TEMPLATE = Path(__file__).resolve().parent.parent / "template"
 
 CFG = {
-    "meta": {"episode": 8, "title": "פרק 8 - מדד, ערך או צמיחה: איך כדאי להשקיע?"},
+    "meta": {"episode": 8},
     "hook": {"start": 0.0, "end": 3.0, "top_line": 'למה נדל"ן', "bottom_line": "מלחיץ פחות?"},
     "tags": [[0.0, 18.4, "אמיתי רסקין"], [18.4, 25.7, "נדב רסקין"]],
-    "captions": [{"start": 0.0, "end": 0.6, "text": "אפשר לדוגמה", "highlight": []},
-                 {"start": 0.6, "end": 1.0, "text": 'לקנות נדל"ן,', "highlight": ['נדל"ן']}],
+    "captions": [{"start": 0.0, "end": 0.6, "text": "אפשר לדוגמה", "highlight": [],
+                  "words": [{"w": "אפשר", "start": 0.0, "end": 0.3}, {"w": "לדוגמה", "start": 0.3, "end": 0.6}]},
+                 {"start": 0.6, "end": 1.0, "text": 'לקנות נדל"ן,', "highlight": ['נדל"ן']},
+                 {"start": 9.6, "end": 10.4, "text": "נכנסים לפורטפוליו שלהם", "highlight": []}],
     "cards": [{"id": "c1", "mode": "inset", "start": 9.0, "end": 14.2, "steps": [
-        {"at": 9.0, "visual": "house", "title": "לא קמים בבוקר", "subtitle": "נכנסים לפורטפוליו שלהם"},
+        {"at": 9.0, "visual": "house", "title": "לא קמים בבוקר", "subtitle": ""},
         {"at": 11.0, "visual": "drop", "value": 30, "title": "צניחה של 30%", "subtitle": "בבית שלהם"}]}],
-    "cta_overlay": {"start": 22.75, "end": 25.7, "text": "הקישור לפרק המלא בתיאור"},
+    "cta_overlay": {"start": 22.75, "end": 25.75, "text": "הקישור לפרק המלא בתיאור"},
 }
 
 
@@ -38,8 +40,9 @@ def test_icon_list_matches_the_template():
 
 def test_props_shape_and_values():
     p = props()
-    assert p["base"] == "base.mp4" and p["baseDuration"] == 25.75 and p["endcardSeconds"] == 3.0
-    assert p["episode"] == 8 and p["endTitle"] == ["מדד, ערך או צמיחה:", "איך כדאי להשקיע?"]
+    assert p["base"] == "base.mp4" and p["baseDuration"] == 25.75 and p["episode"] == 8
+    assert p["captions"][0]["words"][1] == {"w": "לדוגמה", "start": 0.3, "end": 0.6}
+    assert "words" not in p["captions"][1]
     assert p["hook"] == {"start": 0.0, "end": 3.0, "top": 'למה נדל"ן', "bottom": "מלחיץ פחות?"}
     assert p["cards"][0]["steps"][1]["value"] == 30 and "value" not in p["cards"][0]["steps"][0]
     assert p["cta"]["text"] == "הקישור לפרק המלא בתיאור"
@@ -80,6 +83,10 @@ def test_default_mode_is_inset():
     (lambda c: c["captions"].append({"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש"}), "1-4 words"),
     (lambda c: c["captions"].append({"start": 0.5, "end": 2.0, "text": "שוב"}), "out of order"),
     (lambda c: c["cards"][0]["steps"].reverse(), "time order"),
+    (lambda c: c["cards"][0]["steps"][0].update(subtitle="נכנסים לפורטפוליו"), "repeats the captions"),
+    (lambda c: c["cta_overlay"].update(end=24.0), "no end card"),
+    (lambda c: c["captions"][0]["words"].reverse(), "out of order"),
+    (lambda c: c["captions"][0]["words"].pop(), "don't match its text"),
 ])
 def test_house_rules_are_enforced(change, message):
     cfg = copy.deepcopy(CFG)
@@ -88,11 +95,21 @@ def test_house_rules_are_enforced(change, message):
         build_props(cfg, 25.75)
 
 
-def test_end_title_variants():
-    assert end_title({"end_title": ["שורה א", "שורה ב"]}) == ["שורה א", "שורה ב"]
-    assert end_title({"title": "פרק 3 - דאטה סנטרים בחלל?"}) == ["דאטה סנטרים", "בחלל?"]
-    with pytest.raises(ValueError):
-        end_title({})
+def test_a_subtitle_that_adds_something_is_fine():
+    cfg = copy.deepcopy(CFG)
+    cfg["cards"][0]["steps"][0]["subtitle"] = "בבית"
+    assert props(cfg)["cards"][0]["steps"][0]["subtitle"] == "בבית"
+
+
+def test_cli_takes_word_timed_captions(tmp_path):
+    caps = [{"start": 0.0, "end": 1.0, "text": "אחת שתיים", "highlight": [],
+             "words": [{"w": "אחת", "start": 0.0, "end": 0.5}, {"w": "שתיים", "start": 0.5, "end": 1.0}]}]
+    (tmp_path / "c.json").write_text(json.dumps(caps, ensure_ascii=False), encoding="utf-8")
+    (tmp_path / "s.json").write_text(json.dumps(CFG, ensure_ascii=False), encoding="utf-8")
+    out = tmp_path / "p.json"
+    assert main([str(tmp_path / "s.json"), "--base-duration", "25.75", "--captions", str(tmp_path / "c.json"),
+                 "-o", str(out)]) == 0
+    assert json.loads(out.read_text(encoding="utf-8"))["captions"] == caps
 
 
 def test_cli_writes_props(tmp_path):
@@ -109,7 +126,7 @@ def test_cli_writes_props(tmp_path):
 
 def test_template_sample_props_pass_the_checks():
     sample = json.loads((TEMPLATE / "src" / "sample-props.json").read_text(encoding="utf-8"))
-    cfg = {"meta": {"episode": sample["episode"], "end_title": sample["endTitle"]},
+    cfg = {"meta": {"episode": sample["episode"]},
            "hook": {"start": sample["hook"]["start"], "end": sample["hook"]["end"],
                     "top_line": sample["hook"]["top"], "bottom_line": sample["hook"]["bottom"]},
            "tags": sample["tags"], "captions": sample["captions"], "cards": sample["cards"], "cta_overlay": sample["cta"]}

@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
-  CAPTION_Y, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
+  CAPTION_Y, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, TAG_RIGHT_EDGE, WHITE, clamp,
 } from '../brand';
 import type {ShortProps} from '../props';
 import {Arrow, Strip} from './Strip';
@@ -44,25 +44,34 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
   );
 };
 
-// Captions: verbatim, 1-4 words, white Heebo Black, keywords gold, small pop on each change.
+// Captions: verbatim, 1-4 words on one line, white Heebo Black, keywords gold.
+// With word timings each word pops in as it is spoken (the line builds up, space for the
+// rest is kept so nothing shifts); without them the whole caption pops in at its start.
 export const Captions: React.FC<{captions: ShortProps['captions']}> = ({captions}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;
-  const k = spring({frame: f - Math.round(c.start * fps), fps, config: {damping: 13, stiffness: 220}});
   const norm = (w: string) => w.replace(/[.,?!:;"'״׳]/g, '');
   const hl = new Set(c.highlight.flatMap((h) => h.split(' ').map(norm)));
+  const words = c.words ?? c.text.split(' ').map((w) => ({w, start: c.start, end: c.end}));
   return (
     <div style={{position: 'absolute', top: CAPTION_Y, width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div style={{
-        transform: `translateY(-50%) scale(${interpolate(k, [0, 1], [0.86, 1])})`,
-        opacity: interpolate(k, [0, 0.4], [0, 1], clamp), direction: 'rtl', textAlign: 'center', maxWidth: 940,
-        fontFamily: FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.25, color: WHITE,
+        transform: 'translateY(-50%)', direction: 'rtl', textAlign: 'center', maxWidth: 940, whiteSpace: 'nowrap',
+        fontFamily: FONT, fontWeight: 900, fontSize: 84, lineHeight: 1.25,
         textShadow: '0 4px 10px rgba(0,0,0,.6), 0 0 3px rgba(0,0,0,.9)',
       }}>
-        {c.text.split(' ').map((w, i) => (
-          <span key={i} style={{color: hl.has(norm(w)) ? GOLD : WHITE}}>{w}{' '}</span>
-        ))}
+        {words.map((w, i) => {
+          const k = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 13, stiffness: 240}});
+          const shown = t >= w.start - 1e-6;
+          return (
+            <span key={i} style={{
+              display: 'inline-block', marginLeft: 18, color: hl.has(norm(w.w)) ? GOLD : WHITE,
+              opacity: shown ? interpolate(k, [0, 0.35], [0, 1], clamp) : 0,
+              transform: `translateY(${shown ? (1 - k) * 14 : 14}px) scale(${shown ? interpolate(k, [0, 1], [0.82, 1]) : 0.82})`,
+            }}>{w.w}</span>
+          );
+        })}
       </div>
     </div>
   );
@@ -81,26 +90,7 @@ export const Cta: React.FC<{cta: ShortProps['cta']}> = ({cta}) => {
   );
 };
 
-// Logo redrawn on top (only needed above a full-screen card; the base already carries it).
+// Logo redrawn on top of a card that covers it (the base video already carries it).
 export const Logo: React.FC = () => (
   <Img src={staticFile('logo.png')} style={{position: 'absolute', left: LOGO_BOX.left, top: LOGO_BOX.top, width: LOGO_BOX.width}} />
 );
-
-// End card: hard cut, silent, navy; logo, episode pill, title, CTA and arrow.
-export const EndCard: React.FC<{episode: number; title: [string, string]}> = ({episode, title}) => {
-  const {f, fps, t} = useT();
-  const k = spring({frame: f, fps, config: {damping: 14}});
-  return (
-    <AbsoluteFill style={{background: NAVY, alignItems: 'center', paddingTop: 420, direction: 'rtl', fontFamily: FONT}}>
-      <Img src={staticFile('logo.png')} style={{width: 520, transform: `scale(${interpolate(k, [0, 1], [0.85, 1])})`}} />
-      <div style={{marginTop: 30, background: CREAM, color: NAVY, fontWeight: 900, fontSize: 48, padding: '6px 34px', borderRadius: 40}}>
-        פרק {episode}
-      </div>
-      <div style={{marginTop: 34, color: WHITE, fontWeight: 800, fontSize: 64, textAlign: 'center', lineHeight: 1.35}}>
-        {title[0]}<br />{title[1]}
-      </div>
-      <div style={{marginTop: 50, color: GOLD, fontWeight: 800, fontSize: 48}}>הקישור לפרק המלא בתיאור</div>
-      <div style={{marginTop: 10, transform: `translateY(${Math.sin(t * 6) * 10}px)`}}><Arrow size={90} color={GOLD} /></div>
-    </AbsoluteFill>
-  );
-};

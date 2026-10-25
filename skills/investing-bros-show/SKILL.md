@@ -128,7 +128,8 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 ## Animation
 - **Remotion is the animation framework** for shorts and other animated clips (Amitai, 2026-10-25, after comparing it with HyperFrames and the Python renderer on episode 8). Owner: `investing-bros-remotion`. HyperFrames and `build_amitai_short.py` stay only for rebuilding older exports.
 - **Licence:** Remotion is free for individuals and organisations of up to 3 people (counts the whole team, not only who renders). From 4 people it needs a Company License: $25/month per person who writes Remotion code, agents included ([remotion.dev/docs/license/faq](https://www.remotion.dev/docs/license/faq)). Today the team is Amitai, Nadav and ליאורה; check this before anyone joins.
-- Explainer cards default to `inset` (the host stays visible around the card); `full` (whole frame) only for a 2–4 s moment.
+- Explainer cards default to `inset`: most of the frame, with a thin frame of the host video around it so it reads as an overlay; `full` (whole frame) only for a 2–4 s moment.
+- **Shorts have no end card** (Amitai, 2026-10-25): they end on the payoff and loop, with the "הקישור לפרק המלא בתיאור" strip and arrow on screen to the last frame. Captions show each word as it is spoken.
 
 ## Roles and accounts
 | Role / account | Who / what | Notes |

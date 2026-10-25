@@ -2,18 +2,21 @@
 """Turn a short's config into props for the Remotion template, and check it first.
 
 Usage:
-    python3 make_props.py short.json --base WORK/clean.mp4 -o props.json [--endcard 3.0]
+    python3 make_props.py short.json --base WORK/clean.mp4 -o props.json [--captions captions.json]
 
 short.json is the investing-bros-shorts config (all times on the OUTPUT timeline):
-  meta {episode, title | end_title: [line1, line2]}, hook {start, end, top_line, bottom_line},
+  meta {episode}, hook {start, end, top_line, bottom_line},
   tags [[start, end, name]], captions [{start, end, text, highlight}],
   cards (or the older key hyperframes) [{id, mode: inset|full|card (or panel), start, end,
          steps: [{at, visual, title, subtitle, value}]}], cta_overlay {start, end, text}.
-The base video's length comes from ffprobe (or --base-duration).
+The base video's length comes from ffprobe (or --base-duration). --captions takes the
+word-timed captions from make_captions.py in place of the config's.
 
 Refuses: an unknown icon, emoji on a card, a card over the hook (first 3 s) or the CTA,
-overlapping cards, steps outside their card, captions over 4 words, out of order or
-past the end of the video. Card words must be the hosts' own words: that part is on you.
+overlapping cards, steps outside their card, a card subtitle that repeats the captions
+under it, captions over 4 words, out of order or past the end of the video, word times
+outside their caption, and a CTA that stops before the end (there is no end card).
+Card words must be the hosts' own words: that part is on you.
 """
 import argparse
 import json
@@ -35,23 +38,6 @@ def probe_duration(path: str) -> float:
     out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", path],
                          capture_output=True, text=True, check=True).stdout
     return float(out.strip())
-
-
-def end_title(meta: dict) -> list:
-    if meta.get("end_title"):
-        lines = list(meta["end_title"])
-        if len(lines) != 2:
-            raise ValueError("meta.end_title must be two lines")
-        return lines
-    title = re.sub(r"^פרק \d+\s*-\s*", "", meta.get("title", "")).strip()
-    if not title:
-        raise ValueError("meta.title (the episode's final title) or meta.end_title is required")
-    if ": " in title:
-        a, b = title.split(": ", 1)
-        return [a + ":", b]
-    words = title.split()
-    half = (len(words) + 1) // 2
-    return [" ".join(words[:half]), " ".join(words[half:])]
 
 
 def card_problems(cards, hook, cta, duration):
@@ -100,10 +86,39 @@ def caption_problems(captions, duration):
         prev = c["end"]
         if not 1 <= len(c["text"].split()) <= 4:
             errs.append(f"caption {c['text']!r}: must be 1-4 words")
+        words = c.get("words")
+        if words is not None:
+            if [w["w"] for w in words] != c["text"].split():
+                errs.append(f"caption {c['text']!r}: its words don't match its text")
+            last = c["start"] - 1e-6
+            for w in words:
+                if not (last <= w["start"] < c["end"]):
+                    errs.append(f"caption {c['text']!r}: word {w['w']!r} at {w['start']} is out of order or outside the caption")
+                last = w["start"]
     return errs
 
 
-def build_props(cfg: dict, duration: float, endcard: float = 3.0) -> dict:
+def plain(text: str) -> list:
+    return [re.sub(r"[.,?!:;\"'״׳()]", "", w) for w in text.split()]
+
+
+def repeat_problems(cards, captions):
+    """A card subtitle that repeats the words captioned during its step adds nothing."""
+    errs = []
+    for c in cards:
+        for k, s in enumerate(c["steps"]):
+            sub = plain(s.get("subtitle") or "")
+            if not sub:
+                continue
+            until = c["steps"][k + 1]["at"] if k + 1 < len(c["steps"]) else c["end"]
+            heard = [w for cap in captions if cap["end"] > s["at"] and cap["start"] < until for w in plain(cap["text"])]
+            if any(heard[i:i + len(sub)] == sub for i in range(len(heard) - len(sub) + 1)):
+                errs.append(f"card {c['id']}: subtitle {s['subtitle']!r} repeats the captions under it; "
+                            "leave it empty or say something the picture needs")
+    return errs
+
+
+def build_props(cfg: dict, duration: float) -> dict:
     meta, hook, cta = cfg.get("meta", {}), cfg["hook"], cfg["cta_overlay"]
     cards = []
     for c in cfg.get("cards", cfg.get("hyperframes", [])):
@@ -115,18 +130,21 @@ def build_props(cfg: dict, duration: float, endcard: float = 3.0) -> dict:
                       "start": c["start"], "end": c["end"], "steps": steps})
     if not isinstance(meta.get("episode"), int):
         raise ValueError("meta.episode (the number Amitai stated) is required")
-    errs = card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration)
+    errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration)
+            + repeat_problems(cards, cfg["captions"]))
     if not 0 <= cta["start"] < cta["end"] <= duration + 1e-6:
         errs.append(f"CTA {cta['start']}-{cta['end']} outside the video")
+    elif cta["end"] < duration - 0.35:
+        errs.append(f"CTA ends at {cta['end']} but the video runs to {duration:.2f}; there is no end card, "
+                    "so the CTA stays to the last frame")
     if errs:
         raise ValueError("\n".join(errs))
     return {
-        "base": "base.mp4", "baseDuration": round(duration, 3), "endcardSeconds": endcard,
-        "episode": meta["episode"], "endTitle": end_title(meta),
+        "base": "base.mp4", "baseDuration": round(duration, 3), "episode": meta["episode"],
         "hook": {"start": hook["start"], "end": hook["end"], "top": hook["top_line"], "bottom": hook["bottom_line"]},
         "tags": cfg.get("tags") or [[0.0, duration, meta.get("speaker", "")]],
-        "captions": [{"start": c["start"], "end": c["end"], "text": c["text"], "highlight": c.get("highlight", [])}
-                     for c in cfg["captions"]],
+        "captions": [{"start": c["start"], "end": c["end"], "text": c["text"], "highlight": c.get("highlight", []),
+                      **({"words": c["words"]} if c.get("words") else {})} for c in cfg["captions"]],
         "cards": cards,
         "cta": {"start": cta["start"], "end": cta["end"], "text": cta["text"]},
     }
@@ -137,21 +155,23 @@ def main(argv=None) -> int:
     ap.add_argument("config")
     ap.add_argument("--base", help="clean base video from make_base.py (for its length)")
     ap.add_argument("--base-duration", type=float)
-    ap.add_argument("--endcard", type=float, default=3.0)
+    ap.add_argument("--captions", help="word-timed captions from make_captions.py (replace the config's)")
     ap.add_argument("-o", "--output", required=True)
     a = ap.parse_args(argv)
     if a.base_duration is None and not a.base:
         ap.error("give --base or --base-duration")
     cfg = json.loads(Path(a.config).read_text(encoding="utf-8"))
+    if a.captions:
+        cfg["captions"] = json.loads(Path(a.captions).read_text(encoding="utf-8"))
     duration = a.base_duration if a.base_duration is not None else probe_duration(a.base)
     try:
-        props = build_props(cfg, duration, a.endcard)
+        props = build_props(cfg, duration)
     except ValueError as e:
         print(f"error: {e}", file=sys.stderr)
         return 1
     Path(a.output).write_text(json.dumps(props, ensure_ascii=False, indent=1), encoding="utf-8")
     print(f"{a.output}: {len(props['cards'])} card(s), {len(props['captions'])} captions, "
-          f"{props['baseDuration'] + props['endcardSeconds']:.2f} s")
+          f"{props['baseDuration']:.2f} s")
     return 0
 
 

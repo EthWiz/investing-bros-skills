@@ -27,5 +27,6 @@ which fails on networks that block Google's storage host.
 |---|---|
 | Hebrew in a fallback font | the static Heebo TTFs weren't staged; pass `--fonts` with the three `brand.py fonts` files |
 | `Could not find a browser` / download blocked | pass `--browser` or set `REMOTION_BROWSER_EXECUTABLE` |
-| `check_short.py` warns about 3 s of silence at the end | `NAME_layout.json` is missing next to the video; it comes from `render_short.py` |
+| `check_short.py` warns about silence at the end | there is no end card, so the clean base must end right after the payoff; recut in `make_base.py` |
+| Captions run ahead of or behind the voice | rebuild them with `make_captions.py --wav`; check the proofread `text.json` matches what is said in each kept piece |
 | Words of a card title in the wrong order | the title box must stay `direction: rtl` with a plain flex row (not `row-reverse`) |

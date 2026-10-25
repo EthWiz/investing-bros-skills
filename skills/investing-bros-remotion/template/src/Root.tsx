@@ -18,7 +18,7 @@ export const RemotionRoot: React.FC = () => (
     durationInFrames={1}
     defaultProps={sample as unknown as ShortProps}
     calculateMetadata={({props}) => ({
-      durationInFrames: Math.round((props.baseDuration + props.endcardSeconds) * FPS),
+      durationInFrames: Math.round(props.baseDuration * FPS),
     })}
   />
 );

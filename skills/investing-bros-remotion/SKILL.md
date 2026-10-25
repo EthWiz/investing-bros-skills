@@ -2,10 +2,11 @@
 name: investing-bros-remotion
 description: >-
   The animation framework for Investing Bros / אחים להשקעות video: render shorts (hook,
-  name tags, captions, explainer cards, CTA, end card) with the show's Remotion template
-  over the clean base from investing-bros-shorts. Covers the props format, card modes
-  (inset with the host framed around it, full screen, small card), the brand icon set,
-  QA stills, adding icons or layouts, and the Remotion licence. Use whenever a short or
+  name tags, word-by-word captions, explainer cards, CTA; no end card) with the show's
+  Remotion template over the clean base from investing-bros-shorts. Covers word-timed
+  captions, the props format, card modes (inset: most of the frame with the host framed
+  around it, full screen, small card), the brand icon set, QA stills, adding icons or
+  layouts, and the Remotion licence. Use whenever a short or
   clip gets animation, or when Amitai asks for "Remotion", "animation", "אנימציה",
   "כרטיס מונפש", "גרפיקה מונפשת", "explainer card", "full screen card" or "מסך מלא".
 ---
@@ -30,6 +31,9 @@ done before this skill starts.
   1.25x, −14 LUFS, logo and gradient burned in, no captions.
 - The short's config JSON (`investing-bros-shorts` → Config schema; times are
   **output** seconds). Explainer cards go in `cards` (format below).
+- For captions: the proofread words of each kept piece (`text.json`), whisper word
+  timings for them (`transcribe_clip.py`), `timemap.json` from `make_base.py`, and a
+  16 kHz WAV of the same window.
 - Static Heebo TTFs (`brand.py fonts`) and the solid logo
   (`investing-bros-brand` → `assets/logo-solid.png`).
 - Node 18+ and npm, ffmpeg/ffprobe, a headless Chrome (found automatically; see
@@ -39,37 +43,51 @@ done before this skill starts.
 1. **Plan the cards** (the moments that get animation). Follow
    [references/cards-and-icons.md](references/cards-and-icons.md): one idea per card,
    about one card per 20 s, each step on the word it illustrates, never over the hook
-   (first 3 s) or the CTA. Pick the mode: **`inset`** (default: a large card with the
-   host visible around it), **`full`** (covers the frame for 2–4 s; logo, name tag and
-   captions stay on top) or `card` (the older small card). Card text = the hosts'
-   own words; a value icon (`drop`, `rise`, `pie`) shows only a number the host said.
-2. **Make the props** — this also checks the house rules:
+   (first 3 s) or the CTA. Pick the mode: **`inset`** (default: most of the frame, a
+   40 px frame of the host video around it), **`full`** (covers the frame for 2–4 s) or
+   `card` (the older small card); logo, name tag and captions always stay on top. Card
+   text = the hosts' own words; no subtitle that repeats the captions; a value icon
+   (`drop`, `rise`, `pie`) shows only a number the host said.
+2. **Time the captions word by word:**
    ```bash
-   python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 -o WORK/props.json
+   python3 scripts/make_captions.py text.json words.json WORK/timemap.json -o WORK/captions.json \
+     --wav window.wav --wav-offset T0
+   ```
+   `text.json` = `[{"from", "to", "text"}]`, one entry per kept piece (source times, the
+   proofread words, keywords in `[brackets]`). Whisper's words are matched to the
+   proofread ones even when misspelt, starts that fall in silence move to where the
+   speech begins, and the words are grouped into one-line captions of 1–4 words that
+   break at punctuation and pauses. On screen each word appears as it is spoken.
+3. **Make the props** — this also checks the house rules:
+   ```bash
+   python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \
+     -o WORK/props.json
    ```
    It refuses unknown icons, emoji, cards over the hook or CTA, overlapping cards,
-   steps outside their card, captions over 4 words or out of order. Fix the config,
-   not the props.
-3. **Look before rendering** — six stills on one sheet (about 30 s):
+   steps outside their card, a subtitle repeating the captions, captions over 4 words or
+   out of order, and a CTA that stops before the end. Fix the config, not the props.
+4. **Look before rendering** — six stills on one sheet (about 30 s):
    ```bash
    python3 scripts/render_short.py --props WORK/props.json --base WORK/NAME_clean.mp4 \
      --fonts WORK/fonts --logo WORK/logo.png --out WORK/NAME.mp4 --stills 1,9.5,12,17,23,27
    ```
    Check `NAME_stills.jpg`: hook strips in the first 3 s, cards inside their box and
-   readable, captions right-to-left below the card, logo and name tag visible, end card.
+   readable, captions right-to-left and building up word by word, logo and name tag on
+   top, CTA with its arrow at the end.
    The first run copies the template into `WORK/remotion` and runs `npm ci` once.
-4. **Render** — same command without `--stills` (about 3 min for 30 s on 2 cores):
+5. **Render** — same command without `--stills` (about 3 min for 30 s on 2 cores):
    ```bash
    python3 scripts/render_short.py --props WORK/props.json --base WORK/NAME_clean.mp4 \
      --fonts WORK/fonts --logo WORK/logo.png --out WORK/NAME.mp4
    ```
-   It writes `NAME.mp4` and `NAME_layout.json` (marks the 3 s silent end card).
-5. **QA and hand on** — back to `investing-bros-shorts` step 6: `check_short.py NAME.mp4`
+   It writes `NAME.mp4` and `NAME_layout.json` for `check_short.py`. There is no end
+   card: the video ends on the payoff with the CTA, and loops.
+6. **QA and hand on** — back to `investing-bros-shorts` step 6: `check_short.py NAME.mp4`
    (reads the layout file), 8-frame strip, Telegram approval, cover, Drive.
 
 To tweak timing or text by eye, run `npm run studio` in `WORK/remotion` (Remotion
 Studio, live preview with a timeline) with `public/` staged by step 3; then put the
-change back into the config and re-run steps 2–4. A new icon, card mode or layout is
+change back into the config and re-run steps 3–5. A new icon, card mode or layout is
 a template change in this repo (with a test), never a one-off edit in `WORK/remotion`.
 
 ## Done when

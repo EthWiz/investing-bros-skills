@@ -9,8 +9,8 @@ Usage:
 --work (default: <out dir>/remotion) gets a copy of template/ and its node_modules (npm ci,
 once). The base video, Heebo TTFs (brand.py fonts) and logo.png are staged into public/.
 Chrome: --browser, else $REMOTION_BROWSER_EXECUTABLE, else a Playwright headless shell if
-one is installed, else Remotion downloads its own. Writes <out>_layout.json so
-check_short.py knows the last seconds are the intentional silent end card.
+one is installed, else Remotion downloads its own. Writes <out>_layout.json for
+check_short.py (no end card: the short ends on the payoff with the CTA).
 """
 import argparse
 import glob
@@ -101,8 +101,8 @@ def still_cmd(out: Path, props: Path, frame: int, browser=None):
 
 
 def layout(props: dict) -> dict:
-    return {"duration": round(props["baseDuration"] + props["endcardSeconds"], 3),
-            "silent_endcard_seconds": props["endcardSeconds"], "hook_style": "remotion"}
+    # No end card: the short ends on the payoff, so check_short.py checks the tail for dead air.
+    return {"duration": round(props["baseDuration"], 3), "silent_endcard_seconds": 0.0, "hook_style": "remotion"}
 
 
 def contact_sheet(paths, labels, out: Path):

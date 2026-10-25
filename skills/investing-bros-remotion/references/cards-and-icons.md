@@ -10,8 +10,8 @@ seconds, after the 1.25x speed-up):
   "mode": "inset",                 // inset (default) | full | card
   "start": 8.99, "end": 14.18,     // the card's whole window
   "steps": [                       // one or more; each replaces the last with a crossfade
-    {"at": 8.99,  "visual": "house", "title": "לא קמים בבוקר", "subtitle": "נכנסים לפורטפוליו שלהם"},
-    {"at": 10.95, "visual": "drop", "value": 30, "title": "צניחה של 30%", "subtitle": "בבית שלהם"}
+    {"at": 8.99,  "visual": "house", "title": "לא קמים בבוקר"},
+    {"at": 10.95, "visual": "drop", "value": 30, "title": "צניחה של 30%"}
   ]
 }]
 ```
@@ -21,7 +21,7 @@ an icon name) is still read, so configs from `build_amitai_short.py` convert as 
 ## Modes
 | mode | where | motion | use for |
 |---|---|---|---|
-| `inset` | 960×1060 at x 60, y 300: between the logo and the captions; host visible around it | springs up from below, fades out | the default; most explainers |
+| `inset` | 1000×1840 at x 40, y 40: most of the frame, a thin frame of the host video around it; logo, name tag and captions on top | springs up from below, fades out | the default; most explainers |
 | `full` | the whole frame; logo, name tag and captions stay on top | paper slides up over the host, then up and away | a big moment, 2–4 s at most |
 | `card` | 1000×700 in the middle | as `inset` | small asides |
 
@@ -49,8 +49,9 @@ that uses it and look at the sheet; run the tests. One PR.
 1. **One idea per card**, at most 4–5 words in the title; numbers big.
 2. **On the word.** Each step's `at` is when its words are spoken (word timings from
    `transcribe_clip.py`), not before.
-3. **Add, don't repeat.** The card shows the picture; captions carry the sentence. Leave
-   `subtitle` empty rather than repeating the caption under it.
+3. **Add, don't repeat.** The card shows the picture; captions carry the sentence.
+   `make_props.py` refuses a `subtitle` that repeats the captions under it; use one only
+   for words the picture needs.
 4. **Faces back.** About one card per 20 s; `full` for 2–4 s; keep cards to roughly a
    third of the short.
 5. **One motion per short.** Stick to one mode per short unless one moment truly needs `full`.
