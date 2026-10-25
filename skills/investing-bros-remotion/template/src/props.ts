@@ -25,6 +25,7 @@ export type ShortProps = {
   hook: {start: number; end: number; top: string; bottom: string};
   tags: [number, number, string][];
   captions: Caption[];
+  captionHighlight: 'keywords' | 'spoken';   // gold on the caption's keywords, or on the word being said
   cards: CardSpec[];
   cta: {start: number; end: number; text: string};
 };

@@ -132,6 +132,8 @@ def build_props(cfg: dict, duration: float) -> dict:
         raise ValueError("meta.episode (the number Amitai stated) is required")
     errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration)
             + repeat_problems(cards, cfg["captions"]))
+    if cfg.get("caption_highlight", "keywords") not in ("keywords", "spoken"):
+        errs.append("caption_highlight must be 'keywords' or 'spoken'")
     if not 0 <= cta["start"] < cta["end"] <= duration + 1e-6:
         errs.append(f"CTA {cta['start']}-{cta['end']} outside the video")
     elif cta["end"] < duration - 0.35:
@@ -145,6 +147,7 @@ def build_props(cfg: dict, duration: float) -> dict:
         "tags": cfg.get("tags") or [[0.0, duration, meta.get("speaker", "")]],
         "captions": [{"start": c["start"], "end": c["end"], "text": c["text"], "highlight": c.get("highlight", []),
                       **({"words": c["words"]} if c.get("words") else {})} for c in cfg["captions"]],
+        "captionHighlight": cfg.get("caption_highlight", "keywords"),
         "cards": cards,
         "cta": {"start": cta["start"], "end": cta["end"], "text": cta["text"]},
     }

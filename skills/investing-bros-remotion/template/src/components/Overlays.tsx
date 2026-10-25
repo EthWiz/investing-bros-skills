@@ -47,13 +47,16 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
 // Captions: verbatim, 1-4 words on one line, white Heebo Black, keywords gold.
 // With word timings each word pops in as it is spoken (the line builds up, space for the
 // rest is kept so nothing shifts); without them the whole caption pops in at its start.
-export const Captions: React.FC<{captions: ShortProps['captions']}> = ({captions}) => {
+// highlight 'spoken': the word being said is gold and the rest white (keywords get no colour of their own).
+export const Captions: React.FC<{captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']}> = ({captions, highlight = 'keywords'}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;
   const norm = (w: string) => w.replace(/[.,?!:;"'״׳]/g, '');
   const hl = new Set(c.highlight.flatMap((h) => h.split(' ').map(norm)));
   const words = c.words ?? c.text.split(' ').map((w) => ({w, start: c.start, end: c.end}));
+  const spoken = words.reduce((acc, w, i) => (t >= w.start - 1e-6 ? i : acc), -1);
+  const gold = (w: {w: string}, i: number) => (highlight === 'spoken' ? i === spoken : hl.has(norm(w.w)));
   return (
     <div style={{position: 'absolute', top: CAPTION_Y, width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div style={{
@@ -66,7 +69,7 @@ export const Captions: React.FC<{captions: ShortProps['captions']}> = ({captions
           const shown = t >= w.start - 1e-6;
           return (
             <span key={i} style={{
-              display: 'inline-block', marginLeft: 18, color: hl.has(norm(w.w)) ? GOLD : WHITE,
+              display: 'inline-block', marginLeft: 18, color: gold(w, i) ? GOLD : WHITE,
               opacity: shown ? interpolate(k, [0, 0.35], [0, 1], clamp) : 0,
               transform: `translateY(${shown ? (1 - k) * 14 : 14}px) scale(${shown ? interpolate(k, [0, 1], [0.82, 1]) : 0.82})`,
             }}>{w.w}</span>
