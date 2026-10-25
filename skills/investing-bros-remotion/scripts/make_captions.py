@@ -15,9 +15,10 @@ timemap.json from make_base.py: [[source_start, source_end, output_start], ...]
 
 Whisper's words are matched to the proofread words by sequence alignment (Whisper's
 spelling may differ); proofread words it missed get times shared out between their
-matched neighbours. Words are grouped into captions: --lines 1 gives 1-4 words on one line
-(<= 18 characters) breaking at punctuation and pauses; --lines 2 gives up to two lines
-(<= 8 words, ~2-3 s each) breaking at sentence ends and pauses, never under 1.2 s. Each caption keeps its words' times, so
+matched neighbours. Words are grouped into captions. --lines 2 (default, the house format): up to two lines
+(<= 8 words, ~2-3 s each) breaking at sentence ends and pauses (commas only after 4+
+words), never under 1.2 s unless joining a neighbour would overflow. --lines 1: one line
+of 1-4 words breaking at punctuation and pauses (for caption_style "build"). Each caption keeps its words' times, so
 the Remotion template shows each word as it is spoken. Output: the `captions` list for
 the short's config (output seconds).
 """
@@ -192,7 +193,7 @@ def merge_short(groups, max_words, max_chars, min_seconds):
     return groups
 
 
-def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=1):
+def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=2):
     captions = []
     for p in pieces:
         hs = [h for h in heard if p["from"] - 0.25 <= h["s"] <= p["to"] + 0.1]
@@ -221,8 +222,9 @@ def main(argv=None) -> int:
     ap.add_argument("-o", "--output", required=True)
     ap.add_argument("--speed", type=float, default=1.25)
     ap.add_argument("--wav"); ap.add_argument("--wav-offset", type=float, default=0.0)
-    ap.add_argument("--lines", type=int, choices=sorted(LAYOUTS), default=1,
-                    help="1: one line of 1-4 words; 2: up to two lines, 2-3 s each, at least 1.2 s on screen")
+    ap.add_argument("--lines", type=int, choices=sorted(LAYOUTS), default=2,
+                    help="2 (house format): up to two lines, 2-3 s each, at least 1.2 s on screen; "
+                         "1: one line of 1-4 words (with caption_style 'build')")
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
     env, quiet = (None, 0.0)

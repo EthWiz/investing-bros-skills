@@ -130,12 +130,12 @@ def build_props(cfg: dict, duration: float) -> dict:
                       "start": c["start"], "end": c["end"], "steps": steps})
     if not isinstance(meta.get("episode"), int):
         raise ValueError("meta.episode (the number Amitai stated) is required")
-    max_words = 8 if cfg.get("caption_style") == "line" else 4
+    max_words = 4 if cfg.get("caption_style") == "build" else 8
     errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration, max_words)
             + repeat_problems(cards, cfg["captions"]))
-    if cfg.get("caption_highlight", "keywords") not in ("keywords", "spoken"):
+    if cfg.get("caption_highlight", "spoken") not in ("keywords", "spoken"):
         errs.append("caption_highlight must be 'keywords' or 'spoken'")
-    if cfg.get("caption_style", "build") not in ("build", "line"):
+    if cfg.get("caption_style", "line") not in ("build", "line"):
         errs.append("caption_style must be 'build' or 'line'")
     if not 0 <= cta["start"] < cta["end"] <= duration + 1e-6:
         errs.append(f"CTA {cta['start']}-{cta['end']} outside the video")
@@ -150,8 +150,8 @@ def build_props(cfg: dict, duration: float) -> dict:
         "tags": cfg.get("tags") or [[0.0, duration, meta.get("speaker", "")]],
         "captions": [{"start": c["start"], "end": c["end"], "text": c["text"], "highlight": c.get("highlight", []),
                       **({"words": c["words"]} if c.get("words") else {})} for c in cfg["captions"]],
-        "captionHighlight": cfg.get("caption_highlight", "keywords"),
-        "captionStyle": cfg.get("caption_style", "build"),
+        "captionHighlight": cfg.get("caption_highlight", "spoken"),
+        "captionStyle": cfg.get("caption_style", "line"),
         "cards": cards,
         "cta": {"start": cta["start"], "end": cta["end"], "text": cta["text"]},
     }

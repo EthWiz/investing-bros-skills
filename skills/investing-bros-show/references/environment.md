@@ -63,6 +63,24 @@ Read this before working around anything. Every line here cost an agent time to 
   ```
 - Transcribe only the picked clip windows (with `word_timestamps=True`), never the whole episode — the Drive transcript already covers that.
 
+## Whisper in the cloud workspace (episode 8)
+- `pip install --break-system-packages torch==2.5.1 openai-whisper` works (about 5 min, ~3 GB).
+  The model download does not: `openaipublic.azureedge.net` and Hugging Face are blocked.
+- Bring the model from the Mac instead: Amitai runs
+  `cp ~/.cache/whisper/small.pt ~/Downloads/`; stage it in **100 MB pieces** (`split -b 100M`
+  in the device shell, one piece per `device_stage_files` call: a 245 MB piece timed out,
+  the per-file cap is 400 MB), then `cat` the pieces into `~/.cache/whisper/small.pt` and
+  check `sha256sum` = `9ecf779972d90ba49c06d968637d720dd632c55bbf19d441fb42bf17a411e794`.
+- A 50 s window transcribes in about a minute on 2 cores with `small`.
+
+## Browsers for downloads (episode 8)
+- The Claude app's built-in browser pane isn't signed in to Google and doesn't save
+  downloads; Claude in Chrome can be offline. A Drive raw master or a Riverside track that
+  the connector can't fetch: ask Amitai to download it in his Chrome into `~/Downloads`.
+- With `~/Downloads` connected, the device shell sees it at `~/mnt/Downloads` (Linux
+  sandbox, ffmpeg available): cut the needed window there and stage only that (a 65 s
+  1080p window, re-encoded CRF 12, is ~125 MB and stages in one call).
+
 ## Fonts
 - The skills need static Heebo weights (`brand.py fonts`). If `github.com/google/fonts` isn't reachable: `npm pack @fontsource-variable/heebo`, then instance the Hebrew and Latin `*-wght-normal.woff2` subsets at 600/800/900 with fontTools and merge each pair (`fontTools.merge`), naming the families `Heebo SemiBold` / `Heebo ExtraBold` / `Heebo Black`.
 

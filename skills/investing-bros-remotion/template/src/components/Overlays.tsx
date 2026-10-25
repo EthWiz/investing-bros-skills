@@ -53,7 +53,7 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
 // highlight 'spoken': the word being said is gold, the rest white; 'keywords': the caption's keywords.
 export const Captions: React.FC<{
   captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']; style?: ShortProps['captionStyle'];
-}> = ({captions, highlight = 'keywords', style = 'build'}) => {
+}> = ({captions, highlight = 'spoken', style = 'line'}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;

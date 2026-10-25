@@ -56,20 +56,21 @@ done before this skill starts.
    `text.json` = `[{"from", "to", "text"}]`, one entry per kept piece (source times, the
    proofread words, keywords in `[brackets]`). Whisper's words are matched to the
    proofread ones even when misspelt, starts that fall in silence move to where the
-   speech begins, and the words are grouped into one-line captions of 1–4 words that
-   break at punctuation and pauses. On screen each word appears as it is spoken.
-   **Caption look (being decided, episode 8 short 05 v2/v3/v4):** set in the short's config.
-   - `caption_style: "build"` (default): one line, words pop in as spoken.
-   - `caption_style: "line"` with `make_captions.py --lines 2`: up to two lines (≤ 8 words,
-     ~2–3 s, never under 1.2 s unless it can't join a neighbour), shown whole and still.
-   - `caption_highlight: "keywords"` (default) or `"spoken"` (the word being said is gold).
+   speech begins, and the words are grouped into captions of up to two lines (≤ 8 words,
+   about 2–3 s each, at least 1.2 s on screen unless joining a neighbour would overflow),
+   breaking at sentence ends and real pauses. On screen the whole caption appears at once
+   and the word being spoken turns gold: the house format (Amitai, 2026-10-25, after
+   comparing one-line pop-in captions and keyword-only colour on episode 8 short 05).
+   The older look stays available per short: `caption_style: "build"` with
+   `make_captions.py --lines 1` (one line of 1–4 words popping in) and
+   `caption_highlight: "keywords"`.
 3. **Make the props** — this also checks the house rules:
    ```bash
    python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \
      -o WORK/props.json
    ```
    It refuses unknown icons, emoji, cards over the hook or CTA, overlapping cards,
-   steps outside their card, a subtitle repeating the captions, captions over 4 words or
+   steps outside their card, a subtitle repeating the captions, captions over 8 words or
    out of order, and a CTA that stops before the end. Fix the config, not the props.
 4. **Look before rendering** — six stills on one sheet (about 30 s):
    ```bash

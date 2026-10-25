@@ -80,7 +80,10 @@ def test_default_mode_is_inset():
     (lambda c: c["cards"][0]["steps"][1].update(at=15.0), "outside the card"),
     (lambda c: c["cards"].append(dict(copy.deepcopy(c["cards"][0]), id="c2", start=13.0, end=16.0,
                                       steps=[{"at": 13.0, "visual": "pie", "value": 5, "title": "x"}])), "overlaps the previous"),
-    (lambda c: c["captions"].append({"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש"}), "1-4 words"),
+    (lambda c: c["captions"].insert(2, {"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש שש שבע שמונה תשע"}),
+     "1-8 words"),
+    (lambda c: c.update(caption_style="build") or c["captions"].insert(2, {"start": 1.0, "end": 2.0,
+                                                                      "text": "אחת שתיים שלוש ארבע חמש"}), "1-4 words"),
     (lambda c: c["captions"].append({"start": 0.5, "end": 2.0, "text": "שוב"}), "out of order"),
     (lambda c: c["cards"][0]["steps"].reverse(), "time order"),
     (lambda c: c["cards"][0]["steps"][0].update(subtitle="נכנסים לפורטפוליו"), "repeats the captions"),
@@ -95,14 +98,14 @@ def test_house_rules_are_enforced(change, message):
         build_props(cfg, 25.75)
 
 
-def test_two_line_style_allows_up_to_eight_words():
+def test_house_caption_format_is_two_lines_with_the_spoken_word_highlighted():
     cfg = copy.deepcopy(CFG)
     cfg["captions"].insert(2, {"start": 1.0, "end": 3.0, "text": "אחת שתיים שלוש ארבע חמש שש", "highlight": []})
-    with pytest.raises(ValueError, match="1-4 words"):
-        build_props(cfg, 25.75)
-    cfg.update(caption_style="line", caption_highlight="spoken")
     p = build_props(cfg, 25.75)
     assert p["captionStyle"] == "line" and p["captionHighlight"] == "spoken"
+    cfg.update(caption_style="build", caption_highlight="keywords")
+    with pytest.raises(ValueError, match="1-4 words"):
+        build_props(cfg, 25.75)
     cfg["caption_style"] = "bounce"
     with pytest.raises(ValueError, match="caption_style"):
         build_props(cfg, 25.75)
