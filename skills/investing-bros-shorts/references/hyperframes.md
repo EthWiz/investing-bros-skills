@@ -1,4 +1,6 @@
-# HyperFrames render (explainer shorts)
+# HyperFrames render (explainer shorts) — legacy
+
+**Legacy.** Remotion is the show's animation framework (`investing-bros-remotion`, decided 2026-10-25). Use this page only to rebuild an older HyperFrames export.
 
 Part of `investing-bros-shorts`: it replaces only the render step (step 4). Moment picking, cut points, caption proofreading, the cover and the Drive upload stay as in the main skill.
 

@@ -15,6 +15,8 @@ def test_one_zip_per_skill_with_version(tmp_path):
     (skills / "investing-bros-video" / "SKILL.md").write_text("---\nname: investing-bros-video\n---\n")
     (skills / "investing-bros-video" / "scripts" / "a.py").write_text("print(1)")
     (skills / "investing-bros-video" / "scripts" / "__pycache__" / "a.cpython-312.pyc").write_bytes(b"x")
+    (skills / "investing-bros-video" / "template" / "node_modules" / "remotion").mkdir(parents=True)
+    (skills / "investing-bros-video" / "template" / "node_modules" / "remotion" / "index.js").write_text("x")
     (skills / "not-a-skill").mkdir()
 
     out = tmp_path / "dist"

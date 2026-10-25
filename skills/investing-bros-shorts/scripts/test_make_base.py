@@ -79,3 +79,8 @@ def test_envelope_offset_finds_track_shift():
 def test_approved_renderer_declares_its_intentional_silent_endcard():
     source = Path(__file__).with_name("build_amitai_short.py").read_text()
     assert '"silent_endcard_seconds": 3.0' in source
+
+
+def test_gradient_overlay_ends_with_the_clip():
+    # grad.png is looped; without shortest=1 ffmpeg 6.1 keeps encoding past the clip (episode 8).
+    assert "[z][gr]overlay=0:0:shortest=1[g]" in build_filter([(0.0, 5.0, 0)], 1.25)[0]

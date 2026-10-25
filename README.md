@@ -28,7 +28,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 - Steps 2–4b only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
 - `investing-bros-analytics` reads YouTube Studio stats (read-only) for the weekly Sunday report and ad-hoc analyses; posts a short text to Telegram.
-- `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work.
+- `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work and `investing-bros-remotion` for anything animated.
 - **Nothing goes public without Amitai's explicit OK in chat.**
 
 ## Design ownership
@@ -44,6 +44,7 @@ logo and the cover scripts.
 |---|---|
 | `investing-bros-show` | Names, show facts, folders, approvals and publication rules |
 | `investing-bros-brand` | Visual identity, reference art, templates and artwork production |
+| `investing-bros-remotion` | Animation: the Remotion template that renders shorts and animated explainer cards |
 | `investing-bros-title-description` | Titles, descriptions and approved artwork headlines |
 | `investing-bros-video` / `investing-bros-shorts` / `investing-bros-segment-video` | Video/clip production using the shared design system |
 
