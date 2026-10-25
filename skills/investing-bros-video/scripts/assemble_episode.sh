@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Build the full VIDEO episode: cold-open clips (teasers) + intro + episode body,
+# Build the full VIDEO episode: cold-open clips + intro + episode body + outro,
 # with the leveled audio, as one 1920x1080 MP4.
 #
 # Usage:
 #   assemble_episode.sh OUT.mp4 --body VIDEO --body-audio LEVELED.wav
 #                       [--edit edit.json | --start S --end E]
 #                       [--before CLIP.mp4]... [--before-audio CLIP.wav]...
-#                       [--intro INTRO.mp4] [--fps RATE] [--force]
+#                       [--intro INTRO.mp4] [--outro OUTRO.mp4]
+#                       [--fps RATE] [--force]
 #                       [--chunk 460] [--max-seconds N]
 #
 #   --body        the episode video (raw master or Riverside export), 1920x1080
@@ -18,6 +19,8 @@
 #   --before-audio optional 48 kHz PCM sidecars in the same order as --before;
 #                  when used, supply one per clip (avoids AAC encoder-delay loss)
 #   --intro       the show intro, played after the --before clips
+#   --outro       the show outro, played after the body; held on its last frame
+#                 to provide at least 20 seconds for the YouTube end screen
 #   --fps         output frame rate (default: the body's native average frame rate)
 #   --force       overwrite OUT and rebuild its cached parts
 #   --chunk       body is encoded in chunks of this many seconds (default 460)
@@ -34,7 +37,7 @@ set -euo pipefail
 here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
 out="${1:?usage: assemble_episode.sh OUT.mp4 --body VIDEO --body-audio WAV [...]}"; shift
-body="" baudio="" start="" end="" editjson="" intro="" chunk=460 budget=0 fps="" force=0 replace_existing=0
+body="" baudio="" start="" end="" editjson="" intro="" outro="" chunk=460 budget=0 fps="" force=0 replace_existing=0
 before=(); before_audio=()
 while (( $# )); do
   case "$1" in
@@ -46,6 +49,7 @@ while (( $# )); do
     --before) before+=("$2"); shift 2 ;;
     --before-audio) before_audio+=("$2"); shift 2 ;;
     --intro) intro="$2"; shift 2 ;;
+    --outro) outro="$2"; shift 2 ;;
     --fps) fps="$2"; shift 2 ;;
     --force) force=1; shift ;;
     --chunk) chunk="$2"; shift 2 ;;
@@ -57,6 +61,20 @@ done
 if (( ${#before_audio[@]} && ${#before_audio[@]} != ${#before[@]} )); then
   echo "error: give one --before-audio for every --before, or none" >&2
   exit 2
+fi
+if [[ -n "$intro" || -n "$outro" ]]; then
+  [[ -n "$intro" && -n "$outro" ]] || {
+    echo "error: the full episode requires both --intro and --outro" >&2
+    exit 2
+  }
+  [[ -f "$intro" && -f "$outro" ]] || {
+    echo "error: --intro and --outro files must exist" >&2
+    exit 2
+  }
+  cmp -s "$intro" "$outro" || {
+    echo "error: --intro and --outro must be the same clip" >&2
+    exit 2
+  }
 fi
 for f in "${before_audio[@]}"; do [[ -f "$f" ]] || { echo "error: not found: $f" >&2; exit 1; }; done
 if [[ -e "$out" && "$force" -ne 1 ]]; then
@@ -151,9 +169,9 @@ PY
 sync_tolerance=$(python3 -c 'import sys; print(max(0.05, 1 / float(sys.argv[1]) + 0.005))' "$fps_decimal")
 check_sync "$(audio_duration "$body")" "$(audio_duration "$baudio")" "$sync_tolerance"
 
-# 1. Short clips (before + intro): video-only segment + exact-length audio.
-clip_seg() {  # $1=video input $2=name $3=optional PCM audio input
-  local v="$work/$2.mp4" a="$work/$2.wav"
+# 1. Short clips: video-only segment + exact-length audio.
+clip_seg() {  # $1=video input $2=name $3=optional PCM audio input $4=minimum seconds
+  local v="$work/$2.mp4" a="$work/$2.wav" minimum="${4:-0}" source_duration target_frames
   if [[ -f "$v" ]] && ! fps_matches "$v"; then
     if (( force )); then
       rm -f "$v"
@@ -163,13 +181,41 @@ clip_seg() {  # $1=video input $2=name $3=optional PCM audio input
     fi
   fi
   if [[ ! -f "$v" ]]; then
-    ffmpeg -v error -nostdin -y -i "$1" -map 0:v:0 -an -vf "$VF" "${X264[@]}" "$work/tmp.mp4" && mv "$work/tmp.mp4" "$v"
+    if python3 - "$minimum" <<'PY'
+import sys
+raise SystemExit(0 if float(sys.argv[1]) > 0 else 1)
+PY
+    then
+      source_duration=$(ffprobe -v error -show_entries format=duration -of csv=p=0 "$1")
+      target_frames=$(python3 - "$source_duration" "$minimum" "$fps_decimal" <<'PY'
+import math
+import sys
+duration, minimum, fps = map(float, sys.argv[1:])
+print(math.ceil(max(duration, minimum) * fps))
+PY
+)
+      ffmpeg -v error -nostdin -y -i "$1" -map 0:v:0 -an \
+        -vf "$VF,tpad=stop_mode=clone:stop_duration=$minimum" \
+        -frames:v "$target_frames" "${X264[@]}" "$work/tmp.mp4" && mv "$work/tmp.mp4" "$v"
+    else
+      ffmpeg -v error -nostdin -y -i "$1" -map 0:v:0 -an -vf "$VF" "${X264[@]}" "$work/tmp.mp4" && mv "$work/tmp.mp4" "$v"
+    fi
   fi
   local d; d=$(dur_of_frames "$(frames "$v")")
   ffmpeg -v error -nostdin -y -i "${3:-$1}" -map 0:a:0 \
     -af "aresample=48000:async=1:min_hard_comp=0.01:first_pts=0,aformat=channel_layouts=stereo,apad,atrim=duration=$d" \
     -c:a pcm_s16le "$a"
   check_pcm_frames "$(pcm_samples "$a")" "$(frames "$v")"
+}
+normalize_show_audio() {  # $1=source clip $2=cached segment name
+  local d
+  ffmpeg -v error -nostdin -y -i "$1" -map 0:a:0 \
+    -af loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000,aformat=channel_layouts=stereo \
+    -c:a pcm_s16le "$work/show_n.wav"
+  d=$(dur_of_frames "$(frames "$work/$2.mp4")")
+  ffmpeg -v error -nostdin -y -i "$work/show_n.wav" -af "apad,atrim=duration=$d" \
+    -c:a pcm_s16le "$work/$2.wav"
+  check_pcm_frames "$(pcm_samples "$work/$2.wav")" "$(frames "$work/$2.mp4")"
 }
 list=(); i=0
 for c in "${before[@]}"; do
@@ -181,12 +227,12 @@ for c in "${before[@]}"; do
 done
 if [[ -n "$intro" ]]; then
   clip_seg "$intro" intro
-  # bring the intro's music to the episode's level (-16 LUFS) so it doesn't jump out
-  ffmpeg -v error -nostdin -y -i "$work/intro.wav" -af loudnorm=I=-16:TP=-1.5:LRA=11,aresample=48000 -c:a pcm_s16le "$work/intro_n.wav"
-  d=$(dur_of_frames "$(frames "$work/intro.mp4")")
-  ffmpeg -v error -nostdin -y -i "$work/intro_n.wav" -af "apad,atrim=duration=$d" -c:a pcm_s16le "$work/intro.wav"
-  check_pcm_frames "$(pcm_samples "$work/intro.wav")" "$(frames "$work/intro.mp4")"
+  normalize_show_audio "$intro" intro
   list+=(intro)
+fi
+if [[ -n "$outro" ]]; then
+  clip_seg "$outro" outro "" 20
+  normalize_show_audio "$outro" outro
 fi
 
 # 2-3. Body: each kept range in chunks (resumable), then its audio trimmed to
@@ -224,12 +270,16 @@ for ((r = 0; r < ${#ranges[@]}; r++)); do
   check_pcm_frames "$(pcm_samples "$work/$wav.wav")" "$bf"
   body_wavs+=("$wav")
 done
+[[ -n "$outro" ]] && list+=(outro)
 
 # 4. Join video (copy) and audio, mux.
 : > "$work/video.txt"; : > "$work/audio.txt"
 for s in "${list[@]}"; do echo "file '$s.mp4'" >> "$work/video.txt"; done
-for s in "${list[@]}"; do [[ "$s" == body* ]] || echo "file '$s.wav'" >> "$work/audio.txt"; done
+for s in "${list[@]}"; do
+  [[ "$s" == body* || "$s" == outro ]] || echo "file '$s.wav'" >> "$work/audio.txt"
+done
 for s in "${body_wavs[@]}"; do echo "file '$s.wav'" >> "$work/audio.txt"; done
+[[ -n "$outro" ]] && echo "file 'outro.wav'" >> "$work/audio.txt"
 ffmpeg -v error -nostdin -y -f concat -safe 0 -i "$work/video.txt" -c copy "$work/video.mp4"
 ffmpeg -v error -nostdin -y -f concat -safe 0 -i "$work/audio.txt" -c:a pcm_s16le "$work/audio.wav"
 expected_samples=0

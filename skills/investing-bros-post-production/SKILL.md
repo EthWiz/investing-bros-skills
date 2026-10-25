@@ -20,7 +20,7 @@ Starting post-production opens one standing deliverable bundle:
 This skill performs the audio edit and starts and tracks that complete bundle. The edited audio is the handoff to the downstream skills, not completion of post-production. Everything after the audio edit reads the transcript and `edit.json` it leaves:
 - titles, description, artwork copy brief → `investing-bros-title-description`
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
-- cold opens, intro, video episode, teaser → `investing-bros-video`
+- cold opens, canonical intro + matching outro, video episode, teaser → `investing-bros-video`
 - exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen/pinned comment, Drive, Unlisted review and Amitai's OK → `investing-bros-segment-video`
 - exactly three shorts, each through picks, render, Codex cover, Telegram approval, Drive, post-episode upload and links → `investing-bros-shorts`
 - review ping, uploads, publish → `investing-bros-episode-upload`
@@ -127,7 +127,10 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - Nadav OK'd the cut list.
 
 **Standing downstream deliverables**
-- The normal main episode flow has completed through its owning title/description, brand, video and upload skills as applicable.
+- The normal main episode flow has completed through its owning title/description,
+  brand, video and upload skills as applicable. Its full video uses the freshly
+  fetched canonical Drive-ID clip from `investing-bros-show` as both intro and
+  outro; the outro provides the final 20 seconds for the YouTube end screen.
 - `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Unlisted review, Amitai's OK and the pinned comment after publication.
 - `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow, including approved picks, render and QA, Codex cover, Telegram approval, Drive files, upload only after the full episode was live, and links back to the episode.
 - If an approval or publication step is still waiting, report the bundle as waiting, not done.
@@ -138,7 +141,9 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
 - Loudness (integrated LUFS) and the host balance before → after leveling
 - Next: start titles/artwork/video, both segment videos and all three shorts in parallel from the transcript and `edit.json`; publish in the order owned by `investing-bros-episode-upload`.
-- Pipeline status: main episode flow, segment 01, segment 02 and shorts 01–03, with the next incomplete approval or action for each.
+- Pipeline status: main episode flow (including canonical intro/outro and the
+  full-episode end screen), segment 01, segment 02 and shorts 01–03, with the next
+  incomplete approval or action for each.
 
 ## Never
 - Auto-number the episode or create a second `פרק N` folder.

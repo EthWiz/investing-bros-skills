@@ -25,3 +25,12 @@ def test_assembler_uses_pcm_sidecars_and_checks_samples():
     assert "check_pcm_frames" in SCRIPT
     assert "PCM concat has" in SCRIPT
     assert "aresample=48000:async=1" in SCRIPT
+
+
+def test_assembler_appends_a_twenty_second_outro():
+    assert "--outro) outro=" in SCRIPT
+    assert "--intro and --outro must be the same clip" in SCRIPT
+    assert 'clip_seg "$outro" outro "" 20' in SCRIPT
+    assert "tpad=stop_mode=clone" in SCRIPT
+    assert '[[ -n "$outro" ]] && list+=(outro)' in SCRIPT
+    assert "file 'outro.wav'" in SCRIPT
