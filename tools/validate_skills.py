@@ -56,6 +56,8 @@ def check_skill(folder: Path) -> list:
     if len(text.splitlines()) > 500:
         errs.append(f"{folder.name}: SKILL.md over 500 lines; move detail to references/")
     for f in folder.rglob("*"):
+        if "node_modules" in f.relative_to(folder).parts:   # installed npm packages, never committed
+            continue
         if f.is_file() and f.suffix in {".md", ".py", ".sh", ".json"}:
             body = f.read_text(encoding="utf-8", errors="ignore")
             if SECRET_RE.search(body):

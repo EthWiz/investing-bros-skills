@@ -125,6 +125,11 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own track**: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; ask Amitai for the recording link (decided 2026-10-25).
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
+## Animation
+- **Remotion is the animation framework** for shorts and other animated clips (Amitai, 2026-10-25, after comparing it with HyperFrames and the Python renderer on episode 8). Owner: `investing-bros-remotion`. HyperFrames and `build_amitai_short.py` stay only for rebuilding older exports.
+- **Licence:** Remotion is free for individuals and organisations of up to 3 people (counts the whole team, not only who renders). From 4 people it needs a Company License: $25/month per person who writes Remotion code, agents included ([remotion.dev/docs/license/faq](https://www.remotion.dev/docs/license/faq)). Today the team is Amitai, Nadav and ליאורה; check this before anyone joins.
+- Explainer cards default to `inset` (the host stays visible around the card); `full` (whole frame) only for a 2–4 s moment.
+
 ## Roles and accounts
 | Role / account | Who / what | Notes |
 |---|---|---|
@@ -172,12 +177,12 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 1 | Audio edit | `investing-bros-post-production` | Nadav (cuts) |
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
-| 4 | Exactly 3 shorts; optional mid-form highlights | `investing-bros-shorts` | Nadav |
+| 4 | Exactly 3 shorts (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
 | 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
 | 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
-`investing-bros-brand` serves stages 2–4 as the shared design and artwork capability.
+`investing-bros-brand` serves stages 2–4 as the shared design and artwork capability; `investing-bros-remotion` is the shared animation capability.
 
 Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 

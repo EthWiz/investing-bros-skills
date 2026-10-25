@@ -5,8 +5,8 @@ description: >-
   from every Investing Bros / אחים להשקעות episode: pick standalone moments,
   render and QA them, make each cover through the Codex workflow, get Telegram
   approval, file all four assets per short in Drive, then upload after the full
-  episode is live and set its links. Explainer shorts can get animated cards
-  (HyperFrames). Also cuts 5–10 min mid-form highlights for YouTube. Use when
+  episode is live and set its links. Rendering and animated explainer cards go
+  through investing-bros-remotion. Also cuts 5–10 min mid-form highlights for YouTube. Use when
   Amitai asks for "shorts", "clips", "reels", "רילס", "שורטס", "קליפים",
   "hyperframes", "כרטיסים", "גרפיקה מונפשת", "highlights", "mid-form" or
   "מיד-פורם" for episode N.
@@ -60,10 +60,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 3. **Cut fresh from the final episode file.** Always start from the published/final episode master, never from an earlier Short or a burned-in render. Edit the kept pieces with `scripts/make_base.py`: copy it, set `SRC` (the master: timeline and audio), `TRACKS` (each host's Aligned video track) and the `K` list of `(audio_start, audio_end, video_delay, crop, track)` with the speaking host's track and a centred 9:16 crop in that track's pixels, then run `python3 make_base.py --speed 1.25 --output <name>_clean.mp4`. It crops to a **static** head-and-shoulders close-up (no zooms, no jump cuts except removing silence), scales to 1080×1920 at 24 fps, places the logo at x 56 y 150 (210 px wide), and applies highpass + gentle compressor + two-pass `loudnorm` to **−14 LUFS**, true peak ≤ −1.5 dB. It writes the named clean MP4 (no captions/graphics) and `timemap.json`. No music, no SFX, no b-roll. It syncs each track to the master from the audio and prints the offset, and it refuses a side-by-side picture (episode 8: cropping one half came out tight, soft and off-centre); `--allow-side-by-side` only with Amitai's OK, listed in the hand-back.
    **House playback speed is 1.25x** (chosen by Amitai on 2026-10-23 after testing 1.25x against 1.5x). The scripts default to `--speed 1.25`; pass `--speed 1.0` only to disable it. They speed video with `setpts=PTS/1.25` and audio with `atempo=1.25`, which preserves natural voice pitch. Source cut points stay on the raw timeline; `timemap.json` and every caption/overlay time are on the shortened output timeline.
 4. **Captions = exactly what was said.** Transcribe every kept piece word by word (`transcribe_clip.py`, then listen). Captions must match the audio verbatim. If a phrase is unclear after re-transcribing and listening, **cut it out of the edit** (step 3) rather than guess — record what was dropped in `meta.source`. 1–4 words per caption, white heavy Heebo with soft shadow, no box, at y≈1480. Only keywords/numbers go **#F5B71F** (`highlight` list), never every word.
-5. **Write the config and render** — one JSON per Short (schema below; full example `references/configs/example-ep3-datacenters.json`), then:
-   python3 scripts/v5_gfx.py        # in WORK: edit hook/end-card strings first -> v5_hook.png, v5_cta.png, v5_end.png
-   python3 scripts/build_amitai_short.py --config short.json --work WORK --output short.mp4
-   `WORK` holds the clean base, `fonts/Heebo-{Black,ExtraBold,SemiBold}.ttf`, `logo.png` (torn-paper logo), `v5_cta.png`, `v5_end.png`. `scripts/end_gfx.py` is the ep3 variant of the end card only.
+5. **Write the config and render with Remotion** — one JSON per Short (schema below), then follow `investing-bros-remotion` (the show's animation framework, decided 2026-10-25): `make_props.py` checks the config and writes the props, `render_short.py --stills` gives a QA sheet, `render_short.py` renders `NAME.mp4` + `NAME_layout.json` over the clean base. Explainer cards are its `cards` (modes `inset` default, `full`, `card`). `v5_gfx.py` + `build_amitai_short.py` are legacy: only for rebuilding older exports.
 6. **One QA pass, then Telegram for approval.** Check a strip of 8 frames + `check_short.py` on the **final speed-adjusted render**: hook strips 0–3 s, logo on every frame, name tag matches who is speaking, captions RTL and verbatim, panels don't hide captions or logo, CTA + arrow, navy end card with no caption leaking onto it, −14 LUFS / peak < −1 dB, and the 15–60 s hard limit / 20–45 s target. Duration limits are always checked after the 1.25x speed-up, never against the source ranges. Fix what fails once, then send the Short to Telegram for Nadav/Amitai's approval (`send_telegram.py video short.mp4 --caption … --thumb cover.jpg`, destination from `investing-bros-show`). A vertical Short needs `width=1080`, `height=1920`, `supports_streaming=true` and a vertical `thumbnail` in `sendVideo`, or Telegram shows it landscape; the script sends the first three (from ffprobe) and the thumbnail only with `--thumb`, so never skip it or call the Bot API by hand. Do not upload or publish before approval.
    Cover: every one of the three standing deliverables gets a dedicated cover from
    `investing-bros-brand` (Shorts covers). Until Amitai says the design is dialed in,
@@ -88,12 +85,12 @@ Reference analysis: [references/style-from-amitai.md](references/style-from-amit
 | Logo | torn-paper podcast logo top-left (x 56, y 150, 210 px wide), whole Short |
 | Name tag | small gold `#F5B71F` tag, black ExtraBold text, top-right (right edge x 1024, y 150); **switches with the speaker** via `tags` |
 | Captions | white heavy Heebo, soft dark shadow, no box, 1–4 words, centred y≈1480, always on (also under panels); keywords only in `#F5B71F`; verbatim |
-| Explainer panels | large centred animated navy torn-paper panel, **~1 per 20 s** (45 s → 2), outside hook/CTA/end card. Covering faces is OK; captions and logo stay visible. Drawn vector icons (`VIS` in the script) — **never emoji** (stripped automatically). Panel title/subtitle = **only words spoken in that window**; no invented numbers or claims |
+| Explainer cards | animated navy torn-paper cards from `investing-bros-remotion` (`inset` by default: the host stays visible around it), **~1 per 20 s** (45 s → 2), outside hook/CTA/end card; captions, logo and name tag stay visible. Brand vector icons — **never emoji** (refused by `make_props.py`). Card title/subtitle = **only words spoken in that window**; a value icon only shows a number the host said |
 | CTA | "הקישור לפרק המלא בתיאור" on a cream torn strip over the chest + **yellow down arrow**, the last ~3 s of speech |
 | End card | hard cut, 3 s silent: navy `#09243B`, big logo, cream pill **פרק X**, episode title in white (2 lines), CTA in yellow + arrow |
 | Framing / audio | static close-up, no zoom; 1.25x video + pitch-preserving audio by default; no music/SFX; −14 LUFS, peak < −1 dB; 1080×1920, 24 fps |
 
-### Config schema (`build_amitai_short.py`)
+### Config schema (read by `investing-bros-remotion` → `make_props.py`)
 All times are **output** seconds (after the edit and `--speed` adjustment in `make_base.py`).
 ```jsonc
 {
@@ -102,18 +99,17 @@ All times are **output** seconds (after the edit and `--speed` adjustment in `ma
            "title": "…", "source": "episode file + kept/dropped ranges"},
   "hook": {"start": 0.0, "end": 3.0, "top_line": "דאטה סנטרים", "bottom_line": "בחלל?"},
   "tags": [[0.0, 16.49, "אמיתי רסקין"], [16.49, 17.78, "נדב רסקין"]],   // [start, end, name]; switch with speaker
-  "hyperframes": [{                            // explainer panels, ~1 per 20 s
-    "id": "dc_1", "start": 8.3, "end": 23.5,
-    "layout": "steps",                         // or "split_comparison" (last step = camera vs LiDAR split)
-    "steps": [{"at": 8.3, "visual": "rack", "title": "להביא לחלל", "subtitle": "רוצה את הדאטה סנטרים"}]
-    // optional per step: "pct" (clock), "multiplier" (scale)
+  "cards": [{                                  // explainer cards, ~1 per 20 s (format: investing-bros-remotion)
+    "id": "drop", "mode": "inset", "start": 8.99, "end": 14.18,
+    "steps": [{"at": 8.99, "visual": "house", "title": "לא קמים בבוקר", "subtitle": "נכנסים לפורטפוליו שלהם"},
+              {"at": 10.95, "visual": "drop", "value": 30, "title": "צניחה של 30%", "subtitle": "בבית שלהם"}]
   }],
   "cta_overlay": {"start": 40.4, "end": 43.15, "text": "הקישור לפרק המלא בתיאור"},
   "captions": [{"start": 0.0, "end": 1.6, "text": "…verbatim…", "highlight": ["keyword"]}]
 }
 ```
-`visual` icons: `car_front, route, brain, robot, house, bars_up, clock, two_cars, scale` (ep1) and `rack, sun_ozone, sun_half, panel_sun, sats` (ep3); unknown visuals fall back to bars/scale. Add new icons as `ic_<name>(d, cx, cy, s, t, a)` and register in `VIS`.
-Helpers: `strips.py` (torn strip), `mg.py` (easing), `make_base.py` (edit + loudness), `v5_gfx.py` / `end_gfx.py` (hook, CTA, end card PNGs).
+Icons and card modes: `investing-bros-remotion` → references/cards-and-icons.md. Older configs with `hyperframes` still convert; `meta.title` is the episode's final title (end card, split at the colon) or give `meta.end_title` as two lines.
+Legacy helpers (older exports only): `build_amitai_short.py` (its own icons in `VIS`), `strips.py`, `mg.py`, `v5_gfx.py` / `end_gfx.py`, example `references/configs/example-ep3-datacenters.json`.
 
 ## Legacy renderer and helper scripts (from episode 7)
 Kept for helpers (cut snapping, transcription, alignment, checks, Drive, Telegram). Their full-bleed look (zooms 100/112 %, gold active word, logo-only end card) is **superseded** by the approved format above.

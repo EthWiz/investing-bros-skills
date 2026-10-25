@@ -18,7 +18,7 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-SKIP_DIRS = {"__pycache__", ".pytest_cache"}
+SKIP_DIRS = {"__pycache__", ".pytest_cache", "node_modules"}
 SKIP_SUFFIXES = {".pyc"}
 
 

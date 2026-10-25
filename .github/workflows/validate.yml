@@ -20,6 +20,12 @@ jobs:
         run: python3 tools/validate_skills.py
       - name: Unit tests for skill scripts
         run: python3 -m pytest -q skills tools
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Remotion template typechecks
+        working-directory: skills/investing-bros-remotion/template
+        run: npm ci --no-audit --no-fund && npx tsc --noEmit
       - name: Shell scripts parse
         run: for f in skills/*/scripts/*.sh; do bash -n "$f"; done
       - name: Scan for committed secrets
