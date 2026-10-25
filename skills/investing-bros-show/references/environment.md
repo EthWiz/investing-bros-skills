@@ -20,6 +20,10 @@ Read this before working around anything. Every line here cost an agent time to 
    Google re-verification; don't fight it, switch to the upload account.
 3. **Riverside:** a shared `riverside.com/shared/exported-clip/...` link has one **Download** button
    and no quality picker. Riverside's "1080p" cloud download was really 720p on episode 8.
+   A **recording** share link (`/dashboard/studios/…/recordings/<id>?share-token=…`) lists each
+   host's track with raw / **aligned** video and audio. It opens without a sign-in, but the
+   Claude app's built-in browser pane doesn't save downloads (episode 8): ask Amitai to click
+   Download → Aligned video for each host in his own Chrome, into `~/Downloads`.
 4. **Always check what you got** and keep the highest-quality copy:
    `ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of compact FILE`.
    If Riverside gives 720p, use Nadav's own Drive master (episode 8: `פרק 8 לא ערוך.mp4`, 1920×1080, 24 fps).
