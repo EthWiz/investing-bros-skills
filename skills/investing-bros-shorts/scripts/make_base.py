@@ -86,7 +86,7 @@ def build_filter(kept, speed, offsets=None):
         fc.extend((f"[vc0]setpts=PTS/{speed:g}[vc]", f"[ac0]atempo={speed:g}[ac]"))
     fc.append(
         f"[vc]fps=24,eq=contrast=1.05:saturation=1.1[z];[{gi}:v]format=rgba[gr];"
-        f"[z][gr]overlay=0:0[g];[{li}:v]scale=210:-1[lg];"
+        f"[z][gr]overlay=0:0:shortest=1[g];[{li}:v]scale=210:-1[lg];"
         "[g][lg]overlay=56:150,format=yuv420p[v]"
     )
     fc.append(
