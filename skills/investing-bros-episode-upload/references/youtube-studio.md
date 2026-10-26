@@ -30,6 +30,10 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
 - Leave episode-specific tags, category, playlist, cards and recording location
   unchanged unless Amitai supplied them or the channel already has an established
   default. Do not invent metadata.
+- For a Short, use its approved cover title unchanged as both the YouTube title and
+  the first line of the description. Do not append emoji, hashtags or an episode label
+  to the title. Never add a disclosure, holdings statement, number or claim that was
+  not stated in the episode.
 
 ## Checks and elements
 - Wait for YouTube's copyright check. Report a claim; do not dispute it.

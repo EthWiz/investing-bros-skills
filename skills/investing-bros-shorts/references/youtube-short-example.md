@@ -5,11 +5,12 @@ In YouTube Studio → the Short → Details → **Related video**: choose the fu
 (https://www.youtube.com/watch?v=JmLxu_lV0oo). This puts a tappable link to the episode on the Short itself.
 
 ## Title
-מה באמת מגבה 500 דולר בכיס? 💵
+500 דולר בכיס
 
-(Hebrew only: no English words, no `#shorts`, no `|`. The English keywords go in the description hashtags.)
+(Exact cover title: no emoji, episode label, hashtag or other suffix.)
 
 ## Description
+500 דולר בכיס
 מאז 1971 הדולר כבר לא מגובה בזהב. אז מה בעצם מגבה את הכסף שלנו?
 השיחה המלאה על זהב, ביטקוין ולמה מדינות קונות שוב זהב בפרק 7:
 https://www.youtube.com/watch?v=JmLxu_lV0oo&t=1477s

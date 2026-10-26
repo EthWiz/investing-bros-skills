@@ -1,5 +1,6 @@
 import glob
 import importlib.util
+import json
 from pathlib import Path
 
 import pytest
@@ -35,6 +36,13 @@ def test_type_scale_refuses_tiny_type():
 def test_logo_bottom_right():
     x, y = mct.logo_position((260, 157))
     assert (x + 260, y + 157) == (mct.W - mct.LOGO_MARGIN, mct.H - mct.LOGO_MARGIN)
+
+
+def test_reads_the_shared_cover_title_from_short_config(tmp_path):
+    cfg = tmp_path / "short.json"
+    cfg.write_text(json.dumps({"cover_title": {"top_line": "CoreWeave", "bottom_line": "בסכנה?"}},
+                              ensure_ascii=False), encoding="utf-8")
+    assert mct.title_from_config(cfg) == ("CoreWeave", "בסכנה?")
 
 
 def test_rejects_non_heebo_typeface(monkeypatch):

@@ -2,12 +2,12 @@
 """Check a rendered short before handing it back: length, loudness, peak, the first second, and a frame strip.
 
 Usage:
-    python3 check_short.py short.mp4 [--frames 8]      # writes short_strip.jpg next to it
+    python3 check_short.py short.mp4 --config short.json --youtube-notes youtube-שורט-01.md
 
 Prints duration, integrated loudness (target about -14 LUFS) and true peak (below -1 dB),
 and checks the opening and the ending: frame 1 is not black or fading in, speech starts
 within 0.4 s, and the short doesn't trail off in more than 1 s of silence. Length outside
-15-60 s fails; outside the 20-45 s target is a note to explain in the hand-back.
+15-45 s fails: 45 seconds is a hard cap, measured after the 1.15x speed-up.
 If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
 given), the caption and hook positions must be inside brand.CAPTION_Y_BOUNDS and
 brand.HOOK_Y_BOUNDS, and the hook block must keep brand.HOOK_GAP below the logo and above
@@ -37,7 +37,7 @@ def probe(path):
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from brand import CAPTION_HALF, CAPTION_Y_BOUNDS, HOOK_GAP, HOOK_Y_BOUNDS, LOGO_BOX  # noqa: E402
 
-LIMIT, TARGET = (15, 60), (20, 45)
+LIMIT = (15, 45)
 DARK_FRAME = 25            # mean luma (0-255) below this reads as a black frame
 LEAD_SILENCE, TAIL_SILENCE = 0.4, 1.0
 
@@ -118,11 +118,38 @@ def problems(d, lufs, peak):
     return out
 
 
+def metadata_problems(config_path, notes_path):
+    """The cover/banner title must also be the YouTube title and description line 1."""
+    cfg = json.load(open(config_path, encoding="utf-8"))
+    title = cfg.get("cover_title") or {}
+    expected = " ".join(filter(None, (title.get("top_line"), title.get("bottom_line"))))
+    if not expected:
+        return ["config has no shared cover_title"]
+    notes = open(notes_path, encoding="utf-8").read()
+
+    def section(name):
+        match = re.search(rf"(?ms)^## {re.escape(name)}\s*\n(.*?)(?=^## |\Z)", notes)
+        if not match:
+            return None
+        return next((line.strip() for line in match.group(1).splitlines() if line.strip()), None)
+
+    out = []
+    if section("Title") != expected:
+        out.append(f"YouTube title must equal cover title exactly: {expected!r}")
+    if section("Description") != expected:
+        out.append(f"YouTube description first line must equal cover title exactly: {expected!r}")
+    return out
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("video"); ap.add_argument("--frames", type=int, default=8)
     ap.add_argument("--layout", help="NAME_layout.json from build_fullbleed.py (default: next to the video)")
+    ap.add_argument("--config", help="Short config containing the shared cover_title")
+    ap.add_argument("--youtube-notes", help="youtube-שורט-NN.md; checked against --config")
     a = ap.parse_args()
+    if bool(a.config) != bool(a.youtube_notes):
+        ap.error("--config and --youtube-notes must be given together")
     d, lufs, peak = probe(a.video)
     strip = re.sub(r"\.[^.]+$", "", a.video) + "_strip.jpg"
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", a.video, "-vf", f"fps={a.frames}/{d:.3f},scale=270:480,tile={a.frames}x1",
@@ -138,10 +165,10 @@ def main():
         bad += layout_problems(lay)
     elif a.layout:
         bad.append(f"layout file {a.layout} not found")
+    if a.config:
+        bad += metadata_problems(a.config, a.youtube_notes)
     for p in bad:
         print("warning:", p)
-    if LIMIT[0] <= d <= LIMIT[1] and not TARGET[0] <= d <= TARGET[1]:
-        print(f"note: {d:.1f} s is outside the {TARGET[0]}–{TARGET[1]} s target; say why in the hand-back")
     return 1 if bad else 0
 
 

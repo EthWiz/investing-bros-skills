@@ -204,6 +204,16 @@ PUNCH = dict(max_words=3, max_chars=22, comma_min=1, min_seconds=0.0)
 PUNCH_MERGE = dict(max_words=5, max_chars=30)   # a phrase too short to read may grow to this
 
 
+def protected_name_boundary(left, right) -> bool:
+    """Keep multi-token Latin names such as `S&P 500` in one caption phrase."""
+    left_text, right_text = norm(left["w"]), norm(right["w"])
+    left_has_latin = bool(re.search(r"[A-Za-z]", left_text))
+    right_continues_name = bool(re.search(r"[A-Za-z]", right_text)) or bool(
+        re.fullmatch(r"[\d.,%+$€£₪-]+", right_text)
+    )
+    return left_has_latin and right_continues_name
+
+
 def reading_floor(group) -> float:
     """Seconds a caption needs to be readable: ~0.7 s for one word, ~1.1 s for three."""
     chars = len(" ".join(norm(w["w"]) for w in group))
@@ -262,6 +272,8 @@ def chunk_punch(words):
         longer = " ".join(x["w"] for x in cur + [nxt])
         full = len(cur) >= PUNCH["max_words"] or len(longer) > PUNCH["max_chars"]
         too_big = len(cur) >= PUNCH_MERGE["max_words"] or len(longer) > PUNCH_MERGE["max_chars"]
+        if protected_name_boundary(w, nxt):
+            continue                                     # never split S&P from 500 (or another Latin name token)
         if too_big and re.search(r"[.,?!:;]$", nxt["w"]) and len(cur) < PUNCH_MERGE["max_words"] + 1 \
                 and len(longer) <= PUNCH_MERGE["max_chars"] + 4:
             continue                                     # one more word finishes the phrase: take it

@@ -42,7 +42,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Edited audio | `הקלטה-ערוכה-פרק-N.m4a` | `הקלטה-ערוכה-פרק-4.m4a` |
 | Title options (episode root) | `כותרות-פרק-N.txt` | `כותרות-פרק-8.txt` |
 | Description (episode root) | `תיאור-פרק-N.txt` | `תיאור-פרק-8.txt` |
-| Short (in `Shorts/`) | `שורט-NN-<נושא>.mp4` | `שורט-01-סוויפט.mp4` |
+| Short in Drive (in `Shorts/`) | `שורט-NN-<נושא>.m4v` | `שורט-01-סוויפט.m4v` |
 | Short cover (in `Shorts/`) | `שורט-NN-<נושא>-cover.jpg` (1080×1920) | `שורט-01-סוויפט-cover.jpg` |
 | Short captions (in `Shorts/`) | `שורט-NN-<נושא>.srt` | `שורט-01-סוויפט.srt` |
 | Short YouTube notes (in `Shorts/`) | `youtube-שורט-NN.md` | `youtube-שורט-01.md` |
@@ -63,7 +63,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 - Host names on screen: **נדב רסקין**, **אמיתי רסקין**. Latest user correction (2026-10-20, overrides 2026-10-19): spell **אמיתי** everywhere. Exact artwork credit: **עם אמיתי ונדב רסקין**.
 - **Fact-check every claim before it goes into a title or description** (episode 7: "all gold ever mined fits in one Olympic pool" is wrong — it is ~4 pools).
 - Hebrew pasted into RedCircle needs the RTL + `?` marks — see `investing-bros-episode-upload`.
-- **Every public Hebrew line starts with a Hebrew word**, including chapter labels after the timestamp (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`). A line that starts with English or a number flips left-to-right and scrambles its timestamp and numbers (episode 5 on YouTube). Checked by `check_copy.py` in `investing-bros-title-description`.
+- **Every public Hebrew line starts with a Hebrew word**, including chapter labels after the timestamp (`01:05 מרוץ המודלים: OpenAI מול אנתרופיק`). A line that starts with English or a number flips left-to-right and scrambles its timestamp and numbers (episode 5 on YouTube). Checked by `check_copy.py` in `investing-bros-title-description`. The exception is a Short's approved shared cover title (and the identical first description line), which may start with a necessary Latin company/index name and must be bidi-checked.
 
 ## Drive tree
 Show root `אחים להשקעות` already exists. Never create a second root.
@@ -88,7 +88,7 @@ replacement, his latest named file wins and this entry must be updated.
     brief/       pre-recording docs (prep archive; keep)                     ← episode-preparation
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
-    Shorts/      exactly 3 shorts: .mp4 + -cover.jpg + .srt + youtube-שורט-NN.md  ← shorts
+    Shorts/      exactly 3 shorts: .m4v + -cover.jpg + .srt + youtube-שורט-NN.md  ← shorts
     segments/    exactly 2 segments: 01 deep dive + 02 next-best topic; full package each ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
@@ -99,7 +99,7 @@ replacement, his latest named file wins and this entry must be updated.
 
 `לוח נושאי עומק (טנטטיבי)` is the only root-level working Doc. It lists upcoming episodes week by week, with one line for each planned deep-dive angle; all entries are tentative. If Amitai chooses another subject, move that week's planned subject and every later one back one week without dropping any, unless he says otherwise. Append new deep-dive candidates to the end. Episode prep reads and confirms or updates the queue first; after recording, mark the week done with the actual subject and roll the queue forward.
 
-**Shorts rule (all episodes):** exactly three Shorts are required. Every Short's video (`.mp4`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
+**Shorts rule (all episodes):** exactly three Shorts are required. Every Short's Drive video (`.m4v`, so Drive assigns playable `video/x-m4v`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
 
 The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
 
@@ -136,6 +136,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Shorts have no end card** (Amitai, 2026-10-25): they end on the payoff and loop, with the "הקישור לפרק המלא בתיאור" strip and arrow on screen to the last frame.
 - **Shorts captions** (Amitai, 2026-10-26, replacing the 2026-10-25 two-line format): kinetic. Short phrases that each stay up long enough to read, one big word per phrase, the word being spoken on a navy box (gold for keywords and numbers). Card subtitles never repeat the captions.
 - **Shorts speed is 1.15x** (Amitai, 2026-10-26; was 1.25x): at 1.25x fast speech was too quick to caption readably.
+- **Shorts approved title and length** (Amitai, 2026-10-26): `cover_title` is the single source for the cover, opening torn-strip banner, YouTube title and first description line. Shorts are at most **45.0 s after the 1.15x speed-up**; cut tighter rather than filing a longer exception.
 
 ## Roles and accounts
 | Role / account | Who / what | Notes |

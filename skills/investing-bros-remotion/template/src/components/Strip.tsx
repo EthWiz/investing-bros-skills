@@ -10,7 +10,7 @@ export const Strip: React.FC<{
       background: bg, color: NAVY, fontFamily: FONT, fontWeight: 900, fontSize: size, lineHeight: 1.15,
       padding: `${size * 0.18}px ${size * 0.45}px ${size * 0.24}px`, direction: 'rtl', whiteSpace: 'nowrap',
       clipPath: tornClip(seedOf(text)),
-    }}>{children ?? text}</div>
+    }}>{children ?? <bdi dir="auto">{text}</bdi>}</div>
   </div>
 );
 

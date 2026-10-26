@@ -15,7 +15,7 @@ TEMPLATE = Path(__file__).resolve().parent.parent / "template"
 
 CFG = {
     "meta": {"episode": 8},
-    "hook": {"start": 0.0, "end": 3.0, "top_line": 'למה נדל"ן', "bottom_line": "מלחיץ פחות?"},
+    "cover_title": {"top_line": 'למה נדל"ן', "bottom_line": "מלחיץ פחות?"},
     "tags": [[0.0, 18.4, "אמיתי רסקין"], [18.4, 25.7, "נדב רסקין"]],
     "captions": [{"start": 0.0, "end": 0.6, "text": "אפשר לדוגמה", "highlight": [],
                   "words": [{"w": "אפשר", "start": 0.0, "end": 0.3}, {"w": "לדוגמה", "start": 0.3, "end": 0.6}]},
@@ -48,6 +48,16 @@ def test_props_shape_and_values():
     assert p["cta"]["text"] == "הקישור לפרק המלא בתיאור"
 
 
+def test_cover_title_is_the_opening_banner_single_source():
+    assert props()["hook"] == {
+        "start": 0.0, "end": 3.0, "top": 'למה נדל"ן', "bottom": "מלחיץ פחות?"
+    }
+    cfg = copy.deepcopy(CFG)
+    cfg["hook"] = {"start": 0, "end": 3, "top_line": "כותרת", "bottom_line": "אחרת"}
+    with pytest.raises(ValueError, match="only cover_title"):
+        props(cfg)
+
+
 def test_props_keys_match_the_template_type():
     src = (TEMPLATE / "src" / "props.ts").read_text(encoding="utf-8")
     block = re.search(r"export type ShortProps = \{(.*?)\n\};", src, re.S).group(1)
@@ -56,6 +66,8 @@ def test_props_keys_match_the_template_type():
 
 def test_older_shorts_config_still_converts():
     cfg = copy.deepcopy(CFG)
+    title = cfg.pop("cover_title")
+    cfg["hook"] = {"start": 0.0, "end": 3.0, **title}
     card = cfg.pop("cards")[0]
     card["panel"] = card.pop("mode")
     card["steps"][1] = {"at": 11.0, "visual": "clock", "pct": 95, "title": "95% מהזמן", "subtitle": ""}
@@ -96,6 +108,11 @@ def test_house_rules_are_enforced(change, message):
     change(cfg)
     with pytest.raises(ValueError, match=message):
         build_props(cfg, 25.75)
+
+
+def test_duration_over_45_seconds_is_rejected():
+    with pytest.raises(ValueError, match="hard 45 s cap"):
+        build_props(copy.deepcopy(CFG), 45.01)
 
 
 def test_house_caption_format_is_kinetic_with_the_spoken_word_highlighted():
@@ -154,7 +171,6 @@ def test_cli_writes_props(tmp_path):
 def test_template_sample_props_pass_the_checks():
     sample = json.loads((TEMPLATE / "src" / "sample-props.json").read_text(encoding="utf-8"))
     cfg = {"meta": {"episode": sample["episode"]},
-           "hook": {"start": sample["hook"]["start"], "end": sample["hook"]["end"],
-                    "top_line": sample["hook"]["top"], "bottom_line": sample["hook"]["bottom"]},
+           "cover_title": {"top_line": sample["hook"]["top"], "bottom_line": sample["hook"]["bottom"]},
            "tags": sample["tags"], "captions": sample["captions"], "cards": sample["cards"], "cta_overlay": sample["cta"]}
     assert build_props(cfg, sample["baseDuration"])["cards"] == sample["cards"]

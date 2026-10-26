@@ -2,15 +2,16 @@
 # Re-encode a finished short so it fits an upload limit (default 9.5 MB), two-pass x264.
 #
 # Usage:
-#   fit_size.sh IN.mp4 OUT.mp4 [MAX_MB]
+#   fit_size.sh IN.mp4 OUT.m4v [MAX_MB]
 #
 # Why: Claude in Chrome's file upload (the agent's way into Drive's web UI) takes at most
 # 10 MB per call, and the Drive connector can't carry video at all. A 45 s 1080x1920 short
 # at ~1.5 Mb/s still looks clean — the platforms re-encode to about that anyway.
 # If IN already fits, it is copied unchanged. Audio stays AAC 128k.
 set -euo pipefail
-in="${1:?usage: fit_size.sh IN.mp4 OUT.mp4 [MAX_MB]}"; out="${2:?OUT.mp4}"; max="${3:-9.5}"
+in="${1:?usage: fit_size.sh IN.mp4 OUT.m4v [MAX_MB]}"; out="${2:?OUT.m4v}"; max="${3:-9.5}"
 [[ -f "$in" ]] || { echo "error: not found: $in" >&2; exit 1; }
+[[ "$out" == *.m4v ]] || { echo "error: Drive Shorts must use a .m4v filename so Drive assigns video/x-m4v" >&2; exit 1; }
 [[ -e "$out" ]] && { echo "error: $out exists; refusing to overwrite" >&2; exit 1; }
 size=$(stat -c %s "$in" 2>/dev/null || stat -f %z "$in")
 if awk -v s="$size" -v m="$max" 'BEGIN { exit !(s <= m * 1000000) }'; then

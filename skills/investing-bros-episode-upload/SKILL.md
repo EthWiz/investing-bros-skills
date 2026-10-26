@@ -23,7 +23,9 @@ When the episode folder is complete (audio, title and description files, exactly
 ## Inputs
 1. Episode number N, confirmed with Amitai.
 2. From the episode root: `הקלטה-ערוכה-פרק-N.m4a` (never anything from `extras/`), `כותרות-פרק-N.txt` (title = the text after `בחירה סופית:`; if the file holds a single title, that one) and `תיאור-פרק-N.txt`. Episodes 1–7: the Docs `אפשרויות כותרת` / `תיאור הפרק`.
-3. Exactly two complete packages in `segments/`, exactly three complete packages in `Shorts/`, plus `video/` when made and `mid-form/` when requested.
+3. Exactly two complete packages in `segments/`, exactly three complete packages in
+   `Shorts/` (each Drive video is `.m4v` / `video/x-m4v`, never `.mp4` /
+   `application/mp4`), plus `video/` when made and `mid-form/` when requested.
 4. RedCircle login from show conventions → Roles and accounts. Never echo the password or put it in chat or logs.
 
 ### Back-catalogue re-upload
@@ -73,7 +75,12 @@ full episode is live.
   Add one or two previous-episode video elements (best related first) plus Subscribe
   across the final 20 seconds, exactly over the canonical outro; verify them on the
   Studio Editor preview while Private, then on the watch page after publication.
-- **Exactly three Shorts** (`Shorts/`): only after the full episode is live, upload with the title, description, Related video, pinned comment and `.srt` from each `youtube-שורט-NN.md`.
+- **Exactly three Shorts** (`Shorts/`): only after the full episode is live. Before
+  upload, compare each `youtube-שורט-NN.md` with its approved cover: the YouTube title
+  and description's first line must both equal the cover title exactly. Upload the
+  `.m4v` video with that metadata, Related video, pinned comment and `.srt`. Do not add
+  a disclosure, holdings statement, number or claim unless the hosts stated it in the
+  episode; preserve the meaning of anything they did state.
 - **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.

@@ -61,7 +61,9 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    being covered, a fresh portrait pair, the approved two-line headline, one photographic
    centerpiece and only the allowed touch-ups; verify both identities. Frames may come
    from anywhere in the episode, not necessarily the segment. Shorts covers: three
-   text-free Codex art options, then the title with `make_cover_title.py`.
+   text-free Codex art options, then the shared `cover_title` with
+   `make_cover_title.py --config short.json`; that field also drives the opening banner
+   and YouTube metadata.
 5. Review all three labeled options against the quality checks; fix an isolated error
    with one targeted edit and re-inspect. Keep each option in an A/B/C-labeled folder
    under its final-form filename so `check_cover.py` can check all three before review.

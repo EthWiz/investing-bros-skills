@@ -7,15 +7,17 @@ cream, line 2 mustard, slight opposite tilts, white paper fringe), navy Heebo Bl
 type, an optional `פרק N` pill under the strips and the logo bottom-right.
 
     python3 make_cover_title.py ART.png "שורט-01-רובוטקסי-cover.jpg" \
-        --line1 "מי ינצח" --line2 "במרוץ הרובוטקסי?" --pill "פרק 1" \
+        --config short.json --pill "פרק 1" \
         --font fonts/Heebo-Black.ttf --logo logo-solid.png
 
 ART is cropped (never stretched) to 1080x1920. The title block is centred inside the
 centre 1080x1080 square (y 420-1500) so 1:1 and 4:5 grid crops keep it; the script
 fails if it cannot fit there. --font: static Heebo Black (`brand.py fonts` in
-investing-bros-shorts makes it from Google's variable Heebo). Needs Pillow with raqm.
+investing-bros-shorts makes it from Google's variable Heebo). `--config` reads the
+same `cover_title` field that the Remotion opening banner uses. Needs Pillow with raqm.
 """
 import argparse
+import json
 import random
 import sys
 
@@ -178,19 +180,36 @@ def make_cover(art_path, out_path, line1, line2, font_path, pill=None, logo_path
     return out_path
 
 
+def title_from_config(path):
+    cfg = json.load(open(path, encoding="utf-8"))
+    title = cfg.get("cover_title")
+    if not isinstance(title, dict) or not title.get("top_line") or not title.get("bottom_line"):
+        raise ValueError("config needs cover_title.top_line and cover_title.bottom_line")
+    return title["top_line"], title["bottom_line"]
+
+
 def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("art")
     ap.add_argument("out")
-    ap.add_argument("--line1", required=True, help="cream strip (topic)")
-    ap.add_argument("--line2", required=True, help="mustard strip (question)")
+    ap.add_argument("--config", help="Short config; reads the shared cover_title used by the opening banner")
+    ap.add_argument("--line1", help="legacy/manual cream strip (use --config for a new Short)")
+    ap.add_argument("--line2", help="legacy/manual mustard strip (use --config for a new Short)")
     ap.add_argument("--pill", help="e.g. 'פרק 3'; omit for no pill")
     ap.add_argument("--font", required=True, help="Heebo Black .ttf")
     ap.add_argument("--logo", help="logo PNG for the bottom-right (brand assets/logo-solid.png)")
     ap.add_argument("--top", type=int, default=TITLE_TOP, help="top of the title block in px")
     a = ap.parse_args(argv)
     try:
-        print(make_cover(a.art, a.out, a.line1, a.line2, a.font, a.pill, a.logo, a.top))
+        if a.config:
+            if a.line1 or a.line2:
+                raise ValueError("use --config alone so the cover and opening banner cannot drift")
+            line1, line2 = title_from_config(a.config)
+        elif a.line1 and a.line2:
+            line1, line2 = a.line1, a.line2
+        else:
+            raise ValueError("give --config (preferred) or both --line1 and --line2")
+        print(make_cover(a.art, a.out, line1, line2, a.font, a.pill, a.logo, a.top))
     except (ValueError, RuntimeError) as e:
         print(f"FAIL {e}", file=sys.stderr)
         return 1

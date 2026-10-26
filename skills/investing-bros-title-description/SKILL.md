@@ -47,7 +47,12 @@ Layout: `פרק N - <נושא>: <שאלה>?` (episode 4 is the model: `פרק 4 
 - Five different angles: the debate, the stakes, the "what is it", the investor angle, the contrarian view.
 - English company names stay in English (`NVIDIA`); Hebrew brand spellings from `investing-bros-show`. A number goes in a title only if it was said **and** checked against a source.
 
-**Shorts titles** (requested by `investing-bros-shorts`): Hebrew only — the short hook, optionally one emoji. No English words, no `#shorts` or other hashtags, no pipe `|`, no `פרק N - ` prefix.
+**Shorts titles** (requested by `investing-bros-shorts`): use the approved two-line
+`cover_title` unchanged (joined with one space). It is also the cover, opening banner
+and first description line. Do not append an emoji, translation, `#shorts`, another
+hashtag, pipe or `פרק N - ` prefix. Necessary Latin names such as `CoreWeave` and
+`S&P 500` stay in the approved title. Never add a disclosure, holdings statement,
+number or claim that the hosts did not state in the episode.
 
 ### 3. Write the description
 Three blocks, blank line between them:
