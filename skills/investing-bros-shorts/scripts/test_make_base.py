@@ -84,3 +84,17 @@ def test_approved_renderer_declares_its_intentional_silent_endcard():
 def test_gradient_overlay_ends_with_the_clip():
     # grad.png is looped; without shortest=1 ffmpeg 6.1 keeps encoding past the clip (episode 8).
     assert "[z][gr]overlay=0:0:shortest=1[g]" in build_filter([(0.0, 5.0, 0)], 1.25)[0]
+
+
+def test_house_speed_is_the_same_everywhere():
+    import importlib.util
+    import build_short
+    import make_base
+    spec = importlib.util.spec_from_file_location(
+        "make_captions", Path(__file__).resolve().parents[2] / "investing-bros-remotion" / "scripts" / "make_captions.py")
+    assert make_base.DEFAULT_SPEED == build_short.DEFAULT_SPEED == 1.15
+    if spec and Path(spec.origin).is_file():                                    # skills may be installed separately
+        mc = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mc)
+        import inspect
+        assert inspect.signature(mc.build).parameters["speed"].default == 1.15

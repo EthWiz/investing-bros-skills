@@ -30,14 +30,16 @@ const TitleWords: React.FC<{text: string; lt: number}> = ({text, lt}) => {
   );
 };
 
-const StepView: React.FC<{step: Step; lt: number; opacity: number; mode: CardMode}> = ({step, lt, opacity, mode}) => {
+// lift: with big kinetic captions the card's content moves up to leave them the lower third.
+const StepView: React.FC<{step: Step; lt: number; opacity: number; mode: CardMode; lift?: boolean}> = ({step, lt, opacity, mode, lift}) => {
   const Icon = ICONS[step.visual];
+  const iconScale = lift && mode !== 'card' ? 1.1 : ICON_SCALE[mode];
   const size = step.title.length < 14 ? TITLE[mode][0] : TITLE[mode][1];
   return (
-    <AbsoluteFill style={{opacity, alignItems: 'center', justifyContent: 'center', paddingBottom: mode === 'card' ? 30 : 260}}>
+    <AbsoluteFill style={{opacity, alignItems: 'center', justifyContent: 'center', paddingBottom: mode === 'card' ? 30 : lift ? 640 : 260}}>
       {Icon && (
         // icons draw at 620x500; scaled to fit the card (layout margins follow the scale)
-        <div style={{transform: `scale(${ICON_SCALE[mode]})`, margin: `${(ICON_SCALE[mode] - 1) * 250}px 0`}}>
+        <div style={{transform: `scale(${iconScale})`, margin: `${(iconScale - 1) * 250}px 0`}}>
           <Icon lt={lt} value={step.value} />
         </div>
       )}
@@ -55,7 +57,7 @@ const StepView: React.FC<{step: Step; lt: number; opacity: number; mode: CardMod
   );
 };
 
-export const Card: React.FC<{spec: CardSpec}> = ({spec}) => {
+export const Card: React.FC<{spec: CardSpec; lift?: boolean}> = ({spec, lift}) => {
   const f = useCurrentFrame();
   const {fps, height} = useVideoConfig();
   const t = f / fps;
@@ -78,8 +80,8 @@ export const Card: React.FC<{spec: CardSpec}> = ({spec}) => {
             <filter id={`paper-${spec.id}`}><feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves={2} seed={4} /></filter>
             <rect width="100%" height="100%" filter={`url(#paper-${spec.id})`} />
           </svg>
-          {i > 0 && x < 1 && <StepView step={spec.steps[i - 1]} lt={t - spec.steps[i - 1].at} opacity={1 - x} mode={spec.mode} />}
-          <StepView step={spec.steps[i]} lt={t - spec.steps[i].at} opacity={x} mode={spec.mode} />
+          {i > 0 && x < 1 && <StepView step={spec.steps[i - 1]} lt={t - spec.steps[i - 1].at} opacity={1 - x} mode={spec.mode} lift={lift} />}
+          <StepView step={spec.steps[i]} lt={t - spec.steps[i].at} opacity={x} mode={spec.mode} lift={lift} />
         </div>
       </div>
       {spec.mode !== 'card' && <Logo />}

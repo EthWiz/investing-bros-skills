@@ -26,7 +26,7 @@ def test_rank_orders_by_total_and_flags():
     assert rows[0]["start"] == 20                       # higher hook and faster pace win
     assert rows[0]["pace"] > rows[1]["pace"]
     assert "filler opener" in rows[0]["flags"]
-    assert "8 s after 1.25x" in rows[0]["flags"]         # duration is checked after house speed
+    assert "9 s after 1.15x" in rows[0]["flags"]         # duration is checked after house speed
     assert rows[1]["flags"] == []
 
 

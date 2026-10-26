@@ -73,7 +73,7 @@ def test_build_ass_keeps_auto_direction():
 
 def test_make_clip_speeds_vertical_output_after_burning_captions():
     script = Path(__file__).with_name("make_clip.sh").read_text()
-    assert 'speed="1.25"' in script
+    assert 'speed="1.15"' in script
     assert "[v0]setpts=PTS/${speed}[v]" in script
     assert "[a0]atempo=${speed}[a]" in script
     assert script.index("${sub_filter},format=yuv420p[v0]") < script.index("[v0]setpts=PTS/${speed}[v]")

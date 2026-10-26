@@ -3,7 +3,7 @@
 
 Usage:
     python3 make_captions.py text.json words.json timemap.json -o captions.json \\
-        [--wav window.wav --wav-offset T0] [--speed 1.25]
+        [--wav window.wav --wav-offset T0] [--speed 1.15]
 
 text.json   the proofread words of each kept piece, on the SOURCE timeline (same times as
             make_base.py's K list), keywords in [brackets]:
@@ -193,7 +193,91 @@ def merge_short(groups, max_words, max_chars, min_seconds):
     return groups
 
 
-def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=2):
+# Kinetic ("punch") captions, like the reference Amitai picked (youtube.com/shorts/nD0smg5J6Fo):
+# short phrases of 1-3 words; one word per phrase is big (the keyword or number, else the main
+# content word), the rest small. A phrase that can't stay up for its reading time (reading_floor)
+# joins its neighbour (up to 4 words), and every caption holds into a following pause.
+FUNCTION_WORDS = set("""של את זה זו לא אם כל גם עם על אז כי הוא היא הם הן אני אתה אנחנו יש אין אבל או מה
+מי לי לו לה להם שלי שלו שלה שלהם שלנו וזה שזה עוד כמו רק כבר אחד אחת איזה איזשהו בגדול ואם וגם
+שאני שהוא שהיא אתם היה הייתה יהיה להיות הזה הזאת האלה כאילו בעצם נגיד סתם ממש""".split())
+PUNCH = dict(max_words=3, max_chars=22, comma_min=1, min_seconds=0.0)
+PUNCH_MERGE = dict(max_words=5, max_chars=30)   # a phrase too short to read may grow to this
+
+
+def reading_floor(group) -> float:
+    """Seconds a caption needs to be readable: ~0.7 s for one word, ~1.1 s for three."""
+    chars = len(" ".join(norm(w["w"]) for w in group))
+    return 0.45 + 0.045 * chars
+
+
+def on_screen(groups, k) -> float:
+    """How long caption k can stay up: until the next one starts (or 0.4 s after its last word)."""
+    end = groups[k + 1][0]["s"] if k + 1 < len(groups) else groups[k][-1]["e"] + 0.4
+    return end - groups[k][0]["s"]
+
+
+def merge_unreadable(groups, max_words=4, max_chars=26):
+    """Join a caption that can't stay up for its reading time to the next (else the previous)."""
+    fits = lambda g: len(g) <= max_words and len(" ".join(x["w"] for x in g)) <= max_chars
+    changed = True
+    while changed:
+        changed = False
+        for k, g in enumerate(groups):
+            if on_screen(groups, k) >= reading_floor(g):
+                continue
+            if k + 1 < len(groups) and fits(g + groups[k + 1]):
+                groups[k:k + 2] = [g + groups[k + 1]]
+            elif k > 0 and fits(groups[k - 1] + g):
+                groups[k - 1:k + 1] = [groups[k - 1] + g]
+            else:
+                continue
+            changed = True
+            break
+    return groups
+
+
+def strong_word(group) -> int:
+    """Index of the word to make big: a keyword, else a number, else the longest content word."""
+    for test in (lambda w: w.get("key"), lambda w: any(c.isdigit() for c in w["w"])):
+        hits = [k for k, w in enumerate(group) if test(w)]
+        if hits:
+            return max(hits, key=lambda k: len(norm(group[k]["w"])))
+    content = [k for k, w in enumerate(group) if norm(w["w"]) not in FUNCTION_WORDS]
+    pool = content or range(len(group))
+    return max(pool, key=lambda k: len(norm(group[k]["w"])))
+
+
+def chunk_punch(words):
+    """Build each phrase forward: keep adding words until it has had its reading time, then
+    break at punctuation, a pause or 3 words; never more than 5 words / 30 characters."""
+    groups, cur = [], []
+    for i, w in enumerate(words):
+        cur.append(w)
+        if i + 1 == len(words):
+            break
+        nxt = words[i + 1]
+        ready = nxt["s"] - cur[0]["s"] >= reading_floor(cur)
+        pause = nxt["s"] - w["e"] > PAUSE
+        punct = re.search(r"[.,?!:;]$", w["w"])
+        longer = " ".join(x["w"] for x in cur + [nxt])
+        full = len(cur) >= PUNCH["max_words"] or len(longer) > PUNCH["max_chars"]
+        too_big = len(cur) >= PUNCH_MERGE["max_words"] or len(longer) > PUNCH_MERGE["max_chars"]
+        if too_big and re.search(r"[.,?!:;]$", nxt["w"]) and len(cur) < PUNCH_MERGE["max_words"] + 1 \
+                and len(longer) <= PUNCH_MERGE["max_chars"] + 4:
+            continue                                     # one more word finishes the phrase: take it
+        if (ready and (punct or pause or full)) or too_big:
+            cut = len(cur)
+            if too_big and not punct:                    # break after the last comma inside, if any
+                marks = [k for k, x in enumerate(cur[:-1]) if re.search(r"[.,?!:;]$", x["w"])]
+                cut = marks[-1] + 1 if marks else cut
+            groups.append(cur[:cut])
+            cur = cur[cut:]
+    if cur:
+        groups.append(cur)
+    return merge_unreadable(groups, **PUNCH_MERGE)
+
+
+def build(pieces, heard, timemap, speed=1.15, env=None, rate=100, offset=0.0, quiet=0.0, lines=2, style="punch"):
     captions = []
     for p in pieces:
         hs = [h for h in heard if p["from"] - 0.25 <= h["s"] <= p["to"] + 0.1]
@@ -203,12 +287,16 @@ def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, qu
         for w in words:
             w["s"], w["e"] = to_output(w["s"], timemap, speed), to_output(w["e"], timemap, speed)
         words = [w for w in words if w["s"] is not None and w["e"] is not None]
-        for g in chunk(words, **LAYOUTS[lines]):
+        groups = chunk_punch(words) if style == "punch" else chunk(words, **LAYOUTS[lines])
+        for g in groups:
             captions.append({"start": g[0]["s"], "end": g[-1]["e"], "text": " ".join(w["w"] for w in g),
                              "highlight": [norm(w["w"]) for w in g if w["key"]],
-                             "words": [{"w": w["w"], "start": w["s"], "end": w["e"]} for w in g]})
-    for c, nxt in zip(captions, captions[1:]):          # hold through short gaps, never overlap
-        c["end"] = round(min(max(c["end"], c["words"][-1]["end"] + 0.4), nxt["start"]), 3)
+                             "words": [{"w": w["w"], "start": w["s"], "end": w["e"],
+                                        **({"emph": k == strong_word(g)} if style == "punch" else {})}
+                                       for k, w in enumerate(g)]})
+    for c, nxt in zip(captions, captions[1:]):          # hold through pauses (to reading time), never overlap
+        floor = reading_floor([{"w": w["w"]} for w in c["words"]])
+        c["end"] = round(min(max(c["end"], c["words"][-1]["end"] + 0.4, c["start"] + floor), nxt["start"]), 3)
     if captions:
         a, b, out = timemap[-1]
         video_end = out + (b - a) / speed
@@ -220,17 +308,20 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("text"); ap.add_argument("words"); ap.add_argument("timemap")
     ap.add_argument("-o", "--output", required=True)
-    ap.add_argument("--speed", type=float, default=1.25)
+    ap.add_argument("--speed", type=float, default=1.15, help="must match make_base.py (house: 1.15)")
     ap.add_argument("--wav"); ap.add_argument("--wav-offset", type=float, default=0.0)
     ap.add_argument("--lines", type=int, choices=sorted(LAYOUTS), default=2,
                     help="2 (house format): up to two lines, 2-3 s each, at least 1.2 s on screen; "
                          "1: one line of 1-4 words (with caption_style 'build')")
+    ap.add_argument("--style", choices=("lines", "punch"), default="punch",
+                    help="punch (house format): kinetic phrases that stay up for their reading time, one word "
+                         "big; lines: the --lines grouping for caption_style 'line' or 'build'")
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
     env, quiet = (None, 0.0)
     if a.wav:
         env, quiet = wav_envelope(a.wav)
-    caps = build(load(a.text), load(a.words), load(a.timemap), a.speed, env, 100, a.wav_offset, quiet, a.lines)
+    caps = build(load(a.text), load(a.words), load(a.timemap), a.speed, env, 100, a.wav_offset, quiet, a.lines, a.style)
     json.dump(caps, open(a.output, "w", encoding="utf-8"), ensure_ascii=False, indent=1)
     print(f"{a.output}: {len(caps)} captions, {sum(len(c['words']) for c in caps)} words")
     return 0

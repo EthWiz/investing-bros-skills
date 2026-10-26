@@ -12,7 +12,7 @@
 #   --cover    required for audio-only sources: renders an audiogram (cover + waveform)
 #   --captions .ass from clip_captions.py (same --format)
 #   --fonts-dir  folder with the caption font, if it isn't installed system-wide
-#   --speed    playback speed; defaults to 1.25 for vertical Shorts and 1.0 for square teasers
+#   --speed    playback speed; defaults to 1.15 for vertical Shorts and 1.0 for square teasers
 #
 # Video sources keep the whole frame (both hosts visible) over a blurred fill.
 set -euo pipefail
@@ -43,7 +43,7 @@ case "$fmt" in
   square)   W=1080 H=1080 ;;
   *) echo "error: --format must be vertical or square" >&2; exit 2 ;;
 esac
-[[ -n "$speed" ]] || { [[ "$fmt" == "vertical" ]] && speed="1.25" || speed="1.0"; }
+[[ -n "$speed" ]] || { [[ "$fmt" == "vertical" ]] && speed="1.15" || speed="1.0"; }
 speed=$(python3 -c 'import math,sys
 x=float(sys.argv[1])
 assert math.isfinite(x) and 0.5 <= x <= 2.0

@@ -29,7 +29,7 @@ TRACK_OFFSETS = {}  # optional fixed offsets (track time = SRC time + offset); e
 # Delayed video is clone-padded. A 3-tuple (a, b, delay) uses SRC's own picture with
 # DEFAULT_CROP (single-host sources such as Zoom speaker view only).
 K = [(3.60, 14.60, 0, "1080:1920:420:0", "A"), (16.20, 24.80, 0, "1080:1920:380:0", "N")]
-DEFAULT_SPEED = 1.25
+DEFAULT_SPEED = 1.15  # house speed (Amitai, 2026-10-26; was 1.25)
 DEFAULT_CROP = "405:720:415:0"
 SEAM_ROWS = 0.6     # share of rows with a jump at the centre column that marks a side-by-side
 ENV_RATE = 100      # Hz, audio envelope used for syncing

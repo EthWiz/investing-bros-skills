@@ -1,5 +1,5 @@
 // The data one short needs. scripts/make_props.py writes it; nothing here is episode-specific.
-// All times are seconds on the OUTPUT timeline (after make_base.py's edit and 1.25x speed-up).
+// All times are seconds on the OUTPUT timeline (after make_base.py's edit and 1.15x speed-up).
 
 export type CardMode = 'inset' | 'full' | 'card';
 
@@ -13,9 +13,10 @@ export type Step = {
 
 export type CardSpec = {id: string; mode: CardMode; start: number; end: number; steps: Step[]};
 
-export type Word = {w: string; start: number; end: number};
+export type Word = {w: string; start: number; end: number; emph?: boolean};   // emph: the big word ('punch')
 
-// A caption is 1-4 words on one line; with `words`, each word appears when it is spoken.
+// A caption is one phrase (house 'punch': 1-6 words, up for its reading time); `words` carry the
+// spoken-word timings that move the highlight box.
 export type Caption = {start: number; end: number; text: string; highlight: string[]; words?: Word[]};
 
 export type ShortProps = {
@@ -25,8 +26,8 @@ export type ShortProps = {
   hook: {start: number; end: number; top: string; bottom: string};
   tags: [number, number, string][];
   captions: Caption[];
-  captionHighlight: 'keywords' | 'spoken';   // house: 'spoken' (the word being said is gold); 'keywords' = older look
-  captionStyle: 'build' | 'line';            // house: 'line' (whole caption, up to two lines); 'build' = words pop in
+  captionHighlight: 'keywords' | 'spoken';   // house: 'spoken' (the word being said is boxed/gold); 'keywords' = older look
+  captionStyle: 'build' | 'line' | 'punch';  // house: 'punch' (kinetic, one big word per phrase); 'line' / 'build' = older looks
   cards: CardSpec[];
   cta: {start: number; end: number; text: string};
 };
