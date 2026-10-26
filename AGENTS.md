@@ -18,7 +18,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Exactly 3 shorts with Codex covers (rendered with `investing-bros-remotion`), optional mid-form highlights | `investing-bros-shorts` |
 | Exactly 2 standalone search-first segment videos: 01 deep dive, 02 next-best qualifying topic | `investing-bros-segment-video` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
-| The free 7-lesson crypto course: lesson plan, slides, scripts, lesson folders (not an episode) | `investing-bros-crypto-course` |
+| The free 7-lesson crypto course: lesson plan, slides, scripts in beats, lesson videos with Remotion, lesson folders (not an episode) | `investing-bros-crypto-course` |
 
 To see where an episode stands, list its Drive folder and compare it with each skill's **Done when**.
 
