@@ -102,4 +102,17 @@ def test_punch_phrases_have_one_big_word_chosen_by_importance():
              enumerate(["אם", "לא", "ירידה", "קלה", "במחירים", "אבל", "אנשים"])]
     caps = build([{"from": 0.0, "to": 10.0, "text": "אם לא ירידה קלה במחירים, אבל אנשים"}], heard, timemap,
                  speed=1.0, style="punch")
-    assert all(1 <= len(c["words"]) <= 3 and sum(x["emph"] for x in c["words"]) == 1 for c in caps)
+    assert all(1 <= len(c["words"]) <= 6 and sum(x["emph"] for x in c["words"]) == 1 for c in caps)
+
+
+def test_punch_phrases_stay_up_long_enough_to_read():
+    from make_captions import chunk_punch, on_screen, reading_floor
+    fast = [{"w": x, "s": i * 0.15, "e": i * 0.15 + 0.13, "key": False} for i, x in
+            enumerate(["אבל", "אנשים", "לא", "מרגישים", "את", "זה,", "לא", "קמים", "בבוקר."])]
+    groups = chunk_punch(fast)
+    assert [" ".join(w["w"] for w in g) for g in groups][0] == "אבל אנשים לא מרגישים את זה,"   # whole phrase
+    for k, g in enumerate(groups[:-1]):
+        assert on_screen(groups, k) >= reading_floor(g) or len(g) >= 5
+    slow = [{"w": x, "s": i * 0.6, "e": i * 0.6 + 0.5, "key": False} for i, x in enumerate(["אחת", "שתיים", "שלוש", "ארבע"])]
+    assert max(len(g) for g in chunk_punch(slow)) <= 3                                      # no need to grow
+    assert reading_floor([{"w": "עשור"}]) == pytest.approx(0.45 + 0.045 * 4)

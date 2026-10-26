@@ -195,11 +195,45 @@ def merge_short(groups, max_words, max_chars, min_seconds):
 
 # Kinetic ("punch") captions, like the reference Amitai picked (youtube.com/shorts/nD0smg5J6Fo):
 # short phrases of 1-3 words; one word per phrase is big (the keyword or number, else the main
-# content word), the rest small.
+# content word), the rest small. A phrase that can't stay up for its reading time (reading_floor)
+# joins its neighbour (up to 4 words), and every caption holds into a following pause.
 FUNCTION_WORDS = set("""של את זה זו לא אם כל גם עם על אז כי הוא היא הם הן אני אתה אנחנו יש אין אבל או מה
 מי לי לו לה להם שלי שלו שלה שלהם שלנו וזה שזה עוד כמו רק כבר אחד אחת איזה איזשהו בגדול ואם וגם
 שאני שהוא שהיא אתם היה הייתה יהיה להיות הזה הזאת האלה כאילו בעצם נגיד סתם ממש""".split())
 PUNCH = dict(max_words=3, max_chars=22, comma_min=1, min_seconds=0.0)
+PUNCH_MERGE = dict(max_words=5, max_chars=30)   # a phrase too short to read may grow to this
+
+
+def reading_floor(group) -> float:
+    """Seconds a caption needs to be readable: ~0.7 s for one word, ~1.1 s for three."""
+    chars = len(" ".join(norm(w["w"]) for w in group))
+    return 0.45 + 0.045 * chars
+
+
+def on_screen(groups, k) -> float:
+    """How long caption k can stay up: until the next one starts (or 0.4 s after its last word)."""
+    end = groups[k + 1][0]["s"] if k + 1 < len(groups) else groups[k][-1]["e"] + 0.4
+    return end - groups[k][0]["s"]
+
+
+def merge_unreadable(groups, max_words=4, max_chars=26):
+    """Join a caption that can't stay up for its reading time to the next (else the previous)."""
+    fits = lambda g: len(g) <= max_words and len(" ".join(x["w"] for x in g)) <= max_chars
+    changed = True
+    while changed:
+        changed = False
+        for k, g in enumerate(groups):
+            if on_screen(groups, k) >= reading_floor(g):
+                continue
+            if k + 1 < len(groups) and fits(g + groups[k + 1]):
+                groups[k:k + 2] = [g + groups[k + 1]]
+            elif k > 0 and fits(groups[k - 1] + g):
+                groups[k - 1:k + 1] = [groups[k - 1] + g]
+            else:
+                continue
+            changed = True
+            break
+    return groups
 
 
 def strong_word(group) -> int:
@@ -214,7 +248,33 @@ def strong_word(group) -> int:
 
 
 def chunk_punch(words):
-    return chunk(words, **PUNCH)
+    """Build each phrase forward: keep adding words until it has had its reading time, then
+    break at punctuation, a pause or 3 words; never more than 5 words / 30 characters."""
+    groups, cur = [], []
+    for i, w in enumerate(words):
+        cur.append(w)
+        if i + 1 == len(words):
+            break
+        nxt = words[i + 1]
+        ready = nxt["s"] - cur[0]["s"] >= reading_floor(cur)
+        pause = nxt["s"] - w["e"] > PAUSE
+        punct = re.search(r"[.,?!:;]$", w["w"])
+        longer = " ".join(x["w"] for x in cur + [nxt])
+        full = len(cur) >= PUNCH["max_words"] or len(longer) > PUNCH["max_chars"]
+        too_big = len(cur) >= PUNCH_MERGE["max_words"] or len(longer) > PUNCH_MERGE["max_chars"]
+        if too_big and re.search(r"[.,?!:;]$", nxt["w"]) and len(cur) < PUNCH_MERGE["max_words"] + 1 \
+                and len(longer) <= PUNCH_MERGE["max_chars"] + 4:
+            continue                                     # one more word finishes the phrase: take it
+        if (ready and (punct or pause or full)) or too_big:
+            cut = len(cur)
+            if too_big and not punct:                    # break after the last comma inside, if any
+                marks = [k for k, x in enumerate(cur[:-1]) if re.search(r"[.,?!:;]$", x["w"])]
+                cut = marks[-1] + 1 if marks else cut
+            groups.append(cur[:cut])
+            cur = cur[cut:]
+    if cur:
+        groups.append(cur)
+    return merge_unreadable(groups, **PUNCH_MERGE)
 
 
 def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=2, style="lines"):
@@ -234,8 +294,9 @@ def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, qu
                              "words": [{"w": w["w"], "start": w["s"], "end": w["e"],
                                         **({"emph": k == strong_word(g)} if style == "punch" else {})}
                                        for k, w in enumerate(g)]})
-    for c, nxt in zip(captions, captions[1:]):          # hold through short gaps, never overlap
-        c["end"] = round(min(max(c["end"], c["words"][-1]["end"] + 0.4), nxt["start"]), 3)
+    for c, nxt in zip(captions, captions[1:]):          # hold through pauses (to reading time), never overlap
+        floor = reading_floor([{"w": w["w"]} for w in c["words"]])
+        c["end"] = round(min(max(c["end"], c["words"][-1]["end"] + 0.4, c["start"] + floor), nxt["start"]), 3)
     if captions:
         a, b, out = timemap[-1]
         video_end = out + (b - a) / speed

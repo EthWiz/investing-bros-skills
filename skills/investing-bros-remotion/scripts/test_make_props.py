@@ -111,12 +111,12 @@ def test_house_caption_format_is_two_lines_with_the_spoken_word_highlighted():
         build_props(cfg, 25.75)
 
 
-def test_punch_style_keeps_phrases_to_three_words():
+def test_punch_style_keeps_phrases_to_six_words():
     cfg = copy.deepcopy(CFG)
     cfg["caption_style"] = "punch"
     assert build_props(cfg, 25.75)["captionStyle"] == "punch"
-    cfg["captions"].insert(2, {"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע", "highlight": []})
-    with pytest.raises(ValueError, match="1-3 words"):
+    cfg["captions"].insert(2, {"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש שש שבע", "highlight": []})
+    with pytest.raises(ValueError, match="1-6 words"):
         build_props(cfg, 25.75)
 
 

@@ -64,11 +64,15 @@ done before this skill starts.
    The older look stays available per short: `caption_style: "build"` with
    `make_captions.py --lines 1` (one line of 1–4 words popping in) and
    `caption_highlight: "keywords"`.
-   **Kinetic (on trial, episode 8 short 05 v5):** `caption_style: "punch"` with
-   `make_captions.py --style punch`: phrases of 1–3 words, one word per phrase big and sized
-   to fit (the keyword, else a number, else the main content word), the word being said on
-   a navy box (gold box for keywords and numbers), each word popping in; cards lift their
-   content to leave the captions room, and captions drop under the CTA strip.
+   **Kinetic (on trial, episode 8 short 05 v6):** `caption_style: "punch"` with
+   `make_captions.py --style punch`: each phrase grows until it has had its reading time
+   (~0.7 s for one word, ~1.1 s for three) and breaks at punctuation or a pause (max 5–6
+   words, breaking at a comma when long); the whole phrase pops in at once, one word big and
+   sized to fit (the keyword, else a number, else the main content word), the word being
+   said on a navy box (gold for keywords and numbers) and the big word bouncing when said;
+   captions hold into following pauses; cards lift their content to leave the captions
+   room, and captions drop under the CTA strip. v6 also tried 1.15x (`make_base.py
+   --speed 1.15`) instead of the house 1.25x.
 3. **Make the props** — this also checks the house rules:
    ```bash
    python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \

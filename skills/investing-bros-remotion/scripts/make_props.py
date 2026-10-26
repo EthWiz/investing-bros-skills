@@ -130,7 +130,7 @@ def build_props(cfg: dict, duration: float) -> dict:
                       "start": c["start"], "end": c["end"], "steps": steps})
     if not isinstance(meta.get("episode"), int):
         raise ValueError("meta.episode (the number Amitai stated) is required")
-    max_words = {"build": 4, "punch": 3}.get(cfg.get("caption_style"), 8)
+    max_words = {"build": 4, "punch": 6}.get(cfg.get("caption_style"), 8)
     errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration, max_words)
             + repeat_problems(cards, cfg["captions"]))
     if cfg.get("caption_highlight", "spoken") not in ("keywords", "spoken"):
