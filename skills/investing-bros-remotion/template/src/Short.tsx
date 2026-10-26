@@ -12,10 +12,10 @@ export const Short: React.FC<ShortProps> = (p) => (
   <AbsoluteFill style={{background: 'black'}}>
     <style>{fontFaces()}</style>
     <OffthreadVideo src={staticFile(p.base)} />
-    {p.cards.map((c) => <Card key={c.id} spec={c} />)}
+    {p.cards.map((c) => <Card key={c.id} spec={c} lift={p.captionStyle === 'punch'} />)}
     <Hook hook={p.hook} />
     <NameTag tags={p.tags} />
-    <Captions captions={p.captions} highlight={p.captionHighlight} style={p.captionStyle} />
+    <Captions captions={p.captions} highlight={p.captionHighlight} style={p.captionStyle} ctaStart={p.cta.start} />
     <Cta cta={p.cta} />
   </AbsoluteFill>
 );

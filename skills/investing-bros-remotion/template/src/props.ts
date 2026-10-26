@@ -13,7 +13,7 @@ export type Step = {
 
 export type CardSpec = {id: string; mode: CardMode; start: number; end: number; steps: Step[]};
 
-export type Word = {w: string; start: number; end: number};
+export type Word = {w: string; start: number; end: number; emph?: boolean};   // emph: the big word ('punch')
 
 // A caption is 1-4 words on one line; with `words`, each word appears when it is spoken.
 export type Caption = {start: number; end: number; text: string; highlight: string[]; words?: Word[]};
@@ -26,7 +26,7 @@ export type ShortProps = {
   tags: [number, number, string][];
   captions: Caption[];
   captionHighlight: 'keywords' | 'spoken';   // house: 'spoken' (the word being said is gold); 'keywords' = older look
-  captionStyle: 'build' | 'line';            // house: 'line' (whole caption, up to two lines); 'build' = words pop in
+  captionStyle: 'build' | 'line' | 'punch';  // house: 'line'; 'build' = words pop in; 'punch' = kinetic, one big word per phrase
   cards: CardSpec[];
   cta: {start: number; end: number; text: string};
 };

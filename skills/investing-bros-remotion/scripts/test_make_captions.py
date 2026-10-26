@@ -88,3 +88,18 @@ def test_short_leftover_joins_its_neighbour():
     g1 = [{"w": "אחת", "s": 0.0, "e": 0.3}]
     g2 = [{"w": "שתיים", "s": 0.3, "e": 1.0}, {"w": "שלוש", "s": 1.0, "e": 2.0}]
     assert merge_short([g1, g2], 8, 36, 1.2) == [g1 + g2]
+
+
+def test_punch_phrases_have_one_big_word_chosen_by_importance():
+    from make_captions import strong_word
+    w = lambda text, key=False: {"w": text, "s": 0.0, "e": 0.1, "key": key}
+    assert strong_word([w("ורואים"), w("צניחה", True), w("של")]) == 1          # keyword first
+    assert strong_word([w("של"), w("30%"), w("בבית")]) == 1                     # then a number
+    assert strong_word([w("נכנסים"), w("לפורטפוליו"), w("שלהם")]) == 1          # else the longest content word
+    assert strong_word([w("להשקעות", True), w("לא", True)]) == 0                 # longest of a multi-word keyword
+    timemap = [[0.0, 10.0, 0.0]]
+    heard = [{"w": x, "s": i * 0.3, "e": i * 0.3 + 0.25} for i, x in
+             enumerate(["אם", "לא", "ירידה", "קלה", "במחירים", "אבל", "אנשים"])]
+    caps = build([{"from": 0.0, "to": 10.0, "text": "אם לא ירידה קלה במחירים, אבל אנשים"}], heard, timemap,
+                 speed=1.0, style="punch")
+    assert all(1 <= len(c["words"]) <= 3 and sum(x["emph"] for x in c["words"]) == 1 for c in caps)

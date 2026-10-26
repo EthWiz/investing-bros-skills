@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
-  CAPTION_Y, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, TAG_RIGHT_EDGE, WHITE, clamp,
+  CAPTION_Y, CAPTION_Y_PUNCH, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
 } from '../brand';
 import type {ShortProps} from '../props';
 import {Arrow, Strip} from './Strip';
@@ -53,7 +53,8 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
 // highlight 'spoken': the word being said is gold, the rest white; 'keywords': the caption's keywords.
 export const Captions: React.FC<{
   captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']; style?: ShortProps['captionStyle'];
-}> = ({captions, highlight = 'spoken', style = 'line'}) => {
+  ctaStart?: number;
+}> = ({captions, highlight = 'spoken', style = 'line', ctaStart = Infinity}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;
@@ -62,6 +63,7 @@ export const Captions: React.FC<{
   const words = c.words ?? c.text.split(' ').map((w) => ({w, start: c.start, end: c.end}));
   const spoken = words.reduce((acc, w, i) => (t >= w.start - 1e-6 ? i : acc), -1);
   const gold = (w: {w: string}, i: number) => (highlight === 'spoken' ? i === spoken : hl.has(norm(w.w)));
+  if (style === 'punch') return <PunchCaption c={c} words={words} spoken={spoken} hl={hl} norm={norm} low={t >= ctaStart} />;
   const line = style === 'line';
   const fadeIn = interpolate(t, [c.start, c.start + 0.12], [0, 1], clamp);
   return (
@@ -84,6 +86,47 @@ export const Captions: React.FC<{
               opacity: shown ? interpolate(k, [0, 0.35], [0, 1], clamp) : 0,
               transform: `translateY(${shown ? (1 - k) * 14 : 14}px) scale(${shown ? interpolate(k, [0, 1], [0.82, 1]) : 0.82})`,
             }}>{w.w}</span>
+          );
+        })}
+      </div>
+    </div>
+  );
+};
+
+// Kinetic caption: the phrase's big word on its own line (sized to fit), small words around it;
+// each word pops in as it is spoken; the word being spoken sits on a navy box (gold box with
+// navy text for a keyword or number).
+const PunchCaption: React.FC<{
+  c: ShortProps['captions'][number]; words: {w: string; start: number; end: number; emph?: boolean}[];
+  spoken: number; hl: Set<string>; norm: (w: string) => string; low?: boolean;
+}> = ({words, spoken, hl, norm, low}) => {
+  const {f, fps, t} = useT();
+  // under the CTA strip (last seconds) the caption drops lower and a bit smaller to clear it
+  const bigSize = (w: string) => Math.max(low ? 96 : 104, Math.min(low ? 130 : 190, Math.floor(900 / (Math.max(w.length, 2) * 0.6))));
+  return (
+    <div style={{position: 'absolute', top: low ? CAPTION_Y_PUNCH + 130 : CAPTION_Y_PUNCH, width: '100%', display: 'flex', justifyContent: 'center'}}>
+      <div style={{transform: 'translateY(-50%)', direction: 'rtl', display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
+        alignItems: 'center', columnGap: 16, rowGap: 6, maxWidth: 980, fontFamily: FONT, fontWeight: 900}}>
+        {words.map((w, i) => {
+          const shown = t >= w.start - 1e-6;
+          const k = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 9, stiffness: 260, mass: 0.6}});
+          const key = hl.has(norm(w.w)) || /\d/.test(w.w);
+          const boxed = i === spoken;
+          const big = !!w.emph;
+          return (
+            <span key={i} style={{
+              flexBasis: big ? '100%' : undefined, display: 'flex', justifyContent: 'center',
+              opacity: shown ? interpolate(k, [0, 0.25], [0, 1], clamp) : 0,
+              transform: `scale(${shown ? interpolate(k, [0, 1], [big ? 0.45 : 0.7, 1]) : 0.5})`,
+            }}>
+              <span style={{
+                fontSize: big ? bigSize(w.w) : 70, lineHeight: 1.08, padding: boxed ? (big ? '4px 26px 12px' : '2px 14px 8px') : '0 4px',
+                borderRadius: big ? 18 : 12, background: boxed ? (key ? GOLD : NAVY) : 'transparent',
+                color: boxed && key ? NAVY : WHITE,
+                textShadow: boxed ? 'none' : '0 4px 10px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.9)',
+                boxShadow: boxed ? '0 8px 18px rgba(0,0,0,.35)' : 'none',
+              }}>{w.w}</span>
+            </span>
           );
         })}
       </div>
