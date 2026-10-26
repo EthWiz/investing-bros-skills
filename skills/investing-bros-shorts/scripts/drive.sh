@@ -13,6 +13,8 @@
 # rclone is not preinstalled on the box. Install it (no sudo needed):
 #   curl -fsSL https://downloads.rclone.org/rclone-current-linux-amd64.zip -o /tmp/rc.zip \
 #     && unzip -oq /tmp/rc.zip -d /tmp && install -m755 /tmp/rclone-*-linux-amd64/rclone ~/.local/bin/
+# On a Mac: brew install rclone. The one-time sign-in opens a Google page in the browser; Amitai
+# signs in there as the bot account (Advanced Protection blocks rclone on his own account).
 # If rclone or the "show" remote isn't available, use the Google Drive connector
 # instead (DownloadFile / UploadFile with the user's Drive connection), or for
 # big files the box browser signed in as the show's bot account (authuser=1).

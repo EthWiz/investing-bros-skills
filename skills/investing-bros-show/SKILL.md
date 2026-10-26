@@ -93,7 +93,7 @@ replacement, his latest named file wins and this entry must be updated.
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
   קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) + plan doc `קורס קריפטו - תוכנית השיעורים` ← crypto-course
-    שיעור N — נושא/                one per lesson (1–7): מצגת-שיעור-N.pdf, Google Doc תסריט-שיעור-N, שיעור-N-וידאו.mp4, extras/ (takes קטע-NN.mp4), Shorts/
+    שיעור N — נושא/                one per lesson (1–7): מצגת-שיעור-N.pdf, Google Doc תסריט-שיעור-N, שיעור-N-וידאו.mp4 (or -טיוטה), extras/ (takes קטע-NN.mp4, words קטע-NN.json, base שיעור-N-בסיס.mp4, captions שיעור-N-כתוביות.srt), Shorts/
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 

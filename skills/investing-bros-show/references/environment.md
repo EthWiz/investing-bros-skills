@@ -51,6 +51,15 @@ Read this before working around anything. Every line here cost an agent time to 
 - `ffmpeg` (with libass) and Python 3 with Pillow and numpy are installed on Amitai's Mac. If the Mac you are on has no ffmpeg (Nadav's machine, episode 7), don't install one for a trim — passthrough with `avconvert`.
 - Writing a changed file to the Mac under the same name can leave the old version in place; give revised files a new name (`_v2`) and check the content on the Mac.
 
+## Claude Code on Amitai's Mac (desktop app, crypto course lesson 1, 2026-10-26)
+Different from the device shell above: Claude Code in the Claude desktop app runs commands on the Mac itself.
+- 10 cores, 16 GB. No 3-minute limit, but run long jobs (Whisper, a full render) as background commands and wait for them to finish.
+- Installed: `ffmpeg`, Node 22 + `npx`, Homebrew, a Playwright headless Chrome in `~/Library/Caches/ms-playwright/` (found by `render_short.py` / `render_lesson.py`), and the Homebrew `whisper` command (openai-whisper). `large-v3-turbo` runs fine here: six lesson takes, 3.5 minutes of speech, took about 10 minutes.
+- The system `python3` (3.9) has no numpy, fontTools or whisper module, and the repo's tests need a newer Python: make a venv with `/opt/homebrew/bin/python3.14 -m venv …` and `pip install pytest pyyaml fonttools pillow numpy`.
+- **Google Drive for desktop is blocked:** `~/Library/CloudStorage/GoogleDrive-…` returns "Operation not permitted" (macOS privacy), even with the sandbox off. Don't copy files into Drive that way.
+- **Uploading to Drive from here:** the Drive connector's `create_file` takes the file content inline, so it is fine for text (JSON, SRT, a script) but not for video. Claude in Chrome's `file_upload` takes under 10 MB per call. For video, `drive.sh put` works once the optional rclone remote `show` exists (`brew install rclone`, then `rclone config create show drive scope=drive` and Amitai signs in as the bot in the page it opens; on 2026-10-26 the sign-in didn't complete and was left for later). Without it, stage the files in the Drive layout in a local folder and ask Amitai to drag them in.
+- Files sent to Amitai's phone (`SendUserFile`) must be under 30 MB; bigger ones show only in the desktop app. Send a 720p copy (`-b:v 1000k`, about 26 MB for 3:16) to watch on the phone.
+
 ## Whisper on the Mac
 - Models already on disk: `~/.cache/whisper/` (`base.pt`, `small.pt`, `large-v3-turbo.pt`) and OpenWhispr's `ggml-base.bin`. Ask Amitai to connect the folder.
 - `large-v3-turbo` doesn't fit in 4 GB; `small` does (~30 s for 75 s of audio).

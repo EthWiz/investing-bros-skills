@@ -6,8 +6,9 @@ description: >-
   Remotion template over the clean base from investing-bros-shorts. Covers word-timed
   captions, the props format, card modes (inset: most of the frame with the host framed
   around it, full screen, small card), the brand icon set, QA stills, adding icons or
-  layouts, and the Remotion licence. Use whenever a short or
-  clip gets animation, or when Amitai asks for "Remotion", "animation", "אנימציה",
+  layouts, and the Remotion licence. Also renders the crypto course's 16:9 lesson videos
+  (the Lesson composition). Use whenever a short, clip or crypto-course lesson gets
+  animation, or when Amitai asks for "Remotion", "animation", "אנימציה",
   "כרטיס מונפש", "גרפיקה מונפשת", "explainer card", "full screen card" or "מסך מלא".
 ---
 # Investing Bros animation (Remotion)
@@ -110,6 +111,12 @@ To tweak timing or text by eye, run `npm run studio` in `WORK/remotion` (Remotio
 Studio, live preview with a timeline) with `public/` staged by step 3; then put the
 change back into the config and re-run steps 3–5. A new icon, card mode or layout is
 a template change in this repo (with a test), never a one-off edit in `WORK/remotion`.
+
+## Lesson videos (crypto course, 16:9)
+The template's second composition, `Lesson` (1920×1080, 30 fps, `src/lesson/`), plays a lesson's joined takes with captions, strips, an agenda and progress marker, and the lesson's own scenes. The cut and the lesson's config belong to `investing-bros-crypto-course` (its video reference has the workflow and layout); this skill owns the composition and two scripts:
+- `scripts/make_lesson_props.py lesson-N-video.json --words-dir WORDS -o props.json [--srt captions.srt]`: captions from the proofread words on Whisper's timings (two calm lines, sentences kept whole), every graphic's time from its anchor phrase, and the layout. It refuses anything that breaks the house rules (graphics in the first 30 s, unknown scenes, phrases that aren't said, punch-ins over 1.25x).
+- `scripts/render_lesson.py --props … --base … --fonts … --logo … --out lesson.mp4 [--stills 25,38,…]`: the same staging as `render_short.py`; look at the stills before the full render, and run the full render in the background.
+A lesson's custom scene is a component in `src/lesson/lesson<N>/`, listed by name in `src/lesson/scenes.ts`, and gets `{at, start, end}`. A `bubble` scene draws the whole frame behind Amitai's circle; a `side` scene draws inside `SidePanel`. Shared pieces (strips, panel, entrance springs) are in `src/lesson/kit.tsx` and `panels.tsx`.
 
 ## Done when
 - `NAME.mp4` and `NAME_layout.json` exist for each short, rendered from this template
