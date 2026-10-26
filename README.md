@@ -33,7 +33,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 
 ## Crypto course
 
-`investing-bros-crypto-course` runs the free five-lesson Hebrew crypto course on the YouTube channel, outside the episode flow: the lesson plan, one slide deck and script per lesson, and `קורס קריפטו/שיעור N — נושא/` folders in Drive.
+`investing-bros-crypto-course` runs the free seven-lesson Hebrew crypto course on the YouTube channel, outside the episode flow: the lesson plan, one slide deck and script per lesson, and `קורס קריפטו/שיעור N — נושא/` folders in Drive.
 
 ## Design ownership
 

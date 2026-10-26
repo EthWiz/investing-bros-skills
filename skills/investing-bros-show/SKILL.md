@@ -50,7 +50,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Segment video (in `segments/`) | `סגמנט-NN-<סוג>-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-סגמנט-NN.md` | `סגמנט-01-צלילה-זהב.mp4` |
 | Video episode (in `video/`) | `פרק-N-וידאו.mp4` + `תיאור-פרק-N-youtube.txt` | `פרק-8-וידאו.mp4` |
 | Crypto course lesson folder (in `קורס קריפטו/`) | `שיעור N — נושא` (em dash `—`) | `שיעור 1 — מה זה בכלל קריפטו` |
-| Lesson slides / script (in the lesson folder) | `מצגת-שיעור-N.pdf`, `תסריט-שיעור-N.txt` | `מצגת-שיעור-1.pdf` |
+| Lesson slides / script (in the lesson folder) | `מצגת-שיעור-N.pdf`, Google Doc `תסריט-שיעור-N` | `מצגת-שיעור-1.pdf` |
 
 **Finding an existing episode folder:** match on the `פרק N` prefix (followed by a space or dash), not the full name — the dash and topic may differ from what you would type. If one matches, reuse it. Never create a second folder for the same N.
 
@@ -92,8 +92,8 @@ replacement, his latest named file wins and this entry must be updated.
     segments/    exactly 2 segments: 01 deep dive + 02 next-best topic; full package each ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
-  קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) ← crypto-course
-    שיעור N — נושא/                one per lesson (1–5): מצגת-שיעור-N.pdf, תסריט-שיעור-N.txt
+  קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) + plan doc `קורס קריפטו - תוכנית השיעורים` ← crypto-course
+    שיעור N — נושא/                one per lesson (1–7): מצגת-שיעור-N.pdf, Google Doc תסריט-שיעור-N, שיעור-N-וידאו.mp4, extras/ (takes קטע-NN.mp4), Shorts/
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
