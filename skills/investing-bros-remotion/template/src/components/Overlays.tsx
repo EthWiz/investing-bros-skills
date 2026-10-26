@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
-  CAPTION_Y, CAPTION_Y_PUNCH, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
+  CAPTION_Y, CAPTION_Y_PUNCH, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, LOGO_BOX, MUSTARD, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
 } from '../brand';
 import type {ShortProps} from '../props';
 import {Arrow, Strip} from './Strip';
@@ -23,7 +23,7 @@ export const Hook: React.FC<{hook: ShortProps['hook']}> = ({hook}) => {
     <AbsoluteFill style={{alignItems: 'center', top: HOOK_Y, opacity: a}}>
       <Strip text={hook.top} bg={CREAM} size={96} rotate={-1}
              style={{transform: `scale(${interpolate(k1, [0, 1], [1.06, 1])}) rotate(-1deg)`}} />
-      <Strip text={hook.bottom} bg={HOOK_YELLOW} size={96}
+      <Strip text={hook.bottom} bg={MUSTARD} size={96}
              style={{marginTop: -18, transform: `translateX(${interpolate(k2, [0, 1], [-60, 0])}px) rotate(1deg)`}} />
     </AbsoluteFill>
   );
