@@ -109,7 +109,7 @@ const PunchCaption: React.FC<{
     <div style={{position: 'absolute', top: low ? CAPTION_Y_PUNCH + 130 : CAPTION_Y_PUNCH, width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div style={{transform: `translateY(-50%) scale(${interpolate(kp, [0, 1], [0.8, 1])})`, opacity: interpolate(kp, [0, 0.2], [0, 1], clamp),
         direction: 'rtl', display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-        alignItems: 'center', columnGap: 16, rowGap: 6, maxWidth: 980, fontFamily: FONT, fontWeight: 900}}>
+        alignItems: 'center', columnGap: 5, rowGap: 6, maxWidth: 980, fontFamily: FONT, fontWeight: 900}}>
         {words.map((w, i) => {
           const said = i <= spoken;
           const kw = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 8, stiffness: 300, mass: 0.5}});
@@ -120,7 +120,8 @@ const PunchCaption: React.FC<{
           return (
             <span key={i} style={{flexBasis: big ? '100%' : undefined, display: 'flex', justifyContent: 'center', transform: `scale(${bump})`}}>
               <span style={{
-                fontSize: big ? bigSize(w.w) : 70, lineHeight: 1.08, padding: big ? '4px 26px 12px' : '2px 14px 8px',
+                // the box padding doubles as the word space (no extra gap), so spacing reads like a normal space
+                fontSize: big ? bigSize(w.w) : 70, lineHeight: 1.08, padding: big ? '4px 26px 12px' : '2px 9px 8px',
                 borderRadius: big ? 18 : 12, background: boxed ? (key ? GOLD : NAVY) : 'transparent',
                 color: boxed && key ? NAVY : WHITE,
                 textShadow: boxed ? 'none' : '0 4px 10px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.9)',
