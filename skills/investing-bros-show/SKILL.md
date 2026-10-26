@@ -93,7 +93,7 @@ replacement, his latest named file wins and this entry must be updated.
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
   קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) ← crypto-course
-    שיעור N — נושא/                one per lesson (1–6): מצגת-שיעור-N.pdf, תסריט-שיעור-N.txt
+    שיעור N — נושא/                one per lesson (1–7); plan doc `קורס קריפטו - תוכנית השיעורים` at its root: מצגת-שיעור-N.pdf, תסריט-שיעור-N.txt
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
