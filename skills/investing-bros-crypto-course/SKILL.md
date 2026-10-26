@@ -33,11 +33,11 @@ Any work on the crypto course: planning a lesson, its slides, its script, filing
 3. **Deck.** Build it as a Claude Slides artifact: brand palette and Heebo from `investing-bros-brand`, Hebrew right-to-left as in [references/slides-rtl.md](references/slides-rtl.md), speaker notes in Hebrew on every slide as talking points. Title the deck `קורס קריפטו - שיעור N: <נושא>` (plain hyphen). Add the deck link to the course plan.
 4. **Review.** Send Amitai the deck link and apply his changes. The link is private until he shares it from the deck's Share menu.
 5. **Drive.** Export the deck as a PDF (the deck page's export, which needs a claude.ai sign-in; if the browser isn't signed in, ask Amitai to sign in or to export it himself) and upload it to the lesson's folder as `מצגת-שיעור-N.pdf`, replacing any older file of that name. Confirm it shows as `application/pdf`.
-6. **Script.** When Amitai asks, write the recording script from the deck: hook, the deck's parts in order, recap, the pointer to the next lesson. Save it as plain text, conversion to Google Docs off, as `תסריט-שיעור-N.txt` in the lesson's folder.
+6. **Script.** When Amitai asks, write the recording script from the deck, split into numbered beats (`קטע N: <נושא> (כ-X שניות)`): one point each, 20–60 seconds, recorded as separate takes. Open with a hook, keep the disclaimer to one short beat, end with a recap and the pointer to the next lesson; aim for about 10 minutes. Under each beat put an italic `על המסך:` line for the editor (only you, a card beside you, or full screen with you in a corner), then the spoken text. End with a sources list. Create it as a Google Doc named `תסריט-שיעור-N` in the lesson's folder (Drive `create_file` from right-to-left HTML), with keep-with-next on each heading and its `על המסך` line.
 7. **Video and upload** are not defined for the course yet. Ask Amitai which episode skills to reuse before cutting, titling or uploading a lesson; nothing goes public without his OK.
 
 ## Done when
-- The lesson's folder `קורס קריפטו/שיעור N — נושא/` holds `מצגת-שיעור-N.pdf` (and `תסריט-שיעור-N.txt` when a script was asked for).
+- The lesson's folder `קורס קריפטו/שיעור N — נושא/` holds `מצגת-שיעור-N.pdf` (and the Google Doc `תסריט-שיעור-N` when a script was asked for).
 - The course plan lists the lesson's deck link and current status.
 
 ## Hand back
