@@ -1,7 +1,7 @@
 ---
 name: investing-bros-crypto-course
 description: >-
-  Make the free five-lesson Hebrew crypto course (קורס קריפטו) for the
+  Make the free six-lesson Hebrew crypto course (קורס קריפטו) for the
   אחים להשקעות YouTube channel: the lesson plan, a slide deck per lesson
   in the show's brand with speaker notes, the recording script, and filing
   each lesson in its Drive folder. Carries Amitai's fixed stance (Bitcoin as
@@ -22,7 +22,7 @@ Any work on the crypto course: planning a lesson, its slides, its script, filing
 - For revisions: the lesson's existing deck link (course plan) or Drive folder.
 
 ## Course rules (decided 2026-10-26)
-- Free, on the אחים להשקעות channel as one playlist, five lessons, Hebrew, for Israeli beginners. Each lesson stands on its own, since most viewers arrive from search.
+- Free, on the אחים להשקעות channel as one playlist, six lessons, Hebrew, for Israeli beginners. Risk is covered inside each lesson, not as a lesson of its own. Each lesson stands on its own, since most viewers arrive from search.
 - **The stance, the same in every lesson that touches it:** Bitcoin is the base; Ethereum gets a small position; great caution with every other token, and in most cases don't touch it. Present it as Amitai's personal approach.
 - **Disclaimer:** lesson 1 opens with a disclaimer slide (educational content, not investment advice; Amitai isn't a licensed investment adviser; invest only what you can afford to lose). Any slide stating the stance carries the line `זו הגישה האישית שלי ולא ייעוץ השקעות מותאם אישית`. Never say "buy now", a target price, or a percentage of anyone's portfolio.
 - Facts follow the show's hard rules: every number, date and claim has a source URL in the speaker notes or the script, and Israel-specific facts (tax, exchanges, banks, funds) are checked again before recording because they change.
