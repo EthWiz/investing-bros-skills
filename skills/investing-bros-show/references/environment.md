@@ -81,6 +81,13 @@ Read this before working around anything. Every line here cost an agent time to 
   sandbox, ffmpeg available): cut the needed window there and stage only that (a 65 s
   1080p window, re-encoded CRF 12, is ~125 MB and stages in one call).
 
+## Telegram from the cloud workspace (episode 8)
+- The bot settings (`TELEGRAM_BOT_TOKEN`, `TELEGRAM_CHAT_ID`) are in `telegram.env` in
+  Amitai's `~/Downloads`. Stage it with `device_stage_files` just before a post, pass it to
+  `send_telegram.py --env`, then delete the staged copy. Never print it.
+- When the Mac is asleep or the Claude app is closed the bridge is down and nothing can be
+  posted: hand Amitai the file and the exact caption to forward himself.
+
 ## Fonts
 - The skills need static Heebo weights (`brand.py fonts`). If `github.com/google/fonts` isn't reachable: `npm pack @fontsource-variable/heebo`, then instance the Hebrew and Latin `*-wght-normal.woff2` subsets at 600/800/900 with fontTools and merge each pair (`fontTools.merge`), naming the families `Heebo SemiBold` / `Heebo ExtraBold` / `Heebo Black`.
 

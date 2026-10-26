@@ -3,7 +3,7 @@
 
 Usage:
     python3 make_captions.py text.json words.json timemap.json -o captions.json \\
-        [--wav window.wav --wav-offset T0] [--speed 1.25]
+        [--wav window.wav --wav-offset T0] [--speed 1.15]
 
 text.json   the proofread words of each kept piece, on the SOURCE timeline (same times as
             make_base.py's K list), keywords in [brackets]:
@@ -277,7 +277,7 @@ def chunk_punch(words):
     return merge_unreadable(groups, **PUNCH_MERGE)
 
 
-def build(pieces, heard, timemap, speed=1.25, env=None, rate=100, offset=0.0, quiet=0.0, lines=2, style="lines"):
+def build(pieces, heard, timemap, speed=1.15, env=None, rate=100, offset=0.0, quiet=0.0, lines=2, style="punch"):
     captions = []
     for p in pieces:
         hs = [h for h in heard if p["from"] - 0.25 <= h["s"] <= p["to"] + 0.1]
@@ -308,14 +308,14 @@ def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("text"); ap.add_argument("words"); ap.add_argument("timemap")
     ap.add_argument("-o", "--output", required=True)
-    ap.add_argument("--speed", type=float, default=1.25)
+    ap.add_argument("--speed", type=float, default=1.15, help="must match make_base.py (house: 1.15)")
     ap.add_argument("--wav"); ap.add_argument("--wav-offset", type=float, default=0.0)
     ap.add_argument("--lines", type=int, choices=sorted(LAYOUTS), default=2,
                     help="2 (house format): up to two lines, 2-3 s each, at least 1.2 s on screen; "
                          "1: one line of 1-4 words (with caption_style 'build')")
-    ap.add_argument("--style", choices=("lines", "punch"), default="lines",
-                    help="lines: the --lines grouping; punch: kinetic captions (phrases of 1-3 words, one "
-                         "word big) for caption_style 'punch'")
+    ap.add_argument("--style", choices=("lines", "punch"), default="punch",
+                    help="punch (house format): kinetic phrases that stay up for their reading time, one word "
+                         "big; lines: the --lines grouping for caption_style 'line' or 'build'")
     a = ap.parse_args(argv)
     load = lambda p: json.load(open(p, encoding="utf-8"))
     env, quiet = (None, 0.0)

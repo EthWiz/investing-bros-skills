@@ -44,7 +44,7 @@ from clip_captions import rtl  # noqa: E402
 EM, WH = "{\\c&H" + ass_colour(ACCENT)[4:] + "&}", "{\\c&H" + ass_colour(WHITE)[4:] + "&}"
 VIDEO_H = {"split": 1215, "full": 608}   # 960x1080 half -> 1080x1215; 1920x1080 -> 1080x608
 MAX_LINE = 26
-DEFAULT_SPEED = 1.25
+DEFAULT_SPEED = 1.15  # house speed (Amitai, 2026-10-26; was 1.25)
 
 
 def playback_speed(value) -> float:

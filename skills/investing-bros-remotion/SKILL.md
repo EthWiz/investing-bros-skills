@@ -28,7 +28,7 @@ done before this skill starts.
 
 ## Inputs
 - The clean base video from `make_base.py` (`investing-bros-shorts` step 3): cut,
-  1.25x, −14 LUFS, logo and gradient burned in, no captions.
+  1.15x (house speed), −14 LUFS, logo and gradient burned in, no captions.
 - The short's config JSON (`investing-bros-shorts` → Config schema; times are
   **output** seconds). Explainer cards go in `cards` (format below).
 - For captions: the proofread words of each kept piece (`text.json`), whisper word
@@ -56,30 +56,31 @@ done before this skill starts.
    `text.json` = `[{"from", "to", "text"}]`, one entry per kept piece (source times, the
    proofread words, keywords in `[brackets]`). Whisper's words are matched to the
    proofread ones even when misspelt, starts that fall in silence move to where the
-   speech begins, and the words are grouped into captions of up to two lines (≤ 8 words,
-   about 2–3 s each, at least 1.2 s on screen unless joining a neighbour would overflow),
-   breaking at sentence ends and real pauses. On screen the whole caption appears at once
-   and the word being spoken turns gold: the house format (Amitai, 2026-10-25, after
-   comparing one-line pop-in captions and keyword-only colour on episode 8 short 05).
-   The older look stays available per short: `caption_style: "build"` with
-   `make_captions.py --lines 1` (one line of 1–4 words popping in) and
+   speech begins, and the words are grouped into the **house kinetic captions**
+   (Amitai, 2026-10-26, episode 8 short 05 v6.1, after the reference
+   [youtube.com/shorts/nD0smg5J6Fo](https://www.youtube.com/shorts/nD0smg5J6Fo)):
+   - each phrase grows until it has had its **reading time** (0.45 s + 0.045 s per
+     character: ~0.7 s for one word, ~1.1 s for three), then breaks at punctuation, a
+     pause or 3 words; never more than 5–6 words (a long one breaks at its last comma);
+     a leftover that still can't be read joins a neighbour; captions hold into pauses;
+   - the **whole phrase pops in at once**; one word per phrase is **big and sized to fit**
+     (the keyword, else a number, else the main content word; Hebrew function words
+     never), the rest small with normal word spacing;
+   - the **word being spoken sits on a navy box** (gold box with navy text for keywords
+     and numbers) that moves word by word, and the big word bounces when it is said;
+   - over a card the card's content lifts to leave the captions the lower third; under
+     the CTA strip the captions drop lower and smaller.
+   Older looks stay available per short: `caption_style: "line"` with
+   `make_captions.py --style lines --lines 2` (two calm lines, gold spoken word) and
+   `caption_style: "build"` with `--style lines --lines 1` (one line popping in), plus
    `caption_highlight: "keywords"`.
-   **Kinetic (on trial, episode 8 short 05 v6):** `caption_style: "punch"` with
-   `make_captions.py --style punch`: each phrase grows until it has had its reading time
-   (~0.7 s for one word, ~1.1 s for three) and breaks at punctuation or a pause (max 5–6
-   words, breaking at a comma when long); the whole phrase pops in at once, one word big and
-   sized to fit (the keyword, else a number, else the main content word), the word being
-   said on a navy box (gold for keywords and numbers) and the big word bouncing when said;
-   captions hold into following pauses; cards lift their content to leave the captions
-   room, and captions drop under the CTA strip. v6 also tried 1.15x (`make_base.py
-   --speed 1.15`) instead of the house 1.25x.
 3. **Make the props** — this also checks the house rules:
    ```bash
    python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \
      -o WORK/props.json
    ```
    It refuses unknown icons, emoji, cards over the hook or CTA, overlapping cards,
-   steps outside their card, a subtitle repeating the captions, captions over 8 words or
+   steps outside their card, a subtitle repeating the captions, captions over 6 words or
    out of order, and a CTA that stops before the end. Fix the config, not the props.
 4. **Look before rendering** — six stills on one sheet (about 30 s):
    ```bash

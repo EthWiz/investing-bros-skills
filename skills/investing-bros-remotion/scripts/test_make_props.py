@@ -80,8 +80,8 @@ def test_default_mode_is_inset():
     (lambda c: c["cards"][0]["steps"][1].update(at=15.0), "outside the card"),
     (lambda c: c["cards"].append(dict(copy.deepcopy(c["cards"][0]), id="c2", start=13.0, end=16.0,
                                       steps=[{"at": 13.0, "visual": "pie", "value": 5, "title": "x"}])), "overlaps the previous"),
-    (lambda c: c["captions"].insert(2, {"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש שש שבע שמונה תשע"}),
-     "1-8 words"),
+    (lambda c: c["captions"].insert(2, {"start": 1.0, "end": 2.0, "text": "אחת שתיים שלוש ארבע חמש שש שבע"}),
+     "1-6 words"),
     (lambda c: c.update(caption_style="build") or c["captions"].insert(2, {"start": 1.0, "end": 2.0,
                                                                       "text": "אחת שתיים שלוש ארבע חמש"}), "1-4 words"),
     (lambda c: c["captions"].append({"start": 0.5, "end": 2.0, "text": "שוב"}), "out of order"),
@@ -98,11 +98,13 @@ def test_house_rules_are_enforced(change, message):
         build_props(cfg, 25.75)
 
 
-def test_house_caption_format_is_two_lines_with_the_spoken_word_highlighted():
+def test_house_caption_format_is_kinetic_with_the_spoken_word_highlighted():
     cfg = copy.deepcopy(CFG)
     cfg["captions"].insert(2, {"start": 1.0, "end": 3.0, "text": "אחת שתיים שלוש ארבע חמש שש", "highlight": []})
     p = build_props(cfg, 25.75)
-    assert p["captionStyle"] == "line" and p["captionHighlight"] == "spoken"
+    assert p["captionStyle"] == "punch" and p["captionHighlight"] == "spoken"
+    cfg["caption_style"] = "line"
+    assert build_props(cfg, 25.75)["captionStyle"] == "line"                   # older looks stay available
     cfg.update(caption_style="build", caption_highlight="keywords")
     with pytest.raises(ValueError, match="1-4 words"):
         build_props(cfg, 25.75)

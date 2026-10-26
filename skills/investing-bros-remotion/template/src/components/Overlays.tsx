@@ -54,7 +54,7 @@ export const NameTag: React.FC<{tags: ShortProps['tags']}> = ({tags}) => {
 export const Captions: React.FC<{
   captions: ShortProps['captions']; highlight?: ShortProps['captionHighlight']; style?: ShortProps['captionStyle'];
   ctaStart?: number;
-}> = ({captions, highlight = 'spoken', style = 'line', ctaStart = Infinity}) => {
+}> = ({captions, highlight = 'spoken', style = 'punch', ctaStart = Infinity}) => {
   const {f, fps, t} = useT();
   const c = captions.find((x) => t >= x.start && t < x.end);
   if (!c) return null;

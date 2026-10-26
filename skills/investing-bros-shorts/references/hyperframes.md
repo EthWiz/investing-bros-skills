@@ -32,7 +32,7 @@ For a punchline, a story or a quick reaction clip, the plain render is enough an
    Every `*_at` is the moment the word is **spoken** (source time). Card text is either the host's words or a faithful label for them — no numbers, names or claims he didn't say. Leave gaps where nothing needs a card; captions carry those stretches.
 2. **Cut the clean clip** (ffmpeg — HyperFrames plays its input untouched, so all editing happens here):
    ```bash
-   python3 scripts/make_input.py short.json --speed 1.25  # house default -> NAME_input.sh
+   python3 scripts/make_input.py short.json  # house speed (build_short.DEFAULT_SPEED) -> NAME_input.sh
    bash NAME_input.sh                             # -> NAME_input.mp4, 1080x1216, keyframe every second, ~-14 LUFS
    ```
 3. **Stage the project**:
@@ -43,9 +43,9 @@ For a punchline, a story or a quick reaction clip, the plain render is enough an
    for w in ('SemiBold','ExtraBold','Black'):
        f=F(f'fonts/Heebo-{w}.ttf'); f.flavor='woff2'; f.save(f'PROJ/public/fonts/Heebo-{w}.woff2')"
    npm i --no-save gsap@3 && cp node_modules/gsap/dist/gsap.min.js PROJ/public/vendor/
-   python3 scripts/build_composition.py short.json --project PROJ --speed 1.25
+   python3 scripts/build_composition.py short.json --project PROJ
    ```
-   Both scripts default to 1.25x; pass `--speed 1.0` to both to disable it.
+   Both scripts default to the house speed; pass the same `--speed` to both (`1.0` disables it).
    They must use the same value so source-time captions and cards map onto the
    speed-adjusted video; `build_composition.py` rejects an input whose duration
    does not match its selected speed. Configured end-card seconds are also on

@@ -2,7 +2,7 @@
 
 Part of `investing-bros-remotion`. A card is an animated explainer laid over the short
 for a few seconds. Cards live in the short's config under `cards` (times are output
-seconds, after the 1.25x speed-up):
+seconds, after the 1.15x speed-up):
 
 ```jsonc
 "cards": [{

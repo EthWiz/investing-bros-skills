@@ -49,9 +49,9 @@ def test_chunks_are_short_single_lines_broken_at_punctuation_and_pauses():
 def test_captions_never_overlap_and_hold_through_short_gaps():
     timemap = [[0.0, 10.0, 0.0]]
     heard = [{"w": "אחת,", "s": 1.0, "e": 1.3}, {"w": "שתיים", "s": 1.5, "e": 1.8}]
-    caps = build([{"from": 0.0, "to": 10.0, "text": "אחת, שתיים"}], heard, timemap, speed=1.0, lines=1)
+    caps = build([{"from": 0.0, "to": 10.0, "text": "אחת, שתיים"}], heard, timemap, speed=1.0, lines=1, style="lines")
     assert caps[0]["end"] == pytest.approx(caps[1]["start"])
-    assert len(build([{"from": 0.0, "to": 10.0, "text": "אחת, שתיים"}], heard, timemap, speed=1.0)) == 1   # house: one caption
+    assert len(build([{"from": 0.0, "to": 10.0, "text": "אחת, שתיים"}], heard, timemap, speed=1.0, style="lines")) == 1
 
 
 def test_start_in_silence_snaps_to_the_speech():
