@@ -264,9 +264,9 @@
       "zones": {
         "hook_band": [
           0.0,
-          0.156,
+          0.339,
           1.0,
-          0.365
+          0.24
         ],
         "captions": [
           0.0,
@@ -282,31 +282,31 @@
         ],
         "ink": "navy",
         "font": "Heebo Black",
-        "size": 108,
-        "second_scale": 1.1,
+        "size": 96,
+        "second_scale": 1.0,
         "tilt_deg": [
           -1.2,
           1.0
         ],
-        "shown_s": 2.7,
-        "centre_y_px": [
-          300,
-          1000
-        ],
-        "default_centre_y_px": 960,
-        "min_gap_px": {
-          "below_logo_bottom": 40,
-          "above_caption_line": 40
-        },
-        "logo_bottom_px": 277
+        "shown_s": 3.0,
+        "top_y_px": 700
       },
       "captions": {
+        "font": "Heebo Black",
         "colour": "#FFFFFF",
-        "current_word": "#F5B71F",
-        "centre_y_px": [
-          1100,
-          1470
-        ]
+        "active_box": "navy",
+        "keyword_or_number_box": "#F5B71F",
+        "big_px": [
+          78,
+          135
+        ],
+        "big_under_cta_px": [
+          72,
+          98
+        ],
+        "small_px": 64,
+        "centre_y_px": 1330,
+        "centre_y_under_cta_px": 1460
       }
     },
     "segment-wide": {

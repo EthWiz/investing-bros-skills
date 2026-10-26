@@ -3,12 +3,9 @@
  "meta": {
   "episode": 3,
   "speaker": "אמיתי רסקין",
-  "title": "דאטה סנטרים בחלל?",
   "source": "/workspace/podcast/ep3/src_clip3_993s.mp4 (episode ~993.97s+clip time). raw keeps 3.60-14.60, 34.30-49.70, 49.85-51.60, 54.40-65.55 (video +0.15 clone pad), 66.75-71.20, 79.55-81.00; dropped 'חורף קיץ. כמה משמעית', 'כאילו מרבה/הרבה חלל' and 'שידעו...100% אנרגיה סולארית' (ASR-uncertain words)"
  },
- "hook": {
-  "start": 0.0,
-  "end": 3.0,
+ "cover_title": {
   "top_line": "דאטה סנטרים",
   "bottom_line": "בחלל?"
  },

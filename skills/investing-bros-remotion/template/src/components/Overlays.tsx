@@ -1,7 +1,7 @@
 import React from 'react';
 import {AbsoluteFill, Img, interpolate, spring, staticFile, useCurrentFrame, useVideoConfig} from 'remotion';
 import {
-  CAPTION_Y, CAPTION_Y_PUNCH, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, HOOK_YELLOW, LOGO_BOX, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
+  CAPTION_Y, CAPTION_Y_PUNCH, CAPTION_Y_TWO_LINES, CREAM, CTA_Y, FONT, GOLD, HOOK_Y, LOGO_BOX, MUSTARD, NAVY, TAG_RIGHT_EDGE, WHITE, clamp,
 } from '../brand';
 import type {ShortProps} from '../props';
 import {Arrow, Strip} from './Strip';
@@ -23,7 +23,7 @@ export const Hook: React.FC<{hook: ShortProps['hook']}> = ({hook}) => {
     <AbsoluteFill style={{alignItems: 'center', top: HOOK_Y, opacity: a}}>
       <Strip text={hook.top} bg={CREAM} size={96} rotate={-1}
              style={{transform: `scale(${interpolate(k1, [0, 1], [1.06, 1])}) rotate(-1deg)`}} />
-      <Strip text={hook.bottom} bg={HOOK_YELLOW} size={96}
+      <Strip text={hook.bottom} bg={MUSTARD} size={96}
              style={{marginTop: -18, transform: `translateX(${interpolate(k2, [0, 1], [-60, 0])}px) rotate(1deg)`}} />
     </AbsoluteFill>
   );
@@ -76,7 +76,7 @@ export const Captions: React.FC<{
       } as React.CSSProperties}>
         {words.map((w, i) => {
           if (line) {
-            return <span key={i} style={{color: gold(w, i) ? GOLD : WHITE}}>{w.w}{i < words.length - 1 ? ' ' : ''}</span>;
+            return <bdi key={i} dir="auto" style={{color: gold(w, i) ? GOLD : WHITE}}>{w.w}{i < words.length - 1 ? ' ' : ''}</bdi>;
           }
           const k = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 13, stiffness: 240}});
           const shown = t >= w.start - 1e-6;
@@ -85,7 +85,7 @@ export const Captions: React.FC<{
               display: 'inline-block', marginLeft: 18, color: gold(w, i) ? GOLD : WHITE,
               opacity: shown ? interpolate(k, [0, 0.35], [0, 1], clamp) : 0,
               transform: `translateY(${shown ? (1 - k) * 14 : 14}px) scale(${shown ? interpolate(k, [0, 1], [0.82, 1]) : 0.82})`,
-            }}>{w.w}</span>
+            }}><bdi dir="auto">{w.w}</bdi></span>
           );
         })}
       </div>
@@ -103,30 +103,48 @@ const PunchCaption: React.FC<{
 }> = ({c, words, spoken, hl, norm, low}) => {
   const {f, fps} = useT();
   // under the CTA strip (last seconds) the caption drops lower and a bit smaller to clear it
-  const bigSize = (w: string) => Math.max(low ? 96 : 104, Math.min(low ? 130 : 180, Math.floor(900 / (Math.max(w.length, 2) * 0.6))));
+  const bigSize = (w: string) => Math.max(low ? 72 : 78, Math.min(low ? 98 : 135, Math.floor(675 / (Math.max(w.length, 2) * 0.6))));
+  const runs = words.reduce<{word: typeof words[number]; index: number}[][]>((out, word, index) => {
+    const previous = out[out.length - 1];
+    const previousWord = previous?.[previous.length - 1]?.word.w ?? '';
+    const joinsLatinName = previous && /[A-Za-z]/.test(previousWord) && /^[\d.,%+$€£₪-]+$/.test(word.w);
+    if (joinsLatinName) previous.push({word, index});
+    else out.push([{word, index}]);
+    return out;
+  }, []);
   const kp = spring({frame: f - Math.round(c.start * fps), fps, config: {damping: 11, stiffness: 240, mass: 0.6}});
   return (
     <div style={{position: 'absolute', top: low ? CAPTION_Y_PUNCH + 130 : CAPTION_Y_PUNCH, width: '100%', display: 'flex', justifyContent: 'center'}}>
       <div style={{transform: `translateY(-50%) scale(${interpolate(kp, [0, 1], [0.8, 1])})`, opacity: interpolate(kp, [0, 0.2], [0, 1], clamp),
         direction: 'rtl', display: 'flex', flexWrap: 'wrap', justifyContent: 'center',
-        alignItems: 'center', columnGap: 5, rowGap: 6, maxWidth: 980, fontFamily: FONT, fontWeight: 900}}>
-        {words.map((w, i) => {
-          const said = i <= spoken;
-          const kw = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 8, stiffness: 300, mass: 0.5}});
-          const bump = w.emph && said && w.start > c.start + 0.05 ? interpolate(kw, [0, 0.5, 1], [1, 1.12, 1]) : 1;
-          const key = hl.has(norm(w.w)) || /\d/.test(w.w);
-          const boxed = i === spoken;
-          const big = !!w.emph;
+        alignItems: 'center', columnGap: 4, rowGap: 5, maxWidth: 980, fontFamily: FONT, fontWeight: 900}}>
+        {runs.map((run, runIndex) => {
+          const latinName = run.length > 1;
           return (
-            <span key={i} style={{flexBasis: big ? '100%' : undefined, display: 'flex', justifyContent: 'center', transform: `scale(${bump})`}}>
-              <span style={{
-                // the box padding doubles as the word space (no extra gap), so spacing reads like a normal space
-                fontSize: big ? bigSize(w.w) : 70, lineHeight: 1.08, padding: big ? '4px 26px 12px' : '2px 9px 8px',
-                borderRadius: big ? 18 : 12, background: boxed ? (key ? GOLD : NAVY) : 'transparent',
-                color: boxed && key ? NAVY : WHITE,
-                textShadow: boxed ? 'none' : '0 4px 10px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.9)',
-                boxShadow: boxed ? '0 8px 18px rgba(0,0,0,.35)' : 'none',
-              }}>{w.w}</span>
+            <span key={runIndex} dir={latinName ? 'ltr' : undefined} style={{
+              flexBasis: run.some(({word}) => word.emph) ? '100%' : undefined,
+              display: 'flex', justifyContent: 'center', direction: latinName ? 'ltr' : 'rtl',
+            }}>
+              {run.map(({word: w, index: i}) => {
+                const said = i <= spoken;
+                const kw = spring({frame: f - Math.round(w.start * fps), fps, config: {damping: 8, stiffness: 300, mass: 0.5}});
+                const bump = w.emph && said && w.start > c.start + 0.05 ? interpolate(kw, [0, 0.5, 1], [1, 1.12, 1]) : 1;
+                const key = hl.has(norm(w.w)) || /\d/.test(w.w);
+                const boxed = i === spoken;
+                const big = !!w.emph;
+                return (
+                  <span key={i} style={{display: 'flex', justifyContent: 'center', transform: `scale(${bump})`}}>
+                    <span style={{
+                      // the box padding doubles as the word space (no extra gap), so spacing reads like a normal space
+                      fontSize: big ? bigSize(w.w) : 64, lineHeight: 1.08, padding: big ? '3px 20px 9px' : '2px 8px 7px',
+                      borderRadius: big ? 14 : 11, background: boxed ? (key ? GOLD : NAVY) : 'transparent',
+                      color: boxed && key ? NAVY : WHITE,
+                      textShadow: boxed ? 'none' : '0 4px 10px rgba(0,0,0,.65), 0 0 3px rgba(0,0,0,.9)',
+                      boxShadow: boxed ? '0 6px 14px rgba(0,0,0,.35)' : 'none',
+                    }}><bdi dir="auto">{w.w}</bdi></span>
+                  </span>
+                );
+              })}
             </span>
           );
         })}

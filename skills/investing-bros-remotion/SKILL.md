@@ -30,7 +30,8 @@ done before this skill starts.
 - The clean base video from `make_base.py` (`investing-bros-shorts` step 3): cut,
   1.15x (house speed), −14 LUFS, logo and gradient burned in, no captions.
 - The short's config JSON (`investing-bros-shorts` → Config schema; times are
-  **output** seconds). Explainer cards go in `cards` (format below).
+  **output** seconds). Its shared `cover_title` drives both the cover and opening
+  banner; do not add a separate hook title. Explainer cards go in `cards` (format below).
 - For captions: the proofread words of each kept piece (`text.json`), whisper word
   timings for them (`transcribe_clip.py`), `timemap.json` from `make_base.py`, and a
   16 kHz WAV of the same window.
@@ -65,9 +66,12 @@ done before this skill starts.
      a leftover that still can't be read joins a neighbour; captions hold into pauses;
    - the **whole phrase pops in at once**; one word per phrase is **big and sized to fit**
      (the keyword, else a number, else the main content word; Hebrew function words
-     never), the rest small with normal word spacing;
+     never), at 78–135 px (72–98 px under the CTA); the rest are ~64 px with balanced
+     padding and normal word spacing;
    - the **word being spoken sits on a navy box** (gold box with navy text for keywords
      and numbers) that moves word by word, and the big word bounces when it is said;
+   - mixed Hebrew/Latin/numbers are bidi-isolated (`S&P 500`, `ב-S&P` and figures stay
+     in reading order), and a multi-token Latin name plus its number stays in one phrase;
    - over a card the card's content lifts to leave the captions the lower third; under
      the CTA strip the captions drop lower and smaller.
    Older looks stay available per short: `caption_style: "line"` with
@@ -79,7 +83,7 @@ done before this skill starts.
    python3 scripts/make_props.py short.json --base WORK/NAME_clean.mp4 --captions WORK/captions.json \
      -o WORK/props.json
    ```
-   It refuses unknown icons, emoji, cards over the hook or CTA, overlapping cards,
+   It refuses a render over the hard 45 s cap, unknown icons, emoji, cards over the opening banner or CTA, overlapping cards,
    steps outside their card, a subtitle repeating the captions, captions over 6 words or
    out of order, and a CTA that stops before the end. Fix the config, not the props.
 4. **Look before rendering** — six stills on one sheet (about 30 s):
@@ -98,7 +102,8 @@ done before this skill starts.
    ```
    It writes `NAME.mp4` and `NAME_layout.json` for `check_short.py`. There is no end
    card: the video ends on the payoff with the CTA, and loops.
-6. **QA and hand on** — back to `investing-bros-shorts` step 6: `check_short.py NAME.mp4`
+6. **QA and hand on** — back to `investing-bros-shorts` step 6:
+   `check_short.py NAME.mp4 --config short.json --youtube-notes youtube-שורט-NN.md`
    (reads the layout file), 8-frame strip, Telegram approval, cover, Drive.
 
 To tweak timing or text by eye, run `npm run studio` in `WORK/remotion` (Remotion
@@ -110,7 +115,7 @@ a template change in this repo (with a test), never a one-off edit in `WORK/remo
 - `NAME.mp4` and `NAME_layout.json` exist for each short, rendered from this template
   with props that passed `make_props.py`, and `check_short.py` passes on the video.
 - The short continues through `investing-bros-shorts` (Telegram approval, cover, then
-  `Shorts/` in the episode's Drive folder: `.mp4`, `-cover.jpg`, `.srt`,
+  `Shorts/` in the episode's Drive folder: playable `.m4v` (`video/x-m4v`), `-cover.jpg`, `.srt`,
   `youtube-שורט-NN.md`).
 
 ## Hand back

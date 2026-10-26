@@ -18,8 +18,10 @@ engraved topic illustration. Reference: `shorts-title-strips-ep1.png` (Drive
   topic over a large mustard disc, centre and lower half. No brand logos in the art.
 - **Show mark bottom-right**, high contrast. No host-name strip, no show mark at the top.
 
-Title = the Short's hook, the same faithful paraphrase as its on-screen hook: one idea,
-two lines, ideally ≤14 characters a line. No numbers that aren't in the clip.
+Title = the Short config's shared `cover_title`: one short punchy idea, two lines,
+ideally ≤14 characters a line. The cover, opening banner, YouTube title (the lines
+joined with one space) and first description line all use it unchanged. No numbers or
+claims that aren't in the clip; a necessary Latin name such as `CoreWeave` is allowed.
 
 ## Standing option rule (2026-10-22)
 Until Amitai says the design is dialed in, every individual Short cover is delivered as
@@ -36,12 +38,13 @@ options for each of the episode's three Shorts, not one option per Short.
 2. **Typeset the title with Heebo:**
    ```bash
    python3 scripts/make_cover_title.py ART-A.png "option-A/שורט-NN-<נושא>-cover.jpg" \
-     --line1 "מי ינצח" --line2 "במרוץ הרובוטקסי?" --pill "פרק 1" \
+     --config short.json --pill "פרק 1" \
      --font fonts/Heebo-Black.ttf --logo assets/logo-solid.png
    ```
    Repeat in `option-B/` and `option-C/`; the folder labels the option without adding a
    label to the artwork.
-   It crops the art to 1080×1920 without stretching, keeps both lines the same size, puts
+   `--config` reads the same `cover_title` field as the Remotion banner; do not copy the
+   lines into separate cover or banner fields. It crops the art to 1080×1920 without stretching, keeps both lines the same size, puts
    the pill and the logo in place, and fails if the title would leave the centre square.
 3. **Check all three options** with
    `python3 scripts/check_cover.py "option-X/שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`,

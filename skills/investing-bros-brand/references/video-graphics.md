@@ -11,20 +11,19 @@ top-right; word-by-word captions over a soft feathered blurred lower-third band,
 word gold, others white. Heebo Black for the title block, Heebo ExtraBold for captions.
 No speaker name, underline, hairline or hard caption box. Dip to black between moments.
 
-## Shorts video hook (approved production layout, `shorts-video-hook`)
-The first 2.7 s of every full-bleed Short: the hook as two torn-paper strips, cream line 1
-over mustard line 2, navy Heebo Black at about 108 px (line 2 ~10% larger), a soft navy
-paper shadow, fading out over 0.2 s. Centred horizontally, block centred around y 960 on
-1920 (allowed 300–1000), at least 40 px clear below the logo (bottom y 277) and above the
-captions. Covering the face for those 2.7 s is accepted. Captions sit at centre y
-1100–1470, just under the chin. Rendered by `investing-bros-shorts`
-(`brand.hook_strips`, `build_fullbleed.py`; constants `HOOK_STRIPS`, `HOOK_Y_BOUNDS`,
-`CAPTION_Y_BOUNDS`).
+## Shorts opening banner (approved production layout, `shorts-video-hook`)
+The first 3 s of every new Remotion Short: the config's exact shared `cover_title` as
+two torn-paper strips matching the cover, cream line 1 over mustard line 2, navy Heebo
+Black at about 96 px, with a soft navy paper shadow and a 0.3 s fade ending at 3.0 s.
+The block starts around y 700. Covering the face briefly is accepted. Never substitute
+a longer, number-heavy hook. The same field supplies the cover, YouTube title and first
+description line. Legacy full-bleed rebuilds keep their deployed coordinates.
 
-**Hook vs captions:** never the same treatment. The hook is print (the strips above);
-captions stay the screen style: white Heebo with the current word in `#F5B71F`. Hooks
-are as short as possible: one idea, ideally six words or fewer, two lines
-(`למה לסייברקאב` / `אין הגה?`). The Short's cover uses the same two-strip title.
+**Banner vs captions:** never the same treatment. The banner is print (the strips
+above); current kinetic captions use a moving navy active-word box (gold for a keyword
+or number), one 78–135 px emphasis word and ~64 px secondary words. Mixed
+Hebrew/Latin/numbers use bidi isolation. Titles are one idea, ideally six words or
+fewer, in two lines.
 
 ## Discussion card (proposed adaptation, `discussion-square`)
 Small masthead, one short question and a restrained subject detail. A discussion question

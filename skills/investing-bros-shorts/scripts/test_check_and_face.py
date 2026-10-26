@@ -1,22 +1,36 @@
 """Tests for check_short.py limits and face_crop.py's centring. Run: python3 -m pytest skills/investing-bros-shorts/scripts"""
 import os
+import json
 import sys
 
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-from check_short import layout_problems, opening_problems, problems  # noqa: E402
+from check_short import layout_problems, metadata_problems, opening_problems, problems  # noqa: E402
 from face_crop import place, skin_centre_x  # noqa: E402
 
 
 def test_house_limits():
-    assert problems(48.5, -14.4, -4.5) == []
+    assert problems(44.5, -14.4, -4.5) == []
     assert len(problems(65, -18.0, -0.5)) == 3
 
 
 def test_length_limits():
-    assert problems(52, -14, -4) == []                 # over the 20-45 s target is a note, not a failure
+    assert len(problems(45.01, -14, -4)) == 1          # 45 s is a hard cap
+    assert problems(45, -14, -4) == []
     assert len(problems(12, -14, -4)) == 1
+
+
+def test_youtube_title_and_description_start_with_cover_title(tmp_path):
+    cfg = tmp_path / "short.json"
+    cfg.write_text(json.dumps({"cover_title": {"top_line": "CoreWeave", "bottom_line": "בסכנה?"}},
+                              ensure_ascii=False), encoding="utf-8")
+    notes = tmp_path / "youtube.md"
+    notes.write_text("## Title\nCoreWeave בסכנה?\n\n## Description\nCoreWeave בסכנה?\nהמשך.\n",
+                     encoding="utf-8")
+    assert metadata_problems(cfg, notes) == []
+    notes.write_text("## Title\nכותרת אחרת\n\n## Description\nפתיח אחר\n", encoding="utf-8")
+    assert len(metadata_problems(cfg, notes)) == 2
 
 
 def test_first_second_and_ending():

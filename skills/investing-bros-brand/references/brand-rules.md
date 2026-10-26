@@ -35,14 +35,16 @@ Permit natural tonal variation from paper grain and engraving. Keep the three-co
 family consistent. No topic-specific neon palette. Gold is printed mustard, not glossy
 luxury metal. Use cream for comfortable contrast, not clinical white.
 
-Screen exception: the motion stack (teaser and Shorts captions) keeps its screen-tested
-accent gold `#F5B71F`, and the full-frame teaser uses white type with a `#13203E` navy
-title outline over live video. Those constants live in `brand.py` in
+Screen exception: the motion stack keeps its screen-tested accent gold `#F5B71F`.
+The approved kinetic Shorts captions use it as the active box for keywords and numbers
+(ordinary active words use a navy box), and the full-frame teaser uses gold current
+words plus white type with a `#13203E` navy title outline over live video. Those constants live in `brand.py` in
 `investing-bros-video` and `investing-bros-shorts`; do not redefine them in a renderer.
 
 ## Typography
 **Heebo is the show's typeface** (decided 2026-10-22): Heebo Black for headlines and
-title strips, Heebo ExtraBold for captions, Heebo SemiBold for small copy. Every
+title strips and the approved kinetic Shorts captions, Heebo ExtraBold for other
+video captions, Heebo SemiBold for small copy. Every
 deterministic renderer uses static Heebo weights (`brand.py fonts` in
 `investing-bros-shorts` makes them from Google's variable Heebo). No other font, no
 antique calligraphy, serif display titles, bevels, thick outlines or glow on text.

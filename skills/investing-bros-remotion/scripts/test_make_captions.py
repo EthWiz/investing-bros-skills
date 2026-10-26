@@ -116,3 +116,11 @@ def test_punch_phrases_stay_up_long_enough_to_read():
     slow = [{"w": x, "s": i * 0.6, "e": i * 0.6 + 0.5, "key": False} for i, x in enumerate(["אחת", "שתיים", "שלוש", "ארבע"])]
     assert max(len(g) for g in chunk_punch(slow)) <= 3                                      # no need to grow
     assert reading_floor([{"w": "עשור"}]) == pytest.approx(0.45 + 0.045 * 4)
+
+
+def test_punch_keeps_multi_token_latin_names_in_one_phrase():
+    from make_captions import chunk_punch
+    words = [{"w": x, "s": i * 0.6, "e": i * 0.6 + 0.5, "key": False} for i, x in
+             enumerate(["המדד", "S&P", "500", "עלה", "היום"])]
+    groups = [[w["w"] for w in group] for group in chunk_punch(words)]
+    assert any("S&P" in group and "500" in group for group in groups)

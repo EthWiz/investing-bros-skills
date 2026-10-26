@@ -5,16 +5,17 @@ Usage:
     python3 make_props.py short.json --base WORK/clean.mp4 -o props.json [--captions captions.json]
 
 short.json is the investing-bros-shorts config (all times on the OUTPUT timeline):
-  meta {episode}, hook {start, end, top_line, bottom_line},
+  meta {episode}, cover_title {top_line, bottom_line},
   tags [[start, end, name]], captions [{start, end, text, highlight}],
   cards (or the older key hyperframes) [{id, mode: inset|full|card (or panel), start, end,
          steps: [{at, visual, title, subtitle, value}]}], cta_overlay {start, end, text}.
 The base video's length comes from ffprobe (or --base-duration). --captions takes the
 word-timed captions from make_captions.py in place of the config's.
 
-Refuses: an unknown icon, emoji on a card, a card over the hook (first 3 s) or the CTA,
+Refuses: a video over 45 s, an unknown icon, emoji on a card, a card over the
+cover-title banner (first 3 s) or the CTA,
 overlapping cards, steps outside their card, a card subtitle that repeats the captions
-under it, captions over 4 words, out of order or past the end of the video, word times
+under it, captions over the active style's word limit, out of order or past the end of the video, word times
 outside their caption, and a CTA that stops before the end (there is no end card).
 Card words must be the hosts' own words: that part is on you.
 """
@@ -31,6 +32,7 @@ VALUE_ICONS = ("drop", "rise", "pie")
 LEGACY_VISUALS = {"clock": "pie"}           # build_amitai_short.py names that map to a Remotion icon
 MODES = ("inset", "full", "card")
 DEFAULT_MODE = "inset"
+MAX_DURATION = 45.0
 EMOJI = re.compile("[\U0001F300-\U0001FAFF☀-➿️‍]")
 
 
@@ -118,8 +120,27 @@ def repeat_problems(cards, captions):
     return errs
 
 
+def opening_banner(cfg: dict) -> dict:
+    """The cover title is the single source for the opening banner.
+
+    `hook` remains readable only so an older export can be rebuilt. New configs use
+    `cover_title`; accepting both would allow the cover and banner to drift.
+    """
+    title = cfg.get("cover_title")
+    if title is not None:
+        if "hook" in cfg:
+            raise ValueError("use only cover_title; it is shared by the cover and opening banner")
+        if not isinstance(title, dict) or not title.get("top_line") or not title.get("bottom_line"):
+            raise ValueError("cover_title needs non-empty top_line and bottom_line")
+        return {"start": 0.0, "end": 3.0, **title}
+    hook = cfg.get("hook")
+    if hook is None:
+        raise ValueError("cover_title is required (the same title is used for the cover and opening banner)")
+    return hook
+
+
 def build_props(cfg: dict, duration: float) -> dict:
-    meta, hook, cta = cfg.get("meta", {}), cfg["hook"], cfg["cta_overlay"]
+    meta, hook, cta = cfg.get("meta", {}), opening_banner(cfg), cfg["cta_overlay"]
     cards = []
     for c in cfg.get("cards", cfg.get("hyperframes", [])):
         steps = [{"at": s["at"], "visual": LEGACY_VISUALS.get(s["visual"], s["visual"]), "title": s["title"],
@@ -130,6 +151,8 @@ def build_props(cfg: dict, duration: float) -> dict:
                       "start": c["start"], "end": c["end"], "steps": steps})
     if not isinstance(meta.get("episode"), int):
         raise ValueError("meta.episode (the number Amitai stated) is required")
+    if duration > MAX_DURATION + 1e-6:
+        raise ValueError(f"video runs {duration:.2f} s; Shorts have a hard {MAX_DURATION:.0f} s cap after the 1.15x speed-up")
     max_words = {"build": 4, "line": 8}.get(cfg.get("caption_style"), 6)    # house 'punch': up to 6
     errs = (card_problems(cards, hook, cta, duration) + caption_problems(cfg["captions"], duration, max_words)
             + repeat_problems(cards, cfg["captions"]))
