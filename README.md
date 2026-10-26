@@ -31,6 +31,10 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 - `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work and `investing-bros-remotion` for anything animated.
 - **Nothing goes public without Amitai's explicit OK in chat.**
 
+## Crypto course
+
+`investing-bros-crypto-course` runs the free five-lesson Hebrew crypto course on the YouTube channel, outside the episode flow: the lesson plan, one slide deck and script per lesson, and `קורס קריפטו/שיעור N — נושא/` folders in Drive.
+
 ## Design ownership
 
 `investing-bros-brand` is the single source for design rules, templates, selected artwork,
