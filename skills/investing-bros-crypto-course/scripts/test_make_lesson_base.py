@@ -7,10 +7,10 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_lesson_base import (build_cmd, extras_name, filter_graph, manifest, parse_silences, take_path,  # noqa: E402
-                              trims_from_silences)
+from make_lesson_base import (build_cmd, copy_words, digest, extras_name, filter_graph, fingerprint,  # noqa: E402
+                              latest_record, manifest, parse_silences, stamp, status, take_path, trims_from_silences)
 
-LESSONS = Path(__file__).resolve().parent.parent / "references" / "lessons"
+EXAMPLE = Path(__file__).resolve().parent.parent / "references" / "example-lesson-video.json"
 
 
 def test_trims_skip_camera_clicks_at_both_ends():
@@ -73,9 +73,96 @@ def test_the_manifest_is_a_config_that_rebuilds_from_drive():
     assert pkg["takes"] == {"1": {"drive": "קטע-01.mp4", "recorded_as": "Beat 1 - take 1.mov"}}
     assert pkg["words"] == ["קטע-01.json"] and pkg["captions"] == "שיעור-1-כתוביות.srt"
     assert "build שיעור-1-מניפסט.json --takes-dir ." in pkg["rebuild"]
+    cfg["script"] = {"doc": "D", "revision": "r", "snapshot": "script/תסריט-שיעור-1-v1.md"}
+    m = manifest(cfg, text, "b.mp4", 1.0, "v", "t")
+    assert m["script"]["snapshot"] == "תסריט-שיעור-1-v1.md"           # the package holds it beside the manifest
 
 
-@pytest.mark.parametrize("path", sorted(LESSONS.glob("lesson-*-video.json")), ids=lambda p: p.name)
+def test_no_real_lesson_config_is_kept_in_the_repo():
+    """Real configs live in each lesson's own folder and its Drive package, not in the skill."""
+    refs = EXAMPLE.parent
+    assert not (refs / "lessons").exists()
+    assert not list(refs.rglob("lesson-*-video.json"))
+
+
+def fake_hash(path):
+    return "h:" + Path(path).read_text()
+
+
+def lesson(tmp_path):
+    cfg = {"lesson": 1, "takes": [{"beat": 1, "file": "a.mov", "from": 1.0, "to": 9.0},
+                                  {"beat": 2, "file": "b.mov", "from": 0.5, "to": 7.0}],
+           "proofread": {"1": "שלום.", "2": "להתראות."}, "anchors": {}, "segments": [], "title": ["x"],
+           "script": {"doc": "D", "revision": "r1", "snapshot_sha256": "s1"}}
+    takes, words = tmp_path / "takes", tmp_path / "words"
+    takes.mkdir()
+    words.mkdir()
+    (takes / "a.mov").write_text("take-a")
+    (takes / "b.mov").write_text("take-b")
+    for n in (1, 2):
+        (words / f"קטע-0{n}.json").write_text("[]")
+    return cfg, takes, words
+
+
+def test_stamp_records_the_take_and_never_overwrites(tmp_path):
+    cfg, takes, words = lesson(tmp_path)
+    assert stamp(cfg, takes, words, hasher=fake_hash) == [(1, "stamped"), (2, "stamped")]
+    side = json.loads((words / "קטע-01.take.json").read_text(encoding="utf-8"))
+    assert (side["take"], side["sha256"]) == ("a.mov", "h:take-a")
+    (takes / "a.mov").write_text("a new take-a")
+    assert stamp(cfg, takes, words, hasher=fake_hash)[0] == (1, "STALE: the take changed")
+    assert json.loads((words / "קטע-01.take.json").read_text(encoding="utf-8"))["sha256"] == "h:take-a"
+    assert stamp(cfg, takes, words, force=True, hasher=fake_hash)[0] == (1, "stamped")
+
+
+def test_status_names_what_to_run_again(tmp_path):
+    cfg, takes, words = lesson(tmp_path)
+    stamp(cfg, takes, words, hasher=fake_hash)
+    lines, todo = status(cfg, takes, words, None, hasher=fake_hash)
+    assert "no export record" in lines[-1] and todo == ["base", "props", "render"]
+    record = {"made": "t", "fingerprint": fingerprint(cfg),
+              "takes": [{"beat": 1, "sha256": "h:take-a"}, {"beat": 2, "sha256": "h:take-b"}]}
+    assert status(cfg, takes, words, record, hasher=fake_hash) == (["nothing changed since the export of t"], [])
+    cfg["proofread"]["2"] = "להתראות לכולם."
+    assert status(cfg, takes, words, record, hasher=fake_hash)[1] == ["props", "render"]       # Whisper is kept
+    cfg["takes"][0]["to"] = 8.5
+    assert status(cfg, takes, words, record, hasher=fake_hash)[1] == ["base", "props", "render"]
+    (takes / "b.mov").write_text("another take-b")
+    lines, todo = status(cfg, takes, words, record, hasher=fake_hash)
+    assert "beat 2: the take changed since its words were made" in lines and "whisper" in todo
+    cfg["script"]["snapshot_sha256"] = "s2"
+    assert "review the script" in status(cfg, takes, words, record, hasher=fake_hash)[1]
+
+
+def test_the_latest_record_in_a_folder_is_used(tmp_path):
+    assert latest_record(tmp_path) is None
+    for stamp_ in ("20261027T100000Z", "20261027T120000Z"):
+        (tmp_path / f"שיעור-1-ייצוא-{stamp_}.json").write_text(json.dumps({"made": stamp_}))
+    assert latest_record(tmp_path)["made"] == "20261027T120000Z"
+
+
+def test_the_package_gets_the_words_and_their_drive_hash(tmp_path):
+    cfg, takes, words = lesson(tmp_path)
+    stamp(cfg, takes, words, hasher=fake_hash)
+    extras = tmp_path / "extras"
+    extras.mkdir()
+    for n in (1, 2):
+        (extras / f"קטע-0{n}.mp4").write_text(f"remux-{n}")
+    copy_words(cfg["takes"], words, extras, hasher=fake_hash)
+    side = json.loads((extras / "קטע-02.take.json").read_text(encoding="utf-8"))
+    assert (side["sha256"], side["package_sha256"]) == ("h:take-b", "h:remux-2")
+    assert (extras / "קטע-01.json").is_file()
+    (words / "קטע-02.json").unlink()
+    with pytest.raises(SystemExit, match="no words"):
+        copy_words(cfg["takes"], words, extras, hasher=fake_hash)
+
+
+def test_the_digest_recipe_matches_check_lesson():
+    # the same value and digest are pinned in investing-bros-remotion's test_check_lesson.py
+    assert digest({"b": [1, 2.5], "a": "שקל"}) == "3bdd54540bcd88c26abe23472687f25b8a072bf43395a8e16f9c6d7e92828e97"
+
+
+@pytest.mark.parametrize("path", [EXAMPLE], ids=lambda p: p.name)
 def test_lesson_configs_are_complete(path):
     cfg = json.loads(path.read_text(encoding="utf-8"))
     beats = [t["beat"] for t in cfg["takes"]]

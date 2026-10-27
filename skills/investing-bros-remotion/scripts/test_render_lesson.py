@@ -83,3 +83,25 @@ def test_scene_assets_are_staged_under_public(tmp_path):
                                            "assetSources": {"whitepaper": str(src)}})
     assert (tmp_path / "work" / "public" / "assets" / "whitepaper.png").read_bytes() == b"png"
     stage_scene_assets(tmp_path / "work", {})                        # a lesson with no images
+
+
+def test_vertical_scenes_have_a_9_by_16_composition():
+    root = (TEMPLATE / "src" / "Root.tsx").read_text()
+    block = root[root.index('id="LessonScenes"'):]
+    assert "width={1080}" in block and "height={1920}" in block and "LESSON_FPS" in block
+    manifest = json.loads((TEMPLATE / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
+    vertical = [k for k, v in manifest.items() if not k.startswith("_") and v.get("vertical")]
+    assert vertical == ["double-spend"]
+    for name in vertical:                                            # it lays itself out from the frame size
+        src = (TEMPLATE / "src" / "lesson" / "DoubleSpend.tsx").read_text()
+        assert "useVideoConfig" in src and "TALL" in src, name
+    s = still_cmd(Path("/o/v.png"), Path("/p.json"), 300, composition="LessonScenes")
+    assert s[:5] == ["npx", "remotion", "still", "src/index.ts", "LessonScenes"]
+
+
+def test_double_spend_takes_every_word_from_content():
+    src = (TEMPLATE / "src" / "lesson" / "DoubleSpend.tsx").read_text()
+    hebrew = [line for line in src.splitlines() if re.search(r"[֐-׿]", line) and not line.strip().startswith("//")]
+    assert hebrew == []                                              # no Hebrew text baked into the component
+    manifest = json.loads((TEMPLATE / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
+    assert set(manifest["double-spend"]["variants"]["options"]) == {"copy", "ledger"}

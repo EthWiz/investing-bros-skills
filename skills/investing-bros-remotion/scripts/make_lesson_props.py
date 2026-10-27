@@ -2,17 +2,22 @@
 """Props for a crypto-course lesson video (the "Lesson" composition): captions, layout, graphic anchors.
 
 Usage:
-    python3 make_lesson_props.py lesson-N-video.json --words-dir WORDS -o props.json [--srt captions.srt]
+    python3 make_lesson_props.py lesson-N/lesson-N-video.json --words-dir WORDS -o props.json \\
+        [--srt captions.srt] [--takes-dir DIR]
 
-lesson-N-video.json (the lesson's config, investing-bros-crypto-course -> references/lessons/):
+lesson-N-video.json (the lesson's config; it lives in the lesson's own folder, beside its assets/ and
+  script/, or is the Drive manifest שיעור-N-מניפסט.json; see investing-bros-crypto-course's video reference):
   lesson, title (lines), parts, part_starts (the beat each part starts on, null if not in this cut),
   disclaimer_beat, disclaimer_from (optional anchor [beat, "phrase"] inside that beat where the strip starts;
-  it ends with the beat), script {doc, revision, beats: {beat: {title, on_screen, text}}, departures: {beat: why}}
-  (parse_script.py, from the Google Doc), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
+  it ends with the beat), script {doc, revision, revision_kind, snapshot, snapshot_sha256, beats: {beat: {title,
+  on_screen, text}}, departures: {beat: why}} (parse_script.py, from the Google Doc; the snapshot is checked
+  against its hash), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
   proofread {beat: what Amitai said in the take}, anchors {key: spec}, assets {key: {file, source}},
   segments [{at: spec, mode, zoom?, scene?, content?}].
 WORDS holds one whisper file per take, קטע-NN.json (NN = beat): the whisper CLI's --output_format json
-  (segments with word timings) or transcribe_clip.py's [{"w", "s", "e"}], in seconds of the take.
+  (segments with word timings) or transcribe_clip.py's [{"w", "s", "e"}], in seconds of the take. They are
+  timing only: caption wording is the config's `proofread`. With --takes-dir, each words file's sidecar
+  קטע-NN.take.json must name the selected take's sha256, so words from a replaced take are refused.
 
 An anchor spec says when something starts, always from a spoken word:
   [beat, "phrase"]          when the phrase's first word is said (exact proofread words, punctuation ignored)
@@ -25,11 +30,13 @@ Captions are the proofread words on whisper's timings (make_captions.py's alignm
 for 16:9, and never split a sentence's last word from it. What each scene needs is in the template's
 src/lesson/scenes.json. The script refuses, before anything renders: a phrase it can't find; a take
 with no script beat (the Google Doc wasn't read); a scene the template doesn't have or in the wrong
-mode; a scene's anchor, content `at` or asset that is missing or outside its segment; segments out of
+mode; a scene's anchor, content `at` or asset that is missing or outside its segment; a scene variant
+(double-spend's scenario) that isn't allowed, lacks its content or has its events out of order; segments out of
 order or past the end; a side or bubble stretch in the first 30 s (face only there); a punch-in over
 1.25x (takes may be 720p); and agenda anchors for parts that don't exist.
 """
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -216,10 +223,45 @@ def check_scenes(segments, at, assets, manifest):
         missing = [k for k in spec.get("assets", []) if k not in assets]
         if missing:
             raise SystemExit(f"error: scene '{name}' needs assets {missing} (config 'assets')")
+        if "variants" in spec:
+            check_variant(name, spec["variants"], content)
 
 
-def check_script(cfg):
-    """The Google Doc was read: its revision is recorded and every recorded beat has its on-screen line."""
+def content_at(content, dotted: str):
+    """content['payments'][1]['at'] for 'payments.1.at'; None when any step is missing."""
+    cur = content
+    for step in dotted.split("."):
+        if isinstance(cur, list) and step.isdigit() and int(step) < len(cur):
+            cur = cur[int(step)]
+        elif isinstance(cur, dict) and step in cur:
+            cur = cur[step]
+        else:
+            return None
+    return cur
+
+
+def check_variant(name, variants, content):
+    """A scene with variants (double-spend's scenario): an allowed value, its extra content, its events in order."""
+    key, options = variants["key"], variants["options"]
+    value = content.get(key)
+    if value not in options:
+        raise SystemExit(f"error: scene '{name}': {key} '{value}' isn't one of {sorted(options)}")
+    opt = options[value]
+    missing = [k for k in opt.get("content", []) if k not in content]
+    if missing:
+        raise SystemExit(f"error: scene '{name}' ({value}) needs content {missing}")
+    times = [(p, content_at(content, p)) for p in opt.get("order", [])]
+    absent = [p for p, t in times if not isinstance(t, (int, float))]
+    if absent:
+        raise SystemExit(f"error: scene '{name}' ({value}) needs times {absent}")
+    for (pa, ta), (pb, tb) in zip(times, times[1:]):
+        if tb < ta - 1e-6:
+            raise SystemExit(f"error: scene '{name}' ({value}): {pb} ({tb:.2f} s) comes before {pa} ({ta:.2f} s)")
+
+
+def check_script(cfg, config_dir: Path = Path(".")):
+    """The Google Doc was read: its revision is recorded, every recorded beat has its on-screen line, and the
+    saved snapshot (when the config names one, as parse_script.py writes it) is the text that was parsed."""
     script = cfg.get("script") or {}
     if not script.get("doc") or not script.get("revision"):
         raise SystemExit("error: config 'script' needs the Google Doc's id and revision (read תסריט-שיעור-N first)")
@@ -227,6 +269,49 @@ def check_script(cfg):
     missing = [t["beat"] for t in cfg["takes"] if not beats.get(str(t["beat"]), {}).get("on_screen")]
     if missing:
         raise SystemExit(f"error: beats {missing} have no 'על המסך' line from the script (parse_script.py)")
+    if script.get("snapshot"):
+        snap = config_dir / script["snapshot"]
+        if not snap.is_file():
+            raise SystemExit(f"error: the script snapshot {snap} is missing")
+        if script.get("snapshot_sha256") and sha256_file(snap) != script["snapshot_sha256"]:
+            raise SystemExit(f"error: the script snapshot {snap} changed after parse_script.py read it; "
+                             "save the new Doc text as a new snapshot and parse that")
+
+
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def take_file(t, takes_dir: Path):
+    """The take under its own name, else its Drive name (make_lesson_base.py finds takes the same way)."""
+    for name in (t["file"], f"קטע-{t['beat']:02d}.mp4"):
+        if (takes_dir / name).is_file():
+            return takes_dir / name
+    return None
+
+
+def check_words_match_takes(cfg, words_dir: Path, takes_dir: Path):
+    """Each words file was made from the take the config selects: its sidecar קטע-NN.take.json
+    (make_lesson_base.py stamp) holds that take's sha256 (the recorded file's, or its Drive copy's).
+    Returns the beats with no sidecar, to report; a sidecar naming another take is refused."""
+    unstamped = []
+    for t in cfg["takes"]:
+        side = words_dir / f"קטע-{t['beat']:02d}.take.json"
+        if not side.is_file():
+            unstamped.append(t["beat"])
+            continue
+        rec = json.loads(side.read_text(encoding="utf-8"))
+        take = take_file(t, takes_dir)
+        if take is None:
+            raise SystemExit(f"error: beat {t['beat']}: neither {t['file']} nor its Drive name is in {takes_dir}")
+        if sha256_file(take) not in {rec.get("sha256"), rec.get("package_sha256")}:
+            raise SystemExit(f"error: beat {t['beat']}: the words were made from {rec.get('take')}, not from {take.name} "
+                             f"as it is now; transcribe the selected take again")
+    return unstamped
 
 
 def stage_assets_spec(cfg, config_dir: Path):
@@ -255,7 +340,7 @@ def disclaimer(cfg, by_n, resolve):
 
 def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     manifest = scene_manifest() if manifest is None else manifest
-    check_script(cfg)
+    check_script(cfg, config_dir)
     beats, timemap, duration = timeline(cfg)
     caps = captions(cfg, words_dir, timemap)
     resolve = resolver(beats, caps)
@@ -278,7 +363,8 @@ def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
             "parts": cfg["parts"], "partStarts": part_starts, "disclaimer": disclaimer(cfg, by_n, resolve),
             "beats": beats, "segments": segments, "captions": caps, "at": at, "assets": assets,
             "assetSources": sources,
-            "script": {k: cfg["script"][k] for k in ("doc", "revision")},
+            "script": {k: cfg["script"][k] for k in ("doc", "revision", "revision_kind", "snapshot_sha256")
+                       if k in cfg["script"]},
             "departures": cfg["script"].get("departures", {})}
 
 
@@ -299,8 +385,14 @@ def main(argv=None) -> int:
     ap.add_argument("--words-dir", required=True)
     ap.add_argument("-o", "--out", required=True)
     ap.add_argument("--srt", help="also write the captions as SRT (lesson timeline), for Drive")
+    ap.add_argument("--takes-dir", help="check each words file was made from the selected take (its .take.json sidecar)")
     a = ap.parse_args(argv)
     cfg = json.loads(Path(a.config).read_text(encoding="utf-8"))
+    if a.takes_dir:
+        unstamped = check_words_match_takes(cfg, Path(a.words_dir), Path(a.takes_dir))
+        if unstamped:
+            print(f"note: beats {unstamped} have no .take.json sidecar, so their words weren't checked against the takes "
+                  "(make_lesson_base.py stamp)", file=sys.stderr)
     props = build(cfg, Path(a.words_dir), config_dir=Path(a.config).resolve().parent)
     Path(a.out).write_text(json.dumps(props, ensure_ascii=False, indent=1), encoding="utf-8")
     if a.srt:

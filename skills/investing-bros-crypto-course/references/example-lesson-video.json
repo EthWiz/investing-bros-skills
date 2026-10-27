@@ -1,0 +1,65 @@
+{
+ "_about": "A made-up lesson showing every part of a lesson video config; the tests build props from it. A real lesson's config lives in its own folder (lesson-N/lesson-N-video.json, beside assets/ and script/) and travels to Drive as the manifest; it is never merged into this repo. See references/video-production.md.",
+ "lesson": 9,
+ "title": ["שיעור לדוגמה"],
+ "parts": ["הבעיה", "הפתרון"],
+ "part_starts": [2, 3],
+ "disclaimer_beat": 1,
+ "script": {
+  "doc": "EXAMPLE_DOC_ID",
+  "revision": "2026-10-27T00:00:00.000Z",
+  "revision_kind": "modified_time",
+  "beats": {
+   "1": {"title": "פתיחה", "seconds": 35, "on_screen": "רק אתה.", "text": "שלום לכולם. והיום נלמד על הוצאה כפולה."},
+   "2": {"title": "הבעיה", "seconds": 20, "on_screen": "אנימציית ההוצאה הכפולה, מסך מלא.", "text": "יש לי שקל אחד."},
+   "3": {"title": "הפתרון", "seconds": 20, "on_screen": "אותה אנימציה עם הפנקס המשותף.", "text": "במקום פנקס אחד."}
+  },
+  "departures": {
+   "2": "Both recipients get a check mark instead of saying 'קיבלתי': he says 'שניהם קיבלו', not 'קיבלתי'."
+  }
+ },
+ "takes": [
+  {"beat": 1, "file": "Beat 1 - take 1.mov", "from": 0.0, "to": 34.0},
+  {"beat": 2, "file": "Beat 2 - take 1.mov", "from": 0.0, "to": 12.0},
+  {"beat": 3, "file": "Beat 3 - take 1.mov", "from": 0.0, "to": 14.0}
+ ],
+ "proofread": {
+  "1": "שלום לכולם. והיום נלמד על הוצאה כפולה.",
+  "2": "יש לי שקל אחד. אני שולח אותו לדני. ואז אני מעתיק אותו, ושולח אותו גם ליוסי. שניהם קיבלו. זה נקרא הוצאה כפולה.",
+  "3": "במקום פנקס אחד אצל הבנק, לכל אחד יש עותק, וכולם מסונכרנים. אם אני שולח את אותו שקל גם ליוסי, כולם רואים שהוא כבר אצל דני. וההעברה נדחית."
+ },
+ "anchors": {
+  "title": [1, "והיום נלמד"]
+ },
+ "assets": {},
+ "segments": [
+  {"at": [1, null], "mode": "full", "zoom": 1.1},
+  {"at": [1, "והיום", -0.15], "mode": "full"},
+  {"at": [2, null], "mode": "bubble", "scene": "double-spend", "content": {
+   "scenario": "copy",
+   "sender": {"label": "אני"},
+   "coin": {"label": "שקל", "at": [2, "שקל"]},
+   "recipients": [{"label": "דני", "at": [2, "לדני"]}, {"label": "יוסי", "at": [2, "ליוסי"]}],
+   "payments": [{"at": [2, "שולח"]}, {"at": [2, "ושולח"]}],
+   "copy": {"at": [2, "מעתיק"]},
+   "received": {"at": [2, "שניהם"]},
+   "verdict": {"text": "הוצאה כפולה", "at": [2, "הוצאה"]}
+  }},
+  {"at": [3, null], "mode": "bubble", "scene": "double-spend", "content": {
+   "scenario": "ledger",
+   "sender": {"label": "אני"},
+   "ledger": {"label": "הבנק", "at": [3, "פנקס"]},
+   "split": {"at": [3, "לכל"]},
+   "coin": {"label": "שקל", "at": [3, "וכולם"]},
+   "recipients": [{"label": "דני", "at": [3, null, 0.3]}, {"label": "יוסי", "at": [3, null, 0.5]}],
+   "payments": [{"at": [3, "מסונכרנים"]}, {"at": [3, "שולח"]}],
+   "seen": {"at": [3, "רואים"]},
+   "verdict": {"text": "נדחית", "at": [3, "וההעברה"]}
+  }}
+ ],
+ "notes": {
+  "takes": "from/to come from make_lesson_base.py suggest, checked against the whisper words.",
+  "proofread": "What was said in the take, not the script. Words that couldn't be confirmed by ear are listed here and in the hand-back.",
+  "anchors": "[beat, phrase] = when the phrase's first word is said; [beat, phrase, offset]; [beat, null, offset] = beat start + offset; {beat_end, offset}."
+ }
+}
