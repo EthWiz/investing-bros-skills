@@ -8,10 +8,11 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_lesson_props import build, known_scenes, load_words, scene_manifest, srt, tidy  # noqa: E402
+from make_lesson_props import (build, check_words_match_takes, known_scenes, load_words, scene_manifest,  # noqa: E402
+                               sha256_file, srt, tidy)
 
-LESSON_1 = (Path(__file__).resolve().parents[2] / "investing-bros-crypto-course" / "references" / "lessons"
-            / "lesson-1-video.json")
+EXAMPLE = (Path(__file__).resolve().parents[2] / "investing-bros-crypto-course" / "references"
+           / "example-lesson-video.json")
 MANIFEST = {
     "panel": {"mode": "side", "anchors": ["p1"], "content": ["heading"], "assets": []},
     "flow": {"mode": "bubble", "anchors": [], "content": [], "assets": ["page"]},
@@ -172,21 +173,86 @@ def test_words_formats_and_srt(tmp_path):
     assert text == "1\n00:01:01,500 --> 01:02:05,250\nשלום לכולם.\n"
 
 
-def test_lesson_1_config_matches_the_template_manifest():
-    """No words needed: every scene segment in lesson 1 names a known scene in the right mode, and carries
-    the content keys and assets that scene declares; every anchor it needs is in the config."""
-    manifest, cfg = scene_manifest(), json.loads(LESSON_1.read_text(encoding="utf-8"))
-    assert {"terms", "lesson1-money-flow", "lesson1-satoshi"} <= known_scenes()
-    for seg in cfg["segments"]:
-        if seg["mode"] == "full":
-            continue
-        spec = manifest[seg["scene"]]
-        assert spec["mode"] == seg["mode"], seg["scene"]
-        assert set(spec["content"]) <= set(seg.get("content", {})), seg["scene"]
-        assert set(spec["anchors"]) <= set(cfg["anchors"]), seg["scene"]
-        assert set(spec.get("assets", [])) <= set(cfg.get("assets", {})), seg["scene"]
-    for a in cfg.get("assets", {}).values():
-        assert (LESSON_1.parent / a["file"]).is_file() and a["source"]
-    broken = copy.deepcopy(cfg)
-    del broken["anchors"]["s_paper"]
-    assert "s_paper" in manifest["lesson1-satoshi"]["anchors"]   # so dropping it is refused at build time
+def example_words(cfg, folder: Path):
+    """Whisper-shaped words for the example's proofread text, one word every 0.4 s from 0.5 s."""
+    for t in cfg["takes"]:
+        (folder / f"קטע-{t['beat']:02d}.json").write_text(
+            json.dumps(words(cfg["proofread"][str(t["beat"])]), ensure_ascii=False), encoding="utf-8")
+
+
+def test_the_example_config_builds_with_the_real_scene_manifest(tmp_path):
+    """The made-up lesson in investing-bros-crypto-course runs end to end against the template's scenes.json:
+    both double-spend scenarios, from content alone."""
+    cfg = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    assert {"terms", "double-spend", "lesson1-money-flow", "lesson1-satoshi"} <= known_scenes()
+    example_words(cfg, tmp_path)
+    p = build(cfg, tmp_path, config_dir=EXAMPLE.parent)
+    scenes = [s for s in p["segments"] if s.get("scene") == "double-spend"]
+    assert [s["content"]["scenario"] for s in scenes] == ["copy", "ledger"]
+    copy_, ledger = scenes[0]["content"], scenes[1]["content"]
+    assert copy_["coin"]["at"] < copy_["payments"][0]["at"] < copy_["copy"]["at"] < copy_["payments"][1]["at"]
+    assert ledger["split"]["at"] < ledger["payments"][1]["at"] < ledger["verdict"]["at"]
+    assert p["departures"] == cfg["script"]["departures"]
+
+
+@pytest.mark.parametrize("change, message", [
+    (lambda c: c.__setitem__("scenario", "mirror"), "scenario 'mirror' isn't one of"),
+    (lambda c: c.pop("copy"), r"\(copy\) needs content \['copy'\]"),
+    (lambda c: c["payments"].pop(), r"needs times \['payments.1.at'\]"),
+    (lambda c: c.__setitem__("copy", {"at": [2, "יש"]}), r"copy.at .* comes before payments.0.at"),
+])
+def test_double_spend_refuses_a_wrong_scenario_or_events_out_of_order(tmp_path, change, message):
+    cfg = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    example_words(cfg, tmp_path)
+    change(cfg["segments"][2]["content"])
+    with pytest.raises(SystemExit, match=message):
+        build(cfg, tmp_path, config_dir=EXAMPLE.parent)
+
+
+def test_the_script_snapshot_must_be_the_text_that_was_parsed(words_dir):
+    (words_dir / "script").mkdir()
+    snap = words_dir / "script" / "תסריט-שיעור-9-v1.md"
+    snap.write_text("## קטע 1: פתיחה\n", encoding="utf-8")
+    cfg = config()
+    cfg["script"].update(snapshot="script/תסריט-שיעור-9-v1.md", snapshot_sha256=sha256_file(snap))
+    assert run(cfg, words_dir)["script"]["snapshot_sha256"] == cfg["script"]["snapshot_sha256"]
+    snap.write_text("## קטע 1: פתיחה אחרת\n", encoding="utf-8")
+    with pytest.raises(SystemExit, match="changed after parse_script.py read it"):
+        run(cfg, words_dir)
+    snap.unlink()
+    with pytest.raises(SystemExit, match="snapshot .* is missing"):
+        run(cfg, words_dir)
+
+
+def test_words_from_a_replaced_take_are_refused(tmp_path):
+    cfg = config()
+    takes = tmp_path / "takes"
+    takes.mkdir()
+    (takes / "a.mov").write_text("take a")
+    (takes / "קטע-02.mp4").write_text("drive copy of b")              # beat 2 only under its Drive name
+    (tmp_path / "קטע-01.take.json").write_text(json.dumps({"take": "a.mov", "sha256": sha256_file(takes / "a.mov")}))
+    (tmp_path / "קטע-02.take.json").write_text(json.dumps({"take": "b.mov", "sha256": "original",
+                                                          "package_sha256": sha256_file(takes / "קטע-02.mp4")}))
+    assert check_words_match_takes(cfg, tmp_path, takes) == []
+    (takes / "a.mov").write_text("a re-recorded take a")
+    with pytest.raises(SystemExit, match="the words were made from a.mov"):
+        check_words_match_takes(cfg, tmp_path, takes)
+    (tmp_path / "קטע-01.take.json").unlink()
+    assert check_words_match_takes(cfg, tmp_path, takes) == [1]          # no sidecar: reported, not refused
+
+
+def test_a_drive_package_builds_from_its_own_folder(tmp_path):
+    """The manifest is a config: copied with its images, snapshot and words into a fresh folder, it builds
+    the same props with no path back to where the lesson was made."""
+    cfg = json.loads(EXAMPLE.read_text(encoding="utf-8"))
+    pkg = tmp_path / "extras"
+    pkg.mkdir()
+    (pkg / "page.png").write_bytes(b"png")
+    (pkg / "תסריט-שיעור-9-v1.md").write_text("## קטע 1: פתיחה\n", encoding="utf-8")
+    cfg["assets"] = {"page": {"file": "page.png", "source": "example"}}
+    cfg["script"].update(snapshot="תסריט-שיעור-9-v1.md", snapshot_sha256=sha256_file(pkg / "תסריט-שיעור-9-v1.md"))
+    cfg["package"] = {"base": "שיעור-9-בסיס.mp4"}
+    example_words(cfg, pkg)
+    p = build(cfg, pkg, config_dir=pkg)
+    assert p["assetSources"] == {"page": str((pkg / "page.png").resolve())}
+    assert str(EXAMPLE.parent) not in json.dumps(p, ensure_ascii=False)
