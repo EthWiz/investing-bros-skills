@@ -14,10 +14,21 @@ fade at each cut, and levels the audio to -14 LUFS (stereo AAC). No speed change
 long is split, not sped up.
 
 --extras DIR fills the lesson's Drive extras/ package: each take as קטע-NN.mp4 (stream copy, no
-re-encode), the config's assets, and שיעור-N-מניפסט.json, which is the config itself plus a `package`
-block (the skills version, the config's hash, the base's length, the file names). The manifest works
-as the config: `build שיעור-N-מניפסט.json --takes-dir extras/` rebuilds the same base from Drive alone,
-because a take is found by its own name or by its Drive name קטע-NN.mp4.
+re-encode), the config's assets, the script snapshot, with --words-dir the Whisper words קטע-NN.json and
+their sidecars, and שיעור-N-מניפסט.json, which is the config itself plus a `package` block (the skills
+version, the config's hash, the base's length, the file names). The manifest works as the config:
+`build שיעור-N-מניפסט.json --takes-dir extras/` rebuilds the same base from Drive alone, because a take
+is found by its own name or by its Drive name קטע-NN.mp4, and make_lesson_props.py reads it the same way.
+
+    python3 make_lesson_base.py stamp lesson-N.json --takes-dir DIR --words-dir WORDS
+    python3 make_lesson_base.py status lesson-N.json --takes-dir DIR --words-dir WORDS [--record RECORDS]
+
+`stamp`, right after Whisper: a sidecar קטע-NN.take.json per words file with the take's name and sha256,
+so words from a replaced take are caught (make_lesson_props.py --takes-dir refuses them). `status`: per
+beat, whether the take, its words and its stamp agree, and against the last export record
+(check_lesson.py --record) what changed and so what to run again: a new take -> Whisper, proofread, base,
+props, render; new trims -> base, props, render; proofread, anchors or layout -> props, render; a new
+script snapshot -> review the changed beats. It runs nothing.
 """
 import argparse
 import datetime
@@ -127,6 +138,8 @@ def manifest(cfg: dict, config_text: str, base_name: str, base_seconds: float, v
     n = cfg["lesson"]
     for key, a in out.get("assets", {}).items():
         a["file"] = Path(a["file"]).name
+    if (out.get("script") or {}).get("snapshot"):
+        out["script"]["snapshot"] = Path(out["script"]["snapshot"]).name
     out["package"] = {
         "made": made,
         "skills_version": version,
@@ -141,18 +154,172 @@ def manifest(cfg: dict, config_text: str, base_name: str, base_seconds: float, v
     return out
 
 
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def words_name(beat: int) -> str:
+    return f"קטע-{beat:02d}.json"
+
+
+def sidecar_name(beat: int) -> str:
+    return f"קטע-{beat:02d}.take.json"
+
+
+def digest(value) -> str:
+    """sha256 of a JSON value, keys sorted. check_lesson.py (investing-bros-remotion) uses the same recipe for
+    the export record, and both tests pin the same digest, so the record and `status` compare like with like."""
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "anchors", "segments", "assets")
+
+
+def fingerprint(cfg: dict) -> dict:
+    """What `status` compares against an export record: trims per beat, proofread per beat, the layout, the script."""
+    return {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
+            "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
+            "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
+            "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
+
+
+def stamp(cfg: dict, takes_dir: Path, words_dir: Path, force=False, hasher=sha256_file):
+    """Write קטע-NN.take.json beside each words file: which take (file name, sha256) the words were made from.
+    Run it right after Whisper. An existing sidecar is checked, never overwritten unless `force`."""
+    out = []
+    for t in cfg["takes"]:
+        words, side = words_dir / words_name(t["beat"]), words_dir / sidecar_name(t["beat"])
+        if not words.is_file():
+            out.append((t["beat"], "no words"))
+            continue
+        take = take_path(t, takes_dir)
+        sha = hasher(take)
+        if side.is_file() and not force:
+            rec = json.loads(side.read_text(encoding="utf-8"))
+            out.append((t["beat"], "ok" if sha in (rec.get("sha256"), rec.get("package_sha256")) else "STALE: the take changed"))
+            continue
+        side.write_text(json.dumps({"beat": t["beat"], "take": take.name, "sha256": sha, "words_sha256": hasher(words)},
+                                   ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        out.append((t["beat"], "stamped"))
+    return out
+
+
+def copy_words(takes, words_dir: Path, extras: Path, hasher=sha256_file):
+    """The words and their sidecars into the package; each sidecar also gets the Drive copy's sha256
+    (קטע-NN.mp4 is a remux, so its bytes differ from the recorded file's)."""
+    for t in takes:
+        b = t["beat"]
+        src = words_dir / words_name(b)
+        if not src.is_file():
+            raise SystemExit(f"error: beat {b}: no words {src} to put in the package")
+        if src.resolve() != (extras / src.name).resolve():
+            shutil.copy2(src, extras / src.name)
+        side = words_dir / sidecar_name(b)
+        if side.is_file():
+            rec = json.loads(side.read_text(encoding="utf-8"))
+            rec["package_sha256"] = hasher(extras / extras_name(b))
+            (extras / side.name).write_text(json.dumps(rec, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+
+
+def latest_record(path: Path):
+    """An export record (check_lesson.py --record), or the newest one in a folder; None when there is none."""
+    if path.is_file():
+        return json.loads(path.read_text(encoding="utf-8"))
+    found = sorted(path.glob("שיעור-*-ייצוא-*.json")) if path.is_dir() else []
+    return json.loads(found[-1].read_text(encoding="utf-8")) if found else None
+
+
+def status(cfg: dict, takes_dir: Path, words_dir: Path, record=None, hasher=sha256_file):
+    """Per beat, and against the last export, what is missing or changed and so what to run again. Runs nothing."""
+    lines, todo = [], set()
+    for t in cfg["takes"]:
+        b = t["beat"]
+        try:
+            take = take_path(t, takes_dir)
+        except SystemExit:
+            lines.append(f"beat {b}: take missing ({t['file']})")
+            todo.add("find the take")
+            continue
+        side = words_dir / sidecar_name(b)
+        if not (words_dir / words_name(b)).is_file():
+            lines.append(f"beat {b}: no words")
+            todo |= {"whisper", "props", "render"}
+        elif not side.is_file():
+            lines.append(f"beat {b}: words not stamped (make_lesson_base.py stamp)")
+        else:
+            rec = json.loads(side.read_text(encoding="utf-8"))
+            if hasher(take) not in (rec.get("sha256"), rec.get("package_sha256")):
+                lines.append(f"beat {b}: the take changed since its words were made")
+                todo |= {"whisper", "proofread", "base", "props", "render"}
+    if record is None:
+        lines.append("no export record yet: everything after the words runs")
+        return lines, sorted(todo | {"base", "props", "render"})
+    now, then = fingerprint(cfg), record.get("fingerprint", {})
+    took = {str(x["beat"]): x for x in record.get("takes", [])}
+    for beat, trim in now["trims"].items():
+        old = then.get("trims", {}).get(beat)
+        if old is None:
+            lines.append(f"beat {beat}: new since the last export")
+            todo |= {"base", "props", "render"}
+        elif old != trim:
+            lines.append(f"beat {beat}: take or trims changed")
+            todo |= {"base", "props", "render"}
+        elif beat in took:
+            t = next(x for x in cfg["takes"] if str(x["beat"]) == beat)
+            try:
+                if hasher(take_path(t, takes_dir)) not in (took[beat].get("sha256"), took[beat].get("package_sha256")):
+                    lines.append(f"beat {beat}: the take's file changed")
+                    todo |= {"whisper", "proofread", "base", "props", "render"}
+            except SystemExit:
+                pass
+    for beat in set(then.get("trims", {})) - set(now["trims"]):
+        lines.append(f"beat {beat}: dropped since the last export")
+        todo |= {"base", "props", "render"}
+    changed = [b for b, h in now["proofread"].items() if then.get("proofread", {}).get(b) not in (None, h)]
+    if changed:
+        lines.append(f"proofread changed: beats {', '.join(sorted(changed, key=int))}")
+        todo |= {"props", "render"}
+    if now["layout"] != then.get("layout"):
+        lines.append("layout, anchors or scene content changed")
+        todo |= {"props", "render"}
+    if now["script"] != then.get("script"):
+        lines.append("the script snapshot changed: review the beats parse_script.py listed")
+        todo.add("review the script")
+    if not lines:
+        lines.append(f"nothing changed since the export of {record.get('made')}")
+    return lines, sorted(todo)
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=("suggest", "build"))
+    ap.add_argument("cmd", choices=("suggest", "build", "stamp", "status"))
     ap.add_argument("config")
     ap.add_argument("--takes-dir", required=True)
     ap.add_argument("-o", "--out")
     ap.add_argument("--extras", help="also write the takes as קטע-NN.mp4 here")
+    ap.add_argument("--words-dir", help="stamp/status: the Whisper words; build --extras: copied into the package")
+    ap.add_argument("--record", help="status: an export record from check_lesson.py --record, or its folder")
+    ap.add_argument("--force", action="store_true", help="stamp: rewrite existing sidecars")
     a = ap.parse_args(argv)
     config_text = Path(a.config).read_text(encoding="utf-8")
     cfg = json.loads(config_text)
     takes = cfg["takes"]
     tdir = Path(a.takes_dir)
+    if a.cmd in ("stamp", "status") and not a.words_dir:
+        ap.error(f"{a.cmd} needs --words-dir")
+    if a.cmd == "stamp":
+        for beat, what in stamp(cfg, tdir, Path(a.words_dir), a.force):
+            print(f"beat {beat}: {what}")
+        return 0
+    if a.cmd == "status":
+        lines, todo = status(cfg, tdir, Path(a.words_dir), latest_record(Path(a.record)) if a.record else None)
+        print("\n".join(lines))
+        print(f"run again: {', '.join(todo) if todo else 'nothing'}")
+        return 0
     if a.cmd == "suggest":
         for t in takes:
             p = take_path(t, tdir)
@@ -173,10 +340,15 @@ def main(argv=None) -> int:
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-map", "0:v:0", "-map", "0:a:0",
                                 "-c", "copy", "-movflags", "+faststart", str(dst)], check=True)
             print(dst)
-        for key, asset in cfg.get("assets", {}).items():
-            src = (Path(a.config).resolve().parent / asset["file"])
+        here = Path(a.config).resolve().parent
+        files = [here / asset["file"] for asset in cfg.get("assets", {}).values()]
+        if (cfg.get("script") or {}).get("snapshot"):
+            files.append(here / cfg["script"]["snapshot"])
+        for src in files:
             if src.resolve() != (extras / src.name).resolve():
                 shutil.copy2(src, extras / src.name)
+        if a.words_dir:
+            copy_words(takes, Path(a.words_dir), extras)
         made = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
         m = manifest(cfg, config_text, Path(a.out).name, duration(a.out), skills_version(), made)
         dst = extras / f"שיעור-{cfg['lesson']}-מניפסט.json"

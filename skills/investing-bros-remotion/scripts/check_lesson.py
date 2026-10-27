@@ -3,6 +3,14 @@
 
 Usage:
     python3 check_lesson.py lesson.mp4 --props props.json [--base base.mp4] [--fonts FONTS] [--json report.json]
+        [--record RECORDS --config lesson-N-video.json [--takes-dir DIR] [--manifest שיעור-N-מניפסט.json]]
+
+--record: when everything passes, write שיעור-N-ייצוא-<UTC>.json into RECORDS (never over an older one): the
+export's name, sha256, length, size and frame rate; this report; the hashes of the config, props, base and
+manifest; the script's Doc revision and snapshot hash; each take with its trims and sha256; the skills
+commit, and `draft: true` when the checkout had local changes. A failed check writes no record.
+make_lesson_base.py status (investing-bros-crypto-course) compares the current config with it.
+Passing this check is not Amitai's approval; that is recorded in the hand-back, not here.
 
 Fails (exit 1) on:
   media     not 1920x1080 h264 at 30 fps with an audio track, or the base missing / not the planned length
@@ -17,6 +25,8 @@ Stills can't show timing: this checks the sound and the captions' clock; `render
 gives a short clip of every cut to watch.
 """
 import argparse
+import datetime
+import hashlib
 import json
 import re
 import subprocess
@@ -184,6 +194,95 @@ def check_captions(props, measure=None):
     return errs, warns
 
 
+def sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for chunk in iter(lambda: f.read(1 << 20), b""):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def digest(value) -> str:
+    """sha256 of a JSON value, keys sorted: the same recipe as make_lesson_base.py (investing-bros-crypto-course),
+    pinned by the same digest in both skills' tests, so its `status` can compare against this record."""
+    return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
+
+
+LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "anchors", "segments", "assets")
+
+
+def fingerprint(cfg: dict) -> dict:
+    return {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
+            "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
+            "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
+            "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
+
+
+def skills_commit(here: Path = Path(__file__).resolve().parent):
+    """(commit, dirty) of the skills checkout, dirty meaning any change under skills/; a release ZIP's VERSION
+    file otherwise (never dirty: it can't be told)."""
+    try:
+        top = subprocess.run(["git", "-C", str(here), "rev-parse", "--show-toplevel"], capture_output=True, text=True)
+        rev = subprocess.run(["git", "-C", str(here), "rev-parse", "HEAD"], capture_output=True, text=True)
+        if top.returncode == 0 and rev.returncode == 0:
+            dirty = subprocess.run(["git", "-C", top.stdout.strip(), "status", "--porcelain", "--", "skills"],
+                                   capture_output=True, text=True).stdout.strip()
+            return rev.stdout.strip(), bool(dirty)
+    except OSError:
+        pass
+    for v in (here.parent / "VERSION", here.parent.parent / "VERSION"):
+        if v.is_file():
+            return v.read_text(encoding="utf-8").strip(), False
+    return "unknown", True
+
+
+def take_file(t, takes_dir: Path):
+    for name in (t["file"], f"קטע-{t['beat']:02d}.mp4"):
+        if (takes_dir / name).is_file():
+            return takes_dir / name
+    return None
+
+
+def export_record(video: Path, info: dict, report: dict, props_path: Path, base: Path, cfg_path: Path,
+                  takes_dir=None, manifest=None, made="", commit=("unknown", True), hasher=sha256_file) -> dict:
+    """What produced this export and what was checked. Only written for a render that passed."""
+    cfg = json.loads(cfg_path.read_text(encoding="utf-8"))
+    v = next(s for s in info["streams"] if s["codec_type"] == "video")
+    num, den = (int(x) for x in v["r_frame_rate"].split("/"))
+    takes = []
+    for t in cfg["takes"]:
+        entry = {"beat": t["beat"], "file": t["file"], "from": t["from"], "to": t["to"]}
+        f = take_file(t, Path(takes_dir)) if takes_dir else None
+        if f is not None:
+            entry["sha256" if f.name == t["file"] else "package_sha256"] = hasher(f)
+        takes.append(entry)
+    script = cfg.get("script") or {}
+    return {
+        "lesson": cfg["lesson"], "made": made,
+        "export": {"file": video.name, "sha256": hasher(video), "seconds": round(float(info["format"]["duration"]), 3),
+                   "width": v["width"], "height": v["height"], "fps": round(num / den, 3)},
+        "check": report,
+        "draft": commit[1],
+        "skills": {"commit": commit[0], "dirty": commit[1]},
+        "inputs": {"config_sha256": hasher(cfg_path), "props_sha256": hasher(props_path), "base_sha256": hasher(base),
+                   **({"manifest_sha256": hasher(Path(manifest))} if manifest else {})},
+        "script": {k: script[k] for k in ("doc", "revision", "revision_kind", "snapshot", "snapshot_sha256") if k in script},
+        "takes": takes,
+        "fingerprint": fingerprint(cfg),
+    }
+
+
+def write_record(rec: dict, folder: Path) -> Path:
+    """שיעור-N-ייצוא-<UTC stamp>.json in `folder`; an existing record is never overwritten."""
+    folder.mkdir(parents=True, exist_ok=True)
+    stamp = re.sub(r"[^0-9TZ]", "", rec["made"].replace("+00:00", "Z"))
+    out = folder / f"שיעור-{rec['lesson']}-ייצוא-{stamp}.json"
+    if out.exists():
+        raise SystemExit(f"error: {out} already exists; export records are never overwritten")
+    out.write_text(json.dumps(rec, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+    return out
+
+
 def font_measure(fonts: Path):
     from PIL import ImageFont
     font = ImageFont.truetype(str(fonts / "Heebo-ExtraBold.ttf"), CAPTION_SIZE)
@@ -197,9 +296,16 @@ def main(argv=None) -> int:
     ap.add_argument("--base")
     ap.add_argument("--fonts", help="the static Heebo TTFs, to measure caption lines")
     ap.add_argument("--json", help="write the report here")
+    ap.add_argument("--record", help="when the check passes, write the export record into this folder")
+    ap.add_argument("--config", help="--record: the lesson config the props were made from")
+    ap.add_argument("--takes-dir", help="--record: the takes, to record their hashes")
+    ap.add_argument("--manifest", help="--record: the Drive package manifest, to record its hash")
     a = ap.parse_args(argv)
+    if a.record and not (a.config and a.base):
+        ap.error("--record needs --config and --base")
     props = json.loads(Path(a.props).read_text(encoding="utf-8"))
     errs, warns = [], []
+    info = None
     if not Path(a.video).is_file():
         errs.append(f"media: {a.video} is missing")
     else:
@@ -229,8 +335,17 @@ def main(argv=None) -> int:
     for line in warns:
         print(f"warn  {line}")
     print("OK" if not errs else f"{len(errs)} problem(s)")
+    report = {"errors": errs, "warnings": warns}
     if a.json:
-        Path(a.json).write_text(json.dumps({"errors": errs, "warnings": warns}, ensure_ascii=False, indent=1), encoding="utf-8")
+        Path(a.json).write_text(json.dumps(report, ensure_ascii=False, indent=1), encoding="utf-8")
+    if a.record and not errs:
+        made = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+        commit = skills_commit()
+        rec = export_record(Path(a.video), info, report, Path(a.props), Path(a.base), Path(a.config), a.takes_dir,
+                            a.manifest, made, commit)
+        print(f"record: {write_record(rec, Path(a.record))}" + ("  (draft: the skills checkout has local changes)" if commit[1] else ""))
+    elif a.record:
+        print("no record: the check failed")
     return 1 if errs else 0
 
 

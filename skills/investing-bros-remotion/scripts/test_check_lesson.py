@@ -1,12 +1,14 @@
 """Tests for check_lesson.py (media, loudness, sync, dead air at cuts, captions)."""
+import json
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from check_lesson import (check_captions, check_loudness, check_media, check_silences, lag_seconds,  # noqa: E402
-                          parse_ebur128, wrap_lines)
+from check_lesson import (check_captions, check_loudness, check_media, check_silences, digest,  # noqa: E402
+                          export_record, lag_seconds, parse_ebur128, wrap_lines, write_record)
 
 PROPS = {"duration": 60.0,
          "beats": [{"start": 0.0, "end": 30.0}, {"start": 30.0, "end": 60.0}],
@@ -92,3 +94,37 @@ def test_fast_captions_warn_and_long_ones_fail_in_the_narrow_layout():
     assert errs == []
     errs, _ = check_captions({**PROPS, "captions": [cap(25.0, 29.0, long)]}, measure)
     assert errs and "side layout" in errs[0]
+
+
+def test_the_digest_recipe_matches_make_lesson_base():
+    # the same value and digest are pinned in investing-bros-crypto-course's test_make_lesson_base.py
+    assert digest({"b": [1, 2.5], "a": "שקל"}) == "3bdd54540bcd88c26abe23472687f25b8a072bf43395a8e16f9c6d7e92828e97"
+
+
+def test_an_export_record_says_what_made_it_and_is_never_overwritten(tmp_path):
+    cfg = {"lesson": 1, "takes": [{"beat": 1, "file": "a.mov", "from": 1.0, "to": 9.0},
+                                  {"beat": 2, "file": "b.mov", "from": 0.0, "to": 5.0}],
+           "proofread": {"1": "שלום.", "2": "ביי."}, "anchors": {}, "segments": [],
+           "script": {"doc": "D", "revision": "AHj4e", "revision_kind": "revision_id", "snapshot": "script/s.md",
+                      "snapshot_sha256": "s1", "beats": {}}}
+    files = {}
+    for name, body in (("lesson.json", json.dumps(cfg)), ("props.json", "{}"), ("base.mp4", "base"), ("v.mp4", "video")):
+        files[name] = tmp_path / name
+        files[name].write_text(body)
+    takes = tmp_path / "takes"
+    takes.mkdir()
+    (takes / "a.mov").write_text("take a")
+    (takes / "קטע-02.mp4").write_text("drive copy of b")
+    info = {**media(), "format": {"duration": "14.0333"}}
+    rec = export_record(files["v.mp4"], info, {"errors": [], "warnings": ["w"]}, files["props.json"], files["base.mp4"],
+                        files["lesson.json"], takes, None, "2026-10-27T12:00:00+00:00", ("abc123", True),
+                        hasher=lambda p: "h:" + Path(p).read_text())
+    assert rec["export"] == {"file": "v.mp4", "sha256": "h:video", "seconds": 14.033, "width": 1920, "height": 1080, "fps": 30.0}
+    assert rec["draft"] is True and rec["skills"] == {"commit": "abc123", "dirty": True}
+    assert rec["takes"][0]["sha256"] == "h:take a" and rec["takes"][1]["package_sha256"] == "h:drive copy of b"
+    assert rec["script"]["revision_kind"] == "revision_id" and rec["inputs"]["base_sha256"] == "h:base"
+    assert rec["fingerprint"]["trims"] == {"1": ["a.mov", 1.0, 9.0], "2": ["b.mov", 0.0, 5.0]}
+    out = write_record(rec, tmp_path / "records")
+    assert out.name == "שיעור-1-ייצוא-20261027T120000Z.json"
+    with pytest.raises(SystemExit, match="never overwritten"):
+        write_record(rec, tmp_path / "records")
