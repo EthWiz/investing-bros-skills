@@ -1,0 +1,21 @@
+{
+  "_about": "What each lesson scene needs. make_lesson_props.py refuses a segment whose mode, anchors, content or assets don't match; scenes.ts maps the same names to components. 'anchors' must be in the config's anchors and fall inside the scene's segment; 'content' keys must be in the segment's content (any {\"at\": spec} in content is resolved to a time and checked the same way); 'assets' are image files the config stages.",
+  "terms": {
+    "mode": "side",
+    "anchors": [],
+    "content": ["heading", "items"],
+    "assets": []
+  },
+  "lesson1-money-flow": {
+    "mode": "bubble",
+    "anchors": ["f_coin", "f_friend", "f_mybank", "f_hisbank", "f_middle", "f_central", "f_trip", "f_three", "f_grey"],
+    "content": ["labels", "coin", "debit", "credit", "consequences"],
+    "assets": []
+  },
+  "lesson1-satoshi": {
+    "mode": "side",
+    "anchors": ["s_2008", "s_crisis", "s_banks", "s_paper", "s_oct", "s_name", "s_doc", "s_nine", "s_2009", "s_block", "s_headline", "s_who"],
+    "content": ["year", "crisis", "banks", "oct", "name", "nine", "jan", "block", "genesis", "who"],
+    "assets": ["whitepaper"]
+  }
+}
