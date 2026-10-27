@@ -5,9 +5,11 @@ Usage:
     python3 make_lesson_props.py lesson-N-video.json --words-dir WORDS -o props.json [--srt captions.srt]
 
 lesson-N-video.json (the lesson's config, investing-bros-crypto-course -> references/lessons/):
-  lesson, title (lines), parts, part_starts (the beat each part starts on, null if not recorded yet),
-  disclaimer_beat, takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
-  proofread {beat: what Amitai said in the take}, anchors {key: spec}, segments [{at: spec, mode, zoom?, scene?}].
+  lesson, title (lines), parts, part_starts (the beat each part starts on, null if not in this cut),
+  disclaimer_beat, script {doc, revision, beats: {beat: {title, on_screen, text}}, departures: {beat: why}}
+  (parse_script.py, from the Google Doc), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
+  proofread {beat: what Amitai said in the take}, anchors {key: spec}, assets {key: {file, source}},
+  segments [{at: spec, mode, zoom?, scene?, content?}].
 WORDS holds one whisper file per take, קטע-NN.json (NN = beat): the whisper CLI's --output_format json
   (segments with word timings) or transcribe_clip.py's [{"w", "s", "e"}], in seconds of the take.
 
@@ -19,9 +21,12 @@ An anchor spec says when something starts, always from a spoken word:
 Every graphic is anchored this way, so re-timing one is a one-line change in the config.
 
 Captions are the proofread words on whisper's timings (make_captions.py's alignment), two calm lines
-for 16:9, and never split a sentence's last word from it. The script refuses: a phrase it can't find,
-a scene the template doesn't have, a side or bubble stretch in the first 30 s (face only there), a
-punch-in over 1.25x (takes may be 720p), and anchors for agenda parts that don't exist.
+for 16:9, and never split a sentence's last word from it. What each scene needs is in the template's
+src/lesson/scenes.json. The script refuses, before anything renders: a phrase it can't find; a take
+with no script beat (the Google Doc wasn't read); a scene the template doesn't have or in the wrong
+mode; a scene's anchor, content `at` or asset that is missing or outside its segment; segments out of
+order or past the end; a side or bubble stretch in the first 30 s (face only there); a punch-in over
+1.25x (takes may be 720p); and agenda anchors for parts that don't exist.
 """
 import argparse
 import json
@@ -39,9 +44,13 @@ MAX_ZOOM = 1.25
 END = re.compile(r"[.?!:]$")
 
 
+def scene_manifest(template: Path = TEMPLATE) -> dict:
+    data = json.loads((template / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
+    return {k: v for k, v in data.items() if not k.startswith("_")}
+
+
 def known_scenes(template: Path = TEMPLATE):
-    text = (template / "src" / "lesson" / "scenes.ts").read_text(encoding="utf-8")
-    return set(re.findall(r"'([a-z0-9-]+)':", text))
+    return set(scene_manifest(template))
 
 
 def load_words(path: Path, offset: float):
@@ -129,46 +138,136 @@ def resolver(beats, caps):
     return resolve
 
 
-def layout(cfg, resolve, duration, scenes):
-    segs = []
+def resolve_content(value, resolve):
+    """Any {"at": spec} inside a scene's content becomes {"at": seconds}."""
+    if isinstance(value, dict):
+        return {k: (resolve(v) if k == "at" else resolve_content(v, resolve)) for k, v in value.items()}
+    if isinstance(value, list):
+        return [resolve_content(v, resolve) for v in value]
+    return value
+
+
+def content_times(value):
+    if isinstance(value, dict):
+        return [t for k, v in value.items() for t in ([v] if k == "at" else content_times(v))]
+    if isinstance(value, list):
+        return [t for v in value for t in content_times(v)]
+    return []
+
+
+def layout(cfg, resolve, duration, manifest):
+    segs, last = [], -1.0
     for s in cfg["segments"]:
         start = resolve(s["at"])
         mode = s["mode"]
+        where = f"segment at {s['at']}"
         if mode not in ("full", "side", "bubble"):
-            raise SystemExit(f"error: segment at {s['at']}: unknown mode '{mode}'")
+            raise SystemExit(f"error: {where}: unknown mode '{mode}'")
+        if not 0.0 <= start < duration:
+            raise SystemExit(f"error: {where} starts at {start:.2f} s, outside the lesson (0-{duration:.2f} s)")
+        if start <= last:
+            raise SystemExit(f"error: {where} starts at {start:.2f} s, not after the segment before it ({last:.2f} s)")
+        last = start
         if mode != "full":
             if start < FACE_ONLY:
                 raise SystemExit(f"error: a {mode} segment at {start:.1f} s: the first {FACE_ONLY:.0f} s are face only")
-            if s.get("scene") not in scenes:
-                raise SystemExit(f"error: segment at {s['at']}: scene '{s.get('scene')}' isn't in template "
-                                 f"src/lesson/scenes.ts ({', '.join(sorted(scenes))})")
+            spec = manifest.get(s.get("scene"))
+            if spec is None:
+                raise SystemExit(f"error: {where}: scene '{s.get('scene')}' isn't in template "
+                                 f"src/lesson/scenes.json ({', '.join(sorted(manifest))})")
+            if spec["mode"] != mode:
+                raise SystemExit(f"error: {where}: scene '{s['scene']}' is a {spec['mode']} scene, not {mode}")
         if s.get("zoom", 1.0) > MAX_ZOOM or s.get("zoom", 1.0) < 1.0:
-            raise SystemExit(f"error: segment at {s['at']}: zoom {s['zoom']} outside 1-{MAX_ZOOM}")
-        segs.append({"start": start, "mode": mode, **{k: s[k] for k in ("zoom", "scene") if k in s}})
-    segs.sort(key=lambda x: x["start"])
+            raise SystemExit(f"error: {where}: zoom {s['zoom']} outside 1-{MAX_ZOOM}")
+        seg = {"start": start, "mode": mode, **{k: s[k] for k in ("zoom", "scene") if k in s}}
+        if "content" in s:
+            seg["content"] = resolve_content(s["content"], resolve)
+        segs.append(seg)
     if not segs or segs[0]["start"] > 0.05:
         raise SystemExit("error: the first segment must start with the first beat")
     segs[0]["start"] = 0.0
     for a, b in zip(segs, segs[1:] + [None]):
         a["end"] = round(b["start"] if b else duration, 3)
-    return [{"start": s["start"], "end": s["end"], "mode": s["mode"], **{k: s[k] for k in ("zoom", "scene") if k in s}}
-            for s in segs]
+    return [{"start": s["start"], "end": s["end"], "mode": s["mode"],
+             **{k: s[k] for k in ("zoom", "scene", "content") if k in s}} for s in segs]
 
 
-def build(cfg, words_dir: Path, scenes=None):
-    scenes = known_scenes() if scenes is None else scenes
+def check_scenes(segments, at, assets, manifest):
+    """Every scene gets what it needs, inside its own stretch of the lesson."""
+    for seg in segments:
+        if "scene" not in seg:
+            continue
+        spec, name = manifest[seg["scene"]], seg["scene"]
+        lo, hi = seg["start"], seg["end"]
+        content = seg.get("content", {})
+        missing = [k for k in spec["anchors"] if k not in at]
+        if missing:
+            raise SystemExit(f"error: scene '{name}' needs anchors {missing}")
+        outside = [k for k in spec["anchors"] if not lo <= at[k] <= hi]
+        if outside:
+            raise SystemExit(f"error: scene '{name}' ({lo:.2f}-{hi:.2f} s): anchors {outside} fall outside it")
+        missing = [k for k in spec["content"] if k not in content]
+        if missing:
+            raise SystemExit(f"error: scene '{name}' needs content {missing}")
+        late = [round(t, 2) for t in content_times(content) if not lo <= t <= hi]
+        if late:
+            raise SystemExit(f"error: scene '{name}' ({lo:.2f}-{hi:.2f} s): content times {late} fall outside it")
+        missing = [k for k in spec.get("assets", []) if k not in assets]
+        if missing:
+            raise SystemExit(f"error: scene '{name}' needs assets {missing} (config 'assets')")
+
+
+def check_script(cfg):
+    """The Google Doc was read: its revision is recorded and every recorded beat has its on-screen line."""
+    script = cfg.get("script") or {}
+    if not script.get("doc") or not script.get("revision"):
+        raise SystemExit("error: config 'script' needs the Google Doc's id and revision (read תסריט-שיעור-N first)")
+    beats = script.get("beats", {})
+    missing = [t["beat"] for t in cfg["takes"] if not beats.get(str(t["beat"]), {}).get("on_screen")]
+    if missing:
+        raise SystemExit(f"error: beats {missing} have no 'על המסך' line from the script (parse_script.py)")
+
+
+def stage_assets_spec(cfg, config_dir: Path):
+    assets, sources = {}, {}
+    for key, a in cfg.get("assets", {}).items():
+        src = (config_dir / a["file"]).resolve()
+        if not src.is_file():
+            raise SystemExit(f"error: asset '{key}': {src} doesn't exist")
+        if not a.get("source"):
+            raise SystemExit(f"error: asset '{key}': record where it comes from ('source')")
+        assets[key] = f"assets/{key}{src.suffix}"
+        sources[key] = str(src)
+    return assets, sources
+
+
+def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
+    manifest = scene_manifest() if manifest is None else manifest
+    check_script(cfg)
     beats, timemap, duration = timeline(cfg)
     caps = captions(cfg, words_dir, timemap)
     resolve = resolver(beats, caps)
     at = {k: resolve(v) for k, v in cfg["anchors"].items()}
+    outside = [k for k, v in at.items() if not 0.0 <= v <= duration]
+    if outside:
+        raise SystemExit(f"error: anchors {outside} fall outside the lesson (0-{duration:.2f} s)")
     extra = [k for k in at if re.fullmatch(r"ag\d+", k) and int(k[2:]) > len(cfg["parts"])]
     if extra:
         raise SystemExit(f"error: anchors {extra} have no part in 'parts'")
+    if len(cfg["part_starts"]) != len(cfg["parts"]):
+        raise SystemExit("error: part_starts needs one entry per part (null for a part not in this cut)")
     by_n = {b["n"]: b for b in beats}
-    part_starts = [by_n[n]["start"] if n in by_n else 1e9 for n in cfg["part_starts"] if n is not None]
+    # one position per part, so the marker's labels never shift when a part is missing
+    part_starts = [by_n[n]["start"] if n in by_n else None for n in cfg["part_starts"]]
+    assets, sources = stage_assets_spec(cfg, config_dir)
+    segments = layout(cfg, resolve, duration, manifest)
+    check_scenes(segments, at, assets, manifest)
     return {"base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
             "parts": cfg["parts"], "partStarts": part_starts, "disclaimerBeat": cfg["disclaimer_beat"],
-            "beats": beats, "segments": layout(cfg, resolve, duration, scenes), "captions": caps, "at": at}
+            "beats": beats, "segments": segments, "captions": caps, "at": at, "assets": assets,
+            "assetSources": sources,
+            "script": {k: cfg["script"][k] for k in ("doc", "revision")},
+            "departures": cfg["script"].get("departures", {})}
 
 
 def srt(caps) -> str:
@@ -190,13 +289,15 @@ def main(argv=None) -> int:
     ap.add_argument("--srt", help="also write the captions as SRT (lesson timeline), for Drive")
     a = ap.parse_args(argv)
     cfg = json.loads(Path(a.config).read_text(encoding="utf-8"))
-    props = build(cfg, Path(a.words_dir))
+    props = build(cfg, Path(a.words_dir), config_dir=Path(a.config).resolve().parent)
     Path(a.out).write_text(json.dumps(props, ensure_ascii=False, indent=1), encoding="utf-8")
     if a.srt:
         Path(a.srt).write_text(srt(props["captions"]), encoding="utf-8")
     print(f"{a.out}: {len(props['captions'])} captions, {props['duration']:.1f} s, {len(props['segments'])} segments")
     for k, v in sorted(props["at"].items(), key=lambda kv: kv[1]):
         print(f"  {v:8.2f}  {k}")
+    for beat, why in props["departures"].items():
+        print(f"  departs from the script, beat {beat}: {why}")
     return 0
 
 

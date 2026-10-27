@@ -7,16 +7,17 @@ import type {SceneProps} from '../types';
 // Lesson 1, beat 4: a hundred shekels go from you to a friend, right to left, through your bank, the
 // system in the middle and his bank; the central bank sits above them all. Then the three
 // things this means, and the stations in the middle grey out.
-// Every element starts on the word that names it (`at` keys from the props).
+// Every element starts on the word that names it (`at` keys from the props); every word on screen comes
+// from the segment's content: labels (one per station), coin, debit, credit, consequences [{text, at}].
 
 const Y = 420;
 const NODES = {
-  you: {x: 1640, y: Y, label: 'אתם'},
-  myBank: {x: 1295, y: Y, label: 'הבנק שלכם'},
-  middle: {x: 960, y: Y, label: 'מערכת שמאשרת'},
-  hisBank: {x: 625, y: Y, label: 'הבנק שלו'},
-  friend: {x: 280, y: Y, label: 'החבר'},
-  central: {x: 960, y: 105, label: 'בנק מרכזי'},
+  you: {x: 1640, y: Y},
+  myBank: {x: 1295, y: Y},
+  middle: {x: 960, y: Y},
+  hisBank: {x: 625, y: Y},
+  friend: {x: 280, y: Y},
+  central: {x: 960, y: 105},
 } as const;
 type NodeKey = keyof typeof NODES;
 const PATH: NodeKey[] = ['you', 'myBank', 'middle', 'hisBank', 'friend'];
@@ -54,7 +55,7 @@ const Check: React.FC<{k: number}> = ({k}) => (
   </svg>
 );
 
-const Node: React.FC<{id: NodeKey; at: number; check: number; grey: number}> = ({id, at, check, grey}) => {
+const Node: React.FC<{id: NodeKey; label: string; at: number; check: number; grey: number}> = ({id, label, at, check, grey}) => {
   const {t, fps} = useTime();
   const k = pop(t, at, fps, 12, 180);
   if (k <= 0) return null;
@@ -69,7 +70,7 @@ const Node: React.FC<{id: NodeKey; at: number; check: number; grey: number}> = (
         <Icon />
         {check > 0 ? <Check k={check} /> : null}
       </div>
-      <Paper text={n.label} size={40} bg={id === 'central' ? MUSTARD : CREAM} style={{marginTop: 14}} />
+      <Paper text={label} size={40} bg={id === 'central' ? MUSTARD : CREAM} style={{marginTop: 14}} />
     </div>
   );
 };
@@ -103,7 +104,7 @@ const coinAt = (t: number, at: Record<string, number>) => {
   return pos;
 };
 
-const Coin: React.FC<{at: Record<string, number>}> = ({at}) => {
+const Coin: React.FC<{at: Record<string, number>; text: string}> = ({at, text}) => {
   const {t, fps} = useTime();
   // the coin pops back at you for the full trip
   const k = t >= at.f_trip ? pop(t, at.f_trip, fps, 10, 200) : pop(t, at.f_coin, fps, 10, 200);
@@ -117,12 +118,12 @@ const Coin: React.FC<{at: Record<string, number>}> = ({at}) => {
     <div style={{position: 'absolute', left: x - 85, top: y - 46, width: 170, height: 92, whiteSpace: 'nowrap', borderRadius: 46, background: HOOK_YELLOW,
       border: `5px solid ${NAVY}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT,
       fontWeight: 900, fontSize: 46, color: NAVY, transform: `scale(${k})`, opacity: out, boxShadow: '0 8px 16px rgba(0,0,0,.4)'}}>
-      <bdi dir="rtl">100 ₪</bdi>
+      <bdi dir="rtl">{text}</bdi>
     </div>
   );
 };
 
-// −100 / +100 next to the banks when they change the number in the account
+// the debit / credit next to the banks when they change the number in the account
 const Delta: React.FC<{x: number; text: string; at: number; until: number}> = ({x, text, at, until}) => {
   const {t, fps} = useTime();
   const k = pop(t, at, fps, 12, 200);
@@ -133,12 +134,6 @@ const Delta: React.FC<{x: number; text: string; at: number; until: number}> = ({
       color: HOOK_YELLOW, opacity: k * out, transform: `translateY(${(1 - k) * 20}px)`, direction: 'ltr'}}>{text}</div>
   );
 };
-
-const CONSEQUENCES = [
-  {key: 'f_print', text: 'להדפיס עוד כסף', node: 'central' as NodeKey},
-  {key: 'f_freeze', text: 'להקפיא חשבון', node: 'myBank' as NodeKey},
-  {key: 'f_fee', text: 'עמלה וזמן', node: 'middle' as NodeKey},
-];
 
 const Consequence: React.FC<{n: number; text: string; at: number}> = ({n, text, at}) => {
   const {t, fps} = useTime();
@@ -153,7 +148,7 @@ const Consequence: React.FC<{n: number; text: string; at: number}> = ({n, text, 
   );
 };
 
-export const MoneyFlow: React.FC<SceneProps> = ({at, start, end}) => {
+export const MoneyFlow: React.FC<SceneProps> = ({at, start, end, content}) => {
   const {t, fps} = useTime();
   if (t < start - 0.1 || t > end + 0.8) return null;
   const sceneIn = ease(t, start - 0.1, start + 0.5);
@@ -184,14 +179,14 @@ export const MoneyFlow: React.FC<SceneProps> = ({at, start, end}) => {
           <Edge a="central" b="hisBank" at={nodeAt.central} dashed grey={grey} />
         </svg>
         {(Object.keys(NODES) as NodeKey[]).map((id) => (
-          <Node key={id} id={id} at={nodeAt[id]} check={checkAt(id)} grey={MIDDLE.includes(id) ? grey : 0} />
+          <Node key={id} id={id} label={content.labels[id]} at={nodeAt[id]} check={checkAt(id)} grey={MIDDLE.includes(id) ? grey : 0} />
         ))}
-        <Delta x={NODES.myBank.x} text="−100" at={at.f_mybank + 1.4} until={at.f_middle + 1.5} />
-        <Delta x={NODES.hisBank.x} text="+100" at={at.f_hisbank + 1.3} until={at.f_middle + 1.5} />
-        <Coin at={at} />
+        <Delta x={NODES.myBank.x} text={content.debit} at={at.f_mybank + 1.4} until={at.f_middle + 1.5} />
+        <Delta x={NODES.hisBank.x} text={content.credit} at={at.f_hisbank + 1.3} until={at.f_middle + 1.5} />
+        <Coin at={at} text={content.coin} />
       </AbsoluteFill>
       <div style={{position: 'absolute', top: 650, right: 470, display: 'flex', flexDirection: 'column', gap: 10, alignItems: 'flex-end'}}>
-        {CONSEQUENCES.map((c, i) => <Consequence key={c.key} n={i + 1} text={c.text} at={at[c.key]} />)}
+        {(content.consequences as {text: string; at: number}[]).map((c, i) => <Consequence key={i} n={i + 1} text={c.text} at={c.at} />)}
       </div>
     </AbsoluteFill>
   );

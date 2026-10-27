@@ -1,12 +1,21 @@
-"""Tests for make_lesson_props.py (anchors, layout rules, sentence-safe captions, words formats)."""
+"""Tests for make_lesson_props.py (anchors, scene needs, layout rules, sentence-safe captions, script intake)."""
+import copy
 import json
 import os
 import sys
+from pathlib import Path
 
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_lesson_props import build, known_scenes, load_words, srt, tidy  # noqa: E402
+from make_lesson_props import build, known_scenes, load_words, scene_manifest, srt, tidy  # noqa: E402
+
+LESSON_1 = (Path(__file__).resolve().parents[2] / "investing-bros-crypto-course" / "references" / "lessons"
+            / "lesson-1-video.json")
+MANIFEST = {
+    "panel": {"mode": "side", "anchors": ["p1"], "content": ["heading"], "assets": []},
+    "flow": {"mode": "bubble", "anchors": [], "content": [], "assets": ["page"]},
+}
 
 
 def words(text, start=0.5, step=0.4):
@@ -16,13 +25,17 @@ def words(text, start=0.5, step=0.4):
 def config(**over):
     long = " ".join(["מילה"] * 80) + "."
     cfg = {
-        "lesson": 9, "title": ["כותרת"], "parts": ["אחד", "שתיים"], "part_starts": [2, None], "disclaimer_beat": 1,
+        "lesson": 9, "title": ["כותרת"], "parts": ["אחד", "שתיים", "שלוש"], "part_starts": [None, 2, None],
+        "disclaimer_beat": 1,
+        "script": {"doc": "DOC", "revision": "2026-10-26T20:12:34Z",
+                   "beats": {"1": {"on_screen": "רק אתה."}, "2": {"on_screen": "כרטיס ליד הפנים."}}},
         "takes": [{"beat": 1, "file": "a.mov", "from": 0.0, "to": 34.0}, {"beat": 2, "file": "b.mov", "from": 0.0, "to": 6.0}],
         "proofread": {"1": f"שלום לכולם. {long} והיום נלמד משהו.", "2": "זה הבנק שלכם, וזה הבנק שלו."},
-        "anchors": {"title": [1, "והיום נלמד"], "ag1": [1, "שלום"], "bank": [2, "הבנק שלו"], "late": [2, None, 0.5],
+        "anchors": {"title": [1, "והיום נלמד"], "ag1": [1, "שלום"], "p1": [2, "הבנק שלו"], "late": [2, None, 0.5],
                     "dock": {"beat_end": 1, "offset": -0.5}},
         "segments": [{"at": [1, None], "mode": "full", "zoom": 1.1}, {"at": [1, "והיום", -0.15], "mode": "full"},
-                     {"at": [2, None], "mode": "bubble", "scene": "s1"}],
+                     {"at": [2, None], "mode": "side", "scene": "panel",
+                      "content": {"heading": {"text": "הבנק", "at": [2, "הבנק שלכם"]}}}],
     }
     cfg.update(over)
     return cfg
@@ -39,34 +52,96 @@ def words_dir(tmp_path):
     return tmp_path
 
 
-def test_anchors_come_from_spoken_words(words_dir):
-    p = build(config(), words_dir, scenes={"s1"})
+def run(cfg, words_dir):
+    return build(cfg, words_dir, manifest=MANIFEST, config_dir=words_dir)
+
+
+def test_anchors_and_content_times_come_from_spoken_words(words_dir):
+    p = run(config(), words_dir)
     b1, b2 = p["beats"]
     assert (b1["start"], b1["end"], b2["start"], b2["end"]) == (0.0, 34.0, 34.0, 40.0)
     assert p["at"]["ag1"] == pytest.approx(0.5, abs=0.05)
-    assert b2["start"] < p["at"]["bank"] < b2["end"]          # whisper CLI format, take 2 moved onto the lesson
+    assert b2["start"] < p["at"]["p1"] < b2["end"]          # whisper CLI format, take 2 moved onto the lesson
     assert p["at"]["late"] == 34.5 and p["at"]["dock"] == 33.5
-    assert p["partStarts"] == [34.0] and p["disclaimerBeat"] == 1 and p["duration"] == 40.0
+    assert 34.0 <= p["segments"][-1]["content"]["heading"]["at"] < p["at"]["p1"]
+    assert p["script"] == {"doc": "DOC", "revision": "2026-10-26T20:12:34Z"} and p["duration"] == 40.0
+
+
+def test_progress_keeps_a_position_for_every_part(words_dir):
+    # parts 1 and 3 aren't in this cut: part 2 must stay the second mark, not slide into the first
+    assert run(config(), words_dir)["partStarts"] == [None, 34.0, None]
+    assert run(config(part_starts=[1, None, 2]), words_dir)["partStarts"] == [0.0, None, 34.0]
+    with pytest.raises(SystemExit, match="one entry per part"):
+        run(config(part_starts=[1, 2]), words_dir)
 
 
 def test_segments_cover_the_lesson_back_to_back(words_dir):
-    segs = build(config(), words_dir, scenes={"s1"})["segments"]
+    segs = run(config(), words_dir)["segments"]
     assert segs[0]["start"] == 0.0 and segs[-1]["end"] == 40.0
-    assert all(a["end"] == b["start"] for a, b in zip(segs, segs[1:]))
-    assert segs[-1] == {"start": 34.0, "end": 40.0, "mode": "bubble", "scene": "s1"}
+    assert all(a["end"] == b["start"] and a["start"] < a["end"] for a, b in zip(segs, segs[1:]))
+
+
+def with_segments(*extra):
+    base = [{"at": [1, None], "mode": "full"}]
+    return {"segments": base + list(extra)}
+
+
+PANEL = {"mode": "side", "scene": "panel", "content": {"heading": {"text": "x", "at": [2, None, 0.2]}}}
 
 
 @pytest.mark.parametrize("over, message", [
-    ({"segments": [{"at": [1, None], "mode": "full"}, {"at": [1, "שלום"], "mode": "side", "scene": "s1"}]}, "face only"),
-    ({"segments": [{"at": [1, None], "mode": "full"}, {"at": [2, None], "mode": "bubble", "scene": "nope"}]}, "isn't in template"),
-    ({"segments": [{"at": [1, None], "mode": "full", "zoom": 1.5}]}, "zoom"),
     ({"anchors": {"x": [2, "מילים שלא נאמרו"]}}, "isn't in the proofread words"),
-    ({"anchors": {"ag3": [1, "שלום"]}}, "no part"),
+    ({"anchors": {"ag1": [1, "שלום"], "ag4": [1, "שלום"], "p1": [2, "הבנק שלו"]}}, "no part"),
+    ({"anchors": {"far": [2, None, 600.0], "p1": [2, "הבנק שלו"]}}, "outside the lesson"),
+    (with_segments({"at": [1, "שלום"], **PANEL}), "face only"),
+    (with_segments({"at": [2, None], **PANEL, "scene": "nope"}), "isn't in template"),
+    (with_segments({"at": [2, None], **PANEL, "mode": "bubble"}), "is a side scene, not bubble"),
+    (with_segments({"at": [1, None, 0.2], "mode": "full", "zoom": 1.5}), "zoom"),
+    (with_segments({"at": [2, None, 600.0], "mode": "full"}), "outside the lesson"),
+    (with_segments({"at": [2, None], **PANEL}, {"at": [1, "והיום"], "mode": "full"}), "not after the segment before it"),
 ])
-def test_refuses_what_breaks_the_house_rules(words_dir, capsys, over, message):
-    with pytest.raises(SystemExit) as e:
-        build(config(**over), words_dir, scenes={"s1"})
-    assert message in str(e.value)
+def test_refuses_what_breaks_the_house_rules(words_dir, over, message):
+    with pytest.raises(SystemExit, match=message):
+        run(config(**over), words_dir)
+
+
+def test_a_scene_gets_every_anchor_content_and_asset_it_needs(words_dir):
+    cfg = config()
+    del cfg["anchors"]["p1"]                                     # the review's case: a scene's anchor deleted
+    with pytest.raises(SystemExit, match=r"needs anchors \['p1'\]"):
+        run(cfg, words_dir)
+    cfg = config()
+    cfg["anchors"]["p1"] = [1, "והיום"]                         # said, but before the scene's segment
+    with pytest.raises(SystemExit, match="fall outside it"):
+        run(cfg, words_dir)
+    cfg = config()
+    cfg["segments"][-1]["content"] = {}
+    with pytest.raises(SystemExit, match=r"needs content \['heading'\]"):
+        run(cfg, words_dir)
+    cfg = config()
+    cfg["segments"][-1]["content"]["heading"]["at"] = [1, "שלום"]
+    with pytest.raises(SystemExit, match="content times"):
+        run(cfg, words_dir)
+    cfg = config(segments=[{"at": [1, None], "mode": "full"}, {"at": [2, None], "mode": "bubble", "scene": "flow"}],
+                 anchors={})
+    with pytest.raises(SystemExit, match=r"needs assets \['page'\]"):
+        run(cfg, words_dir)
+    (words_dir / "page.png").write_bytes(b"png")
+    with pytest.raises(SystemExit, match="record where it comes from"):
+        run({**cfg, "assets": {"page": {"file": "page.png"}}}, words_dir)
+    p = run({**cfg, "assets": {"page": {"file": "page.png", "source": "https://example.org/p1"}}}, words_dir)
+    assert p["assets"] == {"page": "assets/page.png"} and p["assetSources"]["page"] == str(words_dir / "page.png")
+
+
+def test_the_script_doc_must_have_been_read(words_dir):
+    cfg = config()
+    cfg["script"] = {}
+    with pytest.raises(SystemExit, match="Google Doc"):
+        run(cfg, words_dir)
+    cfg = config()
+    del cfg["script"]["beats"]["2"]
+    with pytest.raises(SystemExit, match=r"beats \[2\] have no 'על המסך'"):
+        run(cfg, words_dir)
 
 
 def test_a_sentence_never_leaves_its_last_word_behind():
@@ -86,5 +161,21 @@ def test_words_formats_and_srt(tmp_path):
     assert text == "1\n00:01:01,500 --> 01:02:05,250\nשלום לכולם.\n"
 
 
-def test_the_template_lists_lesson_1_scenes():
-    assert {"lesson1-money-flow", "lesson1-satoshi", "lesson1-glossary"} <= known_scenes()
+def test_lesson_1_config_matches_the_template_manifest():
+    """No words needed: every scene segment in lesson 1 names a known scene in the right mode, and carries
+    the content keys and assets that scene declares; every anchor it needs is in the config."""
+    manifest, cfg = scene_manifest(), json.loads(LESSON_1.read_text(encoding="utf-8"))
+    assert {"terms", "lesson1-money-flow", "lesson1-satoshi"} <= known_scenes()
+    for seg in cfg["segments"]:
+        if seg["mode"] == "full":
+            continue
+        spec = manifest[seg["scene"]]
+        assert spec["mode"] == seg["mode"], seg["scene"]
+        assert set(spec["content"]) <= set(seg.get("content", {})), seg["scene"]
+        assert set(spec["anchors"]) <= set(cfg["anchors"]), seg["scene"]
+        assert set(spec.get("assets", [])) <= set(cfg.get("assets", {})), seg["scene"]
+    for a in cfg.get("assets", {}).values():
+        assert (LESSON_1.parent / a["file"]).is_file() and a["source"]
+    broken = copy.deepcopy(cfg)
+    del broken["anchors"]["s_paper"]
+    assert "s_paper" in manifest["lesson1-satoshi"]["anchors"]   # so dropping it is refused at build time

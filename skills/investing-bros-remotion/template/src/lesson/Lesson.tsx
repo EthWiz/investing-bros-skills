@@ -99,7 +99,7 @@ export const Lesson: React.FC<LessonProps> = (p) => {
   const first = p.beats[0];
   const scenes = (mode: Mode) => p.segments.filter((s) => s.mode === mode && s.scene).map((s, i) => {
     const Scene = SCENES[s.scene!];
-    return Scene ? <Scene key={`${mode}-${i}`} at={p.at} start={s.start} end={s.end} /> : null;
+    return Scene ? <Scene key={`${mode}-${i}`} at={p.at} start={s.start} end={s.end} content={s.content ?? {}} assets={p.assets ?? {}} /> : null;
   });
   const disclaimer = p.beats.find((b) => b.n === p.disclaimerBeat);
   return (

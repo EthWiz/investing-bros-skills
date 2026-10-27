@@ -11,12 +11,20 @@ first speech and 0.45 s after the last (silencedetect at -38 dB); check them aga
 words, since a click or a breath can read as speech. `build` trims each take, scales it to 1920x1080
 (lanczos; 720p takes are upscaled, so keep punch-ins small), joins them in beat order with a 40 ms
 fade at each cut, and levels the audio to -14 LUFS (stereo AAC). No speed change: a lesson that runs
-long is split, not sped up. --extras also writes each take as קטע-NN.mp4 (stream copy, no
-re-encode) for the lesson's Drive extras/ folder.
+long is split, not sped up.
+
+--extras DIR fills the lesson's Drive extras/ package: each take as קטע-NN.mp4 (stream copy, no
+re-encode), the config's assets, and שיעור-N-מניפסט.json, which is the config itself plus a `package`
+block (the skills version, the config's hash, the base's length, the file names). The manifest works
+as the config: `build שיעור-N-מניפסט.json --takes-dir extras/` rebuilds the same base from Drive alone,
+because a take is found by its own name or by its Drive name קטע-NN.mp4.
 """
 import argparse
+import datetime
+import hashlib
 import json
 import re
+import shutil
 import subprocess
 import sys
 from pathlib import Path
@@ -76,10 +84,18 @@ def filter_graph(takes) -> str:
     return ";".join(parts)
 
 
-def build_cmd(takes, takes_dir: Path, out: Path):
+def take_path(t, takes_dir: Path) -> Path:
+    """The take under its own name, else under its Drive name (a package downloaded from Drive)."""
+    for name in (t["file"], extras_name(t["beat"])):
+        if (takes_dir / name).is_file():
+            return takes_dir / name
+    raise SystemExit(f"error: beat {t['beat']}: neither {t['file']} nor {extras_name(t['beat'])} is in {takes_dir}")
+
+
+def build_cmd(takes, takes_dir: Path, out: Path, find=take_path):
     cmd = ["ffmpeg", "-v", "error", "-y"]
     for t in takes:
-        cmd += ["-i", str(takes_dir / t["file"])]
+        cmd += ["-i", str(find(t, takes_dir))]
     return cmd + ["-filter_complex", filter_graph(takes), "-map", "[v]", "-map", "[ao]", "-c:v", "libx264",
                   "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
                   "-movflags", "+faststart", str(out)]
@@ -87,6 +103,42 @@ def build_cmd(takes, takes_dir: Path, out: Path):
 
 def extras_name(beat: int) -> str:
     return f"קטע-{beat:02d}.mp4"
+
+
+def skills_version(here: Path = Path(__file__).resolve().parent) -> str:
+    """The skills repo commit, or the VERSION file a release ZIP carries."""
+    try:
+        rev = subprocess.run(["git", "-C", str(here), "rev-parse", "--short", "HEAD"], capture_output=True, text=True)
+        if rev.returncode == 0 and rev.stdout.strip():
+            dirty = subprocess.run(["git", "-C", str(here), "status", "--porcelain", "--", str(here.parent)],
+                                   capture_output=True, text=True).stdout.strip()
+            return rev.stdout.strip() + ("+local-changes" if dirty else "")
+    except OSError:
+        pass
+    for v in (here.parent / "VERSION", here.parent.parent / "VERSION"):
+        if v.is_file():
+            return v.read_text(encoding="utf-8").strip()
+    return "unknown"
+
+
+def manifest(cfg: dict, config_text: str, base_name: str, base_seconds: float, version: str, made: str) -> dict:
+    """The config, rewritten to the package's own file names, plus where and how it was made."""
+    out = json.loads(json.dumps(cfg))
+    n = cfg["lesson"]
+    for key, a in out.get("assets", {}).items():
+        a["file"] = Path(a["file"]).name
+    out["package"] = {
+        "made": made,
+        "skills_version": version,
+        "config_sha256": hashlib.sha256(config_text.encode("utf-8")).hexdigest(),
+        "base": base_name,
+        "base_seconds": round(base_seconds, 3),
+        "takes": {str(t["beat"]): {"drive": extras_name(t["beat"]), "recorded_as": t["file"]} for t in cfg["takes"]},
+        "words": [f"קטע-{t['beat']:02d}.json" for t in cfg["takes"]],
+        "captions": f"שיעור-{n}-כתוביות.srt",
+        "rebuild": f"python3 make_lesson_base.py build שיעור-{n}-מניפסט.json --takes-dir . -o {base_name}",
+    }
+    return out
 
 
 def main(argv=None) -> int:
@@ -97,11 +149,13 @@ def main(argv=None) -> int:
     ap.add_argument("-o", "--out")
     ap.add_argument("--extras", help="also write the takes as קטע-NN.mp4 here")
     a = ap.parse_args(argv)
-    takes = json.loads(Path(a.config).read_text(encoding="utf-8"))["takes"]
+    config_text = Path(a.config).read_text(encoding="utf-8")
+    cfg = json.loads(config_text)
+    takes = cfg["takes"]
     tdir = Path(a.takes_dir)
     if a.cmd == "suggest":
         for t in takes:
-            p = tdir / t["file"]
+            p = take_path(t, tdir)
             fr, to = trims_from_silences(silences(p), duration(p))
             print(json.dumps({"beat": t["beat"], "file": t["file"], "from": fr, "to": to}, ensure_ascii=False))
         return 0
@@ -111,12 +165,23 @@ def main(argv=None) -> int:
     total = sum(t["to"] - t["from"] for t in takes)
     print(f"{a.out}: {duration(a.out):.2f} s (takes add up to {total:.2f} s)")
     if a.extras:
-        Path(a.extras).mkdir(parents=True, exist_ok=True)
+        extras = Path(a.extras)
+        extras.mkdir(parents=True, exist_ok=True)
         for t in takes:
-            dst = Path(a.extras) / extras_name(t["beat"])
-            subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(tdir / t["file"]), "-map", "0:v:0", "-map", "0:a:0",
-                            "-c", "copy", "-movflags", "+faststart", str(dst)], check=True)
+            src, dst = take_path(t, tdir), extras / extras_name(t["beat"])
+            if src.resolve() != dst.resolve():
+                subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-map", "0:v:0", "-map", "0:a:0",
+                                "-c", "copy", "-movflags", "+faststart", str(dst)], check=True)
             print(dst)
+        for key, asset in cfg.get("assets", {}).items():
+            src = (Path(a.config).resolve().parent / asset["file"])
+            if src.resolve() != (extras / src.name).resolve():
+                shutil.copy2(src, extras / src.name)
+        made = datetime.datetime.now(datetime.timezone.utc).isoformat(timespec="seconds")
+        m = manifest(cfg, config_text, Path(a.out).name, duration(a.out), skills_version(), made)
+        dst = extras / f"שיעור-{cfg['lesson']}-מניפסט.json"
+        dst.write_text(json.dumps(m, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(dst)
     return 0
 
 

@@ -34,7 +34,7 @@ export const RemotionRoot: React.FC = () => (
       fps={LESSON_FPS}
       durationInFrames={1}
       defaultProps={{base: 'base.mp4', duration: 1, lesson: 1, title: [], parts: [], partStarts: [], disclaimerBeat: 2,
-        beats: [], segments: [], captions: [], at: {}} as LessonProps}
+        beats: [], segments: [], captions: [], at: {}, assets: {}} as LessonProps}
       calculateMetadata={({props}) => ({
         durationInFrames: Math.round(props.duration * LESSON_FPS),
       })}

@@ -81,11 +81,12 @@ export const Agenda: React.FC<{parts: string[]; at: Record<string, number>; dock
 };
 
 // Progress marker, top left for the rest of the lesson: one mark per part, the current one with its name.
-export const Progress: React.FC<{parts: string[]; starts: number[]; from: number}> = ({parts, starts, from}) => {
+export const Progress: React.FC<{parts: string[]; starts: (number | null)[]; from: number}> = ({parts, starts, from}) => {
   const {t, fps} = useTime();
   if (t < from) return null;
   const k = pop(t, from, fps);
-  const current = starts.reduce((acc, s, i) => (t >= s ? i + 1 : acc), 0);
+  // starts keeps one position per part (null = not in this cut), so the marker never shifts a label
+  const current = starts.reduce<number>((acc, s, i) => (s !== null && t >= s ? i + 1 : acc), 0);
   return (
     <div style={{position: 'absolute', left: DOCK.left, top: DOCK.top, display: 'flex', gap: 8, direction: 'rtl',
       alignItems: 'center', opacity: k, filter: 'drop-shadow(0 4px 8px rgba(0,0,0,.35))'}}>

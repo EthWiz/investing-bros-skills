@@ -10,7 +10,10 @@ export type LCaption = {start: number; end: number; words: LWord[]};
 //  bubble: a full-screen scene, Amitai in a circle bottom right (his side)
 // `scene` names the lesson's component for a side or bubble stretch (lesson/scenes.ts).
 export type Mode = 'full' | 'side' | 'bubble';
-export type Segment = {start: number; end: number; mode: Mode; zoom?: number; scene?: string};
+export type Segment = {start: number; end: number; mode: Mode; zoom?: number; scene?: string; content?: SceneContent};
+
+// A scene's words and settings from the config (Amitai's words; any `at` already resolved to seconds).
+export type SceneContent = Record<string, any>;
 
 export type LessonProps = {
   base: string;                  // the joined takes in public/ (make_lesson_base.py)
@@ -18,13 +21,14 @@ export type LessonProps = {
   lesson: number;
   title: string[];               // the lesson name as Amitai says it, one strip per line
   parts: string[];               // the lesson's parts, Amitai's words (the agenda and the progress marker)
-  partStarts: number[];          // when each part starts (same order as parts)
+  partStarts: (number | null)[]; // when each part starts, same positions as parts; null = not in this cut
   disclaimerBeat: number;        // the beat with the disclaimer strip; captions rise above it
   beats: {n: number; start: number; end: number}[];
   segments: Segment[];
   captions: LCaption[];
   at: Record<string, number>;    // graphic anchors: key -> the time its word is spoken
+  assets: Record<string, string>;  // staged image files in public/ by the config's asset key
 };
 
-// What a lesson's own scene component gets: the anchors and its segment's span.
-export type SceneProps = {at: Record<string, number>; start: number; end: number};
+// What a scene component gets: the anchors, its segment's span, its content and the staged assets.
+export type SceneProps = {at: Record<string, number>; start: number; end: number; content: SceneContent; assets: Record<string, string>};

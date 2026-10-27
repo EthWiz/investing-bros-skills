@@ -7,7 +7,8 @@ from pathlib import Path
 import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
-from make_lesson_base import build_cmd, extras_name, filter_graph, parse_silences, trims_from_silences  # noqa: E402
+from make_lesson_base import (build_cmd, extras_name, filter_graph, manifest, parse_silences, take_path,  # noqa: E402
+                              trims_from_silences)
 
 LESSONS = Path(__file__).resolve().parent.parent / "references" / "lessons"
 
@@ -37,8 +38,11 @@ def test_join_trims_scales_and_levels_every_take_in_order(tmp_path):
     assert "afade=t=out:st=40.94:d=0.06" in g                      # 41 s take, fade in its last 60 ms
     assert "[v0][a0][v1][a1]concat=n=2:v=1:a=1" in g
     assert "loudnorm=I=-14" in g and "setpts" in g and "atempo" not in g   # no speed change
+    for name in ("a.mov", "קטע-02.mp4"):                           # beat 2 only under its Drive name
+        (tmp_path / name).write_text("v")
     cmd = build_cmd(takes, tmp_path, tmp_path / "base.mp4")
-    assert cmd[cmd.index("-i") + 1] == str(tmp_path / "a.mov")
+    inputs = [cmd[i + 1] for i, x in enumerate(cmd) if x == "-i"]
+    assert inputs == [str(tmp_path / "a.mov"), str(tmp_path / "קטע-02.mp4")]
     with pytest.raises(SystemExit):
         filter_graph([{"beat": 3, "file": "c.mov", "from": 5.0, "to": 5.0}])
 
@@ -47,10 +51,38 @@ def test_extras_names_follow_the_drive_convention():
     assert extras_name(1) == "קטע-01.mp4" and extras_name(12) == "קטע-12.mp4"
 
 
+def test_a_take_is_found_by_its_own_name_then_its_drive_name(tmp_path):
+    t = {"beat": 3, "file": "Beat 3 - take 1.mov"}
+    with pytest.raises(SystemExit, match="neither"):
+        take_path(t, tmp_path)
+    (tmp_path / "קטע-03.mp4").write_text("v")
+    assert take_path(t, tmp_path).name == "קטע-03.mp4"
+    (tmp_path / "Beat 3 - take 1.mov").write_text("v")
+    assert take_path(t, tmp_path).name == "Beat 3 - take 1.mov"
+
+
+def test_the_manifest_is_a_config_that_rebuilds_from_drive():
+    cfg = {"lesson": 1, "takes": [{"beat": 1, "file": "Beat 1 - take 1.mov", "from": 2.0, "to": 43.0}],
+           "assets": {"whitepaper": {"file": "assets/bitcoin-whitepaper-p1.png", "source": "https://bitcoin.org"}}}
+    text = json.dumps(cfg)
+    m = manifest(cfg, text, "שיעור-1-בסיס.mp4", 196.1234, "abc1234", "2026-10-27T10:00:00+00:00")
+    assert m["takes"] == cfg["takes"] and m["assets"]["whitepaper"]["file"] == "bitcoin-whitepaper-p1.png"
+    assert cfg["assets"]["whitepaper"]["file"].startswith("assets/")      # the config itself is untouched
+    pkg = m["package"]
+    assert pkg["skills_version"] == "abc1234" and pkg["base_seconds"] == 196.123 and len(pkg["config_sha256"]) == 64
+    assert pkg["takes"] == {"1": {"drive": "קטע-01.mp4", "recorded_as": "Beat 1 - take 1.mov"}}
+    assert pkg["words"] == ["קטע-01.json"] and pkg["captions"] == "שיעור-1-כתוביות.srt"
+    assert "build שיעור-1-מניפסט.json --takes-dir ." in pkg["rebuild"]
+
+
 @pytest.mark.parametrize("path", sorted(LESSONS.glob("lesson-*-video.json")), ids=lambda p: p.name)
 def test_lesson_configs_are_complete(path):
     cfg = json.loads(path.read_text(encoding="utf-8"))
     beats = [t["beat"] for t in cfg["takes"]]
+    script = cfg["script"]
+    assert script["doc"] and script["revision"], "the config says which Doc revision it follows"
+    assert all(script["beats"].get(str(b), {}).get("on_screen") for b in beats), "an על המסך line per take"
+    assert set(script.get("departures", {})) <= {str(b) for b in beats}
     assert beats == sorted(beats) and len(set(beats)) == len(beats)
     assert all(t["to"] > t["from"] >= 0 for t in cfg["takes"])
     assert set(cfg["proofread"]) == {str(b) for b in beats}, "proofread text for every take"
