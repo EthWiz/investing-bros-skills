@@ -6,6 +6,7 @@ Usage:
         --out lesson.mp4 [--work DIR] [--browser PATH] [--concurrency 4]
     python3 render_lesson.py ... --stills 5,25,38,50,64,90,125,178    # QA frames -> <out>_stills.jpg
     python3 render_lesson.py ... --transitions                        # 2.5 s around every cut -> <out>_transitions.mp4
+    python3 render_lesson.py ... --stills 210,236 --vertical          # 9:16 scenes alone -> <out>_vertical_stills.jpg
 
 props.json from make_lesson_props.py; base.mp4 from make_lesson_base.py (investing-bros-crypto-course).
 Staging, the npm install and the browser lookup are render_short.py's; the scenes' images (the props'
@@ -37,8 +38,8 @@ def render_cmd(out: Path, props: Path, browser=None, concurrency=4):
             "--codec=h264", "--crf=18", f"--concurrency={concurrency}"]
 
 
-def still_cmd(out: Path, props: Path, frame: int, browser=None):
-    return ["npx", "remotion", "still", "src/index.ts", "Lesson", str(out), f"--frame={frame}",
+def still_cmd(out: Path, props: Path, frame: int, browser=None, composition="Lesson"):
+    return ["npx", "remotion", "still", "src/index.ts", composition, str(out), f"--frame={frame}",
             *common_flags(props, browser)]
 
 
@@ -82,9 +83,9 @@ def stage_scene_assets(work: Path, props: dict):
         shutil.copy2(props["assetSources"][key], dst)
 
 
-def contact_sheet(paths, labels, out: Path, cols=3):
+def contact_sheet(paths, labels, out: Path, cols=3, vertical=False):
     from PIL import Image, ImageDraw
-    w, h = 640, 360
+    w, h = (360, 640) if vertical else (640, 360)
     rows = (len(paths) + cols - 1) // cols
     sheet = Image.new("RGB", (w * cols, h * rows), "white")
     for i, (p, lab) in enumerate(zip(paths, labels)):
@@ -106,7 +107,11 @@ def main(argv=None) -> int:
     ap.add_argument("--concurrency", type=int, default=max(1, min(8, (os.cpu_count() or 2) - 2)))
     ap.add_argument("--stills", help="comma-separated seconds: render QA stills instead of the video")
     ap.add_argument("--transitions", action="store_true", help="render 2.5 s around every cut instead of the video")
+    ap.add_argument("--vertical", action="store_true",
+                    help="with --stills: the 9:16 LessonScenes composition (scenes marked vertical only)")
     a = ap.parse_args(argv)
+    if a.vertical and not a.stills:
+        ap.error("--vertical needs --stills")
     out = Path(a.out).resolve()
     work = Path(a.work).resolve() if a.work else out.parent / "remotion"
     props_path = Path(a.props).resolve()
@@ -124,11 +129,13 @@ def main(argv=None) -> int:
         for s in secs:
             if s > props["duration"]:
                 raise SystemExit(f"error: still at {s} s is past the end ({props['duration']} s)")
-            png = out.with_name(f"{out.stem}_still_{s:g}.png")
-            subprocess.run(still_cmd(png, props_path, round(s * FPS), browser), cwd=work, check=True)
+            tag = "_vertical" if a.vertical else ""
+            png = out.with_name(f"{out.stem}{tag}_still_{s:g}.png")
+            subprocess.run(still_cmd(png, props_path, round(s * FPS), browser, "LessonScenes" if a.vertical else "Lesson"),
+                           cwd=work, check=True)
             shots.append(png)
-        sheet = out.with_name(f"{out.stem}_stills.jpg")
-        contact_sheet(shots, [f"{s:g}s" for s in secs], sheet)
+        sheet = out.with_name(f"{out.stem}{'_vertical' if a.vertical else ''}_stills.jpg")
+        contact_sheet(shots, [f"{s:g}s" for s in secs], sheet, cols=4 if a.vertical else 3, vertical=a.vertical)
         print(sheet)
         return 0
     if a.transitions:

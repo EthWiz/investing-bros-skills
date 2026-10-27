@@ -1,4 +1,5 @@
 import type React from 'react';
+import {DoubleSpend} from './DoubleSpend';
 import {MoneyFlow} from './lesson1/MoneyFlow';
 import {SatoshiPanel} from './lesson1/Satoshi';
 import {Terms} from './Terms';
@@ -11,6 +12,7 @@ import type {SceneProps} from './types';
 // inside SidePanel. Text comes from the segment's content in the config, never from the component.
 export const SCENES: Record<string, React.FC<SceneProps>> = {
   terms: Terms,
+  'double-spend': DoubleSpend,
   'lesson1-money-flow': MoneyFlow,
   'lesson1-satoshi': SatoshiPanel,
 };

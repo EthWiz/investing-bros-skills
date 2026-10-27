@@ -1,10 +1,26 @@
 {
-  "_about": "What each lesson scene needs. make_lesson_props.py refuses a segment whose mode, anchors, content or assets don't match; scenes.ts maps the same names to components. 'anchors' must be in the config's anchors and fall inside the scene's segment; 'content' keys must be in the segment's content (any {\"at\": spec} in content is resolved to a time and checked the same way); 'assets' are image files the config stages.",
+  "_about": "What each lesson scene needs. make_lesson_props.py refuses a segment whose mode, anchors, content or assets don't match; scenes.ts maps the same names to components. 'anchors' must be in the config's anchors and fall inside the scene's segment; 'content' keys must be in the segment's content (any {\"at\": spec} in content is resolved to a time and checked the same way); 'assets' are image files the config stages. 'variants' (optional): the content key that picks the scene's variant, the allowed values, and per value the extra content keys it needs and the content times that must come in that order (dotted paths: 'payments.1.at'). 'vertical': the scene also lays itself out in 9:16 (render_lesson.py --vertical).",
   "terms": {
     "mode": "side",
     "anchors": [],
     "content": ["heading", "items"],
     "assets": []
+  },
+  "double-spend": {
+    "mode": "bubble",
+    "anchors": [],
+    "content": ["scenario", "sender", "coin", "recipients", "payments", "verdict"],
+    "assets": [],
+    "vertical": true,
+    "variants": {
+      "key": "scenario",
+      "options": {
+        "copy": {"content": ["copy"],
+                 "order": ["coin.at", "payments.0.at", "copy.at", "payments.1.at", "verdict.at"]},
+        "ledger": {"content": ["ledger", "split", "seen"],
+                   "order": ["ledger.at", "split.at", "coin.at", "payments.0.at", "payments.1.at", "seen.at", "verdict.at"]}
+      }
+    }
   },
   "lesson1-money-flow": {
     "mode": "bubble",
