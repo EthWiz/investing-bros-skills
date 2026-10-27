@@ -75,6 +75,17 @@ def test_progress_keeps_a_position_for_every_part(words_dir):
         run(config(part_starts=[1, 2]), words_dir)
 
 
+def test_disclaimer_strip_covers_its_beat_or_starts_on_a_phrase(words_dir):
+    assert run(config(), words_dir)["disclaimer"] == {"start": 0.0, "end": 34.0}
+    # lesson 1's six-beat script: the disclaimer is the last sentences of a longer beat, not a beat of its own
+    p = run(config(disclaimer_beat=2, disclaimer_from=[2, "וזה הבנק שלו"]), words_dir)
+    assert p["disclaimer"]["end"] == 40.0
+    assert p["disclaimer"]["start"] == pytest.approx(p["at"]["p1"] - 0.4, abs=0.01)
+    assert run(config(disclaimer_beat=3), words_dir)["disclaimer"] is None     # beat not in this cut
+    with pytest.raises(SystemExit, match="disclaimer_from"):
+        run(config(disclaimer_from=[2, "הבנק שלו"]), words_dir)
+
+
 def test_segments_cover_the_lesson_back_to_back(words_dir):
     segs = run(config(), words_dir)["segments"]
     assert segs[0]["start"] == 0.0 and segs[-1]["end"] == 40.0

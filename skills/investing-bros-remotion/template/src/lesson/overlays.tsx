@@ -34,7 +34,7 @@ export const LessonTitle: React.FC<{lesson: number; lines: string[]; at: number;
   );
 };
 
-// The disclaimer strip at the bottom for the whole disclaimer beat.
+// The disclaimer strip at the bottom, from the disclaimer's first words to the end of its beat.
 export const DisclaimerStrip: React.FC<{start: number; end: number}> = ({start, end}) => {
   const {t, fps} = useTime();
   if (t < start || t > end) return null;
