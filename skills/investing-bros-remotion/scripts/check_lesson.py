@@ -208,7 +208,7 @@ def digest(value) -> str:
     return hashlib.sha256(json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")).encode("utf-8")).hexdigest()
 
 
-LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "anchors", "segments", "assets")
+LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "disclaimer_from", "anchors", "segments", "assets")
 
 
 def fingerprint(cfg: dict) -> dict:
