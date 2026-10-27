@@ -54,7 +54,7 @@ Amitai sits in the middle of the frame, with the wall to his left free. The comp
 - **Build for the beats that are recorded.** Plan the custom scenes from the script, but build first the ones whose beats are in hand: a scene for a beat not yet recorded can't be timed or checked.
 - **A document Amitai talks about may appear as a page** (the white paper's first page, the text Satoshi left in the first block), in its own language: the real page as an image when there is one (lesson 1's white paper page is rendered from bitcoin.org's PDF, its source and hash in the config), otherwise drawn in the composition. That is the only English on a lesson graphic, and the only text he doesn't say word for word.
 
-Lesson 1 so far (beats 1–6, a draft): the money moving through the intermediaries (beat 4, `lesson1-money-flow`, full screen), 2008 and Satoshi (beat 5, `lesson1-satoshi`, side panel) and the three words (beat 6, the reusable `terms` card, side panel). Next, when the beats are recorded: double spending (beats 7 and 8), the chain with a block someone changes (beat 9); later, if the format works, the bank's ledger becoming everyone's copy (beat 8) and Proof of Work vs Proof of Stake (beat 10).
+Lesson 1 so far: a draft cut from beats 1–6 of the earlier 14-beat script, with the money moving through the intermediaries (`lesson1-money-flow`, full screen), 2008 and Satoshi (`lesson1-satoshi`, side panel) and the three words (the reusable `terms` card, side panel). These scenes carry over to the six-beat script (beats 3 and 5). Next, when its beats are recorded: beat 2's chart (Bitcoin against the S&P 500, gold and the TA-125, then its drops), double spending (beat 4) and the chain with a block someone changes (beat 5); later, if the format works, the bank's ledger becoming everyone's copy (beat 4).
 
 ## Files
 In the lesson's Drive folder:
@@ -66,4 +66,4 @@ The config `references/lessons/lesson-N-video.json`, its images (`references/les
 
 ## Still to build
 - 9:16 versions of the custom scenes, for Shorts.
-- Lesson 1's other scenes once beats 7–14 are recorded: double spending (beats 7 and 8) and the chain with a changed block (beat 9) first.
+- Lesson 1's other scenes once beats 2–6 of the six-beat script are recorded: the ten-year chart (beat 2), double spending (beat 4) and the chain with a changed block (beat 5) first.
