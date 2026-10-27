@@ -70,7 +70,7 @@ const Captions: React.FC<{p: LessonProps}> = ({p}) => {
   if (!c) return null;
   const {cur, prev, p: k} = modeBlend(p.segments, t);
   const x = lerp(CAP[prev.mode].x, CAP[cur.mode].x, k), w = lerp(CAP[prev.mode].w, CAP[cur.mode].w, k);
-  const disclaimer = p.beats.find((b) => b.n === p.disclaimerBeat);
+  const disclaimer = p.disclaimer;
   const raised = disclaimer && t >= disclaimer.start && t < disclaimer.end;
   const spoken = c.words.reduce((acc, wd, i) => (t >= wd.start - 1e-6 ? i : acc), -1);
   const fade = interpolate(t, [c.start, c.start + 0.12], [0, 1], clamp);
@@ -101,7 +101,7 @@ export const Lesson: React.FC<LessonProps> = (p) => {
     const Scene = SCENES[s.scene!];
     return Scene ? <Scene key={`${mode}-${i}`} at={p.at} start={s.start} end={s.end} content={s.content ?? {}} assets={p.assets ?? {}} /> : null;
   });
-  const disclaimer = p.beats.find((b) => b.n === p.disclaimerBeat);
+  const disclaimer = p.disclaimer;
   return (
     <AbsoluteFill style={{background: NAVY}}>
       <style>{fontFaces()}</style>

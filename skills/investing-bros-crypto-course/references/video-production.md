@@ -6,16 +6,16 @@ Decided with Amitai on 2026-10-26 for lesson 1, and the default for every lesson
 - **Amitai's face carries the lesson; graphics punctuate it.** The video is not the deck presented slide by slide. The deck stays a handout in the lesson folder; the video is built from the script.
 - **Nothing static for long.** No more than about 12 seconds on screen without a change: a graphic coming in, a reveal, a punch-in or a cut. Word-timed reveals give most of these for free.
 - **The first 30 seconds are face only.** No full-screen graphic there; a graphic at 0:05 reads as a webinar. The lesson title shows for 3 seconds at most.
-- **The disclaimer is one short beat** (about 10 seconds), spoken, with a strip at the bottom of the screen: `תוכן לימודי, לא ייעוץ השקעות`. No full disclaimer slide in the video.
+- **The disclaimer is a few spoken sentences** (about 10 seconds) at the end of a beat, not a beat of its own; in lesson 1, the end of beat 2, after the why and who Amitai is. A strip at the bottom of the screen, `תוכן לימודי, לא ייעוץ השקעות`, covers those sentences. No full disclaimer slide in the video.
 - **No agenda slide.** Say what the lesson covers in one sentence, show the parts as small cards for a few seconds, then keep them as a progress marker in a corner for the whole lesson (one mark per part).
 - Length: about 10 minutes, 8 to 12 at most. A lesson that runs over is split, not sped up.
 
 ## Beats
-A beat is one point of the lesson, 20 to 60 seconds, recorded as its own take. The script (SKILL.md step 6) is written in numbered beats, each with an `על המסך:` line that picks one of these:
+A beat is one part of the lesson, usually 60 to 100 seconds (the opening shorter), recorded as its own take; at most six beats a lesson (decided 2026-10-27, after lesson 1's 14 short beats felt chopped up and took long to record). Inside a beat, graphics still change every few sentences on his words. The script (SKILL.md step 6) is written in numbered beats, each with an `על המסך:` line that picks one of these:
 
 | On screen | When | Remotion |
 |---|---|---|
-| Only Amitai | Opening, disclaimer, summary, any beat that is an argument rather than a mechanism | `full`, with punch-ins; strips on the wall |
+| Only Amitai | Opening, who Amitai is and the disclaimer, summary, any beat that is an argument rather than a mechanism | `full`, with punch-ins; strips on the wall |
 | A card beside him, his face stays in view | Definitions, short lists, the end card: terms or items appear one at a time on the word that names them | `side` with a scene in the panel |
 | Full screen, his face in a small corner bubble | Mechanisms that need a picture: how money moves today, double spending, the shared ledger, the chain, consensus | `bubble` with a scene |
 | Background footage | Dates and history, such as 2009 and Satoshi: headlines, the first page of a document | `side`; documents drawn in the scene, no stock footage |
@@ -40,7 +40,7 @@ Each lesson has one config, `references/lessons/lesson-N-video.json` (lesson 1 i
 Amitai sits in the middle of the frame, with the wall to his left free. The composition (`src/lesson/` in the template) does the rest:
 - **Only Amitai (`full`):** zoom 1 is the wide shot. Punch-ins of 1.1–1.2x are hard cuts at a sentence start (`[beat, "first words", -0.15]`), so the face beats change every 5–15 s. Use zoom 1 while something sits on the wall (name, title, agenda).
 - **Name and title:** the name strips (`אמיתי רסקין` / `אחים להשקעות`) when he says his name; the title strips (`שיעור N` + the name as he says it) for 3 s at most, near the end of the opening beat. Both on the wall to his left.
-- **Disclaimer:** the strip `תוכן לימודי, לא ייעוץ השקעות` at the bottom for the whole disclaimer beat; captions move up above it.
+- **Disclaimer:** the strip `תוכן לימודי, לא ייעוץ השקעות` at the bottom from the disclaimer's first words (`disclaimer_from: [beat, "phrase"]` in the config) to the end of `disclaimer_beat`; without `disclaimer_from` it covers the whole beat. Captions move up above it.
 - **Agenda:** the parts come in on the wall one by one as he names them (`ag1`, `ag2`, …), then shrink into the progress marker top left (the top right is his head once he moves). The marker shows the current part by name for the rest of the lesson.
 - **Card beside him (`side`):** he slides right and a navy panel with a torn edge comes in from the left, one beat long. Scenes inside it change on his words.
 - **Full screen (`bubble`):** the scene covers the frame and Amitai sits in a gold-ringed circle bottom right, on his side; flows run right to left, starting from him.

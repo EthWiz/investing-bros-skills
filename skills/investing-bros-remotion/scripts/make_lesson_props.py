@@ -6,7 +6,8 @@ Usage:
 
 lesson-N-video.json (the lesson's config, investing-bros-crypto-course -> references/lessons/):
   lesson, title (lines), parts, part_starts (the beat each part starts on, null if not in this cut),
-  disclaimer_beat, script {doc, revision, beats: {beat: {title, on_screen, text}}, departures: {beat: why}}
+  disclaimer_beat, disclaimer_from (optional anchor [beat, "phrase"] inside that beat where the strip starts;
+  it ends with the beat), script {doc, revision, beats: {beat: {title, on_screen, text}}, departures: {beat: why}}
   (parse_script.py, from the Google Doc), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
   proofread {beat: what Amitai said in the take}, anchors {key: spec}, assets {key: {file, source}},
   segments [{at: spec, mode, zoom?, scene?, content?}].
@@ -241,6 +242,17 @@ def stage_assets_spec(cfg, config_dir: Path):
     return assets, sources
 
 
+def disclaimer(cfg, by_n, resolve):
+    """The disclaimer strip's stretch: from `disclaimer_from` (or the beat's start) to the end of its beat."""
+    n = cfg["disclaimer_beat"]
+    if n not in by_n:
+        return None
+    spec = cfg.get("disclaimer_from", [n, None])
+    if isinstance(spec, dict) or spec[0] != n:
+        raise SystemExit(f"error: disclaimer_from must be [beat, phrase] in the disclaimer beat ({n})")
+    return {"start": resolve(spec), "end": by_n[n]["end"]}
+
+
 def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     manifest = scene_manifest() if manifest is None else manifest
     check_script(cfg)
@@ -263,7 +275,7 @@ def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     segments = layout(cfg, resolve, duration, manifest)
     check_scenes(segments, at, assets, manifest)
     return {"base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
-            "parts": cfg["parts"], "partStarts": part_starts, "disclaimerBeat": cfg["disclaimer_beat"],
+            "parts": cfg["parts"], "partStarts": part_starts, "disclaimer": disclaimer(cfg, by_n, resolve),
             "beats": beats, "segments": segments, "captions": caps, "at": at, "assets": assets,
             "assetSources": sources,
             "script": {k: cfg["script"][k] for k in ("doc", "revision")},

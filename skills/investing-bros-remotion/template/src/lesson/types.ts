@@ -22,7 +22,7 @@ export type LessonProps = {
   title: string[];               // the lesson name as Amitai says it, one strip per line
   parts: string[];               // the lesson's parts, Amitai's words (the agenda and the progress marker)
   partStarts: (number | null)[]; // when each part starts, same positions as parts; null = not in this cut
-  disclaimerBeat: number;        // the beat with the disclaimer strip; captions rise above it
+  disclaimer: {start: number; end: number} | null;  // the disclaimer strip; captions rise above it
   beats: {n: number; start: number; end: number}[];
   segments: Segment[];
   captions: LCaption[];
