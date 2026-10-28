@@ -7,6 +7,8 @@ Usage:
     python3 render_lesson.py ... --stills 5,25,38,50,64,90,125,178    # QA frames -> <out>_stills.jpg
     python3 render_lesson.py ... --transitions                        # 2.5 s around every cut -> <out>_transitions.mp4
     python3 render_lesson.py ... --stills 210,236 --vertical          # 9:16 scenes alone -> <out>_vertical_stills.jpg
+    python3 render_lesson.py ... --patch                              # re-render only what changed since <out>
+    python3 render_lesson.py ... --patch --range 30-72                # after a template change: these seconds
 
 props.json from make_lesson_props.py; base.mp4 from make_lesson_base.py (investing-bros-crypto-course).
 Staging, the npm install and the browser lookup are render_short.py's; the scenes' images (the props'
@@ -17,6 +19,9 @@ with the base again: Remotion's AAC keeps the encoder's priming as audio (about 
 so the delay is measured against the base and the audio track shifted, without re-encoding.
 Then run check_lesson.py. A lesson renders at 30 fps,
 about 2.6x real time on 10 cores at --concurrency 8 (3:16 took 8.5 min): run it in the background.
+Every render leaves `<out>.render.json` (the props, and hashes of the template, base and images), so a later
+--patch renders only the stretches whose props changed and splices them into <out> (lesson_patch.py has the rules
+and the checks): a new chart or a caption fix takes a minute or two instead of the whole lesson.
 """
 import argparse
 import json
@@ -27,8 +32,9 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+import lesson_patch  # noqa: E402
 from check_lesson import lag_seconds, pcm  # noqa: E402
-from render_short import common_flags, find_browser, install, stage_assets, stage_project  # noqa: E402
+from render_short import TEMPLATE, common_flags, find_browser, install, stage_assets, stage_project  # noqa: E402
 
 FPS = 30
 
@@ -54,6 +60,44 @@ def transition_times(props) -> list:
 def clip_cmd(out: Path, props: Path, first: int, last: int, browser=None):
     return ["npx", "remotion", "render", "src/index.ts", "Lesson", str(out), *common_flags(props, browser),
             "--codec=h264", "--crf=23", f"--frames={first}-{last}"]
+
+
+def range_cmd(out: Path, props: Path, first: int, last: int, browser=None, concurrency=4):
+    """Frames first..last of the Lesson, muted and with the full render's codec settings, for --patch."""
+    return [*render_cmd(out, props, browser, concurrency), f"--frames={first}-{last}", "--muted"]
+
+
+def patch(out: Path, props: dict, props_path: Path, base: Path, work: Path, browser, concurrency: int, ranges: list):
+    sidecar = lesson_patch.sidecar_path(out)
+    if not out.is_file() or not sidecar.is_file():
+        raise SystemExit(f"error: --patch needs {out.name} and {sidecar.name} from an earlier render; render in full")
+    old = json.loads(sidecar.read_text(encoding="utf-8"))
+    fp = lesson_patch.fingerprint(props, TEMPLATE / "src", base)
+    why = lesson_patch.why_full(old["props"], props, old["fingerprint"], fp, explicit=bool(ranges))
+    if why:
+        raise SystemExit("error: render in full: " + "; ".join(why))
+    ranges = lesson_patch.merge(ranges, props["duration"]) if ranges else lesson_patch.changed_ranges(old["props"], props)
+    if not ranges:
+        print(f"nothing changed since {out.name}")
+        return
+    total = lesson_patch.frame_count(out)
+    parts = lesson_patch.plan(lesson_patch.snap(ranges, lesson_patch.keyframes(out), total), total)
+    prev = out.with_name(f"{out.stem}_prev{out.suffix}")
+    out.replace(prev)
+
+    def render(first, last, dst):
+        subprocess.run(range_cmd(dst, props_path, first, last, browser, concurrency), cwd=work, check=True)
+
+    try:
+        lesson_patch.splice(prev, out, parts, render, out.with_name(f"{out.stem}_patch"))
+    except BaseException:
+        prev.replace(out)
+        raise
+    prev.unlink()
+    lesson_patch.write_sidecar(out, props, fp)
+    redone = sum(b - a for kind, a, b in parts if kind == "render")
+    spans = ", ".join(f"{a / FPS:.1f}-{b / FPS:.1f} s" for kind, a, b in parts if kind == "render")
+    print(f"patched {spans}: {redone / FPS:.0f} of {total / FPS:.0f} s rendered")
 
 
 def measured_delay(video: Path, base: Path, at=2.0, seconds=3.0):
@@ -109,9 +153,14 @@ def main(argv=None) -> int:
     ap.add_argument("--transitions", action="store_true", help="render 2.5 s around every cut instead of the video")
     ap.add_argument("--vertical", action="store_true",
                     help="with --stills: the 9:16 LessonScenes composition (scenes marked vertical only)")
+    ap.add_argument("--patch", action="store_true",
+                    help="re-render only what changed since the last render of --out, and splice it in")
+    ap.add_argument("--range", help="with --patch: the seconds to re-render, e.g. 30-72,100-110")
     a = ap.parse_args(argv)
     if a.vertical and not a.stills:
         ap.error("--vertical needs --stills")
+    if a.range and not a.patch:
+        ap.error("--range needs --patch")
     out = Path(a.out).resolve()
     work = Path(a.work).resolve() if a.work else out.parent / "remotion"
     props_path = Path(a.props).resolve()
@@ -153,10 +202,16 @@ def main(argv=None) -> int:
                         "-c", "copy", str(joined)], check=True)
         print(joined)
         return 0
+    if a.patch:
+        ranges = [lesson_patch.parse_range(r) for r in a.range.split(",")] if a.range else []
+        patch(out, props, props_path, Path(a.base), work, browser, a.concurrency, ranges)
+        print(out)
+        return 0
     subprocess.run(render_cmd(out, props_path, browser, a.concurrency), cwd=work, check=True)
     delay = line_up_audio(out, Path(a.base))
     if delay:
         print(f"audio was {delay * 1000:+.0f} ms off the base; shifted back")
+    lesson_patch.write_sidecar(out, props, lesson_patch.fingerprint(props, TEMPLATE / "src", Path(a.base)))
     print(out)
     return 0
 
