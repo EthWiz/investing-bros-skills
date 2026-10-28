@@ -1,7 +1,9 @@
 import type React from 'react';
 import {DoubleSpend} from './DoubleSpend';
+import {GrowthBars} from './GrowthBars';
 import {MoneyFlow} from './lesson1/MoneyFlow';
 import {SatoshiPanel} from './lesson1/Satoshi';
+import {PriceDrop} from './PriceDrop';
 import {Terms} from './Terms';
 import type {SceneProps} from './types';
 
@@ -13,6 +15,8 @@ import type {SceneProps} from './types';
 export const SCENES: Record<string, React.FC<SceneProps>> = {
   terms: Terms,
   'double-spend': DoubleSpend,
+  'growth-bars': GrowthBars,
+  'price-drop': PriceDrop,
   'lesson1-money-flow': MoneyFlow,
   'lesson1-satoshi': SatoshiPanel,
 };
