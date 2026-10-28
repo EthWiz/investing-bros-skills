@@ -17,6 +17,14 @@ export const ease = (t: number, a: number, b: number) =>
 
 export const lerp = (a: number, b: number, p: number) => a + (b - a) * p;
 
+// A word's trailing punctuation, kept out of its <bdi dir="auto">: inside, a number has no strong
+// direction, so "3.5." ran left to right and the period landed between the number and the Hebrew
+// word before it. Outside, the period follows the Hebrew sentence (lesson 1, "פי 3.5.").
+export const splitTrail = (w: string): [string, string] => {
+  const m = w.match(/^(.*?)([.,?!:;]*)$/s);
+  return m ? [m[1], m[2]] : [w, ''];
+};
+
 // Torn-paper strip (the show's look): navy Heebo Black on cream or mustard paper.
 export const Paper: React.FC<{text?: string; bg?: string; color?: string; size: number; weight?: number;
   style?: React.CSSProperties; children?: React.ReactNode; seed?: string}> =

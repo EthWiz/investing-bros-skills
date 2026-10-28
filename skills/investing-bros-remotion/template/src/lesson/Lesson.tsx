@@ -4,7 +4,7 @@ import {GOLD, HOOK_YELLOW, NAVY, WHITE, clamp, FONT} from '../brand';
 import {fontFaces} from '../brand';
 import {Agenda, DisclaimerStrip, LessonTitle, NameStrips, Progress} from './overlays';
 import {SCENES} from './scenes';
-import {NavyPaper, ease, lerp, useTime} from './kit';
+import {NavyPaper, ease, lerp, splitTrail, useTime} from './kit';
 import type {LessonProps, Mode, Segment} from './types';
 
 // Face position in the 1920x1080 base (between the eyes and the mouth); zooms and the bubble keep it in place.
@@ -81,9 +81,14 @@ const Captions: React.FC<{p: LessonProps}> = ({p}) => {
     <div style={{position: 'absolute', left: x - w / 2, width: w, bottom: raised ? 132 : 44, display: 'flex', justifyContent: 'center', opacity: fade}}>
       <div style={{direction: 'rtl', textAlign: 'center', fontFamily: FONT, fontWeight: 800, fontSize: 50, lineHeight: 1.28,
         textWrap: 'balance', textShadow: '0 3px 8px rgba(0,0,0,.75), 0 0 3px rgba(0,0,0,.9)'} as React.CSSProperties}>
-        {c.words.map((wd, i) => (
-          <React.Fragment key={i}><bdi dir="auto" style={{color: i === spoken ? GOLD : WHITE}}>{wd.w}</bdi>{i < c.words.length - 1 ? ' ' : ''}</React.Fragment>
-        ))}
+        {c.words.map((wd, i) => {
+          const [core, trail] = splitTrail(wd.w);
+          return (
+            <React.Fragment key={i}>
+              <span style={{color: i === spoken ? GOLD : WHITE}}><bdi dir="auto">{core}</bdi>{trail}</span>{i < c.words.length - 1 ? ' ' : ''}
+            </React.Fragment>
+          );
+        })}
       </div>
     </div>
   );
