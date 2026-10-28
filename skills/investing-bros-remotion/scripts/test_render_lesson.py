@@ -105,3 +105,14 @@ def test_double_spend_takes_every_word_from_content():
     assert hebrew == []                                              # no Hebrew text baked into the component
     manifest = json.loads((TEMPLATE / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
     assert set(manifest["double-spend"]["variants"]["options"]) == {"copy", "ledger"}
+
+
+def test_caption_punctuation_stays_outside_the_word_isolate():
+    # "פי 3.5." garbled: inside <bdi dir="auto"> a number runs left to right, so its period went to the wrong side
+    kit = (TEMPLATE / "src" / "lesson" / "kit.tsx").read_text()
+    pattern = re.search(r"w\.match\(/(.+)/s\)", kit).group(1)
+    for word, core, trail in [("3.5.", "3.5", "."), ("2019,", "2019", ","), ("קיים?", "קיים", "?"), ("S&P", "S&P", "")]:
+        m = re.match(pattern, word, re.S)
+        assert (m.group(1), m.group(2)) == (core, trail), word
+    lesson = (TEMPLATE / "src" / "lesson" / "Lesson.tsx").read_text()
+    assert "splitTrail(wd.w)" in lesson and "<bdi dir=\"auto\">{core}</bdi>{trail}" in lesson
