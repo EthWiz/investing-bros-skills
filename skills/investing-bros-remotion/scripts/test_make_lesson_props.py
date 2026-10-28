@@ -117,6 +117,14 @@ def test_refuses_what_breaks_the_house_rules(words_dir, over, message):
         run(config(**over), words_dir)
 
 
+def test_the_face_position_is_optional_and_checked(words_dir):
+    assert "face" not in run(config(), words_dir)
+    assert run(config(face={"x": 840, "y": 690}), words_dir)["face"] == {"x": 840.0, "y": 690.0}
+    for bad in ({"x": 840}, {"x": 2400, "y": 500}, [840, 450]):
+        with pytest.raises(SystemExit, match="face must be"):
+            run(config(face=bad), words_dir)
+
+
 def test_a_scene_gets_every_anchor_content_and_asset_it_needs(words_dir):
     cfg = config()
     del cfg["anchors"]["p1"]                                     # the review's case: a scene's anchor deleted

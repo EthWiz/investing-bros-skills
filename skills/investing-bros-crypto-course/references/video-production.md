@@ -58,6 +58,7 @@ Each lesson has one config, `lesson-N/lesson-N-video.json` in the lesson's own f
 
 ## Layout (lesson 1, the default)
 Amitai sits in the middle of the frame, with the space to his left free: the navy studio background since 2026-10-28 (a real wall before). The composition (`src/lesson/` in the template) does the rest:
+- **Face position:** punch-ins and the corner bubble centre on the face at x 840, y 450 of the base (between the eyes and the mouth). When a recording setup frames him elsewhere, give the base's point as `"face": {"x": …, "y": …}` in the config; the bubble never shows past the bottom of the frame.
 - **Only Amitai (`full`):** zoom 1 is the wide shot. Punch-ins of 1.1–1.2x are hard cuts at a sentence start (`[beat, "first words", -0.15]`), so the face beats change every 5–15 s. Use zoom 1 while something sits on the wall (name, title, agenda).
 - **Name and title:** the name strips (`אמיתי רסקין` / `אחים להשקעות`) when he says his name; the title strips (`שיעור N` + the name as he says it) for 3 s at most, near the end of the opening beat. Both on the wall to his left.
 - **Disclaimer:** the strip `תוכן לימודי, לא ייעוץ השקעות` at the bottom from the disclaimer's first words (`disclaimer_from: [beat, "phrase"]` in the config) to the end of `disclaimer_beat`; without `disclaimer_from` it covers the whole beat. Captions move up above it.

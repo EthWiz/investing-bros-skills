@@ -28,6 +28,7 @@ export type LessonProps = {
   captions: LCaption[];
   at: Record<string, number>;    // graphic anchors: key -> the time its word is spoken
   assets: Record<string, string>;  // staged image files in public/ by the config's asset key
+  face?: {x: number; y: number};  // the face in the base (between the eyes and the mouth); default 840, 450
 };
 
 // What a scene component gets: the anchors, its segment's span, its content and the staged assets.

@@ -9,7 +9,8 @@ lesson-N-video.json (the lesson's config; it lives in the lesson's own folder, b
   script/, or is the Drive manifest שיעור-N-מניפסט.json; see investing-bros-crypto-course's video reference):
   lesson, title (lines), parts, part_starts (the beat each part starts on, null if not in this cut),
   disclaimer_beat, disclaimer_from (optional anchor [beat, "phrase"] inside that beat where the strip starts;
-  it ends with the beat), script {doc, revision, revision_kind, snapshot, snapshot_sha256, beats: {beat: {title,
+  it ends with the beat), face (optional {x, y}: the face in the base, between the eyes and the mouth;
+  default 840, 450), script {doc, revision, revision_kind, snapshot, snapshot_sha256, beats: {beat: {title,
   on_screen, text}}, departures: {beat: why}} (parse_script.py, from the Google Doc; the snapshot is checked
   against its hash), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
   proofread {beat: what Amitai said in the take}, anchors {key: spec}, assets {key: {file, source}},
@@ -338,6 +339,14 @@ def disclaimer(cfg, by_n, resolve):
     return {"start": resolve(spec), "end": by_n[n]["end"]}
 
 
+def face(cfg) -> dict:
+    """Where the face is in the 1920x1080 base (between the eyes and the mouth); zooms and the bubble centre on it."""
+    f = cfg["face"]
+    if not (isinstance(f, dict) and set(f) == {"x", "y"} and 0 <= f["x"] <= 1920 and 0 <= f["y"] <= 1080):
+        raise SystemExit("error: face must be {\"x\": 0-1920, \"y\": 0-1080}, pixels in the base")
+    return {"x": float(f["x"]), "y": float(f["y"])}
+
+
 def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     manifest = scene_manifest() if manifest is None else manifest
     check_script(cfg, config_dir)
@@ -359,7 +368,8 @@ def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     assets, sources = stage_assets_spec(cfg, config_dir)
     segments = layout(cfg, resolve, duration, manifest)
     check_scenes(segments, at, assets, manifest)
-    return {"base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
+    extra = {"face": face(cfg)} if "face" in cfg else {}
+    return {**extra, "base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
             "parts": cfg["parts"], "partStarts": part_starts, "disclaimer": disclaimer(cfg, by_n, resolve),
             "beats": beats, "segments": segments, "captions": caps, "at": at, "assets": assets,
             "assetSources": sources,
