@@ -18,7 +18,7 @@ from pathlib import Path
 import lesson_background
 
 W, H = 1920, 1080
-FACE_X = 840            # the template's face x (Lesson.tsx), between the left wall space and the centre
+FACE_X = 960            # centred, like the recording setup and the glow of the brand background
 HEAD_CUT = 0.18         # a face box starting this close to the top: the head is cut off by the frame
 SCALES = (0.8, 1.25)    # beyond these the take is too soft or too small; re-record instead
 EYES_MOUTH = 0.55       # the template's face point, as a share of the face box height from its top

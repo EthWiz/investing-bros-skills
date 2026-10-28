@@ -28,7 +28,7 @@ def test_every_take_gets_the_same_face_width_at_the_same_x():
     r = lesson_framing.plan(FACES)
     for b, face in FACES.items():
         p = placed(face, r["takes"][b])
-        assert p["w"] == pytest.approx(r["width"], abs=1) and p["cx"] == pytest.approx(840, abs=1)
+        assert p["w"] == pytest.approx(r["width"], abs=1) and p["cx"] == pytest.approx(960, abs=1)
 
 
 def test_the_body_stays_on_the_bottom_edge_and_takes_only_move_down():
@@ -51,7 +51,7 @@ def test_a_take_with_the_head_cut_off_is_never_shrunk():
 
 def test_the_face_point_for_the_template_follows_the_framed_takes():
     r = lesson_framing.plan(FACES)
-    assert r["face"]["x"] == 840 and 650 < r["face"]["y"] < 780
+    assert r["face"]["x"] == 960 and 650 < r["face"]["y"] < 780
 
 
 def test_a_take_too_far_off_is_refused():
