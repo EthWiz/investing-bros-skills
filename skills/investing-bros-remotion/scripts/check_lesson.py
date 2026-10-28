@@ -213,9 +213,13 @@ LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "disclaimer_f
 
 def fingerprint(cfg: dict) -> dict:
     """The same as make_lesson_base.py's (investing-bros-crypto-course): its `status` compares the two."""
-    out = {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
+    layout = {k: cfg.get(k) for k in LAYOUT_KEYS}
+    if cfg.get("face"):
+        layout["face"] = cfg["face"]
+    out = {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] + ([t["frame"]] if t.get("frame") else [])
+                     for t in cfg["takes"]},
            "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
-           "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
+           "layout": digest(layout),
            "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
     if cfg.get("background"):
         out["background"] = digest(cfg["background"])

@@ -9,7 +9,8 @@ lesson-N-video.json (the lesson's config; it lives in the lesson's own folder, b
   script/, or is the Drive manifest שיעור-N-מניפסט.json; see investing-bros-crypto-course's video reference):
   lesson, title (lines), parts, part_starts (the beat each part starts on, null if not in this cut),
   disclaimer_beat, disclaimer_from (optional anchor [beat, "phrase"] inside that beat where the strip starts;
-  it ends with the beat), script {doc, revision, revision_kind, snapshot, snapshot_sha256, beats: {beat: {title,
+  it ends with the beat), face (optional {x, y}: the face in the base, between the eyes and the mouth;
+  default 840, 450), script {doc, revision, revision_kind, snapshot, snapshot_sha256, beats: {beat: {title,
   on_screen, text}}, departures: {beat: why}} (parse_script.py, from the Google Doc; the snapshot is checked
   against its hash), takes [{beat, file, from, to}] (same trims as make_lesson_base.py),
   proofread {beat: what Amitai said in the take}, anchors {key: spec}, assets {key: {file, source}},
@@ -124,16 +125,23 @@ def resolver(beats, caps):
     by_n = {b["n"]: b for b in beats}
     words = [w for c in caps for w in c["words"]]
 
+    warned = set()
+
     def find(n, phrase):
         b = by_n.get(n)
         if b is None:
             raise SystemExit(f"error: beat {n} isn't in the takes")
         ws = [w for w in words if b["start"] - 1e-3 <= w["start"] < b["end"]]
         target = [mc.norm(x) for x in phrase.split()]
-        for i in range(len(ws) - len(target) + 1):
-            if all(mc.norm(ws[i + k]["w"]) == x for k, x in enumerate(target)):
-                return ws[i]["start"]
-        raise SystemExit(f"error: beat {n}: '{phrase}' isn't in the proofread words")
+        hits = [ws[i]["start"] for i in range(len(ws) - len(target) + 1)
+                if all(mc.norm(ws[i + k]["w"]) == x for k, x in enumerate(target))]
+        if not hits:
+            raise SystemExit(f"error: beat {n}: '{phrase}' isn't in the proofread words")
+        if len(hits) > 1 and (n, phrase) not in warned:
+            warned.add((n, phrase))
+            print(f"warning: beat {n}: '{phrase}' is said {len(hits)} times; the first ({hits[0]:.2f} s) is used. "
+                  "Add a word to pick another.", file=sys.stderr)
+        return hits[0]
 
     def resolve(spec):
         if isinstance(spec, dict):
@@ -208,13 +216,14 @@ def check_scenes(segments, at, assets, manifest):
         spec, name = manifest[seg["scene"]], seg["scene"]
         lo, hi = seg["start"], seg["end"]
         content = seg.get("content", {})
-        missing = [k for k in spec["anchors"] if k not in at]
+        optional = spec.get("optional", {})
+        missing = [k for k in spec["anchors"] if k not in at and k not in optional.get("anchors", [])]
         if missing:
             raise SystemExit(f"error: scene '{name}' needs anchors {missing}")
-        outside = [k for k in spec["anchors"] if not lo <= at[k] <= hi]
+        outside = [k for k in spec["anchors"] if k in at and not lo <= at[k] <= hi]
         if outside:
             raise SystemExit(f"error: scene '{name}' ({lo:.2f}-{hi:.2f} s): anchors {outside} fall outside it")
-        missing = [k for k in spec["content"] if k not in content]
+        missing = [k for k in spec["content"] if k not in content and k not in optional.get("content", [])]
         if missing:
             raise SystemExit(f"error: scene '{name}' needs content {missing}")
         late = [round(t, 2) for t in content_times(content) if not lo <= t <= hi]
@@ -338,6 +347,14 @@ def disclaimer(cfg, by_n, resolve):
     return {"start": resolve(spec), "end": by_n[n]["end"]}
 
 
+def face(cfg) -> dict:
+    """Where the face is in the 1920x1080 base (between the eyes and the mouth); zooms and the bubble centre on it."""
+    f = cfg["face"]
+    if not (isinstance(f, dict) and set(f) == {"x", "y"} and 0 <= f["x"] <= 1920 and 0 <= f["y"] <= 1080):
+        raise SystemExit("error: face must be {\"x\": 0-1920, \"y\": 0-1080}, pixels in the base")
+    return {"x": float(f["x"]), "y": float(f["y"])}
+
+
 def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     manifest = scene_manifest() if manifest is None else manifest
     check_script(cfg, config_dir)
@@ -359,7 +376,8 @@ def build(cfg, words_dir: Path, manifest=None, config_dir: Path = Path(".")):
     assets, sources = stage_assets_spec(cfg, config_dir)
     segments = layout(cfg, resolve, duration, manifest)
     check_scenes(segments, at, assets, manifest)
-    return {"base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
+    extra = {"face": face(cfg)} if "face" in cfg else {}
+    return {**extra, "base": "base.mp4", "duration": duration, "lesson": cfg["lesson"], "title": cfg["title"],
             "parts": cfg["parts"], "partStarts": part_starts, "disclaimer": disclaimer(cfg, by_n, resolve),
             "beats": beats, "segments": segments, "captions": caps, "at": at, "assets": assets,
             "assetSources": sources,

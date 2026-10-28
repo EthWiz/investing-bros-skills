@@ -44,7 +44,8 @@ const GenesisBlock: React.FC<{at: number; typeAt: number; title: string; text: s
   );
 };
 
-// Beat 5: 2008, the white paper, the first block, and who Satoshi is. Words from the segment's content.
+// 2008, the white paper, the first block, and who Satoshi is. Words from the segment's content; the month
+// (s_oct, oct) and the closing question (s_who, who) show only when the config gives them.
 export const SatoshiPanel: React.FC<SceneProps> = ({at, start, end, content: c, assets}) => (
   <SidePanel start={start} end={end} id="satoshi">
     <Scene from={start} to={at.s_paper}>
@@ -55,22 +56,24 @@ export const SatoshiPanel: React.FC<SceneProps> = ({at, start, end, content: c, 
     <Scene from={at.s_paper} to={at.s_2009}>
       <div style={{display: 'flex', alignItems: 'center', gap: 50, direction: 'rtl'}}>
         <div style={{display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 16}}>
-          <In at={at.s_oct}><Paper text={c.oct} size={50} bg={MUSTARD} /></In>
+          {at.s_oct !== undefined && c.oct ? <In at={at.s_oct}><Paper text={c.oct} size={50} bg={MUSTARD} /></In> : null}
           <In at={at.s_name}><Paper text={c.name} size={58} /></In>
           <In at={at.s_nine}><Paper text={c.nine} size={50} /></In>
         </div>
         <WhitePaper at={at.s_doc} src={assets.whitepaper} />
       </div>
     </Scene>
-    <Scene from={at.s_2009} to={at.s_who}>
+    <Scene from={at.s_2009} to={at.s_who ?? end}>
       <In at={at.s_2009} style={{marginBottom: 34}}><Paper text={c.jan} size={60} bg={MUSTARD} /></In>
       <GenesisBlock at={at.s_block} typeAt={at.s_headline} title={c.block} text={c.genesis} />
     </Scene>
-    <Scene from={at.s_who} to={end}>
-      <In at={at.s_who}>
-        <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 300, lineHeight: 1, color: HOOK_YELLOW, textAlign: 'center'}}>?</div>
-      </In>
-      <In at={at.s_who + 0.3} style={{marginTop: 10}}><Paper text={c.who} size={66} /></In>
-    </Scene>
+    {at.s_who !== undefined && c.who ? (
+      <Scene from={at.s_who} to={end}>
+        <In at={at.s_who}>
+          <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 300, lineHeight: 1, color: HOOK_YELLOW, textAlign: 'center'}}>?</div>
+        </In>
+        <In at={at.s_who + 0.3} style={{marginTop: 10}}><Paper text={c.who} size={66} /></In>
+      </Scene>
+    ) : null}
   </SidePanel>
 );

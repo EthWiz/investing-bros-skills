@@ -8,19 +8,22 @@ import {NavyPaper, ease, lerp, useTime} from './kit';
 import type {LessonProps, Mode, Segment} from './types';
 
 // Face position in the 1920x1080 base (between the eyes and the mouth); zooms and the bubble keep it in place.
-const FX = 840, FY = 450;
+// The lesson's config can give its own (`face`), since framing differs between recording setups.
+const FACE = {x: 840, y: 450};
 
 type Cam = {bx: number; by: number; bw: number; bh: number; br: number; vx: number; vy: number; vw: number};
 
 const BUBBLE = 360, BUBBLE_SCALE = 0.45;
-const camFor = (s: Segment): Cam => {
+const camFor = (s: Segment, f: {x: number; y: number}): Cam => {
   if (s.mode === 'side') return {bx: 0, by: 0, bw: 1920, bh: 1080, br: 0, vx: 520, vy: 0, vw: 1920};
   if (s.mode === 'bubble') {
+    // never past the bottom of the frame, or the circle shows navy under a cut-off shoulder
+    const vy = Math.max(BUBBLE - 1080 * BUBBLE_SCALE, BUBBLE / 2 - f.y * BUBBLE_SCALE - 10);
     return {bx: 1920 - 56 - BUBBLE, by: 1080 - 56 - BUBBLE, bw: BUBBLE, bh: BUBBLE, br: BUBBLE / 2,
-      vw: 1920 * BUBBLE_SCALE, vx: BUBBLE / 2 - FX * BUBBLE_SCALE, vy: BUBBLE / 2 - FY * BUBBLE_SCALE - 10};
+      vw: 1920 * BUBBLE_SCALE, vx: BUBBLE / 2 - f.x * BUBBLE_SCALE, vy};
   }
   const z = s.zoom ?? 1;
-  return {bx: 0, by: 0, bw: 1920, bh: 1080, br: 0, vw: 1920 * z, vx: FX - FX * z, vy: FY - FY * z};
+  return {bx: 0, by: 0, bw: 1920, bh: 1080, br: 0, vw: 1920 * z, vx: f.x - f.x * z, vy: f.y - f.y * z};
 };
 
 const segIndex = (segs: Segment[], t: number) => {
@@ -36,17 +39,17 @@ const modeBlend = (segs: Segment[], t: number) => {
   return {cur, prev: prev ?? cur, p};
 };
 
-const camAt = (segs: Segment[], t: number): Cam => {
+const camAt = (segs: Segment[], t: number, f: {x: number; y: number}): Cam => {
   const {cur, prev, p} = modeBlend(segs, t);
-  const a = camFor(prev.mode === cur.mode ? cur : prev), b = camFor(cur);
+  const a = camFor(prev.mode === cur.mode ? cur : prev, f), b = camFor(cur, f);
   const o = {} as Cam;
   (Object.keys(b) as (keyof Cam)[]).forEach((k) => (o[k] = lerp(a[k], b[k], p)));
   return o;
 };
 
-const Camera: React.FC<{base: string; segs: Segment[]}> = ({base, segs}) => {
+const Camera: React.FC<{base: string; segs: Segment[]; face: {x: number; y: number}}> = ({base, segs, face}) => {
   const {t} = useTime();
-  const c = camAt(segs, t);
+  const c = camAt(segs, t, face);
   const bubble = c.br > 1;
   return (
     <div style={{position: 'absolute', left: c.bx, top: c.by, width: c.bw, height: c.bh, borderRadius: c.br, overflow: 'hidden',
@@ -107,7 +110,7 @@ export const Lesson: React.FC<LessonProps> = (p) => {
       <style>{fontFaces()}</style>
       <NavyPaper id="bg" />
       {scenes('bubble')}
-      <Camera base={p.base} segs={p.segments} />
+      <Camera base={p.base} segs={p.segments} face={p.face ?? FACE} />
       <Shade />
       {scenes('side')}
       {p.at.name !== undefined && <NameStrips at={p.at.name} until={p.at.name + 4} />}

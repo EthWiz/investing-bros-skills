@@ -37,9 +37,14 @@ def check(bg: dict) -> dict:
     return out
 
 
-def take_chain(i: int, a: float, b: float, cut: str, bg: dict, bg_input: int, matte_input=None) -> list:
+# where a framed take's own edge lands inside the frame, its alpha fades over this many pixels instead of a hard cut
+FEATHER = 48
+
+
+def take_chain(i: int, a: float, b: float, cut: str, bg: dict, bg_input: int, matte_input=None, frame=None) -> list:
     """Filter parts that put take i (`cut`: its video trimmed to a..b and scaled) on the background, ending in
-    [v{i}]. The image is its own looped input per take, so concat never has to buffer a shared background."""
+    [v{i}]. The image is its own looped input per take, so concat never has to buffer a shared background.
+    `frame` {scale, x, y} (lesson_framing.py) scales the cut-out take and places its top-left corner at x, y."""
     parts = [f"[{bg_input}:v]scale=1920:1080,setsar=1,format=rgba[bg{i}]"]
     if bg["method"] == "chroma":
         k = bg["key"]
@@ -51,21 +56,36 @@ def take_chain(i: int, a: float, b: float, cut: str, bg: dict, bg_input: int, ma
         parts.append(f"{cut},format=rgba[c{i}]")
         parts.append(f"[{matte_input}:v]trim={a}:{b},setpts=PTS-STARTPTS,scale=1920:1080,fps=30,format=gray,{EDGE}[m{i}]")
         parts.append(f"[c{i}][m{i}]alphamerge[fg{i}]")
-    parts.append(f"[bg{i}][fg{i}]overlay=shortest=1,format=yuv420p[v{i}]")
+    if not frame:
+        parts.append(f"[bg{i}][fg{i}]overlay=shortest=1,format=yuv420p[v{i}]")
+        return parts
+    s = frame["scale"]
+    ramp = f"255*min(1,min(X/{FEATHER},(W-1-X)/{FEATHER}))"
+    parts += [f"[fg{i}]split[fa{i}][fb{i}]",
+              f"[fa{i}]alphaextract[al{i}]",
+              f"color=c=white:s=1920x1080:r=30,format=gray,geq=lum='{ramp}'[r{i}]",
+              f"[al{i}][r{i}]blend=all_mode=multiply:shortest=1[ae{i}]",
+              f"[fb{i}][ae{i}]alphamerge,scale=w=trunc(iw*{s}/2)*2:h=trunc(ih*{s}/2)*2:flags=lanczos[fs{i}]",
+              f"[bg{i}][fs{i}]overlay=x={frame['x']}:y={frame['y']}:shortest=1,format=yuv420p[v{i}]"]
     return parts
+
+
+def swift_tool(src: Path, name: str, cache: Path = CACHE, which=shutil.which, run=subprocess.run) -> Path:
+    """A Swift tool beside this script, compiled once per version of its source."""
+    tag = hashlib.sha256(src.read_bytes()).hexdigest()[:12]
+    tool = cache / f"{name}-{tag}"
+    if tool.is_file():
+        return tool
+    if not which("swiftc"):
+        raise SystemExit(f"error: {name} needs swiftc (macOS: xcode-select --install)")
+    cache.mkdir(parents=True, exist_ok=True)
+    run(["swiftc", "-O", "-suppress-warnings", str(src), "-o", str(tool)], check=True)
+    return tool
 
 
 def matte_tool(cache: Path = CACHE, which=shutil.which, run=subprocess.run) -> Path:
     """person_matte compiled once per version of its source."""
-    tag = hashlib.sha256(SWIFT.read_bytes()).hexdigest()[:12]
-    tool = cache / f"person_matte-{tag}"
-    if tool.is_file():
-        return tool
-    if not which("swiftc"):
-        raise SystemExit("error: a vision background needs swiftc (macOS: xcode-select --install)")
-    cache.mkdir(parents=True, exist_ok=True)
-    run(["swiftc", "-O", "-suppress-warnings", str(SWIFT), "-o", str(tool)], check=True)
-    return tool
+    return swift_tool(SWIFT, "person_matte", cache, which, run)
 
 
 def matte_name(sha: str) -> str:
