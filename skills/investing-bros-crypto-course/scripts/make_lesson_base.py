@@ -2,13 +2,15 @@
 """Join a lesson's takes into the base video the lesson composition plays (16:9, 1080p, 30 fps).
 
 Usage:
-    python3 make_lesson_base.py suggest lesson-N.json --takes-dir DIR     # trims from where speech starts/ends
+    python3 make_lesson_base.py suggest lesson-N.json --takes-dir DIR [--words-dir WORDS]   # trims
+    python3 make_lesson_base.py frame lesson-N.json --takes-dir DIR [--width PX]   # line up the framing
     python3 make_lesson_base.py build lesson-N.json --takes-dir DIR -o base.mp4 [--extras OUT_DIR]
 
 lesson-N.json `takes`: [{"beat": 1, "file": "Beat 1 - take 1.mov", "from": 2.0, "to": 43.0}, ...] in
 beat order; `from`/`to` are seconds of the take. `suggest` prints a from/to per take: 0.3 s before the
-first speech and 0.45 s after the last (silencedetect at -38 dB); check them against the whisper
-words, since a click or a breath can read as speech. `build` trims each take, scales it to 1920x1080
+first speech and 0.45 s after the last, from the Whisper words with --words-dir, otherwise from
+silencedetect at -38 dB (it warns when room noise hides every silence and the whole take comes back);
+check them against the words, since a click or a breath can read as speech. `build` trims each take, scales it to 1920x1080
 (lanczos; 720p takes are upscaled, so keep punch-ins small), joins them in beat order with a 40 ms
 fade at each cut, and levels the audio to -14 LUFS (stereo AAC). No speed change: a lesson that runs
 long is split, not sped up.
@@ -16,7 +18,9 @@ long is split, not sped up.
 With a `background` block in the config, `build` puts Amitai on that image in every take: `vision` cuts him
 out with Apple Vision (macOS; one matte per take, cached in --matte-dir, by default `mattes/` beside the
 output), `chroma` keys out the green screen (lesson_background.py has the details). The takes themselves are
-never changed, so the Drive package keeps the originals and a rebuild can key them again.
+never changed, so the Drive package keeps the originals and a rebuild can key them again. `frame` measures
+the face in every take (Apple Vision, macOS) and writes a `frame` {scale, x, y} per take and the config's
+`face` point, so every take has the same face size in the same place (lesson_framing.py has the rules).
 
 --extras DIR fills the lesson's Drive extras/ package: each take as קטע-NN.mp4 (stream copy, no
 re-encode), the config's assets, the script snapshot, with --words-dir the Whisper words קטע-NN.json and
@@ -46,6 +50,7 @@ import sys
 from pathlib import Path
 
 import lesson_background
+import lesson_framing
 
 W, H, FPS = 1920, 1080, 30
 LEAD, TAIL, FADE = 0.3, 0.45, 0.04
@@ -86,6 +91,34 @@ def trims_from_silences(sil, total: float, lead=LEAD, tail=TAIL, blip=0.25, edge
     return round(max(0.0, start - lead), 2), round(min(total, end + tail), 2)
 
 
+def word_times(path: Path):
+    """[(start, end)] of every word in a whisper file (the CLI's json, or transcribe_clip.py's list)."""
+    data = json.loads(path.read_text(encoding="utf-8"))
+    if isinstance(data, dict):
+        return [(w["start"], w["end"]) for seg in data["segments"] for w in seg.get("words", [])]
+    return [(w["s"], w["e"]) for w in data]
+
+
+def trims_from_words(words, total: float, lead=LEAD, tail=TAIL):
+    """Speech window from the first word's start to the last word's end. Whisper makes words up over a closing
+    silence ("תודה רבה."): delete them from the words file before trusting the end."""
+    if not words:
+        raise SystemExit("error: no words to trim from")
+    return round(max(0.0, words[0][0] - lead), 2), round(min(total, words[-1][1] + tail), 2)
+
+
+def suggest(t, take: Path, words_dir=None):
+    """(from, to, how) for a take: from its words when they are there, else from silences. Room noise above the
+    -38 dB threshold hides every silence (lesson 1's OBS takes): then the whole take comes back, with a warning."""
+    total = duration(take)
+    if words_dir and (Path(words_dir) / words_name(t["beat"])).is_file():
+        return (*trims_from_words(word_times(Path(words_dir) / words_name(t["beat"])), total), "words")
+    fr, to = trims_from_silences(silences(take), total)
+    if fr == 0.0 and to >= round(total, 2):
+        return fr, to, "no silence found (room noise above -38 dB?): trim by hand, or run Whisper and pass --words-dir"
+    return fr, to, "silences"
+
+
 def filter_graph(takes, background=None) -> str:
     """Inputs: the takes, then with a background its image once per take, then with `vision` a matte per take."""
     parts, labels, n = [], [], len(takes)
@@ -95,9 +128,12 @@ def filter_graph(takes, background=None) -> str:
             raise SystemExit(f"take for beat {t['beat']}: 'to' ({b}) must be after 'from' ({a})")
         d = b - a
         cut = f"[{i}:v]trim={a}:{b},setpts=PTS-STARTPTS,scale={W}:{H}:flags=lanczos,fps={FPS},setsar=1"
+        if t.get("frame") and not background:
+            raise SystemExit(f"take for beat {t['beat']}: 'frame' needs a background (it moves him on the image)")
         if background:
             vision = background["method"] == "vision"
-            parts += lesson_background.take_chain(i, a, b, cut, background, n + i, 2 * n + i if vision else None)
+            parts += lesson_background.take_chain(i, a, b, cut, background, n + i, 2 * n + i if vision else None,
+                                                  t.get("frame"))
         else:
             parts.append(f"{cut}[v{i}]")
         parts.append(f"[{i}:a]atrim={a}:{b},asetpts=PTS-STARTPTS,afade=t=in:d={FADE},"
@@ -200,11 +236,16 @@ LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "disclaimer_f
 
 
 def fingerprint(cfg: dict) -> dict:
-    """What `status` compares against an export record: trims per beat, proofread per beat, the layout, the script,
-    and the background when there is one (check_lesson.py in investing-bros-remotion keeps the same function)."""
-    out = {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
+    """What `status` compares against an export record: trims (and framing) per beat, proofread per beat, the layout,
+    the script, and the background when there is one (check_lesson.py in investing-bros-remotion keeps the same
+    function). Framing and the face point join only when set, so older records still compare."""
+    layout = {k: cfg.get(k) for k in LAYOUT_KEYS}
+    if cfg.get("face"):
+        layout["face"] = cfg["face"]
+    out = {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] + ([t["frame"]] if t.get("frame") else [])
+                     for t in cfg["takes"]},
            "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
-           "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
+           "layout": digest(layout),
            "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
     if cfg.get("background"):
         out["background"] = digest(cfg["background"])
@@ -290,7 +331,7 @@ def status(cfg: dict, takes_dir: Path, words_dir: Path, record=None, hasher=sha2
             lines.append(f"beat {beat}: new since the last export")
             todo |= {"base", "props", "render"}
         elif old != trim:
-            lines.append(f"beat {beat}: take or trims changed")
+            lines.append(f"beat {beat}: take, trims or framing changed")
             todo |= {"base", "props", "render"}
         elif beat in took:
             t = next(x for x in cfg["takes"] if str(x["beat"]) == beat)
@@ -323,14 +364,16 @@ def status(cfg: dict, takes_dir: Path, words_dir: Path, record=None, hasher=sha2
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=("suggest", "build", "stamp", "status"))
+    ap.add_argument("cmd", choices=("suggest", "frame", "build", "stamp", "status"))
     ap.add_argument("config")
     ap.add_argument("--takes-dir", required=True)
     ap.add_argument("-o", "--out")
     ap.add_argument("--extras", help="also write the takes as קטע-NN.mp4 here")
-    ap.add_argument("--words-dir", help="stamp/status: the Whisper words; build --extras: copied into the package")
+    ap.add_argument("--words-dir", help="suggest: trim from the Whisper words; stamp/status: the words; "
+                                        "build --extras: copied into the package")
     ap.add_argument("--record", help="status: an export record from check_lesson.py --record, or its folder")
     ap.add_argument("--force", action="store_true", help="stamp: rewrite existing sidecars")
+    ap.add_argument("--width", type=float, help="frame: the face width every take is scaled to (default: the smallest)")
     ap.add_argument("--matte-dir", help="build with a vision background: where the mattes are kept (default: "
                                         "mattes/ beside the output)")
     a = ap.parse_args(argv)
@@ -349,11 +392,28 @@ def main(argv=None) -> int:
         print("\n".join(lines))
         print(f"run again: {', '.join(todo) if todo else 'nothing'}")
         return 0
+    if a.cmd == "frame":
+        if not cfg.get("background"):
+            raise SystemExit("error: framing moves him on the background image; add a `background` block first")
+        tool = lesson_framing.face_tool()
+        faces = {t["beat"]: lesson_framing.to_base(lesson_framing.measure(take_path(t, tdir), tool)) for t in takes}
+        result = lesson_framing.plan(faces, width=a.width)
+        print(f"face width {result['width']} px at x {result['face']['x']}; face point {result['face']}")
+        for t in takes:
+            f, fr = faces[t["beat"]], result["takes"][t["beat"]]
+            print(f"beat {t['beat']}: face {f['w']:.0f} px wide at x {f['cx']:.0f}, top {f['top']:.0f} "
+                  f"-> scale {fr['scale']}, at {fr['x']}, {fr['y']}")
+            t["frame"] = fr
+        cfg["face"] = result["face"]
+        Path(a.config).write_text(json.dumps(cfg, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
+        print(f"{a.config}: frame written per take, face point set (base, props and render again)")
+        return 0
     if a.cmd == "suggest":
         for t in takes:
-            p = take_path(t, tdir)
-            fr, to = trims_from_silences(silences(p), duration(p))
+            fr, to, how = suggest(t, take_path(t, tdir), a.words_dir)
             print(json.dumps({"beat": t["beat"], "file": t["file"], "from": fr, "to": to}, ensure_ascii=False))
+            if how not in ("words", "silences"):
+                print(f"warning: beat {t['beat']}: {how}", file=sys.stderr)
         return 0
     if not a.out:
         ap.error("build needs -o")
