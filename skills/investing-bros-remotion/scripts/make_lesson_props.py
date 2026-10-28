@@ -125,16 +125,23 @@ def resolver(beats, caps):
     by_n = {b["n"]: b for b in beats}
     words = [w for c in caps for w in c["words"]]
 
+    warned = set()
+
     def find(n, phrase):
         b = by_n.get(n)
         if b is None:
             raise SystemExit(f"error: beat {n} isn't in the takes")
         ws = [w for w in words if b["start"] - 1e-3 <= w["start"] < b["end"]]
         target = [mc.norm(x) for x in phrase.split()]
-        for i in range(len(ws) - len(target) + 1):
-            if all(mc.norm(ws[i + k]["w"]) == x for k, x in enumerate(target)):
-                return ws[i]["start"]
-        raise SystemExit(f"error: beat {n}: '{phrase}' isn't in the proofread words")
+        hits = [ws[i]["start"] for i in range(len(ws) - len(target) + 1)
+                if all(mc.norm(ws[i + k]["w"]) == x for k, x in enumerate(target))]
+        if not hits:
+            raise SystemExit(f"error: beat {n}: '{phrase}' isn't in the proofread words")
+        if len(hits) > 1 and (n, phrase) not in warned:
+            warned.add((n, phrase))
+            print(f"warning: beat {n}: '{phrase}' is said {len(hits)} times; the first ({hits[0]:.2f} s) is used. "
+                  "Add a word to pick another.", file=sys.stderr)
+        return hits[0]
 
     def resolve(spec):
         if isinstance(spec, dict):
@@ -209,13 +216,14 @@ def check_scenes(segments, at, assets, manifest):
         spec, name = manifest[seg["scene"]], seg["scene"]
         lo, hi = seg["start"], seg["end"]
         content = seg.get("content", {})
-        missing = [k for k in spec["anchors"] if k not in at]
+        optional = spec.get("optional", {})
+        missing = [k for k in spec["anchors"] if k not in at and k not in optional.get("anchors", [])]
         if missing:
             raise SystemExit(f"error: scene '{name}' needs anchors {missing}")
-        outside = [k for k in spec["anchors"] if not lo <= at[k] <= hi]
+        outside = [k for k in spec["anchors"] if k in at and not lo <= at[k] <= hi]
         if outside:
             raise SystemExit(f"error: scene '{name}' ({lo:.2f}-{hi:.2f} s): anchors {outside} fall outside it")
-        missing = [k for k in spec["content"] if k not in content]
+        missing = [k for k in spec["content"] if k not in content and k not in optional.get("content", [])]
         if missing:
             raise SystemExit(f"error: scene '{name}' needs content {missing}")
         late = [round(t, 2) for t in content_times(content) if not lo <= t <= hi]

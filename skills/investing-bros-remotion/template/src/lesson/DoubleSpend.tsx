@@ -89,7 +89,8 @@ const Cross: React.FC<{p: P; at: number; text?: string}> = ({p, at, text}) => {
 const Coin: React.FC<{p: P; label: string; k: number; ghost?: number; opacity?: number}> = ({p, label, k, ghost = 1, opacity = 1}) => (
   <div style={{position: 'absolute', left: p.x - 50, top: p.y - 50, width: 100, height: 100, borderRadius: 50,
     background: ghost >= 1 ? HOOK_YELLOW : `rgba(250,200,40,${ghost})`, border: `5px ${ghost >= 1 ? 'solid' : 'dashed'} ${NAVY}`,
-    display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 900, fontSize: 32, color: NAVY,
+    display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: FONT, fontWeight: 900, color: NAVY, whiteSpace: 'nowrap',
+    fontSize: Math.min(32, Math.floor(120 / Math.max(1, label.length))),   // "100 ₪" wrapped and was cut off at 32
     transform: `scale(${k})`, opacity, boxShadow: ghost >= 1 ? '0 8px 16px rgba(0,0,0,.4)' : 'none'}}>
     <bdi dir="rtl" style={{opacity: ghost}}>{label}</bdi>
   </div>

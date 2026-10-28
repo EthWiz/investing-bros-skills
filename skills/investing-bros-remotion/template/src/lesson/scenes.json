@@ -1,5 +1,5 @@
 {
-  "_about": "What each lesson scene needs. make_lesson_props.py refuses a segment whose mode, anchors, content or assets don't match; scenes.ts maps the same names to components. 'anchors' must be in the config's anchors and fall inside the scene's segment; 'content' keys must be in the segment's content (any {\"at\": spec} in content is resolved to a time and checked the same way); 'assets' are image files the config stages. 'variants' (optional): the content key that picks the scene's variant, the allowed values, and per value the extra content keys it needs and the content times that must come in that order (dotted paths: 'payments.1.at'). 'vertical': the scene also lays itself out in 9:16 (render_lesson.py --vertical).",
+  "_about": "What each lesson scene needs. make_lesson_props.py refuses a segment whose mode, anchors, content or assets don't match; scenes.ts maps the same names to components. 'anchors' must be in the config's anchors and fall inside the scene's segment; 'content' keys must be in the segment's content (any {\"at\": spec} in content is resolved to a time and checked the same way); 'assets' are image files the config stages. 'variants' (optional): the content key that picks the scene's variant, the allowed values, and per value the extra content keys it needs and the content times that must come in that order (dotted paths: 'payments.1.at'). 'vertical': the scene also lays itself out in 9:16 (render_lesson.py --vertical). 'optional' (optional): anchors and content keys the scene shows only when the config gives them, for lines Amitai may not say in a take.",
   "terms": {
     "mode": "side",
     "anchors": [],
@@ -32,6 +32,7 @@
     "mode": "side",
     "anchors": ["s_2008", "s_crisis", "s_banks", "s_paper", "s_oct", "s_name", "s_doc", "s_nine", "s_2009", "s_block", "s_headline", "s_who"],
     "content": ["year", "crisis", "banks", "oct", "name", "nine", "jan", "block", "genesis", "who"],
-    "assets": ["whitepaper"]
+    "assets": ["whitepaper"],
+    "optional": {"anchors": ["s_oct", "s_who"], "content": ["oct", "who"]}
   }
 }

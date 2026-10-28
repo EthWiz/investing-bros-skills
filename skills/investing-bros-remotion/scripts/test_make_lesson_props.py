@@ -125,6 +125,24 @@ def test_the_face_position_is_optional_and_checked(words_dir):
             run(config(face=bad), words_dir)
 
 
+def test_a_scene_can_leave_out_what_the_take_doesnt_say(words_dir):
+    manifest = {**MANIFEST, "panel": {**MANIFEST["panel"], "anchors": ["p1", "p2"], "content": ["heading", "extra"],
+                                       "optional": {"anchors": ["p2"], "content": ["extra"]}}}
+    build(config(), words_dir, manifest=manifest, config_dir=words_dir)       # p2 and extra left out: fine
+    cfg = config()
+    cfg["anchors"]["p2"] = [1, "שלום"]                           # given, so it must fall inside the scene
+    with pytest.raises(SystemExit, match="fall outside it"):
+        build(cfg, words_dir, manifest=manifest, config_dir=words_dir)
+
+
+def test_a_phrase_said_twice_in_a_beat_is_warned_about(words_dir, capsys):
+    cfg = config()
+    cfg["proofread"]["2"] = "זה הבנק שלכם, וזה הבנק שלו."
+    cfg["anchors"]["p1"] = [2, "הבנק"]
+    run(cfg, words_dir)
+    assert "'הבנק' is said 2 times; the first" in capsys.readouterr().err
+
+
 def test_a_scene_gets_every_anchor_content_and_asset_it_needs(words_dir):
     cfg = config()
     del cfg["anchors"]["p1"]                                     # the review's case: a scene's anchor deleted
