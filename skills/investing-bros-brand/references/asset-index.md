@@ -19,10 +19,13 @@ originals in Drive and create new versions for edits. The four legacy square cov
 references are 1254×1254 pixels. Export sizes in `layouts.json` are targets, not the
 dimensions of these references. The teaser stills are 1920×1080 JPEG references.
 
-The one image kept in this skill is `assets/logo-solid.png` (solid torn-paper wordmark
+The two images kept in this skill are, first, `assets/logo-solid.png` (solid torn-paper wordmark
 for live video, 1228×740 RGBA, approved production asset; navy letters remain opaque).
 The video and Shorts scripts copy it from here, so it is a production input, not a
-reference.
+reference. The other is `assets/lesson-background-navy-studio.jpg` (1920×1080, navy `#09243B`
+with a soft lighter glow behind the head and a vignette, chosen by Amitai on 2026-10-28 from six
+options): the background behind Amitai in crypto-course lessons, copied into each lesson's
+`assets/` and keyed in by `make_lesson_base.py` (`investing-bros-crypto-course`).
 
 | File | Drive folder | Drive file ID | Role | Status |
 | --- | --- | --- | --- | --- |
