@@ -4,7 +4,7 @@
 Usage:
     python3 draft_proofread.py lesson-N/lesson-N-video.json --words-dir WORDS [--write] [--force]
 
-The proofread text (the config's `proofread`) is what Amitai said, and captions show it. Whisper hears most of it
+The proofread text (the config's `proofread`) is what Amitai said inside the take's from/to, and captions show it. Whisper hears most of it
 right but garbles Hebrew names and words ("סטטושי", "נכים להשקעות"); the script has the right spelling but not his
 ad-libs, skipped words or restarts. This lines the two up word by word and drafts from the script:
 - where they agree, or Whisper heard something else of about the same length: the script's words (a garble, most
@@ -38,15 +38,19 @@ def script_words(text: str):
     return [w for w in text.replace("**", "").replace("\\&", "&").split() if norm(w)]
 
 
-def heard(path: Path):
-    """Whisper's words; a piece it split off at the geresh ("בלוקצ", "'יין") is joined back."""
+def heard(path: Path, start=0.0, end=float("inf")):
+    """Whisper's words that start inside the take's trim (start..end, seconds of the take), so a sound check
+    before it or chatter after it never reaches the captions; a piece Whisper split off at the geresh
+    ("בלוקצ", "'יין") is joined back."""
     data = json.loads(path.read_text(encoding="utf-8"))
     if isinstance(data, dict):
-        raw = [w["word"].strip() for seg in data["segments"] for w in seg.get("words", [])]
+        raw = [(w["word"].strip(), w["start"]) for seg in data["segments"] for w in seg.get("words", [])]
     else:
-        raw = [w["w"].strip() for w in data]
+        raw = [(w["w"].strip(), w["s"]) for w in data]
     out = []
-    for w in raw:
+    for w, t in raw:
+        if not start - 0.05 <= t < end:
+            continue
         if out and w[:1] in ("'", "׳"):
             out[-1] += w
         else:
@@ -95,7 +99,8 @@ def main(argv=None) -> int:
         b = str(t["beat"])
         if b not in beats:
             raise SystemExit(f"error: beat {b} has no script text; run parse_script.py first")
-        words, spots = draft(script_words(beats[b]["text"]), heard(Path(a.words_dir) / words_name(t["beat"])))
+        said = heard(Path(a.words_dir) / words_name(t["beat"]), t["from"], t["to"])
+        words, spots = draft(script_words(beats[b]["text"]), said)
         print(f"beat {b}: {len(spots)} to check")
         for kind, wrote, said in spots:
             print(f"  {kind}: script '{' '.join(wrote)}' / Whisper '{' '.join(said)}'")

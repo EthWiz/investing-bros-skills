@@ -36,3 +36,13 @@ def test_whisper_words_split_at_the_geresh_are_joined(tmp_path):
                                     {"word": "'יין", "start": 2, "end": 3}]}]}
     (tmp_path / "w.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
     assert heard(tmp_path / "w.json") == ["או", "בלוקצ'יין"]
+
+
+def test_only_words_inside_the_trim_are_drafted(tmp_path):
+    # a sound check before the trim and chatter after it are in the take's words, not in the cut
+    ws = [("בדיקה", 0.2), ("אחת", 0.6), ("שלום", 3.0), ("לכולם", 3.4), ("נו", 9.0), ("סיימנו", 9.4)]
+    data = {"segments": [{"words": [{"word": " " + w, "start": t, "end": t + 0.3} for w, t in ws]}]}
+    (tmp_path / "w.json").write_text(json.dumps(data, ensure_ascii=False), encoding="utf-8")
+    assert heard(tmp_path / "w.json", 2.7, 4.2) == ["שלום", "לכולם"]
+    words, spots = draft(script_words("שלום לכולם."), heard(tmp_path / "w.json", 2.7, 4.2))
+    assert words == ["שלום", "לכולם."] and spots == []
