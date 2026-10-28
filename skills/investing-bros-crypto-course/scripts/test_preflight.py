@@ -67,3 +67,11 @@ def test_deliver_never_fails_on_its_optional_route(monkeypatch, capsys):
     assert main(["--stage", "deliver"]) == 0
     assert "opt " in capsys.readouterr().out
     assert main(["--stage", "base"]) == 1                              # ffmpeg is required for the base
+
+
+def test_missing_python_modules_point_to_uv_when_it_is_there():
+    from preflight import check_modules
+    r = check_modules(find=lambda n: None, which=lambda n: "/opt/homebrew/bin/uv")
+    assert not r["ok"] and "uv run --with numpy --with pillow" in r["fix"]
+    r = check_modules(find=lambda n: None, which=lambda n: None)
+    assert "pip install numpy pillow" in r["fix"]

@@ -65,10 +65,12 @@ def check_node(which=None, run=None):
     return item("node", bool(m and int(m.group(1)) >= 18), v or path, "Node 18 or newer is needed (brew upgrade node)")
 
 
-def check_modules(names=("numpy", "PIL"), find=importlib.util.find_spec):
+def check_modules(names=("numpy", "PIL"), find=importlib.util.find_spec, which=shutil.which):
     missing = [n for n in names if find(n) is None]
-    return item("python modules", not missing, f"{sys.executable}: " + (f"missing {', '.join(missing)}" if missing else "numpy, Pillow"),
-                f"{sys.executable} -m pip install numpy pillow (in a venv)")
+    # Amitai's Mac: the system python has neither, and uv runs a script with them without installing anything
+    fix = ("run the render scripts as `uv run --with numpy --with pillow python SCRIPT ...` (nothing installed)"
+           if which("uv") else f"{sys.executable} -m pip install numpy pillow (in a venv)")
+    return item("python modules", not missing, f"{sys.executable}: " + (f"missing {', '.join(missing)}" if missing else "numpy, Pillow"), fix)
 
 
 def check_template(template: Path, work=None):
@@ -80,12 +82,16 @@ def check_template(template: Path, work=None):
                 "use an intact investing-bros-remotion skill")
 
 
+# one folder for every lesson, so the fonts are made once per machine
+FONT_FIX = ("download Heebo[wght].ttf (https://github.com/google/fonts/raw/main/ofl/heebo/Heebo%5Bwght%5D.ttf), then `brand.py fonts Heebo[wght].ttf ~/.cache/investing-bros/fonts` (investing-bros-shorts) and pass that folder")
+
+
 def check_fonts(fonts):
     if not fonts:
-        return item("fonts", False, "no --fonts folder given", "brand.py fonts (investing-bros-shorts) writes the static Heebo TTFs")
+        return item("fonts", False, "no --fonts folder given", FONT_FIX)
     missing = [f for f in FONTS if not (Path(fonts) / f).is_file()]
     return item("fonts", not missing, f"{fonts}: " + (f"missing {', '.join(missing)}" if missing else "Heebo SemiBold, ExtraBold, Black"),
-                "brand.py fonts (investing-bros-shorts) writes them")
+                FONT_FIX)
 
 
 def check_logo(logo):
