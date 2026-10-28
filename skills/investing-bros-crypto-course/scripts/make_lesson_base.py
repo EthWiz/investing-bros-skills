@@ -13,6 +13,11 @@ words, since a click or a breath can read as speech. `build` trims each take, sc
 fade at each cut, and levels the audio to -14 LUFS (stereo AAC). No speed change: a lesson that runs
 long is split, not sped up.
 
+With a `background` block in the config, `build` puts Amitai on that image in every take: `vision` cuts him
+out with Apple Vision (macOS; one matte per take, cached in --matte-dir, by default `mattes/` beside the
+output), `chroma` keys out the green screen (lesson_background.py has the details). The takes themselves are
+never changed, so the Drive package keeps the originals and a rebuild can key them again.
+
 --extras DIR fills the lesson's Drive extras/ package: each take as קטע-NN.mp4 (stream copy, no
 re-encode), the config's assets, the script snapshot, with --words-dir the Whisper words קטע-NN.json and
 their sidecars, and שיעור-N-מניפסט.json, which is the config itself plus a `package` block (the skills
@@ -39,6 +44,8 @@ import shutil
 import subprocess
 import sys
 from pathlib import Path
+
+import lesson_background
 
 W, H, FPS = 1920, 1080, 30
 LEAD, TAIL, FADE = 0.3, 0.45, 0.04
@@ -79,14 +86,20 @@ def trims_from_silences(sil, total: float, lead=LEAD, tail=TAIL, blip=0.25, edge
     return round(max(0.0, start - lead), 2), round(min(total, end + tail), 2)
 
 
-def filter_graph(takes) -> str:
-    parts, labels = [], []
+def filter_graph(takes, background=None) -> str:
+    """Inputs: the takes, then with a background its image once per take, then with `vision` a matte per take."""
+    parts, labels, n = [], [], len(takes)
     for i, t in enumerate(takes):
         a, b = t["from"], t["to"]
         if b <= a:
             raise SystemExit(f"take for beat {t['beat']}: 'to' ({b}) must be after 'from' ({a})")
         d = b - a
-        parts.append(f"[{i}:v]trim={a}:{b},setpts=PTS-STARTPTS,scale={W}:{H}:flags=lanczos,fps={FPS},setsar=1[v{i}]")
+        cut = f"[{i}:v]trim={a}:{b},setpts=PTS-STARTPTS,scale={W}:{H}:flags=lanczos,fps={FPS},setsar=1"
+        if background:
+            vision = background["method"] == "vision"
+            parts += lesson_background.take_chain(i, a, b, cut, background, n + i, 2 * n + i if vision else None)
+        else:
+            parts.append(f"{cut}[v{i}]")
         parts.append(f"[{i}:a]atrim={a}:{b},asetpts=PTS-STARTPTS,afade=t=in:d={FADE},"
                      f"afade=t=out:st={round(d - 0.06, 3)}:d=0.06[a{i}]")
         labels.append(f"[v{i}][a{i}]")
@@ -103,11 +116,16 @@ def take_path(t, takes_dir: Path) -> Path:
     raise SystemExit(f"error: beat {t['beat']}: neither {t['file']} nor {extras_name(t['beat'])} is in {takes_dir}")
 
 
-def build_cmd(takes, takes_dir: Path, out: Path, find=take_path):
+def build_cmd(takes, takes_dir: Path, out: Path, find=take_path, background=None, image=None, mattes=()):
     cmd = ["ffmpeg", "-v", "error", "-y"]
     for t in takes:
         cmd += ["-i", str(find(t, takes_dir))]
-    return cmd + ["-filter_complex", filter_graph(takes), "-map", "[v]", "-map", "[ao]", "-c:v", "libx264",
+    if background:
+        for _ in takes:
+            cmd += ["-loop", "1", "-framerate", str(FPS), "-i", str(image)]
+        for m in mattes:
+            cmd += ["-i", str(m)]
+    return cmd + ["-filter_complex", filter_graph(takes, background), "-map", "[v]", "-map", "[ao]", "-c:v", "libx264",
                   "-preset", "medium", "-crf", "16", "-pix_fmt", "yuv420p", "-c:a", "aac", "-b:a", "192k",
                   "-movflags", "+faststart", str(out)]
 
@@ -140,6 +158,8 @@ def manifest(cfg: dict, config_text: str, base_name: str, base_seconds: float, v
         a["file"] = Path(a["file"]).name
     if (out.get("script") or {}).get("snapshot"):
         out["script"]["snapshot"] = Path(out["script"]["snapshot"]).name
+    if out.get("background"):
+        out["background"]["image"] = Path(out["background"]["image"]).name
     out["package"] = {
         "made": made,
         "skills_version": version,
@@ -180,11 +200,15 @@ LAYOUT_KEYS = ("title", "parts", "part_starts", "disclaimer_beat", "disclaimer_f
 
 
 def fingerprint(cfg: dict) -> dict:
-    """What `status` compares against an export record: trims per beat, proofread per beat, the layout, the script."""
-    return {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
-            "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
-            "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
-            "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
+    """What `status` compares against an export record: trims per beat, proofread per beat, the layout, the script,
+    and the background when there is one (check_lesson.py in investing-bros-remotion keeps the same function)."""
+    out = {"trims": {str(t["beat"]): [t["file"], t["from"], t["to"]] for t in cfg["takes"]},
+           "proofread": {k: digest(v) for k, v in cfg.get("proofread", {}).items()},
+           "layout": digest({k: cfg.get(k) for k in LAYOUT_KEYS}),
+           "script": (cfg.get("script") or {}).get("snapshot_sha256") or (cfg.get("script") or {}).get("revision")}
+    if cfg.get("background"):
+        out["background"] = digest(cfg["background"])
+    return out
 
 
 def stamp(cfg: dict, takes_dir: Path, words_dir: Path, force=False, hasher=sha256_file):
@@ -283,6 +307,9 @@ def status(cfg: dict, takes_dir: Path, words_dir: Path, record=None, hasher=sha2
     if changed:
         lines.append(f"proofread changed: beats {', '.join(sorted(changed, key=int))}")
         todo |= {"props", "render"}
+    if now.get("background") != then.get("background"):
+        lines.append("the background changed")
+        todo |= {"base", "props", "render"}
     if now["layout"] != then.get("layout"):
         lines.append("layout, anchors or scene content changed")
         todo |= {"props", "render"}
@@ -304,6 +331,8 @@ def main(argv=None) -> int:
     ap.add_argument("--words-dir", help="stamp/status: the Whisper words; build --extras: copied into the package")
     ap.add_argument("--record", help="status: an export record from check_lesson.py --record, or its folder")
     ap.add_argument("--force", action="store_true", help="stamp: rewrite existing sidecars")
+    ap.add_argument("--matte-dir", help="build with a vision background: where the mattes are kept (default: "
+                                        "mattes/ beside the output)")
     a = ap.parse_args(argv)
     config_text = Path(a.config).read_text(encoding="utf-8")
     cfg = json.loads(config_text)
@@ -328,7 +357,21 @@ def main(argv=None) -> int:
         return 0
     if not a.out:
         ap.error("build needs -o")
-    subprocess.run(build_cmd(takes, tdir, Path(a.out)), check=True)
+    here = Path(a.config).resolve().parent
+    background, image, mattes = None, None, []
+    if cfg.get("background"):
+        background = lesson_background.check(cfg["background"])
+        image = here / background["image"]
+        if not image.is_file():
+            raise SystemExit(f"error: no background image {image}")
+        if background["method"] == "vision":
+            tool = lesson_background.matte_tool()
+            folder = Path(a.matte_dir) if a.matte_dir else Path(a.out).resolve().parent / "mattes"
+            for t in takes:
+                take = take_path(t, tdir)
+                mattes.append(lesson_background.matte(take, sha256_file(take), folder, tool))
+                print(f"beat {t['beat']}: matte {mattes[-1]}")
+    subprocess.run(build_cmd(takes, tdir, Path(a.out), background=background, image=image, mattes=mattes), check=True)
     total = sum(t["to"] - t["from"] for t in takes)
     print(f"{a.out}: {duration(a.out):.2f} s (takes add up to {total:.2f} s)")
     if a.extras:
@@ -340,8 +383,9 @@ def main(argv=None) -> int:
                 subprocess.run(["ffmpeg", "-v", "error", "-y", "-i", str(src), "-map", "0:v:0", "-map", "0:a:0",
                                 "-c", "copy", "-movflags", "+faststart", str(dst)], check=True)
             print(dst)
-        here = Path(a.config).resolve().parent
         files = [here / asset["file"] for asset in cfg.get("assets", {}).values()]
+        if image:
+            files.append(image)
         if (cfg.get("script") or {}).get("snapshot"):
             files.append(here / cfg["script"]["snapshot"])
         for src in files:

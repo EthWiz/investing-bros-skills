@@ -18,6 +18,7 @@
    "2": "Both recipients get a check mark instead of saying 'קיבלתי': he says 'שניהם קיבלו', not 'קיבלתי'."
   }
  },
+ "background": {"method": "vision", "image": "assets/lesson-background-navy-studio.jpg"},
  "takes": [
   {"beat": 1, "file": "Beat 1 - take 1.mov", "from": 0.0, "to": 34.0},
   {"beat": 2, "file": "Beat 2 - take 1.mov", "from": 0.0, "to": 12.0},
@@ -58,6 +59,7 @@
   }}
  ],
  "notes": {
+  "background": "Amitai on the navy studio image from investing-bros-brand: vision (Apple Vision, a plain sheet behind him) until the green screen, then chroma with its key values.",
   "takes": "from/to come from make_lesson_base.py suggest, checked against the whisper words.",
   "proofread": "What was said in the take, not the script. Words that couldn't be confirmed by ear are listed here and in the hand-back.",
   "anchors": "[beat, phrase] = when the phrase's first word is said; [beat, phrase, offset]; [beat, null, offset] = beat start + offset; {beat_end, offset}."

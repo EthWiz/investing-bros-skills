@@ -17,7 +17,7 @@ from pathlib import Path
 SKILL = Path(__file__).resolve().parent.parent
 INDEX = SKILL / "references" / "asset-index.md"
 # Images that legitimately stay in the skill (production inputs other skills copy).
-KEPT_IMAGES = {"assets/logo-solid.png"}
+KEPT_IMAGES = {"assets/logo-solid.png", "assets/lesson-background-navy-studio.jpg"}
 IMAGE_EXT = {".png", ".jpg", ".jpeg", ".webp", ".gif"}
 DRIVE_ID = re.compile(r"^[A-Za-z0-9_-]{25,}$")
 MAGIC = {b"\x89PNG\r\n\x1a\n": "png", b"\xff\xd8\xff": "jpeg"}

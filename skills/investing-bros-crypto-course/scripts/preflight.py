@@ -7,7 +7,7 @@ Usage:
 
 Per stage, what it needs and what it checks:
   transcribe  ffmpeg, the `whisper` command and its large-v3-turbo model in ~/.cache/whisper (or --model-dir)
-  base        ffmpeg and ffprobe
+  base        ffmpeg and ffprobe; swiftc for a `vision` background (optional: only a lesson with one needs it)
   render      ffmpeg, ffprobe, Node 18+ with npx, the Remotion template with its package-lock.json (or the
               work folder's node_modules from an earlier run), numpy and Pillow in this Python, the static
               Heebo TTFs (--fonts) and the logo (--logo), and free disk (a 10-minute lesson needs about 3 GB)
@@ -130,6 +130,9 @@ def run_checks(stage, fonts=None, logo=None, template=TEMPLATE, work=None, model
         out.append(check_tool("ffmpeg", fix="brew install ffmpeg"))
     if stage in ("base", "render"):
         out.append(check_tool("ffprobe", fix="brew install ffmpeg"))
+    if stage == "base":
+        out.append(check_tool("swiftc", ("--version",), "needed only for a vision background: xcode-select --install",
+                              required=False))
     if stage == "transcribe":
         out.append(check_whisper(model_dir))
     if stage == "render":
