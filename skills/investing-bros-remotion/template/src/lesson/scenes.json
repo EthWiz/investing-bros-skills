@@ -22,6 +22,22 @@
       }
     }
   },
+  "growth-bars": {
+    "mode": "bubble",
+    "anchors": [],
+    "content": ["heading", "bars", "highlight"],
+    "assets": [],
+    "vertical": true,
+    "optional": {"anchors": [], "content": ["heading", "highlight"]}
+  },
+  "price-drop": {
+    "mode": "bubble",
+    "anchors": [],
+    "content": ["heading", "period", "drop"],
+    "assets": [],
+    "vertical": true,
+    "optional": {"anchors": [], "content": ["heading"]}
+  },
   "lesson1-money-flow": {
     "mode": "bubble",
     "anchors": ["f_coin", "f_friend", "f_mybank", "f_hisbank", "f_middle", "f_central", "f_trip", "f_three", "f_grey"],

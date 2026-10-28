@@ -5,6 +5,8 @@ import re
 import sys
 from pathlib import Path
 
+import pytest
+
 sys.path.insert(0, os.path.dirname(__file__))
 from render_lesson import FPS, clip_cmd, render_cmd, shift_audio_cmd, stage_scene_assets, still_cmd, transition_times  # noqa: E402
 from render_short import TEMPLATE  # noqa: E402
@@ -91,18 +93,23 @@ def test_vertical_scenes_have_a_9_by_16_composition():
     assert "width={1080}" in block and "height={1920}" in block and "LESSON_FPS" in block
     manifest = json.loads((TEMPLATE / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
     vertical = [k for k, v in manifest.items() if not k.startswith("_") and v.get("vertical")]
-    assert vertical == ["double-spend"]
+    assert vertical == ["double-spend", "growth-bars", "price-drop"]
+    files = {"double-spend": "DoubleSpend", "growth-bars": "GrowthBars", "price-drop": "PriceDrop"}
     for name in vertical:                                            # it lays itself out from the frame size
-        src = (TEMPLATE / "src" / "lesson" / "DoubleSpend.tsx").read_text()
+        src = (TEMPLATE / "src" / "lesson" / f"{files[name]}.tsx").read_text()
         assert "useVideoConfig" in src and "TALL" in src, name
     s = still_cmd(Path("/o/v.png"), Path("/p.json"), 300, composition="LessonScenes")
     assert s[:5] == ["npx", "remotion", "still", "src/index.ts", "LessonScenes"]
 
 
-def test_double_spend_takes_every_word_from_content():
-    src = (TEMPLATE / "src" / "lesson" / "DoubleSpend.tsx").read_text()
+@pytest.mark.parametrize("scene", ["DoubleSpend", "GrowthBars", "PriceDrop"])
+def test_reusable_scenes_take_every_word_from_content(scene):
+    src = (TEMPLATE / "src" / "lesson" / f"{scene}.tsx").read_text()
     hebrew = [line for line in src.splitlines() if re.search(r"[֐-׿]", line) and not line.strip().startswith("//")]
     assert hebrew == []                                              # no Hebrew text baked into the component
+
+
+def test_double_spend_has_its_two_scenarios():
     manifest = json.loads((TEMPLATE / "src" / "lesson" / "scenes.json").read_text(encoding="utf-8"))
     assert set(manifest["double-spend"]["variants"]["options"]) == {"copy", "ledger"}
 
