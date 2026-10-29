@@ -1,19 +1,23 @@
 #!/usr/bin/env python3
 """Record the operator's face picks and rejects for one episode, as an eval label file.
 
-  record_face_picks.py --episode 9 --manifest OUT/manifest-amitai.json OUT/manifest-nadav.json \
+  record_face_picks.py --episode 9 --manifest OUT/manifest-amitai-A.json OUT/manifest-amitai-B.json \
+      OUT/manifest-nadav-N.json \
       --good B1,B9,B2,A4,N1,N2,N4 \
       --bad "A1=my eyes look weird" --bad "A3=eyes looking down, almost shut" \
       --out evals/face-picks/episodes/ep09.json
 
 --good: the stills the operator wants. --bad ID=REASON: a still he doesn't want, in his
 words; a reject without a reason is refused. Every other still shown is stored as
-"unknown". Ids must come from the manifests make_face_grid.py wrote.
+"unknown". Ids must come from the manifests make_face_grid.py wrote: pass one manifest
+per round shown (or OUT_DIR to take every manifest-*.json in it). A manifest whose ids
+don't carry its own prefix, or two rounds sharing an id, are refused.
 """
 from __future__ import annotations
 
 import argparse
 import datetime as dt
+import glob
 import json
 import os
 
@@ -22,13 +26,32 @@ def merge_manifests(manifests: list[dict]) -> tuple[dict, str]:
     items, recs = {}, set()
     for m in manifests:
         recs.add(m["recording"])
+        pre = m.get("prefix")
         for sid, it in m["items"].items():
+            if pre and not (sid.startswith(pre) and sid[len(pre):].isdigit()):
+                raise ValueError(f"id {sid} doesn't belong to round {pre} (wrong or edited manifest?)")
+            if m.get("host") and it.get("host") != m["host"]:
+                raise ValueError(f"id {sid}: host differs from its manifest's host")
             if sid in items:
                 raise ValueError(f"id {sid} appears in two manifests")
             items[sid] = dict(it, side=m["side"])
     if len(recs) != 1:
         raise ValueError(f"manifests come from different recordings: {sorted(recs)}")
     return items, recs.pop()
+
+
+def manifest_paths(args: list[str]) -> list[str]:
+    """Files as given; a directory means every manifest-*.json in it (sorted)."""
+    out = []
+    for p in args:
+        if os.path.isdir(p):
+            found = sorted(glob.glob(os.path.join(p, "manifest-*.json")))
+            if not found:
+                raise ValueError(f"no manifest-*.json in {p}")
+            out += found
+        else:
+            out.append(p)
+    return out
 
 
 def parse_bad(specs: list[str]) -> dict[str, str]:
@@ -77,7 +100,7 @@ def main(argv=None) -> int:
     ap.add_argument("--out", required=True)
     a = ap.parse_args(argv)
     mans = []
-    for p in a.manifest:
+    for p in manifest_paths(a.manifest):
         with open(p) as fh:
             mans.append(json.load(fh))
     items, rec = merge_manifests(mans)

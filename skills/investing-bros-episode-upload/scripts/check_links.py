@@ -8,7 +8,11 @@ Never retype a video ID or URL: copy it from tool output (Studio, yt_upload.py, 
 API), then run this. YouTube links are resolved through oEmbed
 (https://www.youtube.com/oembed?url=...): 200 = public or unlisted, 401/403 = the video
 exists but is private (or embedding is off), 400/404 = no such video (a mistyped ID,
-episode 9's I-vs-l). Other links get an HTTP HEAD (GET if HEAD is refused). --message
+episode 9's I-vs-l). URLs are parsed with urllib.parse: YouTube is recognised by exact
+host name only (youtube.com, www./m./music./studio.youtube.com, youtu.be), the id comes
+only from the path or the `v` query, and a look-alike host (e.g. youtube.com.evil.io)
+is BAD. Hosts outside the show's list are flagged in the output. Other links get an
+HTTP HEAD (GET if HEAD is refused). --message
 also requires the text to end with the line "sent by Grokbot" (the Telegram approval
 message). --offline only parses. Exit 1 if any link is bad.
 """
@@ -23,13 +27,17 @@ import urllib.request
 
 SIGNATURE = "sent by Grokbot"
 URL_RE = re.compile(r"https?://[^\s<>\"')\]]+")
-YT_ID = r"([A-Za-z0-9_-]{11})(?![A-Za-z0-9_-])"
-YT_PATTERNS = [
-    re.compile(r"(?:www\.|m\.)?youtube\.com/watch\?(?:[^#\s]*&)?v=" + YT_ID),
-    re.compile(r"youtu\.be/" + YT_ID),
-    re.compile(r"(?:www\.)?youtube\.com/(?:shorts|live|embed)/" + YT_ID),
-    re.compile(r"studio\.youtube\.com/video/" + YT_ID),
-]
+YT_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
+# Exact host names (no suffix matching: "youtube.com.evil.io" is not YouTube).
+YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com",
+                 "studio.youtube.com", "youtu.be", "www.youtu.be"}
+KNOWN_HOSTS = YOUTUBE_HOSTS | {
+    "drive.google.com", "docs.google.com", "open.spotify.com", "creators.spotify.com",
+    "podcasts.apple.com", "feeds.redcircle.com", "app.redcircle.com", "t.me",
+    "www.instagram.com", "instagram.com", "www.tiktok.com", "tiktok.com", "x.com", "twitter.com",
+    "github.com"}
+LOOKALIKE = ("youtube", "youtu.be", "google", "spotify", "redcircle", "apple")
+YT_PAGES = ("/channel/", "/c/", "/user/", "/@", "/playlist", "/feed/")  # not videos
 UA = {"User-Agent": "Mozilla/5.0 (investing-bros check_links)"}
 
 
@@ -42,17 +50,44 @@ def find_links(text: str) -> list[str]:
     return out
 
 
+def host_of(url: str) -> str:
+    return (urllib.parse.urlsplit(url).hostname or "").lower().rstrip(".")
+
+
+def is_youtube(url: str) -> bool:
+    return host_of(url) in YOUTUBE_HOSTS
+
+
+def is_lookalike(url: str) -> bool:
+    """A host that names a service we link to but isn't its real host name."""
+    h = host_of(url)
+    return h not in KNOWN_HOSTS and any(w in h for w in LOOKALIKE)
+
+
+def is_youtube_video(url: str) -> bool:
+    if not is_youtube(url):
+        return False
+    path = urllib.parse.urlsplit(url).path
+    return not (path in ("", "/") or any(path.startswith(p) for p in YT_PAGES))
+
+
 def youtube_id(url: str) -> str | None:
-    for p in YT_PATTERNS:
-        m = p.search(url)
-        if m:
-            return m.group(1)
-    return None
-
-
-def looks_like_youtube(url: str) -> bool:
-    host = urllib.parse.urlparse(url).netloc.lower()
-    return host.endswith("youtube.com") or host.endswith("youtu.be")
+    """The 11-character video id, from the path or the `v` query only (never a regex
+    over the whole URL), or None."""
+    if not is_youtube(url):
+        return None
+    parts = urllib.parse.urlsplit(url)
+    host, segs = host_of(url), [p for p in parts.path.split("/") if p]
+    cand = None
+    if host in ("youtu.be", "www.youtu.be"):
+        cand = segs[0] if len(segs) == 1 else None
+    elif segs[:1] == ["watch"] and len(segs) == 1:
+        vs = urllib.parse.parse_qs(parts.query).get("v", [])
+        cand = vs[0] if len(vs) == 1 else None
+    elif len(segs) >= 2 and segs[0] in ("shorts", "live", "embed", "video"):
+        if segs[0] != "video" or host == "studio.youtube.com":
+            cand = segs[1]
+    return cand if cand and YT_ID_RE.fullmatch(cand) else None
 
 
 def classify_oembed(status: int) -> tuple[bool, str]:
@@ -77,11 +112,28 @@ def _status(url: str, method: str = "GET") -> int:
         return e.code
 
 
-def check(url: str) -> tuple[bool, str]:
-    if looks_like_youtube(url) and "/channel/" not in url and "/@" not in url and "/playlist" not in url:
+def parse_check(url: str) -> tuple[bool | None, str]:
+    """Offline verdict: (False, why) for a bad link, (None, note) when the network decides."""
+    if urllib.parse.urlsplit(url).scheme not in ("http", "https") or not host_of(url):
+        return False, "not a web link"
+    if is_lookalike(url):
+        return False, f"look-alike host {host_of(url)!r}: not a real YouTube/Google/Spotify host"
+    if is_youtube_video(url):
         vid = youtube_id(url)
         if not vid:
             return False, "YouTube link without a valid 11-character video ID"
+        return None, f"id {vid}"
+    if host_of(url) not in KNOWN_HOSTS:
+        return None, f"host {host_of(url)} is not on the show's list: check it is the intended site"
+    return None, "parsed"
+
+
+def check(url: str) -> tuple[bool, str]:
+    ok, why = parse_check(url)
+    if ok is False:
+        return ok, why
+    if is_youtube_video(url):
+        vid = youtube_id(url)
         q = urllib.parse.urlencode({"url": f"https://www.youtube.com/watch?v={vid}", "format": "json"})
         return classify_oembed(_status(f"https://www.youtube.com/oembed?{q}"))
     st = _status(url, "HEAD")
@@ -107,9 +159,8 @@ def main(argv=None) -> int:
             print(f"{f}: no links")
         for u in links:
             if a.offline:
-                vid = youtube_id(u)
-                ok, why = (False, "YouTube link without a valid video ID") if looks_like_youtube(u) and not vid \
-                    and not any(s in u for s in ("/channel/", "/@", "/playlist")) else (True, f"id {vid}" if vid else "parsed")
+                ok, why = parse_check(u)
+                ok = ok is not False
             else:
                 try:
                     ok, why = check(u)

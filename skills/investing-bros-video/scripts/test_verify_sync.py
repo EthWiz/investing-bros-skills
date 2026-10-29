@@ -58,3 +58,57 @@ def test_best_shift_and_static_detection():
     still = np.full((54, 36, 64), 100.0)
     s2, e2, n2 = vs.best_shift(still, still[3:51], pad=3)
     assert vs.is_static(e2, n2)
+
+
+def _row(t, a=True, v=True, static=False):
+    return {"t": t, "ok_a": a, "ok_v": v, "static": static, "ok": a and v}
+
+
+def test_nothing_measured_fails():
+    fails, _ = vs.coverage([], vs.load_plan(cuts=[(10.0, 12.0)]))
+    assert fails == ["no points were measured"]
+    # only skipped (silent) rows is not a pass either
+    fails, _ = vs.coverage([{"t": 3, "src": 3, "error": "silent", "skip": True}], vs.load_plan())
+    assert fails
+
+
+def test_every_kept_region_needs_sound_and_moving_picture():
+    plan = vs.load_plan(cuts=[(10.0, 12.0), (30.0, 40.0)])  # cuts at body 10 and 28
+    full = [_row(5), _row(15), _row(35)]
+    assert vs.coverage(full, plan) == ([], [])
+    # region 2 only has a still picture: fails, or warns with --allow-static
+    rows = [_row(5), _row(15, static=True), _row(35)]
+    fails, warns = vs.coverage(rows, plan)
+    assert len(fails) == 1 and "region 2" in fails[0] and "moving picture" in fails[0]
+    fails, warns = vs.coverage(rows, plan, allow_static=True)
+    assert not fails and len(warns) == 1
+    # region 3 has no point at all
+    fails, _ = vs.coverage([_row(5), _row(15)], plan)
+    assert len(fails) == 1 and "region 3" in fails[0]
+
+
+def test_coverage_uses_body_time_with_an_offset():
+    plan = vs.load_plan(cuts=[(10.0, 12.0)])
+    rows = [_row(20 + 5), _row(20 + 15)]  # 20 s cold open + intro before the body
+    assert vs.coverage(rows, plan, offset=20)[0] == []
+    assert vs.coverage(rows, plan)[0]  # without the offset both land after the cut
+
+
+def test_planned_duration_is_checked():
+    plan = vs.load_plan(cuts=[(10.0, 12.0)], start=0.0, end=100.0)
+    assert plan["duration"] == pytest.approx(98.0)
+    assert vs.duration_errors(98.0, 98.01, 24, plan["duration"]) == []
+    errs = vs.duration_errors(96.0, 96.0, 24, plan["duration"])  # a cut 2 s too long
+    assert len(errs) == 1 and "plan expects" in errs[0]
+    assert vs.duration_errors(98.0, 97.5, 24, plan["duration"])  # streams end apart
+    # assembled: 20 s before the body, 20 s outro after it
+    assert vs.duration_errors(138.0, 138.0, 24, 98.0, offset=20, body_end=118.0) == []
+    assert vs.duration_errors(138.0, 138.0, 24, 98.0, offset=20, body_end=117.0)
+    assert vs.duration_errors(138.0, 138.0, 24, 98.0, offset=20)  # outro not declared
+
+
+def test_plan_file_duration_is_read():
+    p = {"start": 0.0, "end": 50.0, "cuts": [{"out": 10, "in": 11, "removed": 1.0, "at": 10}]}
+    assert vs.load_plan(p)["duration"] == pytest.approx(49.0)
+    p["duration"] = 49.0
+    assert vs.load_plan(p)["duration"] == 49.0

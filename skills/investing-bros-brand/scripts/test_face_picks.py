@@ -63,3 +63,48 @@ def test_record_refuses_bad_input():
         rp.build_labels(9, items, rec, ["Z9"], {}, "d")
     with pytest.raises(ValueError):
         rp.build_labels(9, items, rec, [], {}, "d")
+
+
+def test_round_files_are_named_by_host_and_prefix():
+    a, b = mg.out_names("amitai", "A"), mg.out_names("amitai", "B")
+    assert a == {"grid": "grid-amitai-A.jpg", "manifest": "manifest-amitai-A.json"}
+    assert a["grid"] != b["grid"] and a["manifest"] != b["manifest"]
+
+
+def test_second_round_does_not_overwrite_the_first(tmp_path, monkeypatch):
+    from PIL import Image
+
+    def fake_extract(recording, t, side, out):
+        Image.new("RGB", (64, 72), (int(t) % 255, 80, 120)).save(out)
+
+    monkeypatch.setattr(mg, "extract", fake_extract)
+    out = tmp_path / "faces"
+    assert mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "A",
+                    "--times", "00:10", "00:50"]) == 0
+    assert mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "B",
+                    "--times", "01:10"]) == 0
+    files = sorted(p.name for p in out.iterdir())
+    assert {"grid-amitai-A.jpg", "grid-amitai-B.jpg", "manifest-amitai-A.json", "manifest-amitai-B.json"} <= set(files)
+    with pytest.raises(SystemExit):  # same round again: refused
+        mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "A", "--times", "00:20"])
+    # record_face_picks reads both rounds from the directory, with the right times
+    lab_path = tmp_path / "ep.json"
+    assert rp.main(["--episode", "9", "--manifest", str(out), "--good", "B1",
+                    "--bad", "A1=eyes shut", "--date", "2026-10-29", "--out", str(lab_path)]) == 0
+    import json
+    items = json.loads(lab_path.read_text())["items"]
+    assert items["A1"]["t_sec"] == 10 and items["A2"]["t_sec"] == 50 and items["B1"]["t_sec"] == 70
+    assert items["B1"]["label"] == "good" and items["A1"]["label"] == "bad"
+
+
+def test_manifest_ids_must_match_their_round():
+    bad = [dict(MANS[0], prefix="B")]  # ids A1/A2 in a manifest that says round B
+    with pytest.raises(ValueError):
+        rp.merge_manifests(bad)
+    with pytest.raises(ValueError):  # the same round passed twice
+        rp.merge_manifests(MANS + [MANS[0]])
+
+
+def test_empty_manifest_dir_is_refused(tmp_path):
+    with pytest.raises(ValueError):
+        rp.manifest_paths([str(tmp_path)])

@@ -8,8 +8,11 @@
 
 Times come from face_score.py (its --json output, or the MM:SS.s lines it prints).
 Writes OUT_DIR/<ID>.jpg (the host's half of the frame at full size),
-OUT_DIR/grid-<host>.jpg (numbered tiles with their times) and
-OUT_DIR/manifest-<host>.json (id -> host, t_sec), the input of record_face_picks.py.
+OUT_DIR/grid-<host>-<PREFIX>.jpg (numbered tiles with their times) and
+OUT_DIR/manifest-<host>-<PREFIX>.json (id -> host, t_sec), the input of
+record_face_picks.py. The prefix is the round id: a second round for the same host
+gets a new prefix (episode 9: A, then B for Amitai), so no round overwrites another.
+An existing manifest for the same host and prefix is refused unless --force.
 The stills are real frames, untouched. Keep them out of the repo.
 """
 from __future__ import annotations
@@ -50,6 +53,11 @@ def fmt(t: float) -> str:
     return f"{int(t // 60):02d}:{t % 60:04.1f}"
 
 
+def out_names(host: str, prefix: str) -> dict:
+    """Per-round file names: host AND prefix, so a second round never overwrites the first."""
+    return {"grid": f"grid-{host}-{prefix}.jpg", "manifest": f"manifest-{host}-{prefix}.json"}
+
+
 def extract(recording: str, t: float, side: str, out: str) -> None:
     crop = {"left": ["-vf", "crop=iw/2:ih:0:0"], "right": ["-vf", "crop=iw/2:ih:iw/2:0"], "full": []}[side]
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", recording, "-frames:v", "1",
@@ -88,7 +96,14 @@ def main(argv=None) -> int:
     g.add_argument("--times", nargs="+", help="MM:SS.s times (as face_score.py prints them)")
     ap.add_argument("--pick", type=int, default=10)
     ap.add_argument("--gap", type=float, default=30.0)
+    ap.add_argument("--force", action="store_true", help="replace this host's round with the same prefix")
     a = ap.parse_args(argv)
+    if not a.prefix.isalnum():
+        ap.error("--prefix must be letters/digits (it names the files and the still ids)")
+    names = out_names(a.host, a.prefix)
+    man_path = os.path.join(a.out_dir, names["manifest"])
+    if os.path.exists(man_path) and not a.force:
+        ap.error(f"{man_path} exists: use a new --prefix for a new round (or --force to redo this one)")
 
     if a.score_json:
         with open(a.score_json) as fh:
@@ -104,10 +119,11 @@ def main(argv=None) -> int:
         items[sid] = {"host": a.host, "t_sec": t}
         paths.append(p)
         labels.append(f"{sid}  {fmt(t)}")
-    grid = os.path.join(a.out_dir, f"grid-{a.host}.jpg")
+    grid = os.path.join(a.out_dir, names["grid"])
     build_grid(paths, labels, grid)
-    man = {"recording": os.path.basename(a.recording), "host": a.host, "side": a.side, "items": items}
-    with open(os.path.join(a.out_dir, f"manifest-{a.host}.json"), "w") as fh:
+    man = {"recording": os.path.basename(a.recording), "host": a.host, "side": a.side,
+           "prefix": a.prefix, "grid": names["grid"], "items": items}
+    with open(man_path, "w") as fh:
         json.dump(man, fh, indent=1, ensure_ascii=False)
     print(grid)
     for sid, it in items.items():

@@ -129,12 +129,29 @@ python3 <investing-bros-video>/scripts/render_cuts.py SOURCE.mp4 OUT.mp4 \
   --cut 48.51-49.30 --cut 80.50-155.08 --plan-out OUT.plan.json   # --scale 1280:720 for a review sample
 python3 <investing-bros-video>/scripts/verify_sync.py SOURCE.mp4 OUT.mp4 --plan OUT.plan.json
 ```
+A dissolve (`--vx`) or audio crossfade (`--ax`) next to the start, the end or another
+cut is shortened to the kept material on each side, down to a hard cut, and the
+script fails if the rendered picture or sound is not the planned length.
+
 Run `verify_sync.py` on **every** edited sample or master before it goes to anyone
 (also on the step 3 episode against its body, and on a compressed upload copy
 against the master with no cuts). It cross-correlates the audio and matches
 several consecutive frames against the source before, between and after every cut,
-every ~5 minutes and near the end. Deliver only on `SYNC OK`: audio offset 0 ms,
-picture shift 0 frames at every point. One good-looking frame is not a check
+every ~5 minutes and near the end, and checks the picture and sound lengths against
+the plan. Deliver only on `SYNC OK`: audio offset 0 ms, picture shift 0 frames at
+every point, and every kept region verified with both sound and a moving picture.
+A region it can't verify (a few frames between cuts, silence, a still card) fails;
+add `--points` inside it, or look and listen yourself and then pass `--allow-static`.
+
+For the assembled episode, the cut plan describes the body only. Tell the check
+where the body sits: `--offset` = the second the body starts (after the teaser/cold
+open and intro; from the assembly log or `find_offset_and_shift.py`), `--body-end` =
+the second the outro starts:
+```bash
+python3 <investing-bros-video>/scripts/verify_sync.py BODY-MASTER.mp4 פרק-N-וידאו.mp4 \
+  --plan BODY.plan.json --offset 62.375 --body-end 2859.1
+```
+Without them the intro is compared with the body and the check fails. One good-looking frame is not a check
 (episode 9's first sample looked right on single frames while the picture had
 jumped 26 s and later ran 0.54 s ahead of the sound).
 

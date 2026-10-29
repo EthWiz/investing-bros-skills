@@ -34,6 +34,23 @@ def env(path):
     return tok, chat
 
 
+SIGNATURE = "sent by Grokbot"
+
+
+def text_problem(text):
+    """Why this approval message can't be sent, or None. Checked before any API call."""
+    if not text or not text.strip():
+        return "the message is empty"
+    lines = [ln.strip() for ln in text.strip().splitlines() if ln.strip()]
+    if lines[-1] != SIGNATURE:
+        return f'the message must end with the line "{SIGNATURE}"'
+    if len(lines) == 1:
+        return "the message has nothing but the signature"
+    if len(text.strip()) > 4096:
+        return "over Telegram's 4096-character message limit: shorten it, keep it one message"
+    return None
+
+
 def call(tok, method, fields):
     args = ["curl", "-sS", "--max-time", "400", "--retry", "2"]
     for k, v in fields:
@@ -46,22 +63,22 @@ def call(tok, method, fields):
     return out["result"]
 
 
-def main():
+def main(argv=None):
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("action", choices=["video", "text", "delete"]); ap.add_argument("target")
     ap.add_argument("--caption", default=""); ap.add_argument("--thumb"); ap.add_argument("--env", default="telegram.env")
-    a = ap.parse_args()
+    a = ap.parse_args(argv)
+    if a.action == "text":  # validate before reading the token or calling the API
+        text = open(a.target, encoding="utf-8").read().strip()
+        bad = text_problem(text)
+        if bad:
+            sys.exit(bad)
     tok, chat = env(a.env)
     if a.action == "delete":
         call(tok, "deleteMessage", [("chat_id", chat), ("message_id", a.target)])
         print(f"deleted {a.target}")
         return
     if a.action == "text":
-        text = open(a.target, encoding="utf-8").read().strip()
-        if text.splitlines()[-1].strip() != "sent by Grokbot":
-            sys.exit('the message must end with the line "sent by Grokbot"')
-        if len(text) > 4096:
-            sys.exit("over Telegram's 4096-character message limit: shorten it, keep it one message")
         msg = call(tok, "sendMessage", [("chat_id", chat), ("text", text), ("disable_web_page_preview", "true")])
         with open("posts.log", "a") as f:
             f.write(f"{msg['message_id']}\t{a.target}\n")
