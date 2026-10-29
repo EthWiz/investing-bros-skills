@@ -36,6 +36,7 @@ that audio as the edited timeline (`start = 0`). Use the chapter offset tool in
 `investing-bros-title-description` to locate that body after the video's teaser and
 intro. Upload the replacement as Private and compare it with the current public
 episode; replacing or deleting the public upload still requires Amitai's explicit OK.
+A replacement is a full-episode re-upload: follow its rule in step 3.
 
 ## Steps
 
@@ -64,6 +65,21 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 ### 3. YouTube uploads (Private episode, Unlisted segments, Shorts after live)
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
 
+**Upload a compressed copy, not the master.** Make a ~1 GB copy (H.264 CRF 23,
+max 3000 kb/s, AAC 160 kb/s, faststart) and check it against the master with
+`investing-bros-video` → `verify_sync.py MASTER COPY` (`SYNC OK`) before uploading:
+```bash
+scripts/compress_for_youtube.sh "$EP/video/פרק-N-וידאו.mp4" "$EP/extras/פרק-N-youtube.mp4"
+```
+In Studio, never reload the tab or navigate away while a file uploads; if a "Leave
+site?" dialog appears, press **Cancel**.
+
+**Links are copied, never typed.** Take each video ID or URL from tool output
+(`yt_upload.py`, the Studio share link), never retype it, and before saving any
+description, notes file or message run
+`python3 scripts/check_links.py FILE`: every YouTube link must resolve
+(episode 9 shipped a link with `I` typed for `l`).
+
 Follow [the Studio checklist](references/youtube-studio.md). In particular, switch
 from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
 brand channel before selecting files. Upload the full episode as **Private** and
@@ -83,7 +99,25 @@ full episode is live.
   episode; preserve the meaning of anything they did state.
 - **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
+- **Full episode re-uploaded** (a fixed master, a replacement): in the same step,
+  update every segment video's and Short's description, card, end screen and pinned
+  comment, plus `video/תיאור-פרק-N-youtube.txt`, the segment files and each
+  `youtube-שורט-NN.md`, to the new URL, and run `check_links.py` on all of them. Retire
+  the old upload (Private); delete it only with the operator's OK.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
+
+### 3b. Approval round: one Telegram message
+Nadav approves the episode's assets together. Once the full episode, both segment
+videos and the three Shorts (with covers) are ready, write **one** message for the
+`אחים להשקעות` Telegram group (show conventions → Telegram) listing every asset with
+its copied link (YouTube Private/Unlisted, or Drive), ending with the line
+`sent by Grokbot`. Check it, show it to Amitai, and post it only after his OK:
+```bash
+python3 scripts/check_links.py approval.txt --message
+python3 <investing-bros-shorts>/scripts/send_telegram.py text approval.txt
+```
+Not one post per asset; something added later goes in a new single message with the
+full list.
 
 ### 4. Publish (only after Amitai's OK in chat)
 Order ([references/publish-order.md](references/publish-order.md)): RedCircle publish (it feeds Spotify) → rerun `check_titles_match.py` on the live YouTube and RedCircle titles → Spotify ingests it (a few hours) → the YouTube description's `האזינו בספוטיפיי:` line (after the disclaimer, before the chapters; `check_copy.py --youtube`) gets the Spotify episode link, replacing the show link, on the episode and its shorts. Publishing always includes RedCircle. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Then the segment videos go Public, then shorts. Segment videos link back through their own description, card, end screen and pinned comment; do not add segment links to the full episode's description. Switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
@@ -105,7 +139,7 @@ Video stays on YouTube. Uploading video to Spotify cuts that episode off from Re
 Follow [references/share-whatsapp.md](references/share-whatsapp.md): exact group, text ending with the show tag, public link, sent by the WhatsApp owner, confirmation reported.
 
 ## Done when
-- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; the full episode when made is uploaded with its previous-episode + Subscribe end screen over the canonical outro, both segment videos are uploaded for review, all three Shorts have completed Telegram approval and Drive filing, and the review ping was sent.
+- Before the OK: RedCircle draft saved with the YouTube title (`check_titles_match.py` passes) and screenshot-checked; the full episode when made is uploaded with its previous-episode + Subscribe end screen over the canonical outro, both segment videos are uploaded for review, all three Shorts have completed Telegram approval and Drive filing, and the review ping was sent; the full episode went up as the compressed copy with `SYNC OK`; every link in the descriptions passed `check_links.py`; and all assets went for approval in one Telegram message ending `sent by Grokbot`.
 - After the OK: live on RedCircle **and** YouTube with identical titles; both segment videos are Public after the full episode; all three Shorts were uploaded only after the episode went live; the episode is listed on Spotify; and the Spotify, RedCircle and YouTube checks passed (or the problem is with Amitai and in an issue). The YouTube episode and all three Shorts link the Spotify **episode** URL, not the show.
 - WhatsApp sends confirmed, when asked.
 
@@ -123,6 +157,9 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Publish on YouTube without also publishing the RedCircle episode, or with a RedCircle title that differs from the YouTube one.
 - Publish, set anything Public, submit to directories or post on WhatsApp/Telegram without Amitai's explicit OK in chat.
 - Echo or paste the password.
+- Type a video ID or URL by hand, or post a link `check_links.py` hasn't passed.
+- Reload or leave the Studio tab during an upload, or delete an old upload without the operator's OK.
+- Send assets for approval one by one instead of in one message.
 - Upload raw or `extras/` audio.
 - Paste Hebrew into RedCircle without the RTL + `?` marks, or put those marks in the YouTube copy.
 - Upload video to Spotify, or change RedCircle show settings, without Amitai's decision.

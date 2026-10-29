@@ -37,6 +37,7 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
 | [Shorts covers](references/shorts-covers.md) | Vertical Shorts cover and its Heebo title step |
 | [video graphics](references/video-graphics.md) | Teaser, Shorts hook, discussion card, lower third, motion |
 | [prompts](references/prompts.md) | Image-generation prompts and the Codex backend |
+| [face picks](references/face-picks.md) | Each episode's host stills: ~10 per speaker, the operator picks and rejects (with reasons), recorded as eval labels |
 | [quality checks](references/quality-checks.md) | What to inspect by eye |
 | [asset index](references/asset-index.md) | Every reference image with its Drive ID |
 | [ownership](references/ownership.md) | Handoffs, versioning, artifact register |
@@ -109,3 +110,5 @@ request return the filled prompt. Label a new format as a proposed adaptation un
 - Override the host spelling or credit order in `investing-bros-show`.
 - Treat decorative newsprint as real data, claims or quotations.
 - Commit reference images or generated variations to the repo.
+- Generate or regenerate a real host's face, or use a host frame the operator didn't
+  pick for that episode (face picks).

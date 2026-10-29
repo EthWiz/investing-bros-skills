@@ -50,3 +50,13 @@ files, and a later decision here overrides an earlier one.
 Existing video and Shorts renderers keep the screen gold and the deployed wordmark. Brand
 changes don't silently recolour them: change the shared `brand.py` copies together, render
 a sample and get it approved first.
+
+## Episode 9 (2026-10-29)
+- Amitai set the per-episode face-pick loop ([face picks](face-picks.md)): about ten
+  best-effort stills per speaker, he picks the ones he wants and rejects the rest with
+  a reason, and each episode's choices are kept as eval labels
+  (`evals/face-picks/episodes/ep09.json` is the first). Thumbnails use only real frames
+  he picked; no image generation on real faces.
+- The same episode's editing and upload lessons (single-pass cuts with measured sync,
+  the compressed YouTube copy, verified links, one approval message) live in
+  `investing-bros-video` and `investing-bros-episode-upload`.
