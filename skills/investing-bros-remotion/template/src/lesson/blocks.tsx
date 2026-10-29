@@ -6,8 +6,9 @@ import {CREAM, FONT, GOLD, HOOK_YELLOW, MUSTARD, NAVY, clamp} from '../brand';
 // fingerprint, a mining rig and the puzzle piece. No words: labels come from the scene's content.
 
 // one payment on a page: k = how far it has come in, wipe = how much of it has been erased,
-// glow = highlighted. A row with a label shows the recipient's name; other transfers are a bar.
-export type Row = {label?: string; k: number; wipe?: number; glow?: number};
+// glow = highlighted, strike = crossed out (refused). A row with a label shows the recipient's name;
+// other transfers are a bar.
+export type Row = {label?: string; k: number; wipe?: number; glow?: number; strike?: number};
 
 export const pageHeight = (w: number) => w * 1.15;
 
@@ -34,6 +35,8 @@ export const Page: React.FC<{w: number; rows: Row[]; glow?: number; dim?: number
                   <div style={{fontFamily: FONT, fontWeight: 900, fontSize: rh * 0.52, color: NAVY, whiteSpace: 'nowrap'}}><bdi dir="auto">{r.label}</bdi></div>
                 ) : <div style={{flex: 1, height: rh * 0.18, borderRadius: 4, background: NAVY, opacity: 0.25}} />}
               </div>
+              {r.strike ? <div style={{position: 'absolute', top: '46%', right: -4, height: Math.max(4, rh * 0.09), borderRadius: 4, background: MUSTARD,
+                width: `calc(${r.strike * 100}% + 8px)`, boxShadow: `0 0 0 2px ${NAVY}`}} /> : null}
               {wipe > 0 && wipe < 1 ? <div style={{position: 'absolute', top: -6, bottom: -6, right: `${wipe * 100}%`, width: 3, background: MUSTARD}} /> : null}
             </div>
           );
@@ -118,3 +121,13 @@ export const fanAngle = (t: number, from: number, fps: number, speed: (t: number
   for (let x = from; x < t; x += 1 / fps) a += (360 * speed(x)) / fps;
   return a;
 };
+
+// A payment on its way: a pill with a coin and the recipient's name, centred on p.
+export const Chip: React.FC<{p: {x: number; y: number}; label: string; k: number}> = ({p, label, k}) => (
+  <div style={{position: 'absolute', left: p.x - 110, top: p.y - 36, width: 220, height: 72, borderRadius: 36, background: CREAM,
+    border: `4px solid ${NAVY}`, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 14, direction: 'rtl',
+    transform: `scale(${k})`, boxShadow: '0 8px 14px rgba(0,0,0,.45)'}}>
+    <div style={{width: 38, height: 38, borderRadius: 19, background: HOOK_YELLOW, border: `4px solid ${NAVY}`}} />
+    <div style={{fontFamily: FONT, fontWeight: 900, fontSize: 42, color: NAVY}}><bdi dir="auto">{label}</bdi></div>
+  </div>
+);
