@@ -184,9 +184,9 @@ def layout(cfg, resolve, duration, manifest):
         if start <= last:
             raise SystemExit(f"error: {where} starts at {start:.2f} s, not after the segment before it ({last:.2f} s)")
         last = start
-        if mode != "full":
-            if start < FACE_ONLY:
-                raise SystemExit(f"error: a {mode} segment at {start:.1f} s: the first {FACE_ONLY:.0f} s are face only")
+        if mode != "full" and start < FACE_ONLY:
+            raise SystemExit(f"error: a {mode} segment at {start:.1f} s: the first {FACE_ONLY:.0f} s are face only")
+        if mode != "full" or "scene" in s:  # a 'full' scene: cards on the wall beside him, allowed from the start
             spec = manifest.get(s.get("scene"))
             if spec is None:
                 raise SystemExit(f"error: {where}: scene '{s.get('scene')}' isn't in template "

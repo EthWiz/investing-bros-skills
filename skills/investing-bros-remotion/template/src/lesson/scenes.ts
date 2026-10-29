@@ -10,12 +10,13 @@ import {PriceDrop} from './PriceDrop';
 import {PrivateKey} from './PrivateKey';
 import {Terms} from './Terms';
 import type {SceneProps} from './types';
+import {Tokenize, WallCard} from './WallCards';
 
 // Scene components by the name a segment's `scene` uses. What each one needs (mode, anchors,
 // content keys, assets) is in scenes.json, which make_lesson_props.py checks; the two must list
 // the same names (test_render_lesson.py). Reusable scenes sit in lesson/, a lesson's own under
 // lesson<N>/. A 'bubble' scene draws the whole frame behind Amitai's circle; a 'side' scene draws
-// inside SidePanel. Text comes from the segment's content in the config, never from the component.
+// inside SidePanel; a 'full' scene draws cards on the wall beside him while he stays on camera. Text comes from the segment's content in the config, never from the component.
 export const SCENES: Record<string, React.FC<SceneProps>> = {
   terms: Terms,
   'double-spend': DoubleSpend,
@@ -25,6 +26,8 @@ export const SCENES: Record<string, React.FC<SceneProps>> = {
   chain: Chain,
   conflict: Conflict,
   'private-key': PrivateKey,
+  'wall-card': WallCard,
+  tokenize: Tokenize,
   'lesson1-money-flow': MoneyFlow,
   'lesson1-satoshi': SatoshiPanel,
 };

@@ -101,7 +101,7 @@ const Shade: React.FC = () => (
 );
 
 // Layer order, bottom to top: background, full-screen (bubble) scenes, Amitai, shade, side panels,
-// strips and cards, captions.
+// wall cards ('full' scenes), strips and cards, captions.
 export const Lesson: React.FC<LessonProps> = (p) => {
   if (!p.beats.length || !p.segments.length) return <AbsoluteFill style={{background: NAVY}} />;
   const first = p.beats[0];
@@ -118,6 +118,7 @@ export const Lesson: React.FC<LessonProps> = (p) => {
       <Camera base={p.base} segs={p.segments} face={p.face ?? FACE} />
       <Shade />
       {scenes('side')}
+      {scenes('full')}
       {p.at.name !== undefined && <NameStrips at={p.at.name} until={p.at.name + 4} />}
       {p.at.title !== undefined && <LessonTitle lesson={p.lesson} lines={p.title} at={p.at.title} until={first.end} />}
       {disclaimer && <DisclaimerStrip start={disclaimer.start} end={disclaimer.end} />}

@@ -38,7 +38,7 @@ def test_the_registry_and_the_scene_manifest_name_the_same_scenes():
     assert registered == declared
     for name, spec in manifest.items():
         if not name.startswith("_"):
-            assert spec["mode"] in ("side", "bubble") and {"anchors", "content"} <= set(spec), name
+            assert spec["mode"] in ("full", "side", "bubble") and {"anchors", "content"} <= set(spec), name
 
 
 def test_lesson_fonts_are_the_static_heebo_weights():
