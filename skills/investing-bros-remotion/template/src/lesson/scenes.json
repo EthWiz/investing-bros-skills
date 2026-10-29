@@ -38,6 +38,24 @@
     "vertical": true,
     "optional": {"anchors": [], "content": ["heading"]}
   },
+  "mining": {
+    "mode": "bubble",
+    "anchors": [],
+    "content": ["block", "payment", "others", "miners", "puzzle", "winner", "propose", "check", "accept", "second", "verdict",
+                "page", "race", "work", "easy", "first"],
+    "assets": [],
+    "vertical": true,
+    "optional": {"anchors": [], "content": ["page", "race", "work", "easy", "first"]}
+  },
+  "chain": {
+    "mode": "bubble",
+    "anchors": [],
+    "content": ["blocks", "prints", "name", "tamper", "changed", "broken", "network", "consensus",
+                "heading", "chain", "erase", "link", "detect", "grow"],
+    "assets": [],
+    "vertical": true,
+    "optional": {"anchors": [], "content": ["heading", "chain", "erase", "link", "detect", "grow"]}
+  },
   "lesson1-money-flow": {
     "mode": "bubble",
     "anchors": ["f_coin", "f_friend", "f_mybank", "f_hisbank", "f_middle", "f_central", "f_trip", "f_three", "f_grey"],

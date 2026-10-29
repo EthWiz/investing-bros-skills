@@ -61,21 +61,21 @@ const Node: React.FC<{p: P; size: number; label?: string; at: number; check?: nu
   );
 };
 
-const Check: React.FC<{k: number}> = ({k}) => (
-  <svg width={64} height={64} viewBox="0 0 64 64" style={{position: 'absolute', top: -10, left: -10, transform: `scale(${k})`, opacity: k}}>
+export const Check: React.FC<{k: number; size?: number}> = ({k, size = 64}) => (
+  <svg width={size} height={size} viewBox="0 0 64 64" style={{position: 'absolute', top: -10, left: -10, transform: `scale(${k})`, opacity: k}}>
     <circle cx="32" cy="32" r="30" fill={HOOK_YELLOW} stroke={NAVY} strokeWidth="4" />
     <path d="M18 33 L28 43 L46 22" stroke={NAVY} strokeWidth="7" fill="none" strokeLinecap="round" strokeLinejoin="round" />
   </svg>
 );
 
 // the X of a refused or impossible payment, in the brand's hook yellow (the palette has no red)
-const Cross: React.FC<{p: P; at: number; text?: string}> = ({p, at, text}) => {
+export const Cross: React.FC<{p: P; at: number; text?: string; size?: number}> = ({p, at, text, size = 160}) => {
   const {t, fps} = useTime();
   const k = pop(t, at, fps, 9, 220);
   if (k <= 0) return null;
   return (
-    <div style={{position: 'absolute', left: p.x - 160, top: p.y - 80, width: 320, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
-      <svg width={160} height={160} viewBox="0 0 100 100" style={{transform: `scale(${k}) rotate(${(1 - k) * -25}deg)`,
+    <div style={{position: 'absolute', left: p.x - 160, top: p.y - size / 2, width: 320, display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
+      <svg width={size} height={size} viewBox="0 0 100 100" style={{transform: `scale(${k}) rotate(${(1 - k) * -25}deg)`,
         filter: 'drop-shadow(0 8px 14px rgba(0,0,0,.5))'}}>
         <path d="M18 18 L82 82 M82 18 L18 82" stroke={NAVY} strokeWidth="26" strokeLinecap="round" />
         <path d="M18 18 L82 82 M82 18 L18 82" stroke={HOOK_YELLOW} strokeWidth="16" strokeLinecap="round" />

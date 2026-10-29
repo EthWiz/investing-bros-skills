@@ -1,6 +1,8 @@
 import type React from 'react';
+import {Chain} from './Chain';
 import {DoubleSpend} from './DoubleSpend';
 import {GrowthBars} from './GrowthBars';
+import {Mining} from './Mining';
 import {MoneyFlow} from './lesson1/MoneyFlow';
 import {SatoshiPanel} from './lesson1/Satoshi';
 import {PriceDrop} from './PriceDrop';
@@ -17,6 +19,8 @@ export const SCENES: Record<string, React.FC<SceneProps>> = {
   'double-spend': DoubleSpend,
   'growth-bars': GrowthBars,
   'price-drop': PriceDrop,
+  mining: Mining,
+  chain: Chain,
   'lesson1-money-flow': MoneyFlow,
   'lesson1-satoshi': SatoshiPanel,
 };
