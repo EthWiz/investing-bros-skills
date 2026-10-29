@@ -45,6 +45,18 @@ def test_beats_titles_lengths_and_on_screen_lines():
     assert "bitcoin.org" not in beats["3"]["text"]                       # the sources heading ends the beats
 
 
+def test_plain_native_doc_export_matches_markdown():
+    import re
+    plain = "\ufeff" + re.sub(r"^#{1,3} ", "", DOC, flags=re.MULTILINE)
+    assert parse(plain.replace("\n", "\r\n")) == parse(DOC)
+
+
+def test_plain_sources_and_notes_do_not_become_spoken_text():
+    for heading in ("מקורות", "הערות"):
+        beats = parse(f"קטע 1: פתיחה (כ-25 שניות)\nעל המסך: רק אתה.\nשלום.\n{heading}\nלא לדיבור.")
+        assert beats["1"]["text"] == "שלום."
+
+
 def test_update_keeps_the_departures(tmp_path):
     doc, cfg = tmp_path / "script.md", tmp_path / "lesson-1-video.json"
     doc.write_text(DOC, encoding="utf-8")
