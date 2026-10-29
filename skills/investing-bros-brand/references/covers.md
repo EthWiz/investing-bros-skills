@@ -60,9 +60,22 @@ topic examples, not mandatory props.
    name or seat. `host-amitai-ep08.png` and `host-nadav-ep08.png` (Drive
    `references/hosts`) are identity anchors only, not reusable production portraits.
    Resolve any doubt first.
-2. Pick sharp, well-lit frames: open eyes, alert gaze, relaxed smile or engaged look. Reject
-   blinks, droopy eyelids, motion blur and mid-word mouths. Prefer a sharper source
-   recording over synthetic sharpening; don't claim a teaser frame came from the full recording.
+2. Pick sharp, well-lit frames with a real smile or laugh, teeth showing, eyes open and
+   both irises centred on the lens. A slight three-quarter turn is fine. Reject (Amitai's
+   episode-9 picks and rejects):
+   - eyes shut or downcast, or the head dropped with lowered brows (A3);
+   - a wide-eyed blank stare, or irises turned off the lens, even with a smile (A1, B7);
+   - mid-word, puckered, stretched, lopsided or hanging-open mouths (A8, B7);
+   - blinks, motion blur, or a hand over the face.
+   A smile narrows the eyes; that is not a blink. Prefer a sharper source recording over
+   synthetic sharpening; don't claim a teaser frame came from the full recording.
+   To shortlist, run `scripts/face_score.py FRAMES_DIR --side left|right --pick 9` on
+   frames sampled every few seconds from the whole recording (Amitai left, Nadav right in
+   the Riverside side-by-side; needs `mediapipe` and `opencv-python`, model via
+   `--model` or `$FACE_LANDMARKER_TASK`). It scores each host against their own
+   whole-episode baseline. Refine around the top times (±1.5 s), then look at every pick
+   yourself; the score is a shortlist, not a decision. Changing the scorer: run the eval in
+   the repo's `evals/face-picks/` (see its README); it must keep every good above every bad.
 3. Compare with the last approved covers and pick visibly different frames. A tint, shirt
    recolour or slight AI smile on the same portrait is not a different photo.
 4. Supply the originals separately from the style reference, label each by role and side,

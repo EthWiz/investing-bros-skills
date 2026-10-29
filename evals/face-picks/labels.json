@@ -1,0 +1,168 @@
+{
+ "about": "Host-face thumbnail stills from episode 9, labelled by Amitai on 2026-10-29. good = he picked it for thumbnails; bad = he rejected it, with his reason; unknown = shown but not labelled. t_sec is the raw recording time (riverside-combined.mp4, 24 fps, side-by-side 1920x1080: Amitai left half, Nadav right half).",
+ "source": {
+  "episode": 9,
+  "recording": "riverside-combined.mp4",
+  "amitai_side": "left",
+  "nadav_side": "right"
+ },
+ "items": {
+  "A1": {
+   "host": "amitai",
+   "t_sec": 2085.2,
+   "label": "bad",
+   "reason": "eyes look weird (irises turned sideways while smiling, eyes wide)"
+  },
+  "A2": {
+   "host": "amitai",
+   "t_sec": 2491.3,
+   "label": "unknown"
+  },
+  "A3": {
+   "host": "amitai",
+   "t_sec": 1995.4,
+   "label": "bad",
+   "reason": "eyes looking down, almost shut (head dropped, brows lowered)"
+  },
+  "A4": {
+   "host": "amitai",
+   "t_sec": 599.4,
+   "label": "good",
+   "reason": "picked"
+  },
+  "A5": {
+   "host": "amitai",
+   "t_sec": 806.4,
+   "label": "unknown"
+  },
+  "A6": {
+   "host": "amitai",
+   "t_sec": 2279.4,
+   "label": "unknown"
+  },
+  "A7": {
+   "host": "amitai",
+   "t_sec": 2905.5,
+   "label": "unknown"
+  },
+  "A8": {
+   "host": "amitai",
+   "t_sec": 2222.9,
+   "label": "bad",
+   "reason": "weird face (hand on chin, stretched lopsided mouth, head turned)"
+  },
+  "A9": {
+   "host": "amitai",
+   "t_sec": 2135.5,
+   "label": "unknown"
+  },
+  "B1": {
+   "host": "amitai",
+   "t_sec": 208.8,
+   "label": "good",
+   "reason": "picked: big open smile, teeth"
+  },
+  "B2": {
+   "host": "amitai",
+   "t_sec": 493.8,
+   "label": "good",
+   "reason": "picked: widest natural laugh"
+  },
+  "B3": {
+   "host": "amitai",
+   "t_sec": 720.2,
+   "label": "unknown"
+  },
+  "B4": {
+   "host": "amitai",
+   "t_sec": 930.4,
+   "label": "unknown"
+  },
+  "B5": {
+   "host": "amitai",
+   "t_sec": 1188.4,
+   "label": "unknown"
+  },
+  "B6": {
+   "host": "amitai",
+   "t_sec": 1563.0,
+   "label": "unknown"
+  },
+  "B7": {
+   "host": "amitai",
+   "t_sec": 2386.7,
+   "label": "bad",
+   "reason": "eyes staring into the abyss, mouth in a weird shape (no smile, gaze off-lens)"
+  },
+  "B8": {
+   "host": "amitai",
+   "t_sec": 2574.6,
+   "label": "unknown"
+  },
+  "B9": {
+   "host": "amitai",
+   "t_sec": 2746.7,
+   "label": "good",
+   "reason": "picked: sharp smile"
+  },
+  "N1": {
+   "host": "nadav",
+   "t_sec": 2615.7,
+   "label": "good",
+   "reason": "picked"
+  },
+  "N2": {
+   "host": "nadav",
+   "t_sec": 2584.2,
+   "label": "good",
+   "reason": "picked"
+  },
+  "N3": {
+   "host": "nadav",
+   "t_sec": 2324.3,
+   "label": "unknown"
+  },
+  "N4": {
+   "host": "nadav",
+   "t_sec": 716.03,
+   "label": "good",
+   "reason": "picked"
+  },
+  "N5": {
+   "host": "nadav",
+   "t_sec": 1506.9,
+   "label": "unknown"
+  },
+  "N6": {
+   "host": "nadav",
+   "t_sec": 2812.5,
+   "label": "unknown"
+  },
+  "N7": {
+   "host": "nadav",
+   "t_sec": 726.4,
+   "label": "unknown"
+  },
+  "N8": {
+   "host": "nadav",
+   "t_sec": 1270.3,
+   "label": "unknown"
+  },
+  "N9": {
+   "host": "nadav",
+   "t_sec": 1976.0,
+   "label": "unknown"
+  }
+ },
+ "baselines": {
+  "amitai": {
+   "ear": 0.2676,
+   "pitch": 4.34
+  },
+  "nadav": {
+   "ear": 0.243,
+   "pitch": -6.52
+  },
+  "about": "Each host's medians over every 4th-second frame of the whole episode-9 recording (730 frames each), the same baseline face_score.py computes when it scans an episode."
+ }
+}
