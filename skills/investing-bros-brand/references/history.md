@@ -17,6 +17,10 @@ files, and a later decision here overrides an earlier one.
   this skill.
 - 2026-10-22: reference images moved from the repo to Drive `Brand Resources/references`,
   fetched by file ID.
+- 2026-10-29: episode 9 portrait picks became the face-pick eval (repo
+  `evals/face-picks/`). Amitai rejected a wide stare with eyes off the lens (A1, B7),
+  downcast nearly shut eyes (A3) and a stretched, lopsided "weird face" (A8). The
+  `face_score.py` rules come from these, and it must keep every pick above every reject.
 
 ## Episode and segment covers
 - Episode 3: the host-name strip came off episode covers.

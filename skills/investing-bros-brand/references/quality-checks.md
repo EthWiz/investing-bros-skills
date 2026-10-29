@@ -28,7 +28,8 @@ for downloaded references. This list is what only eyes can check.
 - Headline and number match the supplied copy, not a guessed title.
 - Navy, cream paper and printed mustard dominate; no palette or style drift.
 - Photo-cutout covers: each face against its own original; exactly one Amitai and one
-  Nadav; alert natural eyes, restrained smiles, skin detail, clean hair edges, comparable
+  Nadav; open eyes looking at the lens (no stare, no downcast lids), real smiles with no
+  mid-word or lopsided mouth, skin detail, clean hair edges, comparable
   scale; touch-ups within the [covers](covers.md) scope and disclosed. Two-strip
   headline, one polished photographic centerpiece, bottom-right show mark clear of the
   chin and duration badge; no name strip, clip art, cartoon rays or blurred sidebars.

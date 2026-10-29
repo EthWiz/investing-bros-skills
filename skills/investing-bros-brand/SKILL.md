@@ -60,7 +60,8 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
 4. Photo-cutout covers: distinct original frames for each brother from the same episode
    being covered, a fresh portrait pair, the approved two-line headline, one photographic
    centerpiece and only the allowed touch-ups; verify both identities. Frames may come
-   from anywhere in the episode, not necessarily the segment. Shorts covers: three
+   from anywhere in the episode, not necessarily the segment; shortlist them with
+   `scripts/face_score.py` and pick by the portrait rules in covers. Shorts covers: three
    text-free Codex art options, then the shared `cover_title` with
    `make_cover_title.py --config short.json`; that field also drives the opening banner
    and YouTube metadata.
