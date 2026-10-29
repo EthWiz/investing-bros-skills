@@ -91,7 +91,8 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
   2. Cut on a pause, not mid-word; listen to the join.
   3. Make the cut in audio **and** video with the same times. `trim.sh --cut A-B` (repeatable) removes it from the audio and records it in `edit.json`; `investing-bros-video` → `assemble_episode.sh --edit edit.json` removes the same range from the video. Don't splice by hand.
   4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
-  5. Check A/V drift at the end of the assembled video (`assemble_episode.sh` prints the sync check) and spot-check lips right after the join.
+  5. Check A/V drift at the end of the assembled video (`assemble_episode.sh` prints the sync check) and spot-check lips right after the join. Then measure it: `investing-bros-video` → `verify_sync.py` must report `SYNC OK` (0 ms audio offset, 0-frame picture shift before, between and after every cut and near the end) before the video goes to anyone.
+  6. A cut made **after** the video is assembled (a re-cut sample or master) goes through `investing-bros-video` → `render_cuts.py`: one pass, video and audio from the same input with the same frame-snapped boundaries. Never cut the audio on its own and mux it back.
 - Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation.
 
 ### 6. Trim and check

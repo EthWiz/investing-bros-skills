@@ -114,7 +114,46 @@ segment's sample count, rejects a body-audio file whose duration does not match 
 body's audio PTS clock, and rejects final A/V drift. `--outro` preserves the whole
 clip and, when it is shorter than 20 seconds, extends it to 20 seconds by holding
 the last frame over silence. Look at a frame and listen at each join and somewhere
-late in the episode for sync.
+late in the episode for sync, then run the measured check in step 3a.
+
+### 3a. Re-cut a finished video, and measure sync before delivering
+To take a section out of an assembled video (a sample, a fixed opening, a shorter
+master), cut **video and audio from the same input in one ffmpeg graph** with the
+same boundaries. Never cut or splice the audio separately and mux it back.
+`render_cuts.py` snaps every cut to whole frames, removes exactly the same span
+from the sound, and passes `-reinit_filter 0` so mid-stream parameter changes in
+the input (for example a `-c copy` concat with mixed colour tags) cannot rebuild
+the graph and jump the picture:
+```bash
+python3 <investing-bros-video>/scripts/render_cuts.py SOURCE.mp4 OUT.mp4 \
+  --cut 48.51-49.30 --cut 80.50-155.08 --plan-out OUT.plan.json   # --scale 1280:720 for a review sample
+python3 <investing-bros-video>/scripts/verify_sync.py SOURCE.mp4 OUT.mp4 --plan OUT.plan.json
+```
+A dissolve (`--vx`) or audio crossfade (`--ax`) next to the start, the end or another
+cut is shortened to the kept material on each side, down to a hard cut, and the
+script fails if the rendered picture or sound is not the planned length.
+
+Run `verify_sync.py` on **every** edited sample or master before it goes to anyone
+(also on the step 3 episode against its body, and on a compressed upload copy
+against the master with no cuts). It cross-correlates the audio and matches
+several consecutive frames against the source before, between and after every cut,
+every ~5 minutes and near the end, and checks the picture and sound lengths against
+the plan. Deliver only on `SYNC OK`: audio offset 0 ms, picture shift 0 frames at
+every point, and every kept region verified with both sound and a moving picture.
+A region it can't verify (a few frames between cuts, silence, a still card) fails;
+add `--points` inside it, or look and listen yourself and then pass `--allow-static`.
+
+For the assembled episode, the cut plan describes the body only. Tell the check
+where the body sits: `--offset` = the second the body starts (after the teaser/cold
+open and intro; from the assembly log or `find_offset_and_shift.py`), `--body-end` =
+the second the outro starts:
+```bash
+python3 <investing-bros-video>/scripts/verify_sync.py BODY-MASTER.mp4 פרק-N-וידאו.mp4 \
+  --plan BODY.plan.json --offset 62.375 --body-end 2859.1
+```
+Without them the intro is compared with the body and the check fails. One good-looking frame is not a check
+(episode 9's first sample looked right on single frames while the picture had
+jumped 26 s and later ran 0.54 s ahead of the sound).
 
 ### 3b. Prepare the full-episode end screen
 The outro is the end-screen window. On YouTube, place one or two previous-episode
@@ -168,11 +207,12 @@ Review copies over the transfer caps: compress (show conventions → references/
   description (when a video episode was asked for).
 - `promo/` has each cold open and teaser that was asked for.
 - Nadav OK'd the cuts.
+- Every delivered edited file passed `verify_sync.py` (`SYNC OK`).
 
 ## Hand back
 - Links to `video/` and `promo/`; length of each file
 - The moments used (episode time + opening words), any cuts inside a moment, words you couldn't verify
-- The join and sync check result
+- The join and sync check result, with the `verify_sync.py` table for each delivered file
 - Canonical intro/outro Drive ID used; previous-episode end-screen targets and
   whether the optional Heebo callout was included
 
@@ -180,6 +220,7 @@ Review copies over the transfer caps: compress (show conventions → references/
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination in `investing-bros-show`.
 - Put words on screen the hosts didn't say, captions you haven't proofread, or splice lines so a host seems to say something he didn't.
 - Cut a caveat to make a line punchier.
+- Cut or splice audio and video in separate passes and mux them, or deliver an edited sample or master without a `SYNC OK` from `verify_sync.py`.
 - Add music or stock footage Amitai didn't supply, except a cold-open bed mixed per the reference.
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so (show conventions → Working rules).
 

@@ -17,6 +17,14 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
    and clickable links in descriptions. If a tier isn't enabled, report it; a
    manager can't verify.
 
+## While a file uploads
+- Upload the compressed copy (`compress_for_youtube.sh`, about 1 GB), not the master.
+- Do not reload the Studio tab, open another page in it or close the dialog until the
+  upload reaches 100% and processing starts. If the browser shows **Leave site?**,
+  press **Cancel**.
+- Copy the new video link from Studio's upload dialog (or the Content row's ⋮ → Get
+  shareable link); never type it.
+
 ## Details
 - Paste the approved title and the YouTube description as plain text, with no
   RedCircle RTL marks.
