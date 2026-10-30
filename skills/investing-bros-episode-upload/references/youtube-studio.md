@@ -56,6 +56,7 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
   title, then the URL, then after reloading Studio. The Private upload may continue, but
   if the field still can't be set the Short stays Private and you report the failure.
   Never publish a Short with only a description link (`investing-bros-publish`).
+  **Known failure mode:** the `investingbros.grokbot` account (Studio Manager) sees an EMPTY Related video picker ("No matching results" for the episode URL, ID and title alike). When that happens, keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Send them the direct edit link for each Short, `https://studio.youtube.com/video/<SHORT_ID>/edit`, and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`). After they say it's done, reopen each edit page yourself and check that the field shows the episode before ticking it.
 - Save as **Private**, then confirm the Studio row says Private and HD processing
   finishes.
 - Open the private watch page as the Editor and check title, description direction,

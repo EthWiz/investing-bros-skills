@@ -34,7 +34,10 @@ verification.
   and check that the Related video box shows the full episode's title and thumbnail. Evidence for the tick:
   "reopened <time>: Related video = <episode title> (<id>)".
   - A link in the description, title or pinned comment is not the Related video and never counts.
-  - "No matching results": try the title, then the URL, then reload Studio after a few minutes
+  - **Known failure mode (episode 9):** the `investingbros.grokbot` account (Studio Manager) sees an EMPTY Related video picker ("No matching results" for the episode URL, ID and title alike). When that happens, keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Send them the direct edit link for each Short, `https://studio.youtube.com/video/<SHORT_ID>/edit`, and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`). After they say it's done, reopen each edit page yourself and check that the field shows the episode before ticking it.
+    Fill the checklist in with `fail shortNN.related --reason "Manager picker empty; asked <who> <time>"`, then
+    tick it after your own reopen check.
+  - Any other "No matching results": try the title, then the URL, then reload Studio after a few minutes
     (the episode must already be Public). Still failing: `fail shortNN.related --reason ...`, leave the
     Short Private and report it. No waiver.
 - **srt**: Subtitles → Add language → Hebrew → Upload file → With timing. Reopen Subtitles and check that
