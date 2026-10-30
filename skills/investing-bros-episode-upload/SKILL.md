@@ -96,7 +96,7 @@ full episode is live.
 - **Exactly three Shorts** (`Shorts/`): only after the full episode is live. Before
   upload, compare each `youtube-שורט-NN.md` with its approved cover: the YouTube title
   and description's first line must both equal the cover title exactly. Upload the
-  `.m4v` video with that metadata, Related video, pinned comment and `.srt`. Do not add
+  `.m4v` video with that metadata, Related video, pinned comment and `.srt`. **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`. Do not add
   a disclosure, holdings statement, number or claim unless the hosts stated it in the
   episode; preserve the meaning of anything they did state.
 - **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
@@ -122,6 +122,8 @@ Not one post per asset; something added later goes in a new single message with 
 full list.
 
 ### 4. Publish (only after Amitai's OK in chat)
+Run the publish itself with `investing-bros-publish`: its checklist enforces the order below, a live check before each next step, the Shorts' Related video rule, and the ticked report for Amitai.
+
 Order ([references/publish-order.md](references/publish-order.md)): RedCircle publish (it feeds Spotify) → rerun `check_titles_match.py` on the live YouTube and RedCircle titles → Spotify ingests it (a few hours) → the YouTube description's `האזינו בספוטיפיי:` line (after the disclaimer, before the chapters; `check_copy.py --youtube`) gets the Spotify episode link, replacing the show link, on the episode and its shorts. Publishing always includes RedCircle. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Then the segment videos go Public, then shorts. Segment videos link back through their own description, card, end screen and pinned comment; do not add segment links to the full episode's description. Switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
 
 ### 5. Check how it renders
@@ -160,6 +162,7 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Publish, set anything Public, submit to directories or post on WhatsApp/Telegram without Amitai's explicit OK in chat.
 - Echo or paste the password.
 - Type a video ID or URL by hand, or post a link `check_links.py` hasn't passed.
+- Make a Short Public whose Related video isn't the full episode (verified by reopening its edit page), or treat a description link as the Related video.
 - Reload or leave the Studio tab during an upload, or delete an old upload without the operator's OK.
 - Send assets for approval one by one instead of in one message.
 - Upload raw or `extras/` audio.
