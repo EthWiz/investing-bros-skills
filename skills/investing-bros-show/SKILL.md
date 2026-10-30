@@ -189,6 +189,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 4 | Exactly 3 shorts (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
 | 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
+| 5b | Going Public in order with a live check per item; ticked checklist | `investing-bros-publish` | Amitai (publish) |
 | 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability; `investing-bros-remotion` is the shared animation capability.

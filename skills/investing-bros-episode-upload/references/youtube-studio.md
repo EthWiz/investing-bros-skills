@@ -50,8 +50,12 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
 - While HD processes the row shows **Pending**/processing and the watch page may be
   SD only; that's normal, wait before reporting quality.
 - Make Public only after Amitai's explicit OK.
-- **Shorts → Related video:** the picker currently answers "No matching results" for
-  every search. Retry later; don't block the upload on it, and report it.
+- **Shorts → Related video (hard rule):** set it to the full episode, Save, then reopen
+  the edit page and confirm the field shows the episode. A link in the description does
+  NOT count. The picker has answered "No matching results" (episode 9): retry with the
+  title, then the URL, then after reloading Studio. The Private upload may continue, but
+  if the field still can't be set the Short stays Private and you report the failure.
+  Never publish a Short with only a description link (`investing-bros-publish`).
 - Save as **Private**, then confirm the Studio row says Private and HD processing
   finishes.
 - Open the private watch page as the Editor and check title, description direction,

@@ -144,7 +144,7 @@ Episode 7 (video producer), on top of that look:
 - **Default since episode 1 (approved v5): `"endcard_style": "cover"` with one `{"before_endcard": 4.0}` callout**, as above. The end card says the link is **in the description** (`הקישור לפרק המלא בתיאור`) — that is where it is on a Short. The older text card (`["בפרק המלא: …", "[אחים להשקעות · פרק N]", …]`, no arrow glyph) stays available with `endcard_style: "text"`; never a generic "לפרק המלא" (the renderers warn).
 - **Uploading a Short to YouTube:** prefer the YouTube Data API (`investing-bros-episode-upload` → scripts/yt_upload.py, references/youtube-api.md) when the box has `~/.config/youtube-uploader/` credentials: it uploads Private with the title, description, tags and the `-cover.jpg` as thumbnail, without tying up the browser. Studio in the browser is the fallback. Related video, `.srt` and pinned comment are still set in Studio, and going Public needs Amitai's OK.
 - **Upload an episode's Shorts only after the full episode is live on YouTube**, so each description carries the real episode link at the Short's moment (`?t=<start seconds>`) and the episode's Spotify link, copied from the full episode's YouTube description (missing there → ask Nadav). Audience: **No, it's not made for kids**.
-- Set the **Related video** in YouTube Studio to the full episode on every Short.
+- Set the **Related video** in YouTube Studio to the full episode on every Short. **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`.
 - **No custom cover set → the Short stays Private.** Nothing goes Public without Nadav's approval (and Amitai's OK).
 - Hand back a `youtube-שורט-NN.md` next to each short with: the **Related video** to set in YouTube Studio (the full episode — that is the tappable link on the Short), title, description with the episode link at the short's timestamp (`&t=<seconds>`), the pinned-comment text, and the `.srt` to upload. Worked example: [references/youtube-short-example.md](references/youtube-short-example.md).
 
@@ -197,7 +197,7 @@ Kept as on main for rebuilding older exports; the approved format above replaces
   2. `אין כאן המלצת השקעה. רק שיחה.`;
   3. blank line, `🎧 לפרק המלא ביוטיוב: <episode link>?t=<seconds>` and `האזינו בספוטיפיי: <Spotify episode link>`;
   4. blank line, a subscribe line, then hashtags (Hebrew and English allowed here).
-- **Publish** (only after Amitai's explicit OK, and Nadav's approval of the cut unless Amitai waives it): after the full episode is live, upload the phone-friendly MP4, set the custom cover, Related video and `.srt`; once the Short is Public, post and pin the full-episode comment from `youtube-שורט-NN.md`, then update that file with the status and Shorts URL.
+- **Publish** (only after Amitai's explicit OK, and Nadav's approval of the cut unless Amitai waives it): after the full episode is live, upload the phone-friendly MP4, set the custom cover, Related video (verified by reopening the edit page; if it can't be set, the Short stays Private) and `.srt`; once the Short is Public, post and pin the full-episode comment from `youtube-שורט-NN.md`, then update that file with the status and Shorts URL.
 
 ## Mid-form highlights
 Optional 5–10 min YouTube videos, each **one continuous standalone stretch** of the episode on one engaging subject (episode 7: "למה זהב?" 11:57–19:11, about 7 min). Not a montage. Elsewhere these are called highlights or clips.
@@ -211,7 +211,7 @@ Optional 5–10 min YouTube videos, each **one continuous standalone stretch** o
   Codex-made `-cover.jpg` from three labeled options, `.srt` and
   `youtube-שורט-NN.md`.
 - All three were selected through the picks flow, rendered and passed `check_short.py`, sent to Telegram with their covers and approved.
-- All three were uploaded only after the full episode went live. Each has its custom cover, `.srt`, full-episode timestamp link and Spotify episode link in the description, Related video set to the full episode, its full-episode comment pinned once Public, and its URL/status recorded in `youtube-שורט-NN.md`.
+- All three were uploaded only after the full episode went live. Each has its custom cover, `.srt`, full-episode timestamp link and Spotify episode link in the description, Related video set to the full episode and verified by reopening the edit page (not just a description link), its full-episode comment pinned once Public, and its URL/status recorded in `youtube-שורט-NN.md`.
 - `mid-form/` has each highlight that was asked for, with its `.txt`.
 
 ## Hand back
@@ -219,6 +219,7 @@ Send Amitai the `Shorts/` folder link and, for shorts 01–03: where each is in 
 
 ## Never
 - Make a Short Public without its custom cover set, or without Nadav's approval.
+- Make a Short Public whose Related video isn't the full episode, verified by reopening its edit page. A link in the description does not count.
 - Post anywhere public unless Amitai asks in chat for that post (the Telegram approval send in step 6 is the exception), and only to a destination listed in `investing-bros-show`.
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.

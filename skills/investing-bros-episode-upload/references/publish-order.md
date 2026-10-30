@@ -1,6 +1,6 @@
 # Publish order
 
-The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Every episode reaches this phase with exactly two completed segment videos (01 is the deep dive) and exactly three completed Shorts.
+The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Run it with `investing-bros-publish`: each item is verified live before the next step, and nothing goes Public while an earlier item is unticked. Every episode reaches this phase with exactly two completed segment videos (01 is the deep dive) and exactly three completed Shorts.
 
 1. **RedCircle first** - publish the episode (after Amitai's OK). Same title as YouTube
    (`check_titles_match.py` must pass).
@@ -14,3 +14,4 @@ The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Every episo
    full episode's description. See `investing-bros-segment-video`.
 5. **Then the Shorts** - uploaded only once the full episode is live, with its YouTube link (`?t=`)
    and the Spotify link from its YouTube description (ask Nadav if missing). See `investing-bros-shorts`.
+   **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`.

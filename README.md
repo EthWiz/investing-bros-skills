@@ -22,6 +22,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
 | 4b | Exactly 2 standalone search-first segment videos: 01 is the deep-dive sub-question; 02 is the next-best deep-dive sub-question or strongest other self-contained topic | `investing-bros-segment-video` | `segments/` | Amitai |
 | 5 | Review ping, RedCircle draft, YouTube review uploads, then publish in order, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
+| 5b | Publish in order (RedCircle → episode → segments → Shorts), each item verified live before the next, Shorts' Related video verified, ticked checklist to Amitai | `investing-bros-publish` | `extras/publish-checklist.json` | **Amitai (anything public)** |
 | 6 | After publish, weekly (Sunday): read-only Studio/RedCircle stats, report Page, Telegram summary, history CSV | `investing-bros-analytics` | `investing-bros-youtube-weekly.csv` in Drive (analytics folder TBD) | — (weekly post pre-approved) |
 
 - Starting step 1 commits every episode to the main flow plus exactly 2 complete segment videos and exactly 3 complete shorts. The post-production checklist remains open until all three tracks finish their owning skills.
