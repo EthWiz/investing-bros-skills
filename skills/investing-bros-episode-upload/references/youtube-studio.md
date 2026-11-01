@@ -5,12 +5,8 @@ The preferred upload path is the YouTube Data API ([youtube-api.md](youtube-api.
 Use the browser profile for the Editor account named in `investing-bros-show`.
 
 ## Before selecting a file
-1. The upload account `investingbros.grokbot@gmail.com` is a **manager** of the
-   channel, not its owner. `studio.youtube.com/?authuser=1` opens its own empty
-   **Grok Bot** channel by default.
-2. Avatar (top right) → **Switch account** → **אחים להשקעות**. Verify the URL shows
-   `/channel/UCWIlggXQNDFiyJghl6VB6Xw` and the channel name before any upload or
-   edit. Re-check after every reload or new tab.
+1. **Active channel first (non-waivable; before any Studio action: upload, edit, comment, Related video).** `investingbros.grokbot@gmail.com` also owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`), and it is the default. Studio acts as whichever channel is active. The Related video picker lists only the active channel's videos (that is why it came up empty in episode 9), and comments post as the active channel (that is why episode 9's comments came from Grok Bot). Opening `studio.youtube.com/video/<id>/edit` directly still loads as Grok Bot, even with `authuser=1`, so never work from direct edit links. Open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` (Shorts: `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`), confirm in the avatar menu that **אחים להשקעות** is the active channel, and click into each video from that list. Check the active channel again on every edit page before changing anything. The Grok Bot channel is being deleted; keep this check anyway.
+2. If the avatar menu shows Grok Bot: Avatar (top right) → **Switch account** → **אחים להשקעות**, then reopen the list URL. Re-check after every reload, new tab or edit page.
 3. **Feature eligibility** (Settings → Channel → Feature eligibility): all three tiers
    must be **Enabled**. Intermediate features (owner phone verification, done by
    Nadav/Amitai, not the manager) unlock videos over 15 minutes, custom thumbnails
@@ -56,7 +52,7 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
   title, then the URL, then after reloading Studio. The Private upload may continue, but
   if the field still can't be set the Short stays Private and you report the failure.
   Never publish a Short with only a description link (`investing-bros-publish`).
-  **Known failure mode:** the `investingbros.grokbot` account (Studio Manager) sees an EMPTY Related video picker ("No matching results" for the episode URL, ID and title alike). When that happens, keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Send them the direct edit link for each Short, `https://studio.youtube.com/video/<SHORT_ID>/edit`, and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`). After they say it's done, reopen each edit page yourself and check that the field shows the episode before ticking it.
+  **Empty Related video picker: check the active channel first.** "No matching results" for the episode URL, ID and title is not a permissions problem. It means Studio is acting as Grok Bot. Go back to `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`, confirm אחים להשקעות in the avatar menu, click into the Short and try again. Only if the picker is still empty with אחים להשקעות active: keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Name the Short (title + ID) and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`), with the path Studio → אחים להשקעות → Content → Shorts → the Short. Then reopen it yourself (from the list, with אחים להשקעות active) and check the field before ticking.
 - Save as **Private**, then confirm the Studio row says Private and HD processing
   finishes.
 - Open the private watch page as the Editor and check title, description direction,
@@ -73,9 +69,9 @@ watch page. Verify again on the watch page after publication. The video build ho
 the outro's last frame when its source clip is shorter than 20 seconds.
 
 ## Segment videos: cards, end screen, pinned comment
-On the אחים להשקעות channel (Switch account first), Content → the segment video → **Editor** (left menu).
+On the אחים להשקעות channel (open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` and confirm the active channel in the avatar menu first; never a direct edit link), Content → the segment video → **Editor** (left menu).
 - **Card:** Editor → **Cards** (ⓘ) → **Video** → pick the full episode (search its title, or *Choose a specific video* → paste the URL) → set **Custom message** `לפרק המלא` and **Teaser text** `צפו בפרק המלא` → drag the card on the timeline to ~0:30 (or to the natural "in the episode" mention). **Save**.
   **Limit:** one card per target video. A second card to the same video fails with "Multiple cards cannot reference the same video"; the end screen covers the second link.
 - **End screen:** Editor → **End screen** → **+ Element** → **Video** → *Choose specific video* → the full episode; **+ Element** → **Subscribe**. On the timeline, make both run over the last 20 s (end screens can be 5–20 s and need a video ≥25 s). Arrange so they don't cover faces. **Save**.
-- **Pinned comment** (after Public only): open the watch page as the channel (avatar = אחים להשקעות), comment `לפרק המלא: <full-episode URL>` → ⋮ on the comment → **Pin** → confirm. Or Studio → Comments → the video → ⋮ → Pin.
+- **Pinned comment** (after Public only): Post comments only while **אחים להשקעות** is the active channel (check the avatar first). A comment posted as Grok Bot can't be pinned. Open the watch page as the channel (avatar = אחים להשקעות), comment `לפרק המלא: <full-episode URL>` → ⋮ on the comment → **Pin** → confirm. Or Studio → Comments → the video → ⋮ → Pin.
 - Check: watch page shows the ⓘ teaser at the card time and the end screen in the last 20 s.

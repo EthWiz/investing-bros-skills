@@ -23,7 +23,8 @@ Rules enforced:
   * A group's `public` item can be ticked only when every item of every earlier group
     and every pre item of its own group is ticked (or waived where waivable).
   * live and post items can be ticked only after their group's `public` item.
-  * public, live and every Short's `related` item can never be waived. A Short whose
+  * channel (the first check of every YouTube video: אחים להשקעות is the active Studio
+    channel), public, live and every Short's `related` item can never be waived. A Short whose
     Related video could not be set is `fail`ed and stays Private.
 Exit 1 when a command is refused.
 """
@@ -47,7 +48,7 @@ CHECKS = {
         ("live", "live", "Public episode page shows the title with `?`; `check_live.py redcircle --episode N` passes"),
     ],
     "episode": [
-        ("channel", "pre", "Studio header shows אחים להשקעות (channel UCWIlggXQNDFiyJghl6VB6Xw), not Grok Bot"),
+        ("channel", "pre", "Opened from the אחים להשקעות video list (studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos), avatar menu shows אחים להשקעות active (not Grok Bot); re-checked on every edit page"),
         ("meta", "pre", "Title = the plain YouTube title; description pasted plain with the `האזינו בספוטיפיי:` line; check_links.py passes"),
         ("thumb", "pre", "Approved thumbnail set (reopened Details shows it)"),
         ("endscreen", "pre", "End screen: previous episode(s) + Subscribe over the last 20 s, verified in the Editor preview after reopening"),
@@ -55,6 +56,7 @@ CHECKS = {
         ("live", "live", "`check_live.py youtube ID --expect public` passes; watch page shows chapters and right-aligned description"),
     ],
     "segment": [
+        ("channel", "pre", "Opened from the אחים להשקעות video list (studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos), avatar menu shows אחים להשקעות active (not Grok Bot); re-checked on every edit page"),
         ("meta", "pre", "Title and description (with `לפרק המלא: <full-episode URL>`) saved; check_links.py passes"),
         ("thumb", "pre", "Approved thumbnail set"),
         ("card", "pre", "One Video card to the full episode at ~0:30, message and teaser `לפרק המלא`, verified after reopening the Editor"),
@@ -64,6 +66,7 @@ CHECKS = {
         ("pin", "post", "Comment `לפרק המלא: <full-episode URL>` posted AS אחים להשקעות (not Grok Bot) and pinned"),
     ],
     "short": [
+        ("channel", "pre", "Opened from the אחים להשקעות video list (studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos), avatar menu shows אחים להשקעות active (not Grok Bot); re-checked on every edit page"),
         ("meta", "pre", "Title = cover title; description first line = cover title, episode `&t=` link and Spotify line; check_links.py passes"),
         ("related", "pre", "Related video = the full episode, verified by reopening the Short's edit page (a description link does NOT count)"),
         ("srt", "pre", "Hebrew `.srt` subtitles shown as published in Studio → Subtitles after reopening"),
@@ -74,7 +77,7 @@ CHECKS = {
         ("pin", "post", "Full-episode comment posted AS אחים להשקעות (not Grok Bot) and pinned"),
     ],
 }
-NEVER_WAIVE = {"public", "live"}
+NEVER_WAIVE = {"public", "live", "channel"}
 NEVER_WAIVE_SHORT = {"related"}
 TITLES = {"redcircle": "RedCircle", "episode": "Full episode", "seg01": "Segment 01",
           "seg02": "Segment 02", "short01": "Short 01", "short02": "Short 02", "short03": "Short 03"}

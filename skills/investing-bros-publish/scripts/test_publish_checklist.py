@@ -50,7 +50,7 @@ def test_short_never_public_without_related_video():
     s = state()
     for g in ("redcircle", "episode", "seg01", "seg02"):
         finish(s, g)
-    for k in ("meta", "srt", "cover", "approval"):
+    for k in ("channel", "meta", "srt", "cover", "approval"):
         pc.tick(s, f"short01.{k}", "seen")
     pc.fail(s, "short01.related", "No matching results; only the description link is there")
     with pytest.raises(PermissionError):
@@ -103,3 +103,16 @@ def test_cli_roundtrip(tmp_path, capsys):
     assert pc.main(["tick", str(f), "redcircle.audio", "--evidence", "ok"]) == 0
     assert pc.main(["status", str(f)]) == 0
     assert "redcircle.copy" in capsys.readouterr().out
+
+
+def test_channel_check_first_and_never_waived():
+    s = state()
+    for g in ("episode", "seg01", "seg02", "short01", "short02", "short03"):
+        first = next(x for x in s["items"] if x["group"] == g)
+        assert first["id"] == f"{g}.channel"
+        with pytest.raises(PermissionError):
+            pc.waive(s, f"{g}.channel", "Amitai: skip it")
+    finish(s, "redcircle")
+    for k in ("meta", "thumb", "endscreen"):
+        pc.tick(s, f"episode.{k}", "seen")
+    assert pc.blockers(s, "episode.public") == ["episode.channel"]

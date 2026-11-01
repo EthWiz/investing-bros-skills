@@ -82,9 +82,7 @@ description, notes file or message run
 domain (`youtube.com.evil.io`, `y0utube.com`) fails. Links to hosts outside the
 show's usual list (sponsors) are flagged for you to open, not failed.
 
-Follow [the Studio checklist](references/youtube-studio.md). In particular, switch
-from the Editor account's personal **Grok Bot** channel to the **אחים להשקעות**
-brand channel before selecting files. Upload the full episode as **Private** and
+Follow [the Studio checklist](references/youtube-studio.md). Its first check can't be waived: before any Studio action (upload, edit, comment, Related video), open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos`, confirm in the avatar menu that **אחים להשקעות** (not the account's personal **Grok Bot** channel, `UCj9n6mOn7uWpN8G51nPggfA`) is active, and click into videos from that list. Direct `studio.youtube.com/video/<id>/edit` links load as Grok Bot even with `authuser=1`. Check the avatar again on every edit page, and post comments only with אחים להשקעות active. Upload the full episode as **Private** and
 the two segment evaluations as **Unlisted**; choose **No, it's not made for kids**.
 The API uploader creates Private uploads, so switch both segment videos to Unlisted
 in Studio before card/end-screen review. Do not upload the three Shorts until the
@@ -162,6 +160,7 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Publish, set anything Public, submit to directories or post on WhatsApp/Telegram without Amitai's explicit OK in chat.
 - Echo or paste the password.
 - Type a video ID or URL by hand, or post a link `check_links.py` hasn't passed.
+- Act in Studio (upload, edit, comment, Related video) without confirming אחים להשקעות is the active channel.
 - Make a Short Public whose Related video isn't the full episode (verified by reopening its edit page), or treat a description link as the Related video.
 - Reload or leave the Studio tab during an upload, or delete an old upload without the operator's OK.
 - Send assets for approval one by one instead of in one message.

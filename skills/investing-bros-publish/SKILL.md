@@ -31,7 +31,8 @@ Facts used below:
 | What | Value |
 |---|---|
 | Brand channel | אחים להשקעות, `UCWIlggXQNDFiyJghl6VB6Xw` |
-| Studio (brand channel) | `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw?authuser=1` |
+| Studio (brand channel), the only way in | `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` (Shorts: `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`) |
+| Grok Bot personal channel (wrong; being deleted) | `UCj9n6mOn7uWpN8G51nPggfA` |
 | Channel RSS | `https://www.youtube.com/feeds/videos.xml?channel_id=UCWIlggXQNDFiyJghl6VB6Xw` |
 | RedCircle app / feed | `https://app.redcircle.com/shows` / `https://feeds.redcircle.com/c798e000-7934-4f82-a0e3-59b78f0894c6` |
 | Spotify show | `https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk` |
@@ -58,6 +59,8 @@ python3 scripts/publish_checklist.py render $S                 # the report for 
 ## Steps
 Click-paths for every Studio check: [references/studio-checks.md](references/studio-checks.md).
 
+**Active channel first (non-waivable; before any Studio action: upload, edit, comment, Related video).** `investingbros.grokbot@gmail.com` also owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`), and it is the default. Studio acts as whichever channel is active. The Related video picker lists only the active channel's videos (that is why it came up empty in episode 9), and comments post as the active channel (that is why episode 9's comments came from Grok Bot). Opening `studio.youtube.com/video/<id>/edit` directly still loads as Grok Bot, even with `authuser=1`, so never work from direct edit links. Open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` (Shorts: `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`), confirm in the avatar menu that **אחים להשקעות** is the active channel, and click into each video from that list. Check the active channel again on every edit page before changing anything. The Grok Bot channel is being deleted; keep this check anyway. In the checklist this is the first item of every YouTube video (`episode.channel`, `segNN.channel`, `shortNN.channel`), and it can't be waived.
+
 ### 1. Before anything goes Public
 - Make sure Amitai's OK is quoted and names what may go Public.
 - `init` the state file. Run `python3 scripts/check_links.py` on every description and pinned-comment file. Each YouTube link must resolve; the full episode may still be Private (401/403 counts as existing).
@@ -67,24 +70,25 @@ Click-paths for every Studio check: [references/studio-checks.md](references/stu
 In the draft: the edited audio, Episode Number N, Season 1, type Full, and the title and description pasted from the `-rtl.txt` files through the clipboard (typing drops the RTL marks). Take a screenshot to check that `?` ends the title. Run `python3 scripts/check_titles_match.py title.txt title-rtl.txt`. Tick `redcircle.audio`, `.copy` and `.titles`, publish, tick `redcircle.public`. Then open the public episode page, run `check_live.py redcircle --episode N --title title.txt` and tick `redcircle.live`. The feed can lag a few minutes; retry, don't skip.
 
 ### 3. Full episode
-In Studio on the brand channel, check the header and URL first. Reopen and check the title, the plain description with the `האזינו בספוטיפיי:` line, the thumbnail, and the end screen (previous episode(s) + Subscribe over the last 20 s, Editor preview). Tick each check, then `can-public episode`, then Public. Then `check_live.py youtube EP_ID --expect public` and tick `episode.live`.
+Open the episode from the brand channel's video list, with אחים להשקעות active (`episode.channel`). Reopen and check the title, the plain description with the `האזינו בספוטיפיי:` line, the thumbnail, and the end screen (previous episode(s) + Subscribe over the last 20 s, Editor preview). Tick each check, then `can-public episode`, then Public. Then `check_live.py youtube EP_ID --expect public` and tick `episode.live`.
 
 ### 4. Segments 01 and 02, in that order
-For each: the description with `לפרק המלא: <full-episode URL>`, the thumbnail, exactly one Video card to the full episode at ~0:30 (message and teaser `לפרק המלא`), and an end screen with the full episode + Subscribe over the last 20 s. Verify each by reopening the Editor. Then `can-public segNN`, then Public, then `check_live.py`. Pinned comment: see step 6.
+For each, open it from the video list with אחים להשקעות active (`segNN.channel`), then check: the description with `לפרק המלא: <full-episode URL>`, the thumbnail, exactly one Video card to the full episode at ~0:30 (message and teaser `לפרק המלא`), and an end screen with the full episode + Subscribe over the last 20 s. Verify each by reopening the Editor. Then `can-public segNN`, then Public, then `check_live.py`. Pinned comment: see step 6.
 
 ### 5. Shorts 01–03, in that order
 For each Short:
+0. Open it from the Shorts list with אחים להשקעות active (`shortNN.channel`), and check the avatar again on every edit page.
 1. Title = the approved cover title. The description's first line is the same title, then the episode link at the Short's moment (`&t=<s>`) and the Spotify line. Run `check_links.py`.
 2. **Related video (hard rule).** Studio → the Short → Details → **Related video** → pick the full episode. **Save**, close the edit page, open it again, and check that the field shows the full episode's title and thumbnail. Only then tick `shortNN.related`, with that as evidence.
    - **A link in the description does NOT count**, and neither does a pinned comment or a link in the title. The Related video field is the tappable link on the Short.
-   - **Known failure mode:** the `investingbros.grokbot` account (Studio Manager) sees an EMPTY Related video picker ("No matching results" for the episode URL, ID and title alike). When that happens, keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Send them the direct edit link for each Short, `https://studio.youtube.com/video/<SHORT_ID>/edit`, and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`). After they say it's done, reopen each edit page yourself and check that the field shows the episode before ticking it.
+   - **Empty Related video picker: check the active channel first.** "No matching results" for the episode URL, ID and title is not a permissions problem. It means Studio is acting as Grok Bot. Go back to `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`, confirm אחים להשקעות in the avatar menu, click into the Short and try again. Only if the picker is still empty with אחים להשקעות active: keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Name the Short (title + ID) and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`), with the path Studio → אחים להשקעות → Content → Shorts → the Short. Then reopen it yourself (from the list, with אחים להשקעות active) and check the field before ticking.
    - If the picker answers "No matching results" or won't save in any other case: retry with the episode title, then the full URL, then wait a few minutes and reload Studio (the episode must be Public and indexed). If it still fails, `fail shortNN.related --reason ...`. **The Short stays Private**, and you report the failure to Amitai. Never publish a Short with only a description link, and never waive this check.
 3. Hebrew `.srt`: upload it in Studio → Subtitles, reopen, and check that the language row shows it published. An upload toast that says "failed" means it didn't work, even when the lines appear in the editor.
 4. Custom cover, and Nadav's approval of the cut (or Amitai's waiver in his words).
 5. `can-public shortNN`, Public, `check_live.py`, tick `shortNN.live`.
 
 ### 6. Pinned comments (after Public)
-Post `לפרק המלא: <full-episode URL>` (segments) or the Short's comment text **as the אחים להשקעות channel** and pin it. If Studio or the watch page shows you as Grok Bot (`@GrokBot-c2b`), stop: such a comment can't be pinned. Don't post it. Mark `pin` failed and ask Amitai or Nadav to post and pin from the brand account (give them the exact text). Delete a mistaken comment only with Amitai's OK.
+Post comments only while **אחים להשקעות** is the active channel (check the avatar first). A comment posted as Grok Bot can't be pinned. Post `לפרק המלא: <full-episode URL>` (segments) or the Short's comment text and pin it. If the avatar shows Grok Bot (`@GrokBot-c2b`), don't post: switch to אחים להשקעות through the avatar menu first. If you can't post as אחים להשקעות, mark `pin` failed and ask Amitai or Nadav to post and pin it from the brand account (give them the exact text). Delete a mistaken comment only with Amitai's OK.
 
 ### 7. After Spotify lists the episode (a few hours later)
 Swap the show link for the Spotify episode link (`https://open.spotify.com/episode/<id>`, no `?si=`) on the `האזינו בספוטיפיי:` line of the episode, both segments and all three Shorts. Run `check_links.py` and report it. This edit is part of the approved publish.
@@ -104,6 +108,7 @@ Send Amitai the output of `publish_checklist.py render`: the ticked checklist, g
 - Tick a check from a toast, memory or another agent's word instead of a reopened page.
 - Skip ahead because an earlier item failed. Report it and wait.
 - Type a video ID or URL by hand, or post a link `check_links.py` hasn't passed.
+- Take any Studio action (upload, edit, comment, Related video) without first confirming אחים להשקעות is the active channel, or work from a direct `studio.youtube.com/video/<id>/edit` link.
 - Post or pin a comment from the Grok Bot personal channel.
 - Echo a password, cookie or token, or put one in the state file or the report.
 - Delete a video or comment, or change RedCircle show settings, without Amitai's OK.
