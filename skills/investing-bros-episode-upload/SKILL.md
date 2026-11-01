@@ -94,14 +94,14 @@ full episode is live.
 - **Exactly three Shorts** (`Shorts/`): only after the full episode is live. Before
   upload, compare each `youtube-שורט-NN.md` with its approved cover: the YouTube title
   and description's first line must both equal the cover title exactly. Upload the
-  `.m4v` video with that metadata, Related video, pinned comment and `.srt`. **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`. Do not add
+  `.m4v` video with that metadata, Related video and `.srt` (no pinned comment). **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`. Do not add
   a disclosure, holdings statement, number or claim unless the hosts stated it in the
   episode; preserve the meaning of anything they did state.
 - **Exactly two segment videos** (`segments/`; segment 01 is the required deep dive): follow `investing-bros-segment-video`.
 - **Mid-form** (`mid-form/`): title and description from its `.txt`, with the full-episode link.
 - **Full episode re-uploaded** (a fixed master, a replacement): in the same step,
-  update every segment video's and Short's description, card, end screen and pinned
-  comment, plus `video/תיאור-פרק-N-youtube.txt`, the segment files and each
+  update every segment video's description, card and end screen and every Short's
+  description and Related video, plus `video/תיאור-פרק-N-youtube.txt`, the segment files and each
   `youtube-שורט-NN.md`, to the new URL, and run `check_links.py` on all of them. Retire
   the old upload (Private); delete it only with the operator's OK.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
@@ -122,7 +122,7 @@ full list.
 ### 4. Publish (only after Amitai's OK in chat)
 Run the publish itself with `investing-bros-publish`: its checklist enforces the order below, a live check before each next step, the Shorts' Related video rule, and the ticked report for Amitai.
 
-Order ([references/publish-order.md](references/publish-order.md)): RedCircle publish (it feeds Spotify) → rerun `check_titles_match.py` on the live YouTube and RedCircle titles → Spotify ingests it (a few hours) → the YouTube description's `האזינו בספוטיפיי:` line (after the disclaimer, before the chapters; `check_copy.py --youtube`) gets the Spotify episode link, replacing the show link, on the episode and its shorts. Publishing always includes RedCircle. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Then the segment videos go Public, then shorts. Segment videos link back through their own description, card, end screen and pinned comment; do not add segment links to the full episode's description. Switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
+Order ([references/publish-order.md](references/publish-order.md)): RedCircle publish (it feeds Spotify) → rerun `check_titles_match.py` on the live YouTube and RedCircle titles → Spotify ingests it (a few hours) → the YouTube description's `האזינו בספוטיפיי:` line (after the disclaimer, before the chapters; `check_copy.py --youtube`) gets the Spotify episode link, replacing the show link, on the episode and its shorts. Publishing always includes RedCircle. If Amitai is fine waiting, suggest publishing RedCircle first so the episode link exists before YouTube goes Public. Then the segment videos go Public, then shorts. Segment videos link back through their own description, card and end screen (no pinned comment); do not add segment links to the full episode's description. Switch the YouTube uploads he named to Public (or schedule them as he says). Nothing goes live on its own. After the YouTube uploads go public, a daily morning analytics report runs for one week.
 
 ### 5. Check how it renders
 - **YouTube**: open the public watch page. Every description line right-aligned with its timestamp on the right, times in order, chapters on the progress bar. A wrong line almost always starts with English; reword it to start with Hebrew.

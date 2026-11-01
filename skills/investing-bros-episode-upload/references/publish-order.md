@@ -10,7 +10,7 @@ The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Run it with
    episode description after the disclaimer, before chapters. Use the show link if Spotify
    hasn't listed it yet and swap it later; `check_copy.py --youtube` warns if the line is missing.
 4. **Segment videos** (deep dive every episode) - Public after the full episode (with Amitai's OK); each segment links
-   back to the episode through its description, card, end screen and pinned comment. Do not add segment links to the
+   back to the episode through its description, card and end screen (no pinned comment). Do not add segment links to the
    full episode's description. See `investing-bros-segment-video`.
 5. **Then the Shorts** - uploaded only once the full episode is live, with its YouTube link (`?t=`)
    and the Spotify link from its YouTube description (ask Nadav if missing). See `investing-bros-shorts`.

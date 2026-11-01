@@ -19,9 +19,5 @@ https://www.youtube.com/watch?v=JmLxu_lV0oo&t=1477s
 
 אין כאן המלצת השקעה. רק שיחה.
 
-## Pinned comment
-המשך השיחה (מ-24:37) בפרק המלא 👇
-https://www.youtube.com/watch?v=JmLxu_lV0oo&t=1477s
-
 ## Captions
 Upload שורט-02-500-דולר-קישור.srt as Hebrew subtitles (the captions are also burned in).

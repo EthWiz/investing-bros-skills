@@ -116,3 +116,9 @@ def test_channel_check_first_and_never_waived():
     for k in ("meta", "thumb", "endscreen"):
         pc.tick(s, f"episode.{k}", "seen")
     assert pc.blockers(s, "episode.public") == ["episode.channel"]
+
+
+def test_no_pinned_comment_items():
+    # Amitai, 2026-11-01: no pinned comments on segments or Shorts.
+    s = state()
+    assert not [x for x in s["items"] if x["id"].endswith(".pin") or x["phase"] == "post"]

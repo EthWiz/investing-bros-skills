@@ -22,7 +22,7 @@ It prints `VIDEO_ID` and `URL`. Copy the script from the repo; the credentials s
 - **Private only.** The app is unaudited, so every API upload is locked Private. That fits the rule anyway: switching to Public/scheduled is done in Studio **only after Amitai's OK**.
 - **Quota:** 10,000 units/day; an upload costs 1,600, so about 6 uploads a day (thumbnails/playlist calls cost a little more). Free, no billing account.
 - **Reauth every ~7 days** while the OAuth app is in Testing. When refresh fails, the script says so: run `$PY $S/yt_auth.py` (loopback on `localhost:8765`), open the `AUTH_URL` in the box browser, and hand the screen to Amitai to pick the **Investing Bros brand channel** and click Allow. `TOKEN_SAVED` means done.
-- Still in Studio: Related video on Shorts, `.srt` captions, pinned comment, visibility change, chapters check.
+- Still in Studio: Related video on Shorts, `.srt` captions, visibility change, chapters check.
   The API can't set a Short's Related video. Set it in Studio and verify it by reopening the edit page; a Short
   without it stays Private, and a description link does not count (`investing-bros-publish`).
 

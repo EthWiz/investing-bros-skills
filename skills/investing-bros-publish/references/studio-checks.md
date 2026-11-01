@@ -31,7 +31,7 @@ verification.
   the full episode's title (or paste its URL) → pick it → Save. Close the edit page, open it again,
   and check that the Related video box shows the full episode's title and thumbnail. Evidence for the tick:
   "reopened <time>: Related video = <episode title> (<id>)".
-  - A link in the description, title or pinned comment is not the Related video and never counts.
+  - A link in the description, title or a comment is not the Related video and never counts.
   - **Empty Related video picker: check the active channel first.** "No matching results" for the episode URL, ID and title is not a permissions problem. It means Studio is acting as Grok Bot. Go back to `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`, confirm אחים להשקעות in the avatar menu, click into the Short and try again. Only if the picker is still empty with אחים להשקעות active: keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Name the Short (title + ID) and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`), with the path Studio → אחים להשקעות → Content → Shorts → the Short. Then reopen it yourself (from the list, with אחים להשקעות active) and check the field before ticking.
     Fill the checklist in with `fail shortNN.related --reason "picker empty with אחים להשקעות active; asked <who> <time>"`, then
     tick it after your own reopen check.
@@ -43,7 +43,5 @@ verification.
 - **cover**: desktop Studio may not offer a cover for a Short. Then the cover is set in the YouTube phone
   app by Amitai or Nadav, or Amitai waives it in his own words.
 
-## Pinned comments
-Post comments only while **אחים להשקעות** is the active channel (check the avatar first). A comment posted as Grok Bot can't be pinned. On the watch page, the comment box avatar must be אחים להשקעות. A comment from Grok Bot
-(`@GrokBot-c2b`) can't be pinned and has to be redone by the brand owner. Post, then ⋮ → Pin → confirm,
-then reload the page and check it shows as "Pinned by אחים להשקעות".
+## Comments
+No pinned comments on segments or Shorts (Amitai, 2026-11-01): there is no comment check. Any comment is posted only while **אחים להשקעות** is the active channel (a comment from Grok Bot, `@GrokBot-c2b`, appears under the wrong channel).
