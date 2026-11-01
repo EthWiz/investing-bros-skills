@@ -3,6 +3,8 @@
 ## Related video (the clickable link)
 In YouTube Studio → the Short → Details → **Related video**: choose the full episode
 (https://www.youtube.com/watch?v=JmLxu_lV0oo). This puts a tappable link to the episode on the Short itself.
+Save, reopen the edit page and confirm the field shows the episode. The description link below does NOT
+replace it: if the field can't be set, the Short stays Private and the failure is reported.
 
 ## Title
 500 דולר בכיס

@@ -146,7 +146,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
 | Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Connector uploads cap at 100 MB, while large uploads in the box browser can stall. For finished videos, use the verified chunked handoff to the Mac in [references/environment.md](references/environment.md#delivering-files); connectors remain fine for Docs, folders and moves. |
-| YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns an empty personal channel named **Grok Bot**: switch to the **אחים להשקעות** brand channel before every Studio upload. For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
+| YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`, its default; being deleted). Before any Studio action, open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` and confirm **אחים להשקעות** is active in the avatar menu (direct edit links load as Grok Bot). For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
 | Show cover art | `Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Brand Resources/Investing-bros-logo.png` |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
 
@@ -189,6 +189,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 4 | Exactly 3 shorts (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
 | 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
+| 5b | Going Public in order with a live check per item; ticked checklist | `investing-bros-publish` | Amitai (publish) |
 | 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability; `investing-bros-remotion` is the shared animation capability.
