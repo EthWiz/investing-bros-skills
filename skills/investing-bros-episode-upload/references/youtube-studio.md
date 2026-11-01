@@ -68,10 +68,10 @@ Editor preview while the upload is Private; end screens do not appear on a Priva
 watch page. Verify again on the watch page after publication. The video build holds
 the outro's last frame when its source clip is shorter than 20 seconds.
 
-## Segment videos: cards, end screen, pinned comment
+## Segment videos: cards, end screen
 On the אחים להשקעות channel (open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` and confirm the active channel in the avatar menu first; never a direct edit link), Content → the segment video → **Editor** (left menu).
 - **Card:** Editor → **Cards** (ⓘ) → **Video** → pick the full episode (search its title, or *Choose a specific video* → paste the URL) → set **Custom message** `לפרק המלא` and **Teaser text** `צפו בפרק המלא` → drag the card on the timeline to ~0:30 (or to the natural "in the episode" mention). **Save**.
   **Limit:** one card per target video. A second card to the same video fails with "Multiple cards cannot reference the same video"; the end screen covers the second link.
 - **End screen:** Editor → **End screen** → **+ Element** → **Video** → *Choose specific video* → the full episode; **+ Element** → **Subscribe**. On the timeline, make both run over the last 20 s (end screens can be 5–20 s and need a video ≥25 s). Arrange so they don't cover faces. **Save**.
-- **Pinned comment** (after Public only): Post comments only while **אחים להשקעות** is the active channel (check the avatar first). A comment posted as Grok Bot can't be pinned. Open the watch page as the channel (avatar = אחים להשקעות), comment `לפרק המלא: <full-episode URL>` → ⋮ on the comment → **Pin** → confirm. Or Studio → Comments → the video → ⋮ → Pin.
+- **No pinned comment** (Amitai, 2026-11-01): the description, card and end screen carry the full-episode link.
 - Check: watch page shows the ⓘ teaser at the card time and the end screen in the last 20 s.

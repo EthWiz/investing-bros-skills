@@ -18,11 +18,10 @@ short03. Each group's checks have a phase:
   pre    - verified in Studio (or RedCircle) while still Private / Unpublished
   public - the switch to Public itself
   live   - verified from outside after the switch (check_live.py)
-  post   - after Public (pinned comment)
 Rules enforced:
   * A group's `public` item can be ticked only when every item of every earlier group
     and every pre item of its own group is ticked (or waived where waivable).
-  * live and post items can be ticked only after their group's `public` item.
+  * live items can be ticked only after their group's `public` item.
   * channel (the first check of every YouTube video: אחים להשקעות is the active Studio
     channel), public, live and every Short's `related` item can never be waived. A Short whose
     Related video could not be set is `fail`ed and stays Private.
@@ -63,7 +62,6 @@ CHECKS = {
         ("endscreen", "pre", "End screen: the full episode + Subscribe over the last 20 s, verified after reopening the Editor"),
         ("public", "public", "Segment switched to Public"),
         ("live", "live", "`check_live.py youtube ID --expect public` passes"),
-        ("pin", "post", "Comment `לפרק המלא: <full-episode URL>` posted AS אחים להשקעות (not Grok Bot) and pinned"),
     ],
     "short": [
         ("channel", "pre", "Opened from the אחים להשקעות video list (studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos), avatar menu shows אחים להשקעות active (not Grok Bot); re-checked on every edit page"),
@@ -74,7 +72,6 @@ CHECKS = {
         ("approval", "pre", "Nadav approved the cut (or Amitai waived it in chat)"),
         ("public", "public", "Short switched to Public"),
         ("live", "live", "`check_live.py youtube ID --expect public` passes"),
-        ("pin", "post", "Full-episode comment posted AS אחים להשקעות (not Grok Bot) and pinned"),
     ],
 }
 NEVER_WAIVE = {"public", "live", "channel"}
@@ -125,7 +122,7 @@ def blockers(state: dict, item_id: str) -> list[str]:
     if phase == "pre":
         return []
     pub = _find(state, f"{g}.public")
-    if phase in ("live", "post"):
+    if phase == "live":
         return [] if done(pub) else [pub["id"]]
     gi = ORDER.index(g)
     return [x["id"] for x in state["items"]
