@@ -164,7 +164,7 @@ Approved destinations — don't add new ones without Amitai's OK:
 | `achim` | `אחים להשקעות` | Prep docs, review-ready pings, draft links; live ping only when Amitai asks (review drafts/cold opens/intros go to Telegram instead) |
 | `raskin-empire` | `רסקין אימפריה` (also seen as `רסקין אמפריה`) | Family promo of the published episode |
 
-Prefer a **Doc or folder link** over pasting long text — long messages split badly in WhatsApp. Set Docs to anyone-with-link Viewer when the brothers need access.
+Prefer a **Doc or folder link** over pasting long text — long messages split badly in WhatsApp. Prep/ideas Docs are always set to General access "Anyone with the link: Viewer" before sharing (box browser; the Drive connector can't set it) and verified; if that fails, the message says the Doc is restricted. See `investing-bros-episode-preparation` step 5.
 
 ## Telegram
 | Id | Group | Chat ID | Sent by | Use |
