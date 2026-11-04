@@ -46,7 +46,9 @@ Structured brief: what it is → why now → key numbers (each sourced) → bull
 
 ### 5. Share
 Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחים להשקעות`:
-1. Set the Doc(s) to anyone-with-link Viewer.
+1. **Set every prep/ideas Doc to General access "Anyone with the link: Viewer" before sharing it** (Amitai, 2026-11-04; default for all prep Docs). The Google Drive connector cannot set anyone-with-link, so do it in the box browser on a Google account that owns or can edit the Doc: Share → General access → Anyone with the link → Viewer → Done. If Google asks to re-verify the password, hand off to the user (box help); never guess or reuse credentials.
+   - **Verify:** reopen Share and confirm General access reads "Anyone with the link" / Viewer (or open the link in a signed-out/incognito window and confirm it loads).
+   - **If it can't be done**, still share, but the message must say so: the Doc is restricted and only people with access can open it, and ask Amitai to set Share → General access → Anyone with the link: Viewer.
 2. Send the **Doc link(s)**, not a pasted brief.
 3. Give the exact caption text (ending with the show tag), the links and context; ask for yes/no confirmation.
 
@@ -54,6 +56,7 @@ Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחי
 - The schedule has this week's confirmed planned subject and one-line angle, with later subjects preserved in queue order.
 - `פרק N — נושא` exists under the show root (no duplicate N), with `brief/` holding every prep Doc; nothing else in the episode root.
 - Every factual claim has a source URL.
+- Every shared prep/ideas Doc is verified anyone-with-link Viewer, or the message explicitly says it isn't.
 - The WhatsApp owner has the exact group, caption and links, and the send is confirmed.
 
 ## Hand back
