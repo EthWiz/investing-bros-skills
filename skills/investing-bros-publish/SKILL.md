@@ -94,14 +94,18 @@ No pinned comments on segments or Shorts (Amitai, 2026-11-01). Don't post or pin
 ### 7. After Spotify lists the episode (a few hours later)
 Swap the show link for the Spotify episode link (`https://open.spotify.com/episode/<id>`, no `?si=`) on the `האזינו בספוטיפיי:` line of the episode, both segments and all three Shorts. Run `check_links.py` and report it. This edit is part of the approved publish.
 
+### 8. Ask Amitai to grade the assets (required, Amitai, 2026-11-05)
+Once everything is Public, remind Amitai to grade each segment and each Short 0–2 on (1) **topic quality**, (2) **engagement** (YouTube retention, views and comments so far), (3) **footage convexity/flow** (few dead moments or audio pauses, energetic speakers, good flow), using the segment rubric (`investing-bros-segment-video` → [references/segment-rubric.md](../investing-bros-segment-video/references/segment-rubric.md)). Record his grades next to the pre-cut rubric scores in `extras/asset-grades.json` (asset, video ID, the three grades, his note, date) so future picks learn from them. Don't invent grades; an asset he skips stays ungraded.
+
 ## Done when
 - The state file (`extras/publish-checklist.json` in the episode folder) has every item ticked or waived by Amitai, and `render` says "All checks done."
 - RedCircle, the full episode, both segments and all three Shorts are Public, in that order, each confirmed by `check_live.py`.
 - Every Short's Related video is the full episode, confirmed by reopening its edit page.
 - Every open or failed item has been reported to Amitai with its reason, and its video is still Private if the failure was before its `public` item.
+- Amitai has been asked to grade every segment and Short (step 8), and any grades he gave are recorded.
 
 ## Hand back
-Send Amitai the output of `publish_checklist.py render`: the ticked checklist, grouped RedCircle → episode → segments → Shorts, with each video's link and the evidence line for every check. Above it, put one line on what's still open or failed and who has to act (for example "Short 02 Related video: picker had no results; Short 02 stays Private"). Give times in Asia/Jerusalem.
+Send Amitai the output of `publish_checklist.py render`: the ticked checklist, grouped RedCircle → episode → segments → Shorts, with each video's link and the evidence line for every check. Above it, put one line on what's still open or failed and who has to act (for example "Short 02 Related video: picker had no results; Short 02 stays Private"). Give times in Asia/Jerusalem. End with the grading reminder from step 8: one line per segment and Short asking for topic quality, engagement and footage convexity/flow (0–2 each).
 
 ## Never
 - Make anything Public without Amitai's explicit OK in his own message, or while `can-public` says NO.

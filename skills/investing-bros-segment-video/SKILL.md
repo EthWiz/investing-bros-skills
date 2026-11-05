@@ -40,6 +40,7 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
 
 ## Steps (same for every type)
 1. **Pick both segments as one batch.** Read the transcript of the whole deep dive and list its sub-questions. Assign the strongest qualifying one to segment 01. Assign the next-best qualifying deep-dive sub-question to segment 02; only if none is strong and self-contained enough, compare the other episode topics and choose the strongest qualifying one. Each pick must be appealing, searchable and self-contained, fit ~7 min (max 10), start with the hook (the question) and end on the payoff. Contiguous preferred; at most 1–2 internal cuts (a tangent, a detour), each on a sentence boundary in a pause (`find_cuts.py` in `investing-bros-shorts`, `trim.sh --cut`). Drop any part being re-recorded. Tell Amitai both in/out ranges and lengths, plus one alternative for segment 02 (times + one line).
+   **Score every candidate with the [segment rubric](references/segment-rubric.md)** (six criteria, 0–2 each): cut only at ≥9/12 with Hook ≥1 and no 0; put the scores in the hand-back and `youtube-סגמנט-NN.md`.
    Run steps 2–12 independently for both selected segments; neither one is a partial or optional deliverable.
 2. **Verify** the cut file: transcribe its first and last ~20 s and check the hook and payoff are intact and no word is clipped at a join.
 3. **Cut.** Full frame 16:9, same brand look as the episode (`investing-bros-brand`); never zoomed or reframed. No cold open or episode intro/outro; the canonical clip is only for the full episode. A 2–5 s branded title card is fine. Use `trim.sh` (`investing-bros-post-production`); keep the episode loudness.
@@ -73,4 +74,4 @@ The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the tr
 - Each has the nudge at 0:30–0:35 and is Unlisted/Private on אחים להשקעות before the OK / Public after.
 
 ## Hand back
-For segments 01 and 02: type, sub-question, in/out (and any internal cuts), length (≤10 min), segment 02's alternative, title options, Unlisted URL, 0:31 nudge frame, card/end-screen status, Drive status and anything waiting on Amitai.
+For segments 01 and 02: type, sub-question, rubric score, in/out (and any internal cuts), length (≤10 min), segment 02's alternative, title options, Unlisted URL, 0:31 nudge frame, card/end-screen status, Drive status and anything waiting on Amitai.
