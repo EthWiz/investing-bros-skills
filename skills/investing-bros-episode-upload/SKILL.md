@@ -65,7 +65,7 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
 ### 3. YouTube uploads (all Private for the approval round)
-**Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`. It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by the episode owner for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
+**Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-producer` → `scripts/pipeline.py gate "$EP" --stage upload` (an episode without `extras/pipeline.json`: `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`). It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by the episode owner for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
 
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py --asset main|segNN|shortNN --record "$EP/extras/uploads/<asset>.json"` (resumable, frees the browser, Private only, show channel only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). It writes the upload record right after the insert; if a later step fails, `--resume RECORD` finishes it on the same video. See [references/youtube-api.md](references/youtube-api.md).
 **Studio fallback** (no credentials, a refused token, quota used up): first read `extras/uploads/<asset>.json`. If it holds a `video_id` for this asset version, the video is already uploaded: finish the remaining steps on that video in Studio and never upload a second copy. Only with no record (or a record of an older version) upload in the browser as below, then write the video ID you copied into the record. Either way, publishing still needs the publish OK.
@@ -115,7 +115,7 @@ only after the full episode is live and publishing is OK'd.
   upload of the same asset** without asking (Amitai, episode 10: "you can always delete the
   old uploads that are not relevant anymore from YouTube"). Never delete a Public upload or the
   current version; a Public one still needs the episode owner's explicit OK. List the deleted titles and
-  IDs in the hand-back and mark `old_uploads` in `postprod_checklist.py`.
+  IDs in the hand-back and mark `old_uploads` (`investing-bros-producer` → `pipeline.py mark`).
 - **Superseded uploads (any asset):** the same rule applies to segments and Shorts. Before
   deleting, confirm in Studio that the video is Private, is the same asset as a newer verified
   upload, and is not linked from any current description, card, end screen or Related video.

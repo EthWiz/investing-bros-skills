@@ -173,3 +173,89 @@ def test_owner_from_episode_state(tmp_path):
     assert pc.main(["waive", str(f), "short01.cover", "--by", "נדב 21:06: בסדר"]) == 0
     st = json.loads(f.read_text(encoding="utf-8"))
     assert st["items"][0]["owner"] == "nadav" and st["items"][0]["covers"]["episode"] == FULL
+
+
+# ---- with the episode state (extras/pipeline.json from investing-bros-producer) ----
+
+import pipeline_state as ps  # noqa: E402
+
+TRACKS = {"episode": "main", "seg01": "seg01", "seg02": "seg02", "short01": "short01", "short02": "short02",
+          "short03": "short03"}
+IDS = {"episode": FULL, "seg01": S1, "seg02": S2, "short01": SH[0], "short02": SH[1], "short03": SH[2]}
+
+
+def pipeline_episode(tmp_path):
+    """An episode whose pipeline has every upload approved and the owner's publish OK (records only)."""
+    st = {"schema_version": 1, "episode": 9, "revision": 0, "owner": {"name": "nadav", "confirmed": True},
+          "stages": {}, "marks": {}, "waivers": {}, "events": []}
+    for g, t in TRACKS.items():
+        st["stages"][f"{t}.upload"] = {"state": "done", "version": f"sha256:{t}-v1", "outputs": {}, "inputs": {},
+                                       "data": {"video_id": IDS[g]}}
+        st["stages"][f"{t}.ok"] = {"state": "approved", "of": f"{t}.upload", "of_version": f"sha256:{t}-v1",
+                                   "version": f"sha256:{t}-v1", "inputs": {}}
+    st["stages"]["release.publish_ok"] = {"state": "approved", "version": "sha256:p",
+                                          "inputs": {f"{t}.ok": f"sha256:{t}-v1" for t in TRACKS.values()}}
+    ps.save(tmp_path, st)
+    f = tmp_path / "extras" / "publish-checklist.json"
+    assert pc.main(["init", str(f), "--episode", "9", "--full", FULL, "--segments", S1, S2, "--shorts", *SH]) == 0
+    assert pc.main(["publish-ok", str(f), "--by", "Nadav 21:02: מאשר לפרסם"]) == 0
+    return f
+
+
+def reupload(ep, track, vid):
+    """What pipeline.py records after `advance TRACK upload` on a new upload record."""
+    st = ps.load(ep)
+    st["stages"][f"{track}.upload"].update(version=f"sha256:{track}-v2", data={"video_id": vid})
+    ps.save(ep, st)
+
+
+def tick_group(f, g):
+    st = json.loads(f.read_text(encoding="utf-8"))
+    for it in st["items"]:
+        if it["group"] == g and it["phase"] == "pre":
+            assert pc.main(["tick", str(f), it["id"], "--evidence", "seen"]) == 0
+
+
+def test_pipeline_ok_lets_the_release_through(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    tick_group(f, "redcircle")
+    assert pc.main(["can-public", str(f), "redcircle"]) == 0
+
+
+def test_reupload_after_approval_makes_its_checks_stale(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    tick_group(f, "redcircle")
+    reupload(tmp_path, "seg01", "NEWseg01vid")
+    assert pc.main(["can-public", str(f), "redcircle"]) == 1          # the publish OK is stale for everything
+    out = capsys.readouterr().out
+    assert "release.publish_ok is stale" in out
+    assert pc.main(["can-public", str(f), "seg01"]) == 1
+    out = capsys.readouterr().out
+    assert "seg01.ok is stale" in out and "re-uploaded" in out
+    assert pc.main(["tick", str(f), "redcircle.public", "--evidence", "published"]) == 1
+
+
+def test_reupload_during_a_partial_publication(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    for g in ("redcircle", "episode"):
+        tick_group(f, g)
+        assert pc.main(["can-public", str(f), g]) == 0
+        assert pc.main(["tick", str(f), f"{g}.public", "--evidence", "switched"]) == 0
+        assert pc.main(["tick", str(f), f"{g}.live", "--evidence", "check_live ok"]) == 0
+    tick_group(f, "seg01")
+    reupload(tmp_path, "seg01", "NEWseg01vid")                         # seg01 fixed and uploaded again
+    assert pc.main(["can-public", str(f), "seg01"]) == 1
+    assert pc.main(["set-video", str(f), "seg01", "NEWseg01vid"]) == 0
+    st = json.loads(f.read_text(encoding="utf-8"))
+    assert all(x["state"] == "open" for x in st["items"] if x["group"] == "seg01")
+    assert all(x["state"] == "ticked" for x in st["items"] if x["group"] == "episode")   # already live: untouched
+    # the owner approves the new segment and gives the publish OK again
+    ep_state = ps.load(tmp_path)
+    ep_state["stages"]["seg01.ok"].update(of_version="sha256:seg01-v2", version="sha256:seg01-v2")
+    ep_state["stages"]["release.publish_ok"]["inputs"]["seg01.ok"] = "sha256:seg01-v2"
+    ps.save(tmp_path, ep_state)
+    assert pc.main(["can-public", str(f), "seg01"]) == 1               # the checklist's own OK is stale too
+    assert pc.main(["publish-ok", str(f), "--by", "Nadav 22:10: גם הסגמנט החדש מאושר"]) == 0
+    assert pc.main(["can-public", str(f), "seg01"]) == 1               # seg01's checks were reopened
+    tick_group(f, "seg01")
+    assert pc.main(["can-public", str(f), "seg01"]) == 0

@@ -20,7 +20,7 @@ The approved full-frame teaser layout is implemented here; do not create competi
 brand rules or silently change approved artwork.
 
 ## When to use
-After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when the episode owner explicitly says so for that episode, and record that with `postprod_checklist.py waive ... teaser`. The square promo teaser stays on request.
+After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when the episode owner explicitly says so for that episode, and record that with `investing-bros-producer` → `pipeline.py waive "$EP" teaser --by "<the owner's words>"`. The square promo teaser stays on request.
 
 ## Inputs
 From the episode's `extras/`:
@@ -221,7 +221,7 @@ Review copies over the transfer caps: compress (show conventions → references/
   intro and outro and a full 20-second outro window, plus its checked YouTube
   description (when a video episode was asked for).
 - `promo/` has the combined full-frame cold-open teaser (required unless the episode owner waived it for this episode), plus any promo teaser that was asked for.
-- The full video is cold-open teaser → intro → episode → outro, and `investing-bros-post-production` → `scripts/postprod_checklist.py check` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
+- The full video is cold-open teaser → intro → episode → outro, and `investing-bros-producer` → `pipeline.py gate "$EP" --stage upload` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
 - The episode owner OK'd the cuts.
 - Every delivered edited file passed `verify_sync.py` (`SYNC OK`).
 

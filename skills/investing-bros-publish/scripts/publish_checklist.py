@@ -8,6 +8,7 @@ to let anything go Public out of order. Its rendered form is the report to the e
   publish_checklist.py fail STATE ITEM --reason "what went wrong"
   publish_checklist.py waive STATE ITEM --by "<Owner> HH:MM: <the owner's words>"
   publish_checklist.py can-public STATE GROUP     # exit 0 only if GROUP may go Public now
+  publish_checklist.py set-video STATE GROUP ID    # after a re-upload: the new ID; reopens that group
   publish_checklist.py status STATE                # next open item
   publish_checklist.py render STATE                # Markdown ticked checklist for Amitai
 
@@ -29,6 +30,12 @@ Rules enforced:
   * channel (the first check of every YouTube video: אחים להשקעות is the active Studio
     channel), public, live, publish_ok and every Short's `related` item can never be waived. A Short whose
     Related video could not be set is `fail`ed and stays Private.
+  * With the episode state (extras/pipeline.json next to STATE, investing-bros-producer), every
+    `can-public` and every `public` tick re-checks it, each time, against its current revision: the
+    pipeline's release.publish_ok must be current, each group's `ok` approval current, and the video
+    ID here must be the one in the pipeline's upload record. A re-upload after the approval (a new
+    ID) makes that group's checks stale: `set-video` records the new ID and reopens the group, and
+    the owner's publish OK has to be given again.
 Exit 1 when a command is refused.
 """
 from __future__ import annotations
@@ -143,6 +150,63 @@ def record_publish_ok(state: dict, by: str, owner_check) -> None:
     it.update(state="ticked", note=by.strip(), owner=owner, covers=covered_videos(state))
 
 
+TRACK = {"redcircle": "release", "episode": "main", "seg01": "seg01", "seg02": "seg02",
+         "short01": "short01", "short02": "short02", "short03": "short03"}
+
+
+def pipeline_problems(checklist_path: Path, state: dict) -> "dict | None":
+    """{group: [problems]} (key "*" for the release) from the episode's extras/pipeline.json, read now;
+    None when the episode has no pipeline state (older episodes)."""
+    sys.path.insert(0, str(Path(__file__).parent))
+    import pipeline_state as PS
+    sp = PS.find_state_near(checklist_path)
+    if sp is None:
+        return None
+    ep = PS.episode_dir_of(sp)
+    ps = PS.load(ep)
+    ev = PS.evaluate(ep, ps)
+    stages = ps.get("stages", {})
+    out = {"*": []}
+    pok = ev.get("release.publish_ok", {"status": "missing", "why": "not given"})
+    if pok["status"] != "current":
+        out["*"].append(f"pipeline.json (revision {ps.get('revision')}): release.publish_ok is {pok['status']}"
+                        + (f" ({pok['why']})" if pok.get("why") else "") + "; ask the episode owner again")
+    for g, t in TRACK.items():
+        probs = []
+        if t != "release":
+            okv = ev.get(f"{t}.ok", {"status": "missing", "why": ""})
+            if okv["status"] != "current":
+                probs.append(f"{t}.ok is {okv['status']}" + (f" ({okv['why']})" if okv.get("why") else ""))
+            cur = ((stages.get(f"{t}.upload") or {}).get("data") or {}).get("video_id")
+            if cur != state["videos"].get(g):
+                probs.append(f"{g}: the checklist has {state['videos'].get(g)}, the current upload is {cur} "
+                             f"(re-uploaded): `set-video STATE {g} <ID copied from the record>` and re-check")
+        out[g] = probs
+    return out
+
+
+def pipeline_blockers(checklist_path: Path, state: dict, group: str) -> list:
+    probs = pipeline_problems(checklist_path, state)
+    if probs is None:
+        return []
+    gi = ORDER.index(group)
+    return probs["*"] + [p for g in ORDER[1:gi + 1] for p in probs.get(g, [])]
+
+
+def set_video(state: dict, group: str, vid: str) -> None:
+    if group not in ORDER or group in ("release", "redcircle"):
+        raise ValueError(f"{group} has no YouTube video")
+    if not ID_RE.match(vid):
+        raise ValueError(f"not an 11-character video ID (copy it from the upload record): {vid}")
+    if vid in [v for g, v in state["videos"].items() if g != group]:
+        raise ValueError("that video ID belongs to another group")
+    old = state["videos"][group]
+    state["videos"][group] = vid
+    for it in state["items"]:
+        if it["group"] == group:
+            it.update(state="open", note=f"reopened: video {old} -> {vid}")
+
+
 def _find(state: dict, item_id: str) -> dict:
     for it in state["items"]:
         if it["id"] == item_id:
@@ -236,6 +300,7 @@ def main(argv=None) -> int:
     for name, extra in (("tick", "--evidence"), ("fail", "--reason"), ("waive", "--by")):
         p = sub.add_parser(name); p.add_argument("state"); p.add_argument("item"); p.add_argument(extra, required=True)
     p = sub.add_parser("can-public"); p.add_argument("state"); p.add_argument("group", choices=ORDER)
+    p = sub.add_parser("set-video"); p.add_argument("state"); p.add_argument("group", choices=ORDER); p.add_argument("id")
     for name in ("status", "render"):
         p = sub.add_parser(name); p.add_argument("state")
     a = ap.parse_args(argv)
@@ -252,15 +317,24 @@ def main(argv=None) -> int:
             record_publish_ok(state, a.by, owner_check_for(path))
             path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
             print("publish-ok: release.publish_ok covers " + ", ".join(f"{g} {v}" for g, v in covered_videos(state).items()))
+        elif a.cmd == "set-video":
+            set_video(state, a.group, a.id)
+            path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
+            print(f"set-video: {a.group} {a.id}; its checks are open again and the publish OK must be given again")
         elif a.cmd in ("tick", "fail", "waive"):
+            if a.cmd == "tick" and _find(state, a.item)["phase"] == "public":
+                pb = pipeline_blockers(path, state, _find(state, a.item)["group"])
+                if pb:
+                    raise PermissionError(f"refused: {a.item}: " + "; ".join(pb))
             {"tick": lambda: tick(state, a.item, a.evidence), "fail": lambda: fail(state, a.item, a.reason),
              "waive": lambda: waive(state, a.item, a.by, owner_check_for(path))}[a.cmd]()
             path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"{a.cmd}: {a.item}")
         elif a.cmd == "can-public":
             b = blockers(state, f"{a.group}.public")
-            print("yes" if not b else "NO, open: " + ", ".join(b))
-            return 0 if not b else 1
+            pb = pipeline_blockers(path, state, a.group)
+            print("yes" if not (b or pb) else "NO, " + "; ".join((["open: " + ", ".join(b)] if b else []) + pb))
+            return 0 if not (b or pb) else 1
         elif a.cmd == "status":
             nxt = next((x for x in state["items"] if not done(x)), None)
             print("all done" if nxt is None else f"next: {nxt['id']} [{nxt['state']}] {nxt['label']}")

@@ -37,7 +37,9 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
     },
     "main.cuts_ok": {
       "state": "approved", "at": "...",
-      "of": "main.cut_list", "version": "sha256:…",   // = the version of `of` that was approved
+      "of": "main.cut_list", "of_version": "sha256:…", "version": "sha256:…",  // the version of `of` approved
+      "of_keys": null,                  // or the outputs of `of` it covers (a thumbnail pick: only -thumb.jpg)
+      "inputs": {},
       "by": "nadav", "quote": "Nadav 11:40: מאשר את כל החיתוכים"
     },
     "seg01.render": {

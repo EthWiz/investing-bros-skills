@@ -238,6 +238,36 @@ def test_past_episode_cards_rejects_unknown_id(tmp_path):
 
 def test_waiver_must_come_from_the_episode_owner(tmp_path):
     upload_ready(tmp_path, teaser=False)
-    touch(tmp_path / "extras/pipeline.json", json.dumps({"schema_version": 1, "owner": {"name": "nadav"}}))
-    assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Amitai 09:12: no teaser"]) == 2
+    assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Nadav 09:11: no teaser"]) == 2   # no state: Amitai
+    touch(tmp_path / "extras/pipeline.json", json.dumps({"schema_version": 1, "episode": N, "owner": {"name": "nadav"},
+                                                         "stages": {}, "marks": {}, "waivers": {}, "events": []}))
+    assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Amitai 09:12: no teaser"]) == 1
     assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Nadav 09:13: בלי טיזר"]) == 0
+    assert "teaser" in json.loads((tmp_path / "extras/pipeline.json").read_text(encoding="utf-8"))["waivers"]
+
+
+def test_with_pipeline_state_the_wrapper_delegates(tmp_path, capsys):
+    upload_ready(tmp_path)
+    legacy = pc.load(tmp_path)
+    touch(tmp_path / "extras/pipeline.json", json.dumps({
+        "schema_version": 1, "episode": N, "revision": 1, "owner": {"name": "amitai", "confirmed": True},
+        "stages": {}, "marks": {}, "waivers": {}, "events": [],
+        "legacy": {"source": "extras/postprod-checklist.json", "marked": legacy["marked"], "waived": {}}}))
+    assert pc.main(["check", str(tmp_path), "--episode", str(N)]) == 0
+    assert "compatibility wrapper" in capsys.readouterr().err
+    assert pc.main(["check", str(tmp_path), "--episode", "12"]) == 2
+    assert pc.main(["mark", str(tmp_path), "redcircle_draft", "--evidence", "https://app.redcircle.com/x"]) == 0
+    st = json.loads((tmp_path / "extras/pipeline.json").read_text(encoding="utf-8"))
+    assert st["marks"]["redcircle_draft"]["evidence"] == "https://app.redcircle.com/x"
+    assert "redcircle_draft" not in pc.load(tmp_path)["marked"]      # the old file is never written again
+    assert pc.main(["waive", str(tmp_path), "old_uploads", "--by", "Nadav 10:00: x"]) == 1
+
+
+def test_without_the_producer_skill_check_still_reads_the_state(tmp_path, monkeypatch):
+    upload_ready(tmp_path)
+    touch(tmp_path / "extras/pipeline.json", json.dumps({
+        "schema_version": 1, "episode": N, "owner": {"name": "amitai"}, "stages": {}, "marks": {}, "waivers": {},
+        "legacy": {"marked": pc.load(tmp_path)["marked"], "waived": {}}}))
+    monkeypatch.setattr(pc, "find_pipeline", lambda: None)
+    assert pc.main(["check", str(tmp_path), "--episode", str(N)]) == 0
+    assert pc.main(["mark", str(tmp_path), "redcircle_draft", "--evidence", "x"]) == 2

@@ -2,7 +2,7 @@
 
 "Full treatment", "the full post-production", "do everything" or "פוסט מלא" always means **every item below**. Nothing is optional unless the episode owner (`investing-bros-show` → Episode owner) explicitly waives that item for that episode.
 
-Gate script: `scripts/postprod_checklist.py` (state in `extras/postprod-checklist.json`). Three stages, each including the ones before it:
+Gate: `investing-bros-producer` → `scripts/pipeline.py gate "$EP" --stage …` (marks and waivers in `extras/pipeline.json`). `scripts/postprod_checklist.py` keeps the old CLI as a compatibility wrapper: it delegates to `pipeline.py` when the episode has `extras/pipeline.json`, and keeps `extras/postprod-checklist.json` for episodes started before the pipeline. Three stages, each including the ones before it:
 - `upload`: everything the full-episode YouTube upload needs;
 - `review`: production complete, ready for the final review (both segment packages, all three Short packages, cards, RedCircle draft);
 - `done`: after the publication obligations (published in order, Spotify links swapped in, superseded uploads cleaned up).
@@ -33,16 +33,17 @@ Gate script: `scripts/postprod_checklist.py` (state in `extras/postprod-checklis
 | `old_uploads` | Superseded **Private** YouTube uploads of this episode's assets deleted (never the current version or anything public); mark with the deleted IDs or `none` | episode-upload | done |
 
 ```bash
-P=<investing-bros-post-production>/scripts/postprod_checklist.py
-python3 $P check "$EP" --episode N                  # before the full-episode YouTube upload
-python3 $P check "$EP" --episode N --stage review   # before the final review and before anything goes Public
-python3 $P check "$EP" --episode N --stage done     # after publication, before reporting the episode done
+P=<investing-bros-producer>/scripts/pipeline.py
+python3 $P gate "$EP" --stage upload    # before the full-episode YouTube upload
+python3 $P gate "$EP" --stage review    # before the final review and before anything goes Public
+python3 $P gate "$EP" --stage done      # after publication, before reporting the episode done
 python3 <investing-bros-video>/scripts/build_fullframe_teaser.py "$EP/extras/teaser.json" --check > "$EP/extras/teaser-check.log"
 for f in "$EP/thumbnail-פרק-N.jpg" "$EP/cover-פרק-N.png"; do   # --kind episode-wide / episode-square
   python3 <investing-bros-brand>/scripts/check_cover.py "$f" --kind ... --register "$EP/extras/artwork-register.json"
 done >> "$EP/extras/cover-check.log"
 python3 $P mark  "$EP" redcircle_draft --evidence "https://app.redcircle.com/... (Unpublished)"
 python3 $P waive "$EP" teaser --by "Nadav 09:12: no teaser this episode"   # the episode owner's words
+# older episode without extras/pipeline.json: <investing-bros-post-production>/scripts/postprod_checklist.py check|mark|waive (same items)
 ```
 
 Rules:

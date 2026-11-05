@@ -69,7 +69,7 @@ their ids; the table says which stage each belongs to.
 | `pick` | shorts (step 1) | `main.trim` | mark: `shortNN.pick` (raw ranges, cover title) | — | — |
 | `pick_ok` | shorts (step 1) | `pick` | approval: the owner's three picks (one quote may approve all three) | owner | a changed pick |
 | `render` | shorts (steps 2–6) / remotion | `pick_ok` | log: `extras/check-short-NN.log` (saved `check_short.py` output: a LUFS line, no `warning:`) | — | `pick_ok`; a `main.trim` change that overlaps the Short's raw ranges |
-| `cover` | brand (Shorts covers) | `pick_ok` | file: `Shorts/שורט-NN-<נושא>-cover.jpg`; log: `extras/cover-check.log` has `OK` for it; mark (item `shorts_covers`) | — | `pick_ok` (the cover title) |
+| `cover` | brand (Shorts covers) | `pick_ok` | file: `Shorts/שורט-NN-<נושא>-cover.jpg`; log: `extras/cover-check.log` has `OK` for it (the provenance mark, item `shorts_covers`, is checked by `release.review_gate`) | — | `pick_ok` (the cover title) |
 | `cover_ok` | brand | `cover` | approval: the owner's A/B/C pick, tied to the cover file | owner | a changed cover |
 | `package` | shorts (step 7) | `render`, `cover_ok` | file: the slot's four files in `Shorts/`, none empty (item `shorts`, this slot) | — | `render`, `cover_ok` |
 | `upload` | shorts / episode-upload (step 3) | `package`, `main.upload` | record: `extras/uploads/shortNN.json` (Private); mark: `shortNN.related` (Related video = the full episode after reopening, `.srt` published) | — | `package`, `main.upload`; a re-upload |

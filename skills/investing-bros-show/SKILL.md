@@ -31,7 +31,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 ## Working rules (every skill)
 1. **Use the scripts.** Run the skill's scripts from `scripts/`. Don't write your own render, caption, animation, download or upload code. If a script lacks a feature or has a bug, stop, tell Amitai what's missing, and propose the change as a PR to this repo. A one-time workaround is allowed only with the episode owner's OK (Amitai's outside episodes), and it must be listed in the hand-back.
 2. **The hand-back lists what ran:** the scripts run, any generated command patched by hand and why, and the PR that will fix it.
-3. **End every run by asking what it taught.** A mistake that could happen again becomes a script check with a test if a script can catch it, otherwise one line in the skill that owns the step, or a fact in this skill. Send it as a small PR the same day. Something you couldn't verify or fix becomes a GitHub issue on the repo. Nothing learned means no PR. Details in the repo's `AGENTS.md` → Improving the skills.
+3. **End every run by asking what it taught.** For an episode, that is the Producer's retro, the pipeline's last stage (`investing-bros-producer`). A mistake that could happen again becomes a script check with a test if a script can catch it, otherwise one line in the skill that owns the step, or a fact in this skill. Send it as a small PR the same day. Something you couldn't verify or fix becomes a GitHub issue on the repo. Nothing learned means no PR. Details in the repo's `AGENTS.md` → Improving the skills.
 4. **Know the environment before working around it.** Limits of the Drive connector, Amitai's Mac, the network and the tools are in [references/environment.md](references/environment.md).
 5. **Episode index.** [references/episode-index.json](references/episode-index.json) maps every episode to its current full-episode YouTube ID and key topics (Hebrew + English). It resolves past-episode references for YouTube cards; update it by PR after each upload, and never use dead IDs from the old channel.
 
@@ -172,14 +172,12 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   With no episode state (the course, a back-catalogue fix), approvals are Amitai's.
 
 ## Ownership and contact (Amitai, episode 10)
-- **The Producer owns the episode end to end.** The agent running post-production for episode N
-  is its Producer: it tracks every deliverable in `postprod_checklist.py`, runs Shorts itself,
-  starts and chases the remaining helper agents, fixes what they hand back, and is the single
-  voice to the episode owner about that episode.
-- **Shorts are Producer-owned (Amitai, 2026-11-05).** The Producer runs `investing-bros-shorts`
-  directly. The separate Grok bot "Investing Bro Shorts" (periphery-marketing helper, agent
-  `11e5db1a-5535-4d25-a454-3266d868c7cf`) is **retired**: do not `SendToAgent` to it, do not
-  hand Shorts picks/renders/uploads off to another bot, and do not expect a Shorts-bot hand-back.
+- **The Producer** is the agent running episode N's post-production; it owns the episode end to
+  end and is the single voice to the episode owner about it. How it works:
+  `investing-bros-producer`.
+- **No Shorts bot (Amitai, 2026-11-05).** The Producer runs `investing-bros-shorts` itself. The
+  Grok bot "Investing Bro Shorts" (periphery-marketing helper, agent
+  `11e5db1a-5535-4d25-a454-3266d868c7cf`) is **retired**: never `SendToAgent` to it.
 - **Helper agents never message the hosts directly.** Segment, analytics, brand and other helper
   agents (not Shorts) report to the Producer (their hand-back), never to Amitai or Nadav in
   chat, WhatsApp or Telegram. When a helper is blocked on something only the episode owner can
@@ -191,7 +189,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   episode, segment or Short), the older **Private** upload of the same asset is deleted once the
   new one is verified in Studio. Never delete a Public video, one shared for review (Private, not yet replaced)
   that hasn't been replaced, or the current version. List what you deleted (title, video ID) in
-  the hand-back and mark `old_uploads` in the post-production checklist.
+  the hand-back and mark `old_uploads` (`investing-bros-producer`).
 - **When a helper is the only agent on a task** (no Producer running, e.g. a standalone
   analytics request from Amitai), it reports to whoever asked.
 
