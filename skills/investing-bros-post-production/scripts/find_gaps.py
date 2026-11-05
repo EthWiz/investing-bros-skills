@@ -3,6 +3,8 @@
 the cut list Nadav approves before the trim (investing-bros-post-production).
 
 Suggestions only: a pause can be a thinking beat that belongs in the episode.
+Silences under 2 s are kept by default and never listed (--min-gap is floored at 2.0);
+a trimmed silence of 2 s+ still keeps a natural beat on each side.
 
 Usage:
     python3 find_gaps.py AUDIO [--segments segments.json] [--min-gap 2.5]
@@ -60,6 +62,8 @@ def _decode(path: str) -> np.ndarray:
                           "-f", "f32le", "-"], check=True, capture_output=True).stdout
     return np.frombuffer(raw, dtype=np.float32)
 
+MIN_CUTTABLE = 2.0  # silences shorter than this are never cut
+
 
 def _fmt(t: float) -> str:
     m, s = divmod(t, 60)
@@ -76,6 +80,9 @@ def main(argv=None) -> int:
     ap.add_argument("--end", type=float, default=None)
     ap.add_argument("--json", help="also write the gaps as JSON")
     a = ap.parse_args(argv)
+    if a.min_gap < MIN_CUTTABLE:
+        print(f"--min-gap {a.min_gap} raised to {MIN_CUTTABLE}: silences under 2 s are kept by default", file=sys.stderr)
+        a.min_gap = MIN_CUTTABLE
 
     db = frame_db(_decode(a.audio))
     segs = json.load(open(a.segments, encoding="utf-8")) if a.segments else []
