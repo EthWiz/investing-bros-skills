@@ -1,0 +1,24 @@
+# phrase -> the one skill whose description carries it. validate_skills.py warns when the phrase (as a
+# word prefix, case-insensitive) is in another skill's description, or missing from its owner's.
+publish -> investing-bros-publish
+תפרסם את הפרק -> investing-bros-publish
+go live -> investing-bros-publish
+גרפיקה מונפשת -> investing-bros-remotion
+שורטס -> investing-bros-shorts
+רילס -> investing-bros-shorts
+segment video -> investing-bros-segment-video
+סרטון נפרד -> investing-bros-segment-video
+upload episode N -> investing-bros-episode-upload
+put it on RedCircle -> investing-bros-episode-upload
+edit episode N -> investing-bros-post-production
+ההקלטה מוכנה -> investing-bros-post-production
+prep episode N -> investing-bros-episode-preparation
+הכנה לפרק -> investing-bros-episode-preparation
+כותרות -> investing-bros-title-description
+קאבר לשורט -> investing-bros-brand
+טיזר -> investing-bros-video
+סטטיסטיקות -> investing-bros-analytics
+קורס קריפטו -> investing-bros-crypto-course
+תחקיר -> investing-bros-producer
+retro -> investing-bros-producer
+learnings PR -> investing-bros-skill-change

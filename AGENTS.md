@@ -10,7 +10,8 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Task | Skill |
 |---|---|
 | Before recording: folder, news, deep dive | `investing-bros-episode-preparation` |
-| Recording is in: start the main flow + 2 segments + 3 shorts; combine, level, transcribe, cut list, trim | `investing-bros-post-production` |
+| Run an episode end to end as its Producer: the state file, the next step per track, review rounds, the retro | `investing-bros-producer` |
+| Recording is in: combine, level, transcribe, cut list, trim (and start the Producer) | `investing-bros-post-production` |
 | Titles, description (.txt), artwork copy brief | `investing-bros-title-description` |
 | Visual identity, artwork, templates, covers and design QA | `investing-bros-brand` |
 | Animation: rendering shorts and animated explainer cards (Remotion template) | `investing-bros-remotion` |
@@ -19,6 +20,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Exactly 2 standalone search-first segment videos: 01 deep dive, 02 next-best qualifying topic | `investing-bros-segment-video` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
 | Going Public after Amitai's OK: RedCircle → episode → segments → Shorts, each verified live, ticked checklist | `investing-bros-publish` |
+| Weekly (Sunday) and ad-hoc YouTube/podcast analytics, read-only; the weekly Telegram report | `investing-bros-analytics` |
 | The free 7-lesson crypto course: lesson plan, slides, scripts in beats, lesson videos with Remotion, lesson folders (not an episode) | `investing-bros-crypto-course` |
 
 To see where an episode stands, list its Drive folder and compare it with each skill's **Done when**.
@@ -40,4 +42,4 @@ Several agents (Amitai's, Nadav's, Grokbot) work on the same episodes, so improv
 - A script used by several skills is copied into each (`clip_captions.py`, `make_clip.sh`, `brand.py` in shorts and video; `edit_map.py` in post-production, title-description, video, shorts and segment-video; `render_cuts.py`, `verify_sync.py` in video and segment-video): other scripts import them from their own folder, and skills may be installed separately. Edit all copies together — the validator fails if same-named scripts differ.
 - Refer to other skills by name, not by relative path — skills may be installed separately.
 - Never commit passwords, tokens or cookies; refer to secrets by env-var name.
-- Before pushing: `python3 tools/validate_skills.py` and `python3 -m pytest skills tools` (CI runs both). After a merge, GitHub rebuilds the per-skill ZIPs on the `skills-latest` release.
+- Before pushing: `python3 tools/validate_skills.py` and `python3 -m pytest skills tools` (CI runs both, and again before building the release ZIPs). The validator fails on retired wording (`tools/retired_phrases.txt`) and warns about copied rules, show facts outside `investing-bros-show`, and trigger phrases in the wrong description (`tools/triggers.txt`). After a merge, GitHub rebuilds the per-skill ZIPs on the `skills-latest` release.

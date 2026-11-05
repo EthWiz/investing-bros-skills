@@ -28,10 +28,11 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - name: Validate before publishing
+      - name: Validate and test before publishing (same as validate.yml)
         run: |
-          pip install pyyaml
+          pip install pyyaml pytest numpy pillow fonttools
           python3 tools/validate_skills.py
+          python3 -m pytest -q skills tools
       - name: Build one ZIP per skill
         run: python3 tools/build_skill_zips.py dist
       - name: Publish the skills-latest release
