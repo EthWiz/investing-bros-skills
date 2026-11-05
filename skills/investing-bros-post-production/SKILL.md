@@ -27,7 +27,8 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 
 "Full treatment" (or "full post-production", "do everything") means the complete deliverable list in [references/CHECKLIST.md](references/CHECKLIST.md), every item, never a subset. Track it with `scripts/postprod_checklist.py`:
 - `check "$EP" --episode N` must PASS before any YouTube upload of the full episode;
-- `check "$EP" --episode N --stage done` must PASS before post-production is reported done;
+- `check "$EP" --episode N --stage review` must PASS before the final review and before anything goes Public;
+- `check "$EP" --episode N --stage done` must PASS (after publication) before the episode is reported done;
 - an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
 
 **You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. **You run `investing-bros-shorts` yourself** — there is no separate Shorts / periphery-marketing Grok bot to chase or `SendToAgent` to (retired 2026-11-05). Helper agents (segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
