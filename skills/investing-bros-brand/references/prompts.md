@@ -144,8 +144,10 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    do not resize. Write your final image_gen prompt to <name>-prompt.txt and copy the
    final PNG into this folder. After saving, check there is no stray text (or, for a
    one-pass cover, every Hebrew word exactly as above); if wrong, regenerate or edit once.
-   Report the final file name and pixel size (sips)." Typeset the title on the box with
-   `make_cover_title.py`, which also brings the art to 1080×1920.
+   Report the final file name and pixel size (sips)." The default Shorts cover is the
+   **one-pass** cover (Codex draws title, pill and show mark with the real host frame
+   passed via `-i`); typeset with `make_cover_title.py` only as the fallback when the
+   one-pass Hebrew is not exact.
 4. **Default: run independent Codex renders as parallel concurrent sessions on the Mac**
    (Amitai, episode 10). A/B/C options, wide vs square, and each Short's cover are
    independent: give each its own subfolder under the workdir (e.g. `cover/a-wide/`,
@@ -156,20 +158,23 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    ```bash
    cd <option-subdir> && env -u OPENAI_API_KEY ~/.nvm/versions/node/v22.23.1/bin/codex exec \
      --skip-git-repo-check -i ref-episode-<N>-cover.png -i ref-episode-07-gold.png \
-     -- "$(cat prompt.txt)" < /dev/null > codex.log 2>&1
+     < prompt.txt > codex.log 2>&1
    ```
+   **Feed the prompt on stdin** (no prompt argument): `-i` takes several values and
+   swallows a trailing prompt argument as another image path (episode 10). Codex reads
+   the instructions from stdin when no prompt argument is given.
    For a face-format Short add `-i <host-frame>.jpg` (the speaking host's picked frame).
    Replace the example Shorts reference arguments with the matching style reference and
    both same-episode host frames for a photo-cutout cover.
    `env -u OPENAI_API_KEY` keeps billing on the ChatGPT plan. `--skip-git-repo-check`
-   is needed outside a trusted folder. `-i` takes several values, so `--` must come
-   before the prompt or Codex fails with "a value is required for '--image'".
+   is needed outside a trusted folder. Never put the prompt after `-i …` on the command
+   line; use stdin as above.
    Never print or copy `~/.codex/auth.json`. Verified with codex-cli 0.163.0.
 5. Built-in `$imagegen` is gpt-image-2 (per OpenAI docs) with no model, quality or
-   size control: it picks the size (square 1254×1254, 9:16 941×1672). Copy the PNG to
-   the box. Text-free Shorts art goes straight into `make_cover_title.py`. A one-pass
-   Shorts cover is upscaled there
-   (`ffmpeg -i in.png -vf scale=1080:1920:flags=lanczos out.jpg`); check the centre 1:1
+   size control: it picks the size (square 1254×1254, 9:16 ~941×1672). Copy the PNG to
+   the box. A one-pass Shorts cover (the default) is upscaled there straight to the gate
+   name: `ffmpeg -i raw.png -vf scale=1080:1920:flags=lanczos -q:v 2
+   "שורט-NN-<נושא>-cover.jpg"`. Fallback text-free art goes into `make_cover_title.py`; check the centre 1:1
    crop (`-vf crop=1080:1080:0:420`) still shows the title. Then run `check_cover.py`
    and the quality checks.
 For main episodes and segments, use the photo-cutout prompts and their source image

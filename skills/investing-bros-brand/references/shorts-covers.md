@@ -9,9 +9,16 @@ the Short, as a photographic cutout, under Amitai's "cut newspaper" title strips
 Episode 10's faceless covers (title over an engraved illustration only) were rejected as
 the old format; that style (reference `shorts-title-strips-ep1.png`, Drive
 `references/covers`, ID in the [asset index](asset-index.md)) now sets only the strips,
-pill and show mark. Whether the final house version is the one-pass Codex cover or Codex
-art plus `make_cover_title.py` is **pending Amitai's pick**; until he picks, make both
-kinds where you can and label which is which.
+pill and show mark.
+
+**Default since episode 10 (Amitai's pick, 2026-11-05): the one-pass Codex cover with
+the real face.** Codex on the Mac renders the whole cover (art, title strips, `פרק N`
+pill, show mark) in one pass, with the speaking host's real picked frame passed via
+`-i`. `make_cover_title.py` over text-free Codex art is only the fallback when the
+one-pass Hebrew is not exact after one targeted regenerate. Feed the prompt on stdin
+(`-i` swallows a trailing prompt argument), upscale Codex's ~941×1672 output to
+1080×1920 with ffmpeg, and name the result to the gate pattern
+`שורט-NN-<נושא>-cover.jpg` ([prompts](prompts.md) → Codex backend).
 
 ## Layout (`shorts-vertical`, top to bottom)
 - **Background:** navy textured paper.
@@ -46,7 +53,7 @@ Mac is unavailable, report the blocker (to the Producer when one runs the episod
 1. **Pick the face.** From the episode's verified face grids, take a picked frame of the
    host who speaks in this Short (a different frame per option where possible). Copy it
    into the Codex workdir.
-2. **One-pass cover (preferred when it verifies).** Run [prompts](prompts.md) → Shorts
+2. **One-pass cover (the default).** Run [prompts](prompts.md) → Shorts
    cover art with the one-pass replacement and `-i` the host frame and style references
    (prompts → Codex backend). Codex draws the strips, title, pill and show mark.
 3. **Verify the Hebrew exactly.** Read every letter at full size and ~200 px wide against
@@ -54,8 +61,9 @@ Mac is unavailable, report the blocker (to the Producer when one runs the episod
    brackets, no `؟`, no stray text. Then run
    `python3 scripts/check_cover.py COVER.jpg --kind shorts-vertical --config short.json`.
    Any mismatch: one targeted regenerate; if it is still wrong, go to step 4. Upscale a
-   kept one-pass cover as in prompts → Codex backend step 5.
-4. **Fallback: text-free Codex face art + Heebo title.** Run the same prompt text-free
+   kept one-pass cover to the gate name:
+   `ffmpeg -i raw.png -vf scale=1080:1920:flags=lanczos -q:v 2 "שורט-NN-<נושא>-cover.jpg"`.
+4. **Fallback only (one-pass Hebrew still wrong): text-free Codex face art + Heebo title.** Run the same prompt text-free
    (with the host frame), then typeset the title:
    ```bash
    python3 scripts/make_cover_title.py ART-A.png "option-A/שורט-NN-<נושא>-cover.jpg" \
