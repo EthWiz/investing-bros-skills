@@ -1,16 +1,12 @@
 ---
 name: investing-bros-segment-video
 description: >-
-  Cut exactly two standalone segments from each Investing Bros /
-  אחים להשקעות episode into search-first YouTube videos: segment 01 is a
-  required deep-dive sub-question; segment 02 is the next-best self-contained
-  deep-dive sub-question or another strong topic. Types include deep dive,
-  investment idea, interview and explainer.
-  Covers segment selection, full-frame cut, search-first title, description
-  linking the full episode + Spotify line, thumbnail, on-screen nudge + card, Private
-  evaluation upload to the אחים להשקעות channel, and Public after the episode owner's OK.
-  Use when Amitai asks for a "segment video", "deep dive video",
-  "צלילה לעומק", "סרטון נפרד", or when publishing episode N.
+  Cut exactly two standalone, search-first YouTube segments from each
+  Investing Bros / אחים להשקעות episode: 01 a deep-dive sub-question, 02 the
+  next-best one or another strong topic. Selection, make_segment.py (cut,
+  nudge, loudness, sync), title, description, thumbnail, card, end screen and
+  the Private upload. Use for "segment video", "deep dive video", "צלילה
+  לעומק", "סרטון נפרד".
 ---
 # Investing Bros segment videos
 

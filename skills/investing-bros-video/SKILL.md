@@ -1,14 +1,12 @@
 ---
 name: investing-bros-video
 description: >-
-  Make the video side of an Investing Bros / אחים להשקעות episode with
-  burned-in Hebrew captions: a combined full-frame cold-open teaser (15–30 s,
-  16:9), the
-  full video episode (cold opens + intro + episode + matching outro) with its YouTube
-  description, and a 30–60 s promo teaser. Use when Amitai asks for "a
-  teaser", "a trailer", "טיזר", "פרומו", "cold open", "פרק מלא", "full
-  episode video", "וידאו" or "a teaser with each brother" for episode N.
-  Shorts and mid-form are investing-bros-shorts.
+  The video side of an Investing Bros / אחים להשקעות episode with burned-in
+  Hebrew captions: the combined full-frame cold-open teaser (15-30 s), the
+  full video episode (teaser, intro, episode, outro) with its YouTube
+  description, and a 30-60 s promo teaser on request. Use for "a teaser",
+  "טיזר", "פרומו", "cold open", "פרק מלא", "full episode video", "וידאו".
+  Shorts: investing-bros-shorts.
 ---
 # Investing Bros video
 

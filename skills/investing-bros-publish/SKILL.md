@@ -1,15 +1,12 @@
 ---
 name: investing-bros-publish
 description: >-
-  Publish an approved Investing Bros / אחים להשקעות episode in the one allowed
-  order (RedCircle, then the full YouTube episode, then segment 01 and 02, then
-  Shorts 01-03), checking each item live before the next step. Nothing goes
-  Public while an earlier item is unticked, and every Short's Related video must
-  be the full episode, checked by reopening its Studio edit page. Ends with a
-  ticked checklist for the episode owner. Use after the owner's explicit OK, when they say
-  "publish episode N", "publish ep N with all assets", "תפרסם את הפרק", "פרסום",
-  "go live", "make it public" or "העלה לציבורי". Uploads and drafts before the OK
-  belong to investing-bros-episode-upload.
+  Make an approved Investing Bros / אחים להשקעות episode Public in the one
+  allowed order (RedCircle, full episode, segments 01-02, Shorts 01-03) after
+  the episode owner's OK, each item checked live before the next and every
+  Short's Related video verified; ends with a ticked checklist. Use for
+  "publish episode N", "תפרסם את הפרק", "פרסום", "go live", "make it public",
+  "העלה לציבורי".
 ---
 # Investing Bros publish
 

@@ -1,14 +1,12 @@
 ---
 name: investing-bros-analytics
 description: >-
-  Read-only YouTube Studio analytics for the Investing Bros / אחים להשקעות
-  channel: lifetime or weekly stats for every episode and Short (views,
-  watch time, AVD, avg % viewed, impressions, CTR, subs), traffic sources,
-  retention and key moments, audience, plus RedCircle/Spotify stats when
-  available. Produces a report Page and a short Telegram text. Use when
-  Amitai asks for "analytics", "stats", "סטטיסטיקות", "how are the shorts
-  doing", the weekly Sunday report, or an ad-hoc comparison such as
-  thumbnails with faces vs without.
+  Read-only YouTube Studio and RedCircle/Spotify analytics for Investing Bros
+  / אחים להשקעות: episode and Short stats, traffic, retention, audience; a
+  report Page and a short Telegram text (the weekly one is pre-approved). Use
+  for "analytics", "stats", "סטטיסטיקות", "how are the shorts doing", the
+  weekly Sunday report, or a comparison such as thumbnails with faces vs
+  without.
 ---
 # Investing Bros analytics (YouTube Studio)
 

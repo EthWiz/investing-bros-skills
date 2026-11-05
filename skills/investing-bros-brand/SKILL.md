@@ -1,12 +1,11 @@
 ---
 name: investing-bros-brand
 description: >-
-  Create and review Financial Journal artwork for Investing Bros / אחים להשקעות.
-  Use for podcast branding, cover art, episode and segment thumbnails, Shorts covers
-  ("קאבר לשורט", "תמונת שער לשורט"), discussion cards, lower thirds, intro art direction,
-  brand guides, templates, קאבר, תמונת פרק, מיתוג and שפה עיצובית. Indexes selected
-  reference images (kept in Drive), exact Hebrew copy, format specifications, reusable
-  image-generation prompts, Heebo title typesetting and cover checks.
+  Artwork for Investing Bros / אחים להשקעות in the Financial Journal identity:
+  show and episode covers, thumbnails, segment thumbnails, Shorts covers,
+  cards, lower thirds, intro art, templates and cover checks (Codex on
+  Amitai's Mac, Heebo). Use for "קאבר לשורט", "תמונת שער לשורט", קאבר, תמונת
+  פרק, מיתוג, שפה עיצובית, a brand guide or any visual decision.
 ---
 # Investing Bros brand
 

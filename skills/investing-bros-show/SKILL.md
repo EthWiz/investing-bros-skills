@@ -50,8 +50,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 | Mid-form (in `mid-form/`) | `מיד-פורם-NN-<נושא>.mp4` + `.txt` (title, description) | `מיד-פורם-01-זהב.mp4` |
 | Segment video (in `segments/`) | `סגמנט-NN-<סוג>-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-סגמנט-NN.md` | `סגמנט-01-צלילה-זהב.mp4` |
 | Video episode (in `video/`) | `פרק-N-וידאו.mp4` + `תיאור-פרק-N-youtube.txt` | `פרק-8-וידאו.mp4` |
-| Crypto course lesson folder (in `קורס קריפטו/`) | `שיעור N — נושא` (em dash `—`) | `שיעור 1 — מה זה בכלל קריפטו` |
-| Lesson slides / script (in the lesson folder) | `מצגת-שיעור-N.pdf`, Google Doc `תסריט-שיעור-N` | `מצגת-שיעור-1.pdf` |
+| Crypto course lessons (in `קורס קריפטו/`) | [references/crypto-course-paths.md](references/crypto-course-paths.md) | `שיעור 1 — מה זה בכלל קריפטו` |
 
 **Finding an existing episode folder:** match on the `פרק N` prefix (followed by a space or dash), not the full name — the dash and topic may differ from what you would type. If one matches, reuse it. Never create a second folder for the same N.
 
@@ -95,8 +94,7 @@ replacement, his latest named file wins and this entry must be updated.
     segments/    exactly 2 segments: 01 deep dive + 02 next-best topic; full package each ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
     promo/       promo teaser, cold opens (never the cover or thumbnail)           ← video
-  קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) + plan doc `קורס קריפטו - תוכנית השיעורים` ← crypto-course
-    שיעור N — נושא/                one per lesson (1–7): מצגת-שיעור-N.pdf, Google Doc תסריט-שיעור-N, שיעור-N-וידאו.mp4 (or -טיוטה), extras/ (takes קטע-NN.mp4, words קטע-NN.json, base שיעור-N-בסיס.mp4, captions שיעור-N-כתוביות.srt), Shorts/
+  קורס קריפטו/                     the free crypto course; folders, IDs and lesson files: references/crypto-course-paths.md ← crypto-course
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
@@ -134,12 +132,9 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 
 ## Animation
 - **Remotion is the animation framework** for shorts and other animated clips (Amitai, 2026-10-25, after comparing it with HyperFrames and the Python renderer on episode 8). Owner: `investing-bros-remotion`. HyperFrames and `build_amitai_short.py` stay only for rebuilding older exports.
-- **Licence:** Remotion is free for individuals and organisations of up to 3 people (counts the whole team, not only who renders). From 4 people it needs a Company License: $25/month per person who writes Remotion code, agents included ([remotion.dev/docs/license/faq](https://www.remotion.dev/docs/license/faq)). Today the team is Amitai, Nadav and ליאורה; check this before anyone joins.
+- **Licence, Shorts captions, speed, title and length:** [references/animation.md](references/animation.md).
 - Explainer cards default to `inset`: most of the frame, with a thin frame of the host video around it so it reads as an overlay; `full` (whole frame) only for a 2–4 s moment.
 - **Shorts have no end card** (Amitai, 2026-10-25): they end on the payoff and loop, with the "הקישור לפרק המלא בתיאור" strip and arrow on screen to the last frame.
-- **Shorts captions** (Amitai, 2026-10-26, replacing the 2026-10-25 two-line format): kinetic. Short phrases that each stay up long enough to read, one big word per phrase, the word being spoken on a navy box (gold for keywords and numbers). Card subtitles never repeat the captions.
-- **Shorts speed is 1.15x** (Amitai, 2026-10-26; was 1.25x): at 1.25x fast speech was too quick to caption readably.
-- **Shorts approved title and length** (Amitai, 2026-10-26): `cover_title` is the single source for the cover, opening torn-strip banner, YouTube title and first description line. Shorts are at most **45.0 s after the 1.15x speed-up**; cut tighter rather than filing a longer exception.
 
 ## Roles and accounts
 | Role / account | Who / what | Notes |

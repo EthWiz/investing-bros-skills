@@ -2,14 +2,11 @@
 name: investing-bros-title-description
 description: >-
   Write the packaging for an Investing Bros / אחים להשקעות episode: five
-  concise Hebrew title options that lead with a real question (no clickbait,
-  no em or en dashes), the description (intro, disclaimer, time-first chapters
-  that work on YouTube and Spotify), checked by a script and saved as .txt
-  files in the episode's Drive folder, and thumbnail headline options handed to
-  `investing-bros-brand`, which makes all artwork. Use when Amitai asks for
-  "titles", "a title", "description", "a thumbnail headline", "כותרת",
-  "כותרות" or "תיאור" for episode N. Cover art, thumbnails and image prompts
-  are `investing-bros-brand`.
+  concise question-led Hebrew titles (no clickbait, no dashes), the
+  description with the disclaimer and time-first chapters for YouTube and
+  Spotify, checked by check_copy.py and saved as .txt in Drive, and thumbnail
+  headline options for brand. Use for "titles", "description", "thumbnail
+  headline", "כותרת", "כותרות", "תיאור".
 ---
 # Investing Bros titles, description and thumbnail headline
 

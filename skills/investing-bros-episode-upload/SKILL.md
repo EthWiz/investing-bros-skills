@@ -1,16 +1,12 @@
 ---
 name: investing-bros-episode-upload
 description: >-
-  Take a finished Investing Bros / אחים להשקעות episode out: review ping,
-  RedCircle draft (edited audio, final Hebrew title and description with the
-  RTL + "?" fix, episode number), a Private full episode when made, exactly two
-  Private segment evaluations and exactly three Private shorts for the one
-  approval round (shorts go Public only after the episode is live), plus
-  optional mid-form. With the episode owner's OK, publish and check how it
-  renders on Spotify, RedCircle and YouTube, and share it on WhatsApp. Use
-  when Amitai says "upload episode N", "put it on RedCircle", "העלאה",
-  "YouTube", "יוטיוב", "publish", "Spotify", "share the episode" or "תפיץ את
-  הפרק". Going live needs the owner's explicit OK.
+  Take a finished Investing Bros / אחים להשקעות episode out up to the OK:
+  review ping, RedCircle draft with the RTL + "?" fix, Private YouTube uploads
+  (episode, two segments, three Shorts) with upload records, the Telegram
+  approval round, then the Spotify/RedCircle/YouTube checks and the WhatsApp
+  share. Use for "upload episode N", "put it on RedCircle", "העלאה", "יוטיוב",
+  "Spotify", "תפיץ את הפרק".
 ---
 # Investing Bros upload, publish and share
 

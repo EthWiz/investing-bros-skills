@@ -2,11 +2,10 @@
 name: investing-bros-producer
 description: >-
   Run an Investing Bros / אחים להשקעות episode end to end as its Producer: one
-  state file (extras/pipeline.json), the next step on every track (main, two
-  segments, three Shorts, release), approvals from the episode owner tied to
-  file versions, review rounds, and the episode retro (תחקיר) at the end. Use
-  when an episode's post-production starts or resumes, "where does episode N
-  stand", "מה הלאה בפרק", "תחקיר", or "retro".
+  state file (extras/pipeline.json), the next step on every track, approvals
+  from the episode owner tied to file versions, review rounds, and the episode
+  retro at the end. Use when post-production starts or resumes, "where does
+  episode N stand", "מה הלאה בפרק", "תחקיר" or "retro".
 ---
 # Investing Bros producer
 
