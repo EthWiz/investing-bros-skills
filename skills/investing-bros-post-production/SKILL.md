@@ -22,7 +22,7 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
 - the **required** combined cold-open teaser, canonical intro + matching outro, video episode (teaser → intro → episode → outro), promo teaser on request → `investing-bros-video`
 - exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen, Drive, Private review and Amitai's OK → `investing-bros-segment-video`
-- exactly three shorts, each through picks, render, Codex cover, Telegram approval, Drive, post-episode upload and links → `investing-bros-shorts`
+- exactly three shorts, each through picks, render, Codex cover (brand), Telegram approval, Drive, **Private** review upload, Related video and links — run by the Producer via `investing-bros-shorts` (no separate Shorts bot)
 - review ping, uploads, publish → `investing-bros-episode-upload`
 
 "Full treatment" (or "full post-production", "do everything") means the complete deliverable list in [references/CHECKLIST.md](references/CHECKLIST.md), every item, never a subset. Track it with `scripts/postprod_checklist.py`:
@@ -30,7 +30,7 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 - `check "$EP" --episode N --stage done` must PASS before post-production is reported done;
 - an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
 
-**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. Helper agents (Shorts, segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
+**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. **You run `investing-bros-shorts` yourself** — there is no separate Shorts / periphery-marketing Grok bot to chase or `SendToAgent` to (retired 2026-11-05). Helper agents (segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
 
 ## When to use
 The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
@@ -161,7 +161,7 @@ Post-production is not complete at the audio handoff. Every item below must be c
   fetched canonical Drive-ID clip from `investing-bros-show` as both intro and
   outro; the outro provides the final 20 seconds for the YouTube end screen.
 - `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Private review and Amitai's OK.
-- `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow, including approved picks, render and QA, Codex cover, Telegram approval, Drive files, upload only after the full episode was live, and links back to the episode.
+- `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow run by the Producer, including approved picks, render and QA, Codex cover (brand), Telegram approval-round inclusion, Drive files, **Private** review upload, Related video to the full episode, and links back to the episode.
 - If an approval or publication step is still waiting, report the bundle as waiting, not done.
 
 ## Hand back
@@ -182,6 +182,7 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
 - Let a helper agent message Amitai directly, or send him status pings instead of one batched review.
+- Hand Shorts off to another Grok bot; run `investing-bros-shorts` in this Producer session.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 
 Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.

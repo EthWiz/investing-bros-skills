@@ -26,7 +26,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | 6 | After publish, weekly (Sunday): read-only Studio/RedCircle stats, report Page, Telegram summary, history CSV | `investing-bros-analytics` | `investing-bros-youtube-weekly.csv` in Drive (analytics folder TBD) | — (weekly post pre-approved) |
 
 - Starting step 1 commits every episode to the main flow plus exactly 2 complete segment videos and exactly 3 complete shorts. The post-production checklist remains open until all three tracks finish their owning skills.
-- Steps 2–4b only need step 1's transcript and `edit.json`, so different agents can run them at the same time.
+- Steps 2–4b only need step 1's transcript and `edit.json`, so different agents can run them at the same time. **Exception (Amitai, 2026-11-05):** Shorts (`investing-bros-shorts`) are run by the episode's Producer directly — there is no separate Shorts Grok bot.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
 - `investing-bros-analytics` reads YouTube Studio stats (read-only) for the weekly Sunday report and ad-hoc analyses; posts a short text to Telegram.
 - `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work and `investing-bros-remotion` for anything animated.
