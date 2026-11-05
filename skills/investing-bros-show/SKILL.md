@@ -25,7 +25,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 2. **Episode number = the number Amitai states.** Never auto-increment from old folders, Drive names or workspace paths.
 3. **Nothing goes public without Amitai's explicit OK** — RedCircle stays a draft; WhatsApp and Telegram messages go only to the approved destinations below, and only when Amitai asks in chat for that post.
 4. **Never commit, echo or paste secrets.** Refer to them by env-var name.
-5. **Don't delete** WhatsApp messages, old drafts or the `brief/` archive without explicit OK.
+5. **Don't delete** WhatsApp messages, old drafts or the `brief/` archive without explicit OK. One standing exception (Amitai, episode 10: "you can always delete the old uploads that are not relevant anymore from YouTube"): a **superseded Private** YouTube upload of the same asset is deleted without asking (see Ownership and contact). Never anything public, Unlisted for review, or the current version.
 6. **Ask, don't guess** on ambiguous cuts, titles or numbers.
 
 ## Working rules (every skill)
@@ -141,7 +141,8 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 ## Roles and accounts
 | Role / account | Who / what | Notes |
 |---|---|---|
-| Approver | Amitai | Episode number, cuts, final title, publish, new destinations |
+| Approver | Amitai | Episode number, cuts, final title, publish, new destinations. Contacted only for reviews and approvals (Ownership and contact) |
+| Producer | the agent running the episode's post-production | Owns the episode end to end; the only agent that messages Amitai about it |
 | Video producer | ליאורה | Shorts, cold opens, the intro, mid-form and the video episode. Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
@@ -149,6 +150,25 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`, its default; being deleted). Before any Studio action, open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` and confirm **אחים להשקעות** is active in the avatar menu (direct edit links load as Grok Bot). For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
 | Show cover art | `Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Brand Resources/Investing-bros-logo.png` |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
+
+## Ownership and contact (Amitai, episode 10)
+- **The Producer owns the episode end to end.** The agent running post-production for episode N
+  is its Producer: it tracks every deliverable in `postprod_checklist.py`, starts and chases the
+  helper agents, fixes what they hand back, and is the single voice to Amitai about that episode.
+- **Helper agents never message Amitai directly.** Shorts, segment, analytics, brand and other
+  helper agents report to the Producer (their hand-back), never to Amitai in chat, WhatsApp or
+  Telegram. When a helper is blocked on something only Amitai can decide, it says so in its
+  hand-back; the Producer asks him, batched with anything else pending.
+- **Contact Amitai only for reviews and approvals**: one batched message per review round, with
+  every asset and decision in it. Not for progress updates, status pings, routine choices the
+  skills already decide, or questions a skill or the transcript answers.
+- **Superseded uploads are cleaned up automatically.** When an asset is re-uploaded (a fixed
+  episode, segment or Short), the older **Private** upload of the same asset is deleted once the
+  new one is verified in Studio. Never delete a Public video, one shared for review (Unlisted)
+  that hasn't been replaced, or the current version. List what you deleted (title, video ID) in
+  the hand-back and mark `old_uploads` in the post-production checklist.
+- **When a helper is the only agent on a task** (no Producer running, e.g. a standalone
+  analytics request from Amitai), it reports to Amitai itself.
 
 The **אחים להשקעות** YouTube brand channel must be phone-verified by its owner
 before uploads over 15 minutes and custom thumbnails work. An Editor cannot verify it.
@@ -197,6 +217,8 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 
 ## Never
+- Have a helper agent (Shorts, segments, analytics, brand) message Amitai directly while a Producer runs the episode, or ping Amitai with status updates instead of one batched review.
+- Delete a Public video, the current version of an asset, or an Unlisted review upload that hasn't been replaced.
 - Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.
 - Sign in to Amitai's Google account from a browser: Advanced Protection blocks automated sign-in (see [references/environment.md](references/environment.md)).
 - Write your own code where a skill's script exists, or work around a missing feature without saying so (Working rules).

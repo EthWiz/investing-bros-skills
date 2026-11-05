@@ -168,9 +168,15 @@
           0.88,
           0.25,
           0.09
+        ],
+        "host": [
+          0.1,
+          0.5,
+          0.8,
+          0.38
         ]
       },
-      "note": "Title strips and pill inside the centre square (y 420-1500 of 1920); Heebo Black via make_cover_title.py; engraved topic art over a mustard disc; show mark bottom-right; no host strip. See shorts-covers.md."
+      "note": "Title strips and pill inside the centre square (y 420-1500 of 1920); Heebo Black via make_cover_title.py; engraved topic art over a mustard disc; show mark bottom-right; no host strip. See shorts-covers.md. Face format (standard since episode 10): the 'host' zone holds a real photographic head-and-shoulders cutout of the host speaking in the Short, from that episode's verified face picks, over the mustard disc; a small topic prop may sit beside him in 'hero'. Exact placement is pending Amitai's pick among A/B/C."
     },
     "discussion-square": {
       "size": [

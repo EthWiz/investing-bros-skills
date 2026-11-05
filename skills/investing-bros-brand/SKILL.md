@@ -51,32 +51,46 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    inspect each. A missing reference stops the run: report it, don't substitute. For an
    edit, use the exact image the user selected, never a nearby variant.
 3. Fill the matching prompt with the exact copy, number, format and subject, and attach
-   only the relevant references. Until Amitai says the design is dialed in, every main
-   episode, segment and individual Shorts cover is three clearly labeled options A/B/C,
-   made with Codex on Amitai's Mac through prompts → Codex backend. If Codex is
-   unavailable, report a blocker instead of switching generators. Other artwork may use
-   the built-in image tool with the same prompt; say which generator ran in the
+   only the relevant references. **Hard rule (Amitai, episode 10): every episode, segment
+   and Shorts cover is made by Codex on Amitai's Mac** through prompts → Codex backend,
+   with this skill's references and the episode's real host frames as `-i` inputs. There
+   is no fallback: no Pillow compositing on the box, no other image generator, no
+   template pasted together in code. If Codex or the Mac is unavailable, stop and report
+   a blocker (to the Producer when one runs the episode). Until Amitai says the design is
+   dialed in, each of those covers is three clearly labeled options A/B/C. Other artwork
+   may use the built-in image tool with the same prompt; say which generator ran in the
    hand-back. No code-drawn illustrations and no ad hoc Pillow renderers: the only
    typesetting script is `scripts/make_cover_title.py` (Heebo Black).
 4. Photo-cutout covers: distinct original frames for each brother from the same episode
    being covered, a fresh portrait pair, the approved two-line headline, one photographic
-   centerpiece and only the allowed touch-ups; verify both identities. Frames may come
-   from anywhere in the episode, not necessarily the segment; shortlist them with
-   `scripts/face_score.py` and pick by the portrait rules in covers. Shorts covers: three
-   text-free Codex art options, then the shared `cover_title` with
-   `make_cover_title.py --config short.json`; that field also drives the opening banner
-   and YouTube metadata.
+   centerpiece and only the allowed touch-ups. Frames may come from anywhere in the
+   episode, not necessarily the segment; shortlist them with `scripts/face_score.py` and
+   pick by the portrait rules in covers. **Label every face grid by verified identity**
+   (face picks → Verify who is who): confirm which host sits on which side at the start
+   and after any mid-recording swap, name files by host, and look at each grid yourself
+   before it goes to Amitai. Real frames are passed to Codex as photographic cutouts;
+   what is forbidden is inventing, reshaping or synthesizing a face. Shorts covers use the
+   **face format** (a real frame of the speaking host; `references/shorts-covers.md`):
+   one-pass Codex covers when the Hebrew verifies exactly, otherwise text-free Codex art
+   plus the shared `cover_title` with `make_cover_title.py --config short.json`; that
+   field also drives the opening banner and YouTube metadata.
 5. Review all three labeled options against the quality checks; fix an isolated error
    with one targeted edit and re-inspect. Keep each option in an A/B/C-labeled folder
    under its final-form filename so `check_cover.py` can check all three before review.
    Never put the option label inside the artwork or claim typography, resolution, layers
    or source provenance from the prompt alone.
-6. Show Amitai the three labeled options; he picks. Promote only his selection to the
+6. Show Amitai the three labeled options (through the Producer when one runs the
+   episode, batched with the other reviews); he picks. Promote only his selection to the
    final filename.
 7. Record the selected artifact in the episode's `extras/artwork-register.json` (actual
    path, size, sources, `episode_tab`), then run
-   `scripts/check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json`.
-   It must pass before filing.
+   `scripts/check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json --title "<line>" ...`
+   (Shorts: `--config short.json`; add `--font` with the Heebo file when you have it),
+   appending its output to `extras/cover-check.log`. Record the headline lines as the
+   register row's `headline` too. It checks the headline for characters that render as
+   tofu or never belong (U+061F Arabic question mark, brackets, box characters, missing
+   glyphs) and the palette (brand mustard present, no green disc). It must pass before
+   anything is shown to Amitai or filed; still look at the text yourself, letter by letter.
 8. File the final artwork in Drive (find the episode folder by its `פרק N` prefix): main
    episodes get both `cover-פרק-N.png` and `thumbnail-פרק-N.jpg` in the episode root,
    next to `תמלול - פרק N`; segment thumbnails go in `segments/`, Shorts covers in
@@ -111,5 +125,12 @@ request return the filled prompt. Label a new format as a proposed adaptation un
 - Override the host spelling or credit order in `investing-bros-show`.
 - Treat decorative newsprint as real data, claims or quotations.
 - Commit reference images or generated variations to the repo.
-- Generate or regenerate a real host's face, or use a host frame the operator didn't
-  pick for that episode (face picks).
+- Invent, reshape, "improve" or synthesize a real host's face, or use a host frame the
+  operator didn't pick for that episode (face picks). Passing the picked real frames to
+  Codex as `-i` inputs and keeping them as photographic cutouts is required, not forbidden.
+- Label a face grid by seat or file order without checking who is who (episode 10: the
+  Amitai and Nadav grids were swapped).
+- Make an episode, segment or Shorts cover anywhere but Codex on Amitai's Mac, or
+  composite one with Pillow on the box as a fallback.
+- Show or file a cover whose `check_cover.py` run failed, or a headline with tofu, brackets
+  or Arabic punctuation (episode 10).

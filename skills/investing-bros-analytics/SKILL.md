@@ -14,6 +14,8 @@ description: >-
 
 Load `investing-bros-show` first: accounts and Telegram destinations live there.
 
+**Helper rule** (`investing-bros-show` → Ownership and contact): when the episode's Producer or another agent launched you, report to it, never to Amitai directly; wherever this skill says "tell Amitai", "ask Amitai" or "show Amitai", put it in your hand-back and the Producer batches it into one review for him. You contact Amitai yourself only when he asked you directly and no Producer is involved.
+
 ## When to use
 - Weekly report: Sunday around 10:00 Israel time, covering the last 7 days and comparing with the prior week.
 - Lifetime report on all uploads, on request.

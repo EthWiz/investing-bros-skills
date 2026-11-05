@@ -23,6 +23,8 @@ Do not create competing brand rules or silently change approved artwork.
 ## When to use
 After the audio edit (`investing-bros-post-production`) for episode N: make **exactly three shorts per episode** through the complete flow below; mid-form highlights remain optional when Amitai wants them. Every short ends in Drive with its cover and is uploaded only after the full episode is live (steps 6–7 and Titles and descriptions). Video assets are made only by ליאורה (`investing-bros-show` → Roles).
 
+**You are a helper of the episode's Producer** (`investing-bros-show` → Ownership and contact): report picks, blockers and the hand-back to the Producer, never message Amitai directly. The Producer batches anything that needs Amitai's review or approval into one message. Only when no Producer is running the episode do you report to Amitai yourself.
+
 ## Inputs
 From the episode's `extras/` folder:
 - `segments.json` — the transcript
@@ -48,7 +50,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    - Score each 1–5 on hook, standalone, payoff and friction, then rank them:
      `python3 scripts/score_moments.py segments.json candidates.json --top 5`
      (adds pace, flags filler openers and anything outside 20–45 s).
-   - Listen to the top picks, then give Amitai the table it prints (5 candidates, at least 2
+   - Listen to the top picks, then give the Producer (for Amitai) the table it prints (5 candidates, at least 2
      from the deep dive). The production batch is **exactly 3**: wait for his three picks
      unless he said to just make them, in which case take the top three. Nadav approves
      each cut before a rebuild or an upload (`investing-bros-show` → Roles).
@@ -67,14 +69,20 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 5. **Write the config and render with Remotion** — one JSON per Short (schema below), then follow `investing-bros-remotion` (the show's animation framework, decided 2026-10-25): `make_props.py` checks the config and writes the props, `render_short.py --stills` gives a QA sheet, `render_short.py` renders `NAME.mp4` + `NAME_layout.json` over the clean base. Explainer cards are its `cards` (modes `inset` default, `full`, `card`). `v5_gfx.py` + `build_amitai_short.py` are legacy: only for rebuilding older exports.
 6. **One QA pass, then Telegram for approval.** Run `check_short.py NAME.mp4 --config short.json --youtube-notes youtube-שורט-NN.md` and inspect its 8-frame strip on the **final speed-adjusted render**. The check enforces the shared title in YouTube metadata and the 15–45 s duration; inspect that the opening banner exactly matches `cover_title`, logo is on every frame, name tag matches the speaker, mixed Hebrew/Latin/numbers read in the right order, captions are verbatim, panels hide neither captions nor logo, and the CTA + arrow runs to the last frame (no end card). Audio is −14 LUFS / peak < −1 dB. **45.0 s is a hard cap**: at 1.15x, cut tighter until the check passes; there is no longer an over-length exception. Duration is always checked after speed-up, never against source ranges. Fix what fails once, then the Short goes for Nadav/Amitai's approval together with the episode's other assets, in one Telegram message (`investing-bros-episode-upload` → approval round; `send_telegram.py text`), not one post per Short. Send the Short's video file itself only when Amitai asks (`send_telegram.py video short.mp4 --caption … --thumb cover.jpg`, destination from `investing-bros-show`). A vertical Short needs `width=1080`, `height=1920`, `supports_streaming=true` and a vertical `thumbnail` in `sendVideo`, or Telegram shows it landscape; the script sends the first three (from ffprobe) and the thumbnail only with `--thumb`, so never skip it or call the Bot API by hand. Do not upload or publish before approval.
    Cover: every one of the three standing deliverables gets a dedicated cover from
-   `investing-bros-brand` (Shorts covers). Pass the Short config to
-   `make_cover_title.py --config`: both it and Remotion read the same `cover_title`
-   field, so the cover and opening banner cannot drift. Until Amitai says the design is dialed in,
-   brand delivers three clearly labeled Codex options A/B/C for each individual Short;
-   Amitai picks one. Set the exact approved title in Heebo with `make_cover_title.py`,
-   check the selected option with `check_cover.py`, and use it both as `-cover.jpg` and
-   as the YouTube custom thumbnail. If Codex is unavailable, report the blocker; a
-   legacy `make_cover.py` rebuild does not complete the current standing batch.
+   `investing-bros-brand` → `references/shorts-covers.md`. **The face format is the
+   current standard** (Amitai, episode 10: covers without the hosts' faces were the old
+   format): a real frame of the host who speaks in the Short, picked from the verified
+   face grids and passed to Codex as an `-i` input, kept photographic. Codex makes it on
+   Amitai's Mac, either in one pass (art, Hebrew title, pill and logo) when the Hebrew on
+   the result matches `cover_title` exactly, or as text-free art typeset with
+   `make_cover_title.py --config short.json` (the fallback; both read the same
+   `cover_title` as the opening banner, so they cannot drift). Which of the two becomes
+   final is Amitai's pick. Until he says the design is dialed in, brand delivers three
+   clearly labeled options A/B/C per Short and he picks one. Check the pick with
+   `check_cover.py --kind shorts-vertical --config short.json` and use it both as
+   `-cover.jpg` and as the YouTube custom thumbnail. No Pillow compositing on the box: if
+   Codex is unavailable, report the blocker to the Producer; a legacy `make_cover.py`
+   rebuild does not complete the current standing batch.
 7. **Upload to Drive** — every Short's video and its cover/thumbnail go in the `Shorts/` subfolder of the current episode's Drive folder (`investing-bros-show` → Drive tree, Shorts rule; find the episode folder by its `פרק N` prefix; create `Shorts/` inside it if missing). File names follow `investing-bros-show` → Naming:
    - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `Shorts/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).
    - **Phone-friendly copy first:** re-encode every MP4 you hand over or upload with `-c:v libx264 -profile:v main -pix_fmt yuv420p -movflags +faststart -brand mp42 -c:a aac` (iPhone/WhatsApp/Drive preview all play it).
@@ -180,7 +188,7 @@ Kept as on main for rebuilding older exports; the approved format above replaces
    - a strip of 6–8 frames across the clip: captions right-to-left (punctuation at the left end, English words in place), not over faces, inside the safe zone; the right host on screen
    - `ffmpeg -i short.mp4 -af ebur128=peak=true -f null -` → about −14 LUFS, peak below −1 dB; per-host levels close
    - duration **after playback speed is applied**: 20–45 s; 45.0 s is a hard maximum, with no exception. Listen to every cut — no clipped words, no clicks
-6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid. It comes from `investing-bros-brand` (Shorts covers): give it the hook, the episode number and the Short's file name, and use the result both as `-cover.jpg` and as the YouTube custom thumbnail. Layout, font and checks live there only.
+6. **Make a cover for each short** — the image Reels / Shorts / TikTok show before play and in the profile grid. It comes from `investing-bros-brand` (Shorts covers, face format: a real frame of the speaking host): give it the hook, the episode number, the speaking host, the Short's file name and its verified face picks, and use the result both as `-cover.jpg` and as the YouTube custom thumbnail. Layout, font and checks live there only.
    Until Amitai says the design is dialed in, brand returns three clearly labeled Codex
    options A/B/C for each individual Short; show all three and use only Amitai's pick.
    Rebuilding an older Short in the legacy video-frame style is the only use of `make_cover.py`:
@@ -189,7 +197,7 @@ Kept as on main for rebuilding older exports; the approved format above replaces
      --headline "סוויפט היא בכלל|[לא מערכת תשלומים]" --episode N \
      --frame frame_vertical.png --fonts fonts/ "שורט-01-סוויפט-cover.jpg"
    ```
-   The current standing batch needs all three covers from that brand flow (Codex art, Heebo title); a legacy `make_cover.py` rebuild does not complete a new episode's standing batch.
+   The current standing batch needs all three covers from that brand flow (Codex on Amitai's Mac, face format, exact Hebrew); a legacy `make_cover.py` rebuild does not complete a new episode's standing batch.
 
 ## Titles and descriptions (YouTube)
 - **Title = cover title exactly.** Join `cover_title.top_line` and `bottom_line` with one space; do not append an emoji, episode label, English translation, `#shorts`, another hashtag or `|`. A necessary Latin name such as `CoreWeave` or `S&P 500` stays exactly as approved on the cover.
@@ -210,14 +218,14 @@ Optional 5–10 min YouTube videos, each **one continuous standalone stretch** o
 
 ## Done when
 - `Shorts/` has **exactly three** shorts, each with a non-empty playable `.m4v` (`video/x-m4v`), Amitai's selected
-  Codex-made `-cover.jpg` from three labeled options, `.srt` and
+  Codex-made face-format `-cover.jpg` from three labeled options (passed `check_cover.py`), `.srt` and
   `youtube-שורט-NN.md`.
 - All three were selected through the picks flow, rendered and passed `check_short.py`, sent to Telegram with their covers and approved.
 - All three were uploaded only after the full episode went live. Each has its custom cover, `.srt`, full-episode timestamp link and Spotify episode link in the description, Related video set to the full episode and verified by reopening the edit page (not just a description link), and its URL/status recorded in `youtube-שורט-NN.md`.
 - `mid-form/` has each highlight that was asked for, with its `.txt`.
 
 ## Hand back
-Send Amitai the `Shorts/` folder link and, for shorts 01–03: where each is in the episode, its scores, final length, shared cover/banner/YouTube title, Telegram approval, Drive `.m4v` and YouTube URLs, episode links, any cuts made inside it, and any words you couldn't verify. If any file still needs his manual upload, list it first.
+Report to the Producer (Amitai only when no Producer runs the episode): the `Shorts/` folder link and, for shorts 01–03: where each is in the episode, its scores, final length, shared cover/banner/YouTube title, Telegram approval, Drive `.m4v` and YouTube URLs, episode links, any cuts made inside it, and any words you couldn't verify. If any file still needs Amitai's manual upload, list it first. List any superseded Private upload you deleted (title, video ID).
 
 ## Never
 - Make a Short Public without its custom cover set, or without Nadav's approval.
@@ -232,4 +240,6 @@ Send Amitai the `Shorts/` folder link and, for shorts 01–03: where each is in 
 - Reuse a burned-in Short as the source — cut fresh from the final episode file.
 - Use a figure you haven't verified as the hook headline or cover headline — keep it in the captions as said, and flag it in the hand-back.
 - Hand back a short that isn't in Drive with its cover — or a cover whose headline says more than the clip does.
+- Message Amitai directly while a Producer runs the episode; report to the Producer.
+- Make a new Short cover in the old faceless format, or composite one with Pillow on the box.
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so — follow the working rules in `investing-bros-show`.

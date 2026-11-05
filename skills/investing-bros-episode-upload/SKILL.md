@@ -35,7 +35,8 @@ or final Drive audio, transcribe it with `investing-bros-post-production`, and t
 that audio as the edited timeline (`start = 0`). Use the chapter offset tool in
 `investing-bros-title-description` to locate that body after the video's teaser and
 intro. Upload the replacement as Private and compare it with the current public
-episode; replacing or deleting the public upload still requires Amitai's explicit OK.
+episode; replacing or deleting the public upload still requires Amitai's explicit OK. A superseded
+Private copy of the same asset is deleted without asking (below).
 A replacement is a full-episode re-upload: follow its rule in step 3.
 
 ## Steps
@@ -63,6 +64,8 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
 ### 3. YouTube uploads (Private episode, Unlisted segments, Shorts after live)
+**Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`. It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by Amitai for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
+
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
 
 **Upload a compressed copy, not the master.** Make a ~1 GB copy (H.264 CRF 23,
@@ -103,7 +106,14 @@ full episode is live.
   update every segment video's description, card and end screen and every Short's
   description and Related video, plus `video/תיאור-פרק-N-youtube.txt`, the segment files and each
   `youtube-שורט-NN.md`, to the new URL, and run `check_links.py` on all of them. Retire
-  the old upload (Private); delete it only with the operator's OK.
+  the old upload: once the new one is verified in Studio, **delete the superseded Private
+  upload of the same asset** without asking (Amitai, episode 10: "you can always delete the
+  old uploads that are not relevant anymore from YouTube"). Never delete a Public upload or the
+  current version; a Public one still needs Amitai's explicit OK. List the deleted titles and
+  IDs in the hand-back and mark `old_uploads` in `postprod_checklist.py`.
+- **Superseded uploads (any asset):** the same rule applies to segments and Shorts. Before
+  deleting, confirm in Studio that the video is Private, is the same asset as a newer verified
+  upload, and is not linked from any current description, card, end screen or Related video.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 3b. Approval round: one Telegram message
@@ -162,7 +172,7 @@ Update this skill when the RedCircle or YouTube Studio click-path changes.
 - Type a video ID or URL by hand, or post a link `check_links.py` hasn't passed.
 - Act in Studio (upload, edit, comment, Related video) without confirming אחים להשקעות is the active channel.
 - Make a Short Public whose Related video isn't the full episode (verified by reopening its edit page), or treat a description link as the Related video.
-- Reload or leave the Studio tab during an upload, or delete an old upload without the operator's OK.
+- Reload or leave the Studio tab during an upload; delete a Public upload or the current version of anything without Amitai's OK (superseded Private uploads are deleted automatically).
 - Send assets for approval one by one instead of in one message.
 - Upload raw or `extras/` audio.
 - Paste Hebrew into RedCircle without the RTL + `?` marks, or put those marks in the YouTube copy.

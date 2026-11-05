@@ -24,8 +24,10 @@ using Codex through the backend recipe in [prompts](prompts.md). Amitai picks on
 not promote an option to the final delivery filename before his selection. For a main
 episode, each option includes a directly composed square cover and matching wide
 thumbnail. Put the option label in its filename, folder or review presentation, never
-inside the artwork. Codex being unavailable is a blocker, not permission to switch
-generators.
+inside the artwork. **Hard rule (episode 10): Codex on Amitai's Mac makes every episode,
+segment and Shorts cover; there is no fallback.** No Pillow template or compositing on the
+box, no other generator. Codex being unavailable is a blocker to report, not permission
+to switch.
 
 ## Selected references
 Inspect both before every new cover (Drive `references/covers`, IDs in the
@@ -57,7 +59,9 @@ topic examples, not mandatory props.
    from that same episode's recording. Any point in the episode is valid; a segment
    thumbnail does not have to use a frame from the segment itself. Never use a portrait
    or photo from another episode for a new cover. Map identity by looking, never by file
-   name or seat. `host-amitai-ep08.png` and `host-nadav-ep08.png` (Drive
+   name or seat: confirm who sits where at the start and after any mid-recording seat
+   swap (episode 10's grids came out swapped), and use only stills from grids labelled by
+   verified identity ([face picks](face-picks.md) step 2). `host-amitai-ep08.png` and `host-nadav-ep08.png` (Drive
    `references/hosts`) are identity anchors only, not reusable production portraits.
    Resolve any doubt first.
 2. Pick sharp, well-lit frames with a real smile or laugh, teeth showing, eyes open and
@@ -92,8 +96,14 @@ speaking expression into a natural small smile. Start from a good frame; don't
 manufacture alertness. Not allowed: strong filters, orange skin, plastic smoothing,
 enlarged eyes, changed proportions, added teeth or exaggerated emotion. Image generation
 can change faces even when told not to: inspect, and disclose AI portrait changes plainly.
-Never call an AI-edited portrait an untouched cutout. If untouched portraits are
-requested, use a non-generative compositing workflow, or say that capability is missing.
+Never call an AI-edited portrait an untouched cutout.
+
+**What the face rule means.** The picked real frames are always passed to Codex as `-i`
+inputs and kept as photographic cutouts; every cover with the hosts uses them. What is
+forbidden is inventing, reshaping or synthesizing a face: drawing a host from a
+description, merging two frames into a new face, changing his features beyond the light
+touch-ups above. If Codex altered a face, redo that option; don't ship it and don't fix it
+with a Pillow paste on the box.
 
 ## Centerpiece and alternatives
 One clear subject with realistic material detail, soft light and a restrained shadow; the

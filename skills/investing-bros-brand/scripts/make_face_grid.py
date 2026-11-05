@@ -2,6 +2,7 @@
 """Labelled review grid of one host's face stills, for the operator's face picks.
 
   make_face_grid.py RECORDING OUT_DIR --host amitai --side left --prefix A \
+      --verified "00:30 Amitai left (his intro)" [--swap-at 41:20 --verified "41:30 ..."] \
       --score-json amitai-scores.json [--pick 10 --gap 30]
   make_face_grid.py RECORDING OUT_DIR --host nadav --side right --prefix N \
       --times 09:59.4 34:51.3 ...
@@ -13,6 +14,12 @@ OUT_DIR/manifest-<host>-<PREFIX>.json (id -> host, t_sec), the input of
 record_face_picks.py. The prefix is the round id: a second round for the same host
 gets a new prefix (episode 9: A, then B for Amitai), so no round overwrites another.
 An existing manifest for the same host and prefix is refused unless --force.
+
+Identity (episode 10: the hosts swapped seats mid-recording and the grids came out
+swapped): --side is the host's side at the START of the recording, confirmed by eye and
+recorded with --verified. Each --swap-at time flips his side from then on and needs its
+own --verified note (one note per seating period). Every still records the side it was
+cropped from. Look at the grid yourself before anyone sees it.
 The stills are real frames, untouched. Keep them out of the repo.
 """
 from __future__ import annotations
@@ -58,6 +65,16 @@ def out_names(host: str, prefix: str) -> dict:
     return {"grid": f"grid-{host}-{prefix}.jpg", "manifest": f"manifest-{host}-{prefix}.json"}
 
 
+def side_at(t: float, start_side: str, swaps: list[float]) -> str:
+    """The host's side at time t, given his starting side and the times the hosts swapped seats."""
+    if start_side == "full":
+        return "full"
+    flips = sum(1 for s in swaps if t >= s)
+    if flips % 2 == 0:
+        return start_side
+    return "right" if start_side == "left" else "left"
+
+
 def extract(recording: str, t: float, side: str, out: str) -> None:
     crop = {"left": ["-vf", "crop=iw/2:ih:0:0"], "right": ["-vf", "crop=iw/2:ih:iw/2:0"], "full": []}[side]
     subprocess.run(["ffmpeg", "-v", "error", "-y", "-ss", f"{t:.3f}", "-i", recording, "-frames:v", "1",
@@ -97,7 +114,20 @@ def main(argv=None) -> int:
     ap.add_argument("--pick", type=int, default=10)
     ap.add_argument("--gap", type=float, default=30.0)
     ap.add_argument("--force", action="store_true", help="replace this host's round with the same prefix")
+    ap.add_argument("--swap-at", action="append", default=[], metavar="TIME",
+                    help="time the hosts swapped seats (repeatable); his side flips from then on")
+    ap.add_argument("--verified", action="append", default=[], metavar="NOTE", required=True,
+                    help="how you confirmed who sits where, e.g. '00:30 Amitai left (his intro)'; "
+                         "one per seating period (1 + number of --swap-at)")
     a = ap.parse_args(argv)
+    swaps = sorted(parse_time(t) for t in a.swap_at)
+    if a.side == "full" and swaps:
+        ap.error("--swap-at needs --side left|right (a full frame has no side to flip)")
+    if len(a.verified) < 1 + len(swaps):
+        ap.error(f"{len(swaps)} seat swap(s) need {1 + len(swaps)} --verified notes "
+                 "(confirm who is who at the start and after every swap)")
+    if any(not v.strip() for v in a.verified):
+        ap.error("--verified notes must say how the identity was checked")
     if not a.prefix.isalnum():
         ap.error("--prefix must be letters/digits (it names the files and the still ids)")
     names = out_names(a.host, a.prefix)
@@ -115,17 +145,21 @@ def main(argv=None) -> int:
     for k, t in enumerate(times, 1):
         sid = f"{a.prefix}{k}"
         p = os.path.join(a.out_dir, sid + ".jpg")
-        extract(a.recording, t, a.side, p)
-        items[sid] = {"host": a.host, "t_sec": t}
+        side = side_at(t, a.side, swaps)
+        extract(a.recording, t, side, p)
+        items[sid] = {"host": a.host, "t_sec": t, "side": side}
         paths.append(p)
         labels.append(f"{sid}  {fmt(t)}")
     grid = os.path.join(a.out_dir, names["grid"])
     build_grid(paths, labels, grid)
     man = {"recording": os.path.basename(a.recording), "host": a.host, "side": a.side,
-           "prefix": a.prefix, "grid": names["grid"], "items": items}
+           "prefix": a.prefix, "grid": names["grid"], "swaps": swaps, "verified": a.verified,
+           "items": items}
     with open(man_path, "w") as fh:
         json.dump(man, fh, indent=1, ensure_ascii=False)
     print(grid)
+    print(f"identity: {a.host} starts {a.side}; swaps {[fmt(s) for s in swaps]}; verified: {a.verified}")
+    print("Look at the grid: every tile must show " + a.host + " before it goes to review.")
     for sid, it in items.items():
         print(sid, fmt(it["t_sec"]))
     return 0

@@ -11,13 +11,30 @@ rejects also become eval labels, so the face scorer keeps learning his taste.
    Nadav right in the Riverside side-by-side; frame naming, model and refinement as in
    [covers](covers.md)). It is a best-effort shortlist: look at each still yourself.
    Until `face_score.py` is on `main` (PR #75), pick the times by eye.
-2. **Show labelled grids.** One grid per host:
+2. **Verify who is who, then show labelled grids.** Episode 10's grids came out swapped:
+   the hosts changed seats mid-recording and the grids were labelled by side. So before
+   any grid:
+   - Confirm which host sits on which side **at the start** (his own intro line, the
+     Riverside name tag, or each host's own track) and **after every break or seat swap**
+     (scrub the side-by-side for the cut where the seats change). Never assume "Amitai
+     left, Nadav right".
+   - Pass what you checked: `--side` is the host's side at the start, each `--swap-at`
+     is a time the seats changed, and one `--verified` note per seating period says how
+     you confirmed it. The script crops the right side for each still and records it.
+   - Name everything by host (`--host`, `grid-<host>-…`), never "left/right grid".
+   - **Look at each grid yourself before it goes to Amitai**: every tile must be that
+     host. One wrong face and the grid is redone.
    ```bash
    python3 scripts/make_face_grid.py riverside-combined.mp4 OUT --host amitai --side left \
+     --verified "00:20 Amitai left (his intro)" \
      --prefix A --score-json amitai-scores.json --pick 10
    python3 scripts/make_face_grid.py riverside-combined.mp4 OUT --host nadav --side right \
+     --verified "00:20 Nadav right (his intro)" \
      --prefix N --score-json nadav-scores.json --pick 10
+   # seats swapped at 41:20: add --swap-at 41:20 --verified "41:40 Nadav now left (name tag)"
    ```
+   Score each seating period on the side the host actually sat on (run `face_score.py`
+   per period, or pick by eye across the swap).
    Each tile carries its id and recording time (`A3  33:15.4`). Show Amitai the grids,
    not loose files. Files are named per round, `grid-<host>-<prefix>.jpg` and
    `manifest-<host>-<prefix>.json`: a second round for the same host takes a new prefix
@@ -51,7 +68,10 @@ rejects also become eval labels, so the face scorer keeps learning his taste.
 - Then point step 1 at `face_score.py` on `main` and drop the "pick by eye" fallback.
 
 ## Rules
-- Real frames only. Never generate, regenerate or "improve" a real host's face with an
-  image model; only the touch-ups allowed in [covers](covers.md).
+- Real frames only. The picked frames **are** passed to Codex as `-i` inputs and kept as
+  photographic cutouts; that is how every cover gets the hosts' faces. What is forbidden
+  is inventing, reshaping, "improving" or synthesizing a face, or generating one from a
+  description; only the touch-ups allowed in [covers](covers.md).
+- Grids are labelled by verified identity, never by seat (step 2).
 - Picks are per episode: never reuse a portrait from another episode.
 - A reject without the operator's reason is not recorded as a reject.

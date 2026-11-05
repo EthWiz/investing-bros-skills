@@ -13,9 +13,10 @@ for downloaded references. This list is what only eyes can check.
 - Main-episode, segment and individual Shorts covers: Codex is available and the plan
   calls for three clearly labeled options A/B/C. This is required until Amitai says the
   design is dialed in.
-- Photo-cutout covers: both selected references and a separate original frame of each
-  brother from the same episode recording, with episode, timestamp, identity and side
-  recorded. Frames may come from any point in the episode, not necessarily the segment;
+- Photo-cutout covers and face-format Shorts covers: the selected references and a
+  separate original frame of each host from the same episode recording, taken from grids
+  labelled by **verified** identity (start of recording and after any seat swap; face
+  picks step 2), with episode, timestamp, identity and side recorded. Frames may come from any point in the episode, not necessarily the segment;
   sources from another episode, blurred frames and blinking frames are rejected.
 - Mixed selections: the exact source image and side for every selected element.
 
@@ -40,8 +41,17 @@ for downloaded references. This list is what only eyes can check.
 - No cropped letters, stray generated text, invented logos or clutter inside the margins.
 - Edits: unchanged regions match the exact source; don't claim perfect preservation if
   generation changed them.
-- Then `check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json`
-  must pass. Its warnings (real size below target) go in the hand-back.
+- No tofu boxes, `؟` (U+061F, the Arabic question mark), literal `[` `]` brackets or
+  missing letters in any headline (episode 10's thumbnails showed bracket tofu).
+- The disc and strips are brand mustard `#D8A52E`, never a green disc (episode 10).
+- The cover was made by Codex on Amitai's Mac (log and prompt in the workdir), not
+  assembled on the box.
+- Then `check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json --title "<line>" …`
+  (Shorts: `--config short.json`) must pass, with its output appended to
+  `extras/cover-check.log`. It fails a headline with banned or missing glyphs (U+061F,
+  brackets, box characters, niqqud, anything not in the font with `--font`), and an image
+  with no brand mustard or a green area. `--allow-green "amitai: <his words>"` only when
+  Amitai asked for green. Its warnings (real size below target) go in the hand-back.
 
 ## Repair
 One localized imagegen edit for an isolated error, then re-inspect. If the Hebrew stays

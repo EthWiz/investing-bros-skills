@@ -20,10 +20,17 @@ Starting post-production opens one standing deliverable bundle:
 This skill performs the audio edit and starts and tracks that complete bundle. The edited audio is the handoff to the downstream skills, not completion of post-production. Everything after the audio edit reads the transcript and `edit.json` it leaves:
 - titles, description, artwork copy brief → `investing-bros-title-description`
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
-- cold opens, canonical intro + matching outro, video episode, teaser → `investing-bros-video`
+- the **required** combined cold-open teaser, canonical intro + matching outro, video episode (teaser → intro → episode → outro), promo teaser on request → `investing-bros-video`
 - exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen, Drive, Unlisted review and Amitai's OK → `investing-bros-segment-video`
 - exactly three shorts, each through picks, render, Codex cover, Telegram approval, Drive, post-episode upload and links → `investing-bros-shorts`
 - review ping, uploads, publish → `investing-bros-episode-upload`
+
+"Full treatment" (or "full post-production", "do everything") means the complete deliverable list in [references/CHECKLIST.md](references/CHECKLIST.md), every item, never a subset. Track it with `scripts/postprod_checklist.py`:
+- `check "$EP" --episode N` must PASS before any YouTube upload of the full episode;
+- `check "$EP" --episode N --stage done` must PASS before post-production is reported done;
+- an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
+
+**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. Helper agents (Shorts, segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
 
 ## When to use
 The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
@@ -128,6 +135,9 @@ Post-production is not complete at the audio handoff. Every item below must be c
   `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
 - Nadav OK'd the cut list.
 
+**Gate**
+- `scripts/postprod_checklist.py check "$EP" --episode N --stage done` exits 0, each missing item made or waived by Amitai in his own words; paste its output in the hand back.
+
 **Standing downstream deliverables**
 - The normal main episode flow has completed through its owning title/description,
   brand, video and upload skills as applicable. Its full video uses the freshly
@@ -148,11 +158,13 @@ Post-production is not complete at the audio handoff. Every item below must be c
   incomplete approval or action for each.
 
 ## Never
+- Upload the full episode to YouTube, or call post-production done, while `postprod_checklist.py` fails; or treat a step as optional because its wording sounds conditional.
 - Auto-number the episode or create a second `פרק N` folder.
 - Make a cut Nadav hasn't OK'd, or an ambiguous cut without asking.
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
+- Let a helper agent message Amitai directly, or send him status pings instead of one batched review.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 
 Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.
