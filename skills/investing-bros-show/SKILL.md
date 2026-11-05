@@ -13,7 +13,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 
 ## The show
 - **Name:** Investing Bros, Hebrew **אחים להשקעות**.
-- **Hosts:** Amitai Raskin and Nadav Raskin. Amitai is the person you take instructions and approvals from.
+- **Hosts:** Amitai Raskin and Nadav Raskin. Amitai is the person you take instructions from; every approval of an episode's assets comes from that episode's **episode owner** (Roles and accounts → Episode owner).
 - **Episode format:** ~10 min news, ~20 min deep dive, ~5 min each for one investment idea per host.
 - **Standing post-production bundle (decided 2026-10-22):** starting post-production for any episode commits the pipeline to the main episode flow **plus exactly two segment videos plus exactly three shorts**, each completed through its owning skill. Segment 01 is the required deep-dive sub-question; segment 02 is the next-best self-contained deep-dive sub-question, or the strongest other self-contained topic when no second deep-dive cut qualifies.
 - **News taste:** All-In-style tech (model releases, launches, big raises/IPOs, hacks, infra, fintech/platform moves) over macro/rates/oil/price action, unless Amitai asks for macro.
@@ -23,13 +23,13 @@ Single source of truth for shared show facts and operating rules. If another ski
 ## Hard rules (every skill)
 1. **Never invent** numbers, quotes, events or promo copy. Factual claims need a source URL.
 2. **Episode number = the number Amitai states.** Never auto-increment from old folders, Drive names or workspace paths.
-3. **Nothing goes public without Amitai's explicit OK** — RedCircle stays a draft; WhatsApp and Telegram messages go only to the approved destinations below, and only when Amitai asks in chat for that post.
+3. **Nothing goes public without explicit OK.** An episode's assets need the **episode owner's** explicit OK (cuts, picks, covers, waivers, going Public); everything else (the crypto course, show-wide metadata, new destinations, merging publishing PRs) needs Amitai's. RedCircle stays a draft until then; WhatsApp and Telegram messages go only to the approved destinations below, and only when asked in chat for that post (pipeline messages: Telegram below).
 4. **Never commit, echo or paste secrets.** Refer to them by env-var name.
 5. **Don't delete** WhatsApp messages, old drafts or the `brief/` archive without explicit OK. One standing exception (Amitai, episode 10: "you can always delete the old uploads that are not relevant anymore from YouTube"): a **superseded Private** YouTube upload of the same asset is deleted without asking (see Ownership and contact). Never anything public, a review upload that hasn't been replaced, or the current version.
 6. **Ask, don't guess** on ambiguous cuts, titles or numbers.
 
 ## Working rules (every skill)
-1. **Use the scripts.** Run the skill's scripts from `scripts/`. Don't write your own render, caption, animation, download or upload code. If a script lacks a feature or has a bug, stop, tell Amitai what's missing, and propose the change as a PR to this repo. A one-time workaround is allowed only with Amitai's OK, and it must be listed in the hand-back.
+1. **Use the scripts.** Run the skill's scripts from `scripts/`. Don't write your own render, caption, animation, download or upload code. If a script lacks a feature or has a bug, stop, tell Amitai what's missing, and propose the change as a PR to this repo. A one-time workaround is allowed only with the episode owner's OK (Amitai's outside episodes), and it must be listed in the hand-back.
 2. **The hand-back lists what ran:** the scripts run, any generated command patched by hand and why, and the PR that will fix it.
 3. **End every run by asking what it taught.** A mistake that could happen again becomes a script check with a test if a script can catch it, otherwise one line in the skill that owns the step, or a fact in this skill. Send it as a small PR the same day. Something you couldn't verify or fix becomes a GitHub issue on the repo. Nothing learned means no PR. Details in the repo's `AGENTS.md` → Improving the skills.
 4. **Know the environment before working around it.** Limits of the Drive connector, Amitai's Mac, the network and the tools are in [references/environment.md](references/environment.md).
@@ -129,7 +129,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **Episode art:** every episode has a square cover and a 16:9 YouTube thumbnail made from it (square centred on a blurred background), both filed in the episode's Drive folder. `investing-bros-title-description` supplies the headline; `investing-bros-brand` owns the rules and the artwork.
-- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own canonical camera track as-is** — never crop, zoom or upscale the combined / side-by-side export: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; if the tracks are missing, **stop and ask Amitai for the recording share link** (decided 2026-10-25; reinforced 2026-11-05). `--allow-side-by-side` needs Amitai's OK.
+- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own canonical camera track as-is** — never crop, zoom or upscale the combined / side-by-side export: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; if the tracks are missing, **stop and ask the episode owner for the recording share link** (decided 2026-10-25; reinforced 2026-11-05). `--allow-side-by-side` needs the episode owner's OK.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
 ## Animation
@@ -144,9 +144,10 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 ## Roles and accounts
 | Role / account | Who / what | Notes |
 |---|---|---|
-| Approver | Amitai | Episode number, cuts, final title, publish, new destinations. Contacted only for reviews and approvals (Ownership and contact) |
+| Episode owner | Amitai or Nadav: whoever starts the episode's post-production | Every approval of that episode's assets: cuts, final title, picks, covers, waivers, going Public. Contacted only for reviews and approvals (Ownership and contact) |
+| Show owner | Amitai | Episode number; the crypto course; show-wide metadata; new WhatsApp/Telegram destinations; merging publishing-related PRs |
 | Producer | the agent running the episode's post-production | Owns the episode end to end; the only agent that messages Amitai about it |
-| Video producer | ליאורה | Cold opens, the intro, mid-form and the video episode (Shorts are run by the Producer). Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
+| Video producer | ליאורה | Cold opens, the intro, mid-form and the video episode (Shorts are run by the Producer). The episode owner approves each video change before a rebuild or upload, and going Public |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
 | Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Connector uploads cap at 100 MB, while large uploads in the box browser can stall. For finished videos, use the verified chunked handoff to the Mac in [references/environment.md](references/environment.md#delivering-files); connectors remain fine for Docs, folders and moves. |
@@ -154,20 +155,36 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | Show cover art | `Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Brand Resources/Investing-bros-logo.png` |
 | Local working dir | `/workspace/investing-bros/episode-N/` | Or `episode-latest/` until N is confirmed. Agents on another machine: any scratch dir, same sub-layout. |
 
+### Episode owner (Amitai, 2026-11-05)
+- **Who:** whoever starts an episode's post-production, Amitai or Nadav. Set once at the start
+  with `investing-bros-producer` → `pipeline.py start --episode N --owner amitai|nadav`; if it
+  isn't clear who started it, ask in the first review round. Recorded in `extras/pipeline.json`.
+- **What:** every approval of **that episode's** assets: cut lists, the final title, Shorts
+  picks, cover and thumbnail picks, segment ranges, each asset in the approval round, waivers
+  of that episode's gate items, and the publish OK. Scripts take waivers and OKs only in the
+  owner's words (`"Nadav HH:MM: ..."`).
+- **The other brother** gets one Telegram summary after each signed-off round (Telegram →
+  Round summary), and may still comment; his words are not an approval unless he owns the episode.
+- **Transfer:** only when the owner says so; record it with `pipeline.py owner --set NAME --by
+  "<the owner's own words>"`.
+- **Scope: episodes only.** The crypto course, show-wide metadata (e.g. the Spotify author
+  line), new WhatsApp/Telegram destinations and merging publishing-related PRs stay Amitai's.
+  With no episode state (the course, a back-catalogue fix), approvals are Amitai's.
+
 ## Ownership and contact (Amitai, episode 10)
 - **The Producer owns the episode end to end.** The agent running post-production for episode N
   is its Producer: it tracks every deliverable in `postprod_checklist.py`, runs Shorts itself,
   starts and chases the remaining helper agents, fixes what they hand back, and is the single
-  voice to Amitai about that episode.
+  voice to the episode owner about that episode.
 - **Shorts are Producer-owned (Amitai, 2026-11-05).** The Producer runs `investing-bros-shorts`
   directly. The separate Grok bot "Investing Bro Shorts" (periphery-marketing helper, agent
   `11e5db1a-5535-4d25-a454-3266d868c7cf`) is **retired**: do not `SendToAgent` to it, do not
   hand Shorts picks/renders/uploads off to another bot, and do not expect a Shorts-bot hand-back.
-- **Helper agents never message Amitai directly.** Segment, analytics, brand and other helper
-  agents (not Shorts) report to the Producer (their hand-back), never to Amitai in chat,
-  WhatsApp or Telegram. When a helper is blocked on something only Amitai can decide, it says
-  so in its hand-back; the Producer asks him, batched with anything else pending.
-- **Contact Amitai only for reviews and approvals**: one batched message per review round, with
+- **Helper agents never message the hosts directly.** Segment, analytics, brand and other helper
+  agents (not Shorts) report to the Producer (their hand-back), never to Amitai or Nadav in
+  chat, WhatsApp or Telegram. When a helper is blocked on something only the episode owner can
+  decide, it says so in its hand-back; the Producer asks them, batched with anything else pending.
+- **Contact the episode owner only for reviews and approvals**: one batched message per review round, with
   every asset and decision in it. Not for progress updates, status pings, routine choices the
   skills already decide, or questions a skill or the transcript answers.
 - **Superseded uploads are cleaned up automatically.** When an asset is re-uploaded (a fixed
@@ -176,7 +193,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   that hasn't been replaced, or the current version. List what you deleted (title, video ID) in
   the hand-back and mark `old_uploads` in the post-production checklist.
 - **When a helper is the only agent on a task** (no Producer running, e.g. a standalone
-  analytics request from Amitai), it reports to Amitai itself.
+  analytics request from Amitai), it reports to whoever asked.
 
 The **אחים להשקעות** YouTube brand channel must be phone-verified by its owner
 before uploads over 15 minutes and custom thumbnails work. An Editor cannot verify it.
@@ -200,9 +217,10 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts, the review ping and the approval round (pipeline messages); weekly analytics report (pre-approved, see `investing-bros-analytics`) |
 
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
-- **Each post needs Amitai's OK in chat**, like WhatsApp (exception: the weekly analytics report, pre-approved). Don't add destinations without his OK.
+- **Each post needs an OK in chat**, like WhatsApp, except **pipeline messages**, which are pre-approved: the weekly analytics report, an episode's review ping and approval round, and the round summary to the other brother (below). Don't add destinations without Amitai's OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
 - **Approval round:** once all of an episode's assets are ready (full episode Private, both segments Private, three Shorts with covers, RedCircle draft link), post **one** message to `tg-achim` automatically as part of the pipeline (no separate OK from Amitai), each asset with its link, ending with the line `sent by Grokbot`; never per-asset posts (`investing-bros-episode-upload` → approval round).
+- **Round summary to the other brother:** after the episode owner signs off a review round, post one short summary (what was approved, what changed, open items) to `tg-achim` for the brother who isn't the owner, ending `sent by Grokbot`. Pre-approved, like the approval round; one per round, never per item.
 - Cold opens, intros, drafts and the review-ready ping (`investing-bros-episode-upload` step 1) are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. The review ping is a pipeline message like the approval round. Post drafts with the title only.
 - Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
 - To see group messages/media a bot needs privacy mode off (@BotFather → /setprivacy → Disable).
@@ -211,13 +229,13 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | # | Stage | Skill | Who approves |
 |---|---|---|---|
 | 0 | Before recording | `investing-bros-episode-preparation` | — |
-| 1 | Audio edit | `investing-bros-post-production` | Nadav (cuts) |
-| 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
-| 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
-| 4 | Exactly 3 shorts, run by the Producer (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
-| 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
-| 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
-| 5b | Going Public in order with a live check per item; ticked checklist | `investing-bros-publish` | Amitai (publish) |
+| 1 | Audio edit | `investing-bros-post-production` | Episode owner (cuts) |
+| 2 | Titles, description, artwork brief | `investing-bros-title-description` | Episode owner (title) |
+| 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Episode owner |
+| 4 | Exactly 3 shorts, run by the Producer (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Episode owner |
+| 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Episode owner (range, thumbnail, publish) |
+| 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Episode owner (publish) |
+| 5b | Going Public in order with a live check per item; ticked checklist | `investing-bros-publish` | Episode owner (publish) |
 | 6 | Weekly analytics (Sunday), ad-hoc stats | `investing-bros-analytics` | — (read-only; weekly Telegram post pre-approved) |
 
 `investing-bros-brand` serves stages 2–4 as the shared design and artwork capability; `investing-bros-remotion` is the shared animation capability.
@@ -225,7 +243,8 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 
 ## Never
-- Have a helper agent (segments, analytics, brand) message Amitai directly while a Producer runs the episode, or ping Amitai with status updates instead of one batched review.
+- Have a helper agent (segments, analytics, brand) message a host directly while a Producer runs the episode, or ping the episode owner with status updates instead of one batched review.
+- Take an approval of an episode asset from anyone but its episode owner, or treat episode ownership as covering the course, show-wide metadata or new destinations.
 - Hand Shorts off to a separate Grok bot (`SendToAgent`, "Investing Bro Shorts", periphery-marketing). The Producer runs `investing-bros-shorts` directly.
 - Delete a Public video, the current version of an asset, or a Private review upload that hasn't been replaced.
 - Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.

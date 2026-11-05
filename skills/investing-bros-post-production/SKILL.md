@@ -21,7 +21,7 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 - titles, description, artwork copy brief → `investing-bros-title-description`
 - show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
 - the **required** combined cold-open teaser, canonical intro + matching outro, video episode (teaser → intro → episode → outro), promo teaser on request → `investing-bros-video`
-- exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen, Drive, Private review and Amitai's OK → `investing-bros-segment-video`
+- exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen, Drive, Private review and the episode owner's OK → `investing-bros-segment-video`
 - exactly three shorts, each through picks, render, Codex cover (brand), Telegram approval, Drive, **Private** review upload, Related video and links — run by the Producer via `investing-bros-shorts` (no separate Shorts bot)
 - review ping, uploads, publish → `investing-bros-episode-upload`
 
@@ -29,9 +29,9 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 - `check "$EP" --episode N` must PASS before any YouTube upload of the full episode;
 - `check "$EP" --episode N --stage review` must PASS before the final review and before anything goes Public;
 - `check "$EP" --episode N --stage done` must PASS (after publication) before the episode is reported done;
-- an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
+- an item may be skipped only when the episode owner (`investing-bros-show` → Episode owner) explicitly waives it for this episode (`waive --by "<Owner> HH:MM: ..."`).
 
-**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. **You run `investing-bros-shorts` yourself** — there is no separate Shorts / periphery-marketing Grok bot to chase or `SendToAgent` to (retired 2026-11-05). Helper agents (segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
+**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. **You run `investing-bros-shorts` yourself** — there is no separate Shorts / periphery-marketing Grok bot to chase or `SendToAgent` to (retired 2026-11-05). Helper agents (segments, brand, analytics) report to you, not to the hosts; you check what they hand back, fix or send back what fails, and contact the episode owner only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
 
 ## When to use
 The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
@@ -94,9 +94,9 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
 - **Silences under 2 s are kept by default — never cut them** (Amitai, episode 10: the five 1–3 s silence trims were all put back). Only a silence of 2 s or longer may be trimmed, and even then leave a natural beat on each side so the join doesn't sound clipped.
 - Listen for what else should go: long silences (2 s+), false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
-- Send Nadav the list (raw times + the words around each) and wait for his OK. Ambiguous cut → ask Amitai.
+- Send the episode owner the list (raw times + the words around each) and wait for their OK. Ambiguous cut → ask them in the same round.
 - **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
-  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with Amitai/Nadav (e.g. "remove the 40 s") before cutting.
+  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with the episode owner (e.g. "remove the 40 s") before cutting.
   2. Cut on a pause, not mid-word; listen to the join.
   3. Make the cut in audio **and** video with the same times. `trim.sh --cut A-B` (repeatable) removes it from the audio and records it in `edit.json`; `investing-bros-video` → `assemble_episode.sh --edit edit.json` removes the same range from the video. Don't splice by hand.
   4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
@@ -149,19 +149,19 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
 - Once the episode art is final, the folder also has `cover-פרק-N.png` and
   `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
-- Nadav OK'd the cut list.
+- The episode owner OK'd the cut list.
 
 - `extras/past-episode-cards.json` exists (step 8) and the cards are set on YouTube.
 
 **Gate**
-- `scripts/postprod_checklist.py check "$EP" --episode N --stage done` exits 0, each missing item made or waived by Amitai in his own words; paste its output in the hand back.
+- `scripts/postprod_checklist.py check "$EP" --episode N --stage done` exits 0, each missing item made or waived by the episode owner in their own words; paste its output in the hand back.
 
 **Standing downstream deliverables**
 - The normal main episode flow has completed through its owning title/description,
   brand, video and upload skills as applicable. Its full video uses the freshly
   fetched canonical Drive-ID clip from `investing-bros-show` as both intro and
   outro; the outro provides the final 20 seconds for the YouTube end screen.
-- `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Private review and Amitai's OK.
+- `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Private review and the episode owner's OK.
 - `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow run by the Producer, including approved picks, render and QA, Codex cover (brand), Telegram approval-round inclusion, Drive files, **Private** review upload, Related video to the full episode, and links back to the episode.
 - If an approval or publication step is still waiting, report the bundle as waiting, not done.
 
@@ -178,11 +178,11 @@ Post-production is not complete at the audio handoff. Every item below must be c
 ## Never
 - Upload the full episode to YouTube, or call post-production done, while `postprod_checklist.py` fails; or treat a step as optional because its wording sounds conditional.
 - Auto-number the episode or create a second `פרק N` folder.
-- Make a cut Nadav hasn't OK'd, or an ambiguous cut without asking.
+- Make a cut the episode owner hasn't OK'd, or an ambiguous cut without asking.
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
-- Let a helper agent message Amitai directly, or send him status pings instead of one batched review.
+- Let a helper agent message a host directly, or send the episode owner status pings instead of one batched review.
 - Hand Shorts off to another Grok bot; run `investing-bros-shorts` in this Producer session.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 

@@ -234,3 +234,10 @@ def test_past_episode_cards_rejects_unknown_id(tmp_path):
     touch(tmp_path / "extras/past-episode-cards.json", json.dumps([{"v5_timestamp": 1, "quote": "q",
           "referenced_episode": 8, "youtube_video_id": "XXXXXXXXXXX"}]))
     assert "not in episode index" in (pc.file_check(tmp_path, N, "past_episode_cards") or "")
+
+
+def test_waiver_must_come_from_the_episode_owner(tmp_path):
+    upload_ready(tmp_path, teaser=False)
+    touch(tmp_path / "extras/pipeline.json", json.dumps({"schema_version": 1, "owner": {"name": "nadav"}}))
+    assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Amitai 09:12: no teaser"]) == 2
+    assert pc.main(["waive", str(tmp_path), "teaser", "--by", "Nadav 09:13: בלי טיזר"]) == 0

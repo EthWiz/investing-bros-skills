@@ -12,7 +12,7 @@ description: >-
 ---
 # Investing Bros video
 
-Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts); the cold-open teaser moments are the exception: you choose them yourself (step 1).
+Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; the episode owner approves each cut before a rebuild or upload (show conventions → Episode owner); the cold-open teaser moments are the exception: you choose them yourself (step 1).
 
 Load `investing-bros-brand` for visual specifications and request graphic assets from it.
 It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
@@ -20,7 +20,7 @@ The approved full-frame teaser layout is implemented here; do not create competi
 brand rules or silently change approved artwork.
 
 ## When to use
-After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when Amitai explicitly says so for that episode, and record that with `postprod_checklist.py waive ... teaser`. The square promo teaser stays on request.
+After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when the episode owner explicitly says so for that episode, and record that with `postprod_checklist.py waive ... teaser`. The square promo teaser stays on request.
 
 ## Inputs
 From the episode's `extras/`:
@@ -214,15 +214,15 @@ Watch each once: captions readable and right-to-left (English words in place), j
 | `promo/` | Cold opens, promo teaser |
 | `extras/` | Teaser JSONs, segment files, the music bed |
 
-Review copies over the transfer caps: compress (show conventions → references/environment.md). Drafts for review go to Telegram only when Amitai asks.
+Review copies over the transfer caps: compress (show conventions → references/environment.md). Drafts for review go to Telegram only when the episode owner asks.
 
 ## Done when
 - `video/` has the video episode, with the freshly fetched canonical clip as both
   intro and outro and a full 20-second outro window, plus its checked YouTube
   description (when a video episode was asked for).
-- `promo/` has the combined full-frame cold-open teaser (required unless Amitai waived it for this episode), plus any promo teaser that was asked for.
+- `promo/` has the combined full-frame cold-open teaser (required unless the episode owner waived it for this episode), plus any promo teaser that was asked for.
 - The full video is cold-open teaser → intro → episode → outro, and `investing-bros-post-production` → `scripts/postprod_checklist.py check` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
-- Nadav OK'd the cuts.
+- The episode owner OK'd the cuts.
 - Every delivered edited file passed `verify_sync.py` (`SYNC OK`).
 
 ## Hand back
@@ -233,7 +233,7 @@ Review copies over the transfer caps: compress (show conventions → references/
   whether the optional Heebo callout was included
 
 ## Never
-- Post anywhere unless Amitai asks in chat for that post, and then only to a destination in `investing-bros-show`.
+- Post anywhere unless the episode owner asks in chat for that post, and then only to a destination in `investing-bros-show`.
 - Put words on screen the hosts didn't say, captions you haven't proofread, or splice lines so a host seems to say something he didn't.
 - Cut a caveat to make a line punchier, or cut a teaser moment before its payoff.
 - Use a teaser moment a viewer with no context can't follow (an unexplained niche name, a half-made point), or captions outside the safe area.

@@ -81,7 +81,7 @@ Mac is unavailable, report the blocker (to the Producer when one runs the episod
    (palette: brand mustard present, no green), then by eye: the face is the right host
    and unaltered, title readable, pill not clipped, logo readable, nothing important
    outside the centre square. Label each option one-pass or typeset. Show the labeled set
-   to Amitai (through the Producer) and wait for his selection.
+   to the episode owner (through the Producer) and wait for their selection.
 6. **Promote and check the selected option** with the same `check_cover.py` command,
    appending the output to `extras/cover-check.log`. Then file it next to its Short in
    the episode's Drive `Shorts/` folder (`investing-bros-show` → Drive tree, Shorts

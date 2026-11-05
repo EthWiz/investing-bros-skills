@@ -174,3 +174,7 @@ def test_allow_green_needs_amitai_words(tmp_path):
     assert cc.main([str(p), "--kind", "episode-wide"]) == 1
     assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "me: fine"]) == 2
     assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "Amitai 10:02: the topic is a green dollar"]) == 0
+    (tmp_path / "extras").mkdir()
+    (tmp_path / "extras/pipeline.json").write_text('{"schema_version": 1, "owner": {"name": "nadav"}}', encoding="utf-8")
+    assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "Amitai 10:02: green dollar"]) == 2  # not the owner
+    assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "Nadav 10:03: the green dollar stays"]) == 0

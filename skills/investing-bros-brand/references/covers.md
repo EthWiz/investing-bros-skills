@@ -20,7 +20,7 @@ Zones in `assets/templates/layouts.json` are planning guides (normalized
 ## Standing option rule (2026-10-22)
 Until Amitai says the design is dialed in, make every main-episode cover set, segment
 thumbnail and individual Short cover as **three clearly labeled options: A, B and C**,
-using Codex through the backend recipe in [prompts](prompts.md). Amitai picks one; do
+using Codex through the backend recipe in [prompts](prompts.md). The episode owner picks one; do
 not promote an option to the final delivery filename before his selection. For a main
 episode, each option includes a directly composed square cover and matching wide
 thumbnail. Put the option label in its filename, folder or review presentation, never

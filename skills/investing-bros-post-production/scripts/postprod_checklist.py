@@ -4,7 +4,7 @@
 Usage:
   postprod_checklist.py check EP_DIR --episode N [--stage upload|review|done]
   postprod_checklist.py mark  EP_DIR ITEM --evidence "what you saw, where"
-  postprod_checklist.py waive EP_DIR ITEM --by "Amitai HH:MM: <his own words>"
+  postprod_checklist.py waive EP_DIR ITEM --by "<Owner> HH:MM: <the episode owner's own words>"
 
 Stages (each includes the ones before it):
   upload (default): everything the full-episode YouTube upload needs.
@@ -20,7 +20,8 @@ Package contracts (the show's Drive tree and Naming):
   Shorts/    exactly slots 01-03, one package each:
              שורט-NN-<נושא>.m4v + -cover.jpg + .srt + youtube-שורט-NN.md, none empty
              (a Short is never filed as .mp4).
-Marks and waivers live in EP_DIR/extras/postprod-checklist.json.
+Marks and waivers live in EP_DIR/extras/postprod-checklist.json. A waiver must quote the
+episode owner recorded in extras/pipeline.json (episode_owner.py; Amitai when there is none).
 Exit 0 = pass, 1 = missing items (printed), 2 = usage error.
 See ../references/CHECKLIST.md.
 """
@@ -49,7 +50,7 @@ ITEMS = [
     ("titles_description", "upload", "כותרות-פרק-N.txt and תיאור-פרק-N.txt"),
     ("thumbnail_cover", "upload", "thumbnail-פרק-N.jpg and cover-פרק-N.png"),
     ("face_identity", "upload", "Face grids labeled by verified host identity: side mapping checked at the start and "
-     "after any swap, every grid eyeballed before it went to Amitai (mark with what you saw)"),
+     "after any swap, every grid eyeballed before it went to the owner (mark with what you saw)"),
     ("cover_checks", "upload", "extras/cover-check.log: check_cover.py OK for both episode covers with --title/--register "
      "headlines, no FAIL + mark: made by Codex on Amitai's Mac (session/prompt path)"),
     ("segments", "review", "segments/: exactly two complete packages, 01 (deep dive) and 02: "
@@ -71,7 +72,7 @@ IDS = [i for i, _, _ in ITEMS]
 MANUAL = {"transcript_doc", "redcircle_draft", "face_identity", "old_uploads", "spotify_links"}
 # file check AND a mark (chapters shifted; teaser moments reviewed; cover provenance)
 NEEDS_MARK = {"chapters", "teaser_quality", "cover_checks", "shorts_covers", "past_episode_cards"}
-# an item that falls away when Amitai waives its parent
+# an item that falls away when the episode owner waives its parent
 WAIVED_WITH = {"teaser_quality": "teaser", "shorts_covers": "shorts"}
 
 
@@ -320,7 +321,7 @@ def main(argv=None):
             print(f"{st:8} {item:20} {note}")
         if missing:
             print(f"\nFAIL ({a.stage}): {len(missing)} missing: {', '.join(missing)}")
-            print("Make them, or get Amitai's explicit waiver per item. Do not upload / report done.")
+            print("Make them, or get the episode owner's explicit waiver per item. Do not upload / report done.")
             return 1
         print(f"\nPASS ({a.stage})")
         return 0
@@ -328,8 +329,11 @@ def main(argv=None):
     if a.cmd == "mark":
         s["marked"][a.item] = a.evidence.strip()
     else:
-        if not a.by.strip().lower().startswith("amitai"):
-            print("waiver must quote Amitai: --by \"Amitai HH:MM: ...\"", file=sys.stderr)
+        sys.path.insert(0, str(Path(__file__).parent))
+        import episode_owner
+        ok, _owner, msg = episode_owner.check_quote(a.by, ep)
+        if not ok:
+            print(f"waiver {msg}", file=sys.stderr)
             return 2
         s["waived"][a.item] = a.by.strip()
     save(ep, s)

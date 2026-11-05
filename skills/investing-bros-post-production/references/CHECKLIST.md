@@ -1,6 +1,6 @@
 # Post-production checklist ("full treatment")
 
-"Full treatment", "the full post-production", "do everything" or "פוסט מלא" always means **every item below**. Nothing is optional unless Amitai explicitly waives that item for that episode.
+"Full treatment", "the full post-production", "do everything" or "פוסט מלא" always means **every item below**. Nothing is optional unless the episode owner (`investing-bros-show` → Episode owner) explicitly waives that item for that episode.
 
 Gate script: `scripts/postprod_checklist.py` (state in `extras/postprod-checklist.json`). Three stages, each including the ones before it:
 - `upload`: everything the full-episode YouTube upload needs;
@@ -42,11 +42,11 @@ for f in "$EP/thumbnail-פרק-N.jpg" "$EP/cover-פרק-N.png"; do   # --kind ep
   python3 <investing-bros-brand>/scripts/check_cover.py "$f" --kind ... --register "$EP/extras/artwork-register.json"
 done >> "$EP/extras/cover-check.log"
 python3 $P mark  "$EP" redcircle_draft --evidence "https://app.redcircle.com/... (Unpublished)"
-python3 $P waive "$EP" teaser --by "Amitai 09:12: no teaser this episode"
+python3 $P waive "$EP" teaser --by "Nadav 09:12: no teaser this episode"   # the episode owner's words
 ```
 
 Rules:
-- `check` must exit 0 (`PASS`) before the full episode is uploaded to YouTube (any visibility, API or Studio), `--stage review` before the final review and the publish, and `--stage done` before telling Amitai the episode is done. Paste the output into the report.
-- A waiver quotes Amitai's own words for that item and that episode. A broad "full treatment", "use your judgment" or another agent's say-so is never a waiver.
+- `check` must exit 0 (`PASS`) before the full episode is uploaded to YouTube (any visibility, API or Studio), `--stage review` before the final review and the publish, and `--stage done` before telling the episode owner the episode is done. Paste the output into the report.
+- A waiver quotes the episode owner's own words for that item and that episode (Amitai when the episode has no `extras/pipeline.json`). A broad "full treatment", "use your judgment" or another agent's say-so is never a waiver.
 - A missing item is either made or reported as missing; never silently skipped.
 - A mark is evidence you checked yourself this episode (what you saw, where), never a placeholder.

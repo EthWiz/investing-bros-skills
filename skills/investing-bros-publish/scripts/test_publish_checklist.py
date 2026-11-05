@@ -1,4 +1,5 @@
 """publish_checklist.py: order gate, waivers, and the Related-video hard rule."""
+import json
 import sys
 from pathlib import Path
 
@@ -11,8 +12,13 @@ FULL, S1, S2 = "YL1hdpdcVt8", "N_EaOlbiPAc", "S4P7Lv5PkxU"
 SH = ["6Z4joIPUBrM", "mzV4BAzqdD0", "18NfV9ztek4"]
 
 
+AMITAI = lambda by: (True, "amitai", "ok")  # noqa: E731  (no episode state: Amitai approves)
+
+
 def state():
-    return pc.build(9, FULL, [S1, S2], SH)
+    s = pc.build(9, FULL, [S1, S2], SH)
+    pc.record_publish_ok(s, "Amitai 21:00: publish ep 9 with all assets", AMITAI)
+    return s
 
 
 def finish(s, group):
@@ -101,6 +107,7 @@ def test_cli_roundtrip(tmp_path, capsys):
     assert pc.main(["can-public", str(f), "episode"]) == 1
     assert pc.main(["tick", str(f), "episode.public", "--evidence", "x"]) == 1
     assert pc.main(["tick", str(f), "redcircle.audio", "--evidence", "ok"]) == 0
+    assert pc.main(["publish-ok", str(f), "--by", "Amitai 21:00: publish all"]) == 0
     assert pc.main(["status", str(f)]) == 0
     assert "redcircle.copy" in capsys.readouterr().out
 
@@ -122,3 +129,47 @@ def test_no_pinned_comment_items():
     # Amitai, 2026-11-01: no pinned comments on segments or Shorts.
     s = state()
     assert not [x for x in s["items"] if x["id"].endswith(".pin") or x["phase"] == "post"]
+
+
+def test_publish_ok_comes_first_and_is_never_ticked_or_waived():
+    s = pc.build(9, FULL, [S1, S2], SH)
+    assert s["items"][0]["id"] == "release.publish_ok"
+    for k in ("audio", "copy", "titles"):
+        pc.tick(s, f"redcircle.{k}", "seen")
+    assert pc.blockers(s, "redcircle.public") == ["release.publish_ok"]
+    with pytest.raises(PermissionError):
+        pc.tick(s, "release.publish_ok", "Amitai said go")
+    with pytest.raises(PermissionError):
+        pc.waive(s, "release.publish_ok", "Amitai 21:00: skip")
+    pc.record_publish_ok(s, "Amitai 21:00: publish", AMITAI)
+    assert pc.blockers(s, "redcircle.public") == []
+
+
+def test_publish_ok_goes_stale_when_a_video_id_changes():
+    s = state()
+    s["videos"]["short02"] = "AAAAAAAAAAA"   # Short 02 re-uploaded after the OK
+    assert "stale" in pc.publish_ok_problem(s)
+    assert pc.blockers(s, "redcircle.public") == ["release.publish_ok"]
+
+
+def test_old_state_files_get_the_publish_ok_item(tmp_path):
+    s = pc.build(9, FULL, [S1, S2], SH)
+    s["items"] = [x for x in s["items"] if x["group"] != "release"]
+    del s["videos"]["release"]
+    f = tmp_path / "c.json"
+    f.write_text(json.dumps(s), encoding="utf-8")
+    assert pc.main(["can-public", str(f), "redcircle"]) == 1
+
+
+def test_owner_from_episode_state(tmp_path):
+    ex = tmp_path / "extras"
+    ex.mkdir()
+    (ex / "pipeline.json").write_text(json.dumps({"schema_version": 1, "owner": {"name": "nadav"}}), encoding="utf-8")
+    f = ex / "publish-checklist.json"
+    assert pc.main(["init", str(f), "--episode", "9", "--full", FULL, "--segments", S1, S2, "--shorts", *SH]) == 0
+    assert pc.main(["publish-ok", str(f), "--by", "Amitai 21:00: go"]) == 1       # not this episode's owner
+    assert pc.main(["publish-ok", str(f), "--by", "Nadav 21:02: מאשר לפרסם הכל"]) == 0
+    assert pc.main(["waive", str(f), "short01.cover", "--by", "Amitai 21:05: fine"]) == 1
+    assert pc.main(["waive", str(f), "short01.cover", "--by", "נדב 21:06: בסדר"]) == 0
+    st = json.loads(f.read_text(encoding="utf-8"))
+    assert st["items"][0]["owner"] == "nadav" and st["items"][0]["covers"]["episode"] == FULL
