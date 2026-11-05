@@ -9,7 +9,7 @@ Usage:
     python3 edit_map.py edit.json --raw 754.2 1310  # edited time for each raw time (MM:SS and seconds)
     python3 edit_map.py --check START END --cut A-B [--cut A-B ...]   # validate, print kept ranges
 
-Shared by investing-bros-post-production, -title-description, -video and -shorts
+Shared by investing-bros-post-production, -title-description, -video, -shorts and -segment-video
 (identical copies; edit them together).
 """
 import argparse

@@ -1,0 +1,32 @@
+# Wording a fix replaced. validate_skills.py fails when one comes back in a skill's docs (SKILL.md,
+# references, agents/*.yaml; not scripts). One phrase per line, matched case-insensitively with
+# whitespace collapsed. When a change supersedes a rule, add the old wording here
+# (investing-bros-skill-change).
+
+# Shorts are uploaded Private for the approval round; Public only after the episode is live (2026-11-05)
+exactly three shorts uploaded after the episode is live
+Do not upload the three Shorts until the full episode is live
+all three Shorts were uploaded only after the episode went live
+Upload an episode's Shorts only after the full episode is live
+then upload after the full episode is live
+uploaded only once the full episode is live
+# Shorts have no end card (Amitai, 2026-10-25)
+Default since episode 1 (approved v5)
+# The Producer runs Shorts itself; the Shorts bot is retired (2026-11-05)
+Video assets are made only by ליאורה
+Helper agents (Shorts, segments
+helper agent (Shorts, segments
+# The episode cover and thumbnail live in the episode root, not promo/
+promo/thumbnail-פרק-N.jpg
+promo teaser, cold opens, cover + thumbnail
+# Video 1b: crop the speaking host's half; the full side-by-side only for a two-person exchange
+then show the full frame, not a crop
+# Review pings and drafts go to Telegram, not WhatsApp
+Prep docs, review-ready pings, draft links
+# Drive files are the evidence; extras/pipeline.json holds approvals, video IDs, waivers
+Status = the folder
+# Review uploads stay Private (2026-11-05); open PR #86 still has this
+Unlisted URL
+# The episode owner approves an episode's assets (2026-11-05)
+Nadav approves each cut before a rebuild or an upload
+only Amitai can waive a check

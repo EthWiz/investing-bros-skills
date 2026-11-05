@@ -1,18 +1,16 @@
 ---
 name: investing-bros-video
 description: >-
-  Make the video side of an Investing Bros / אחים להשקעות episode with
-  burned-in Hebrew captions: a combined full-frame cold-open teaser (15–30 s,
-  16:9), the
-  full video episode (cold opens + intro + episode + matching outro) with its YouTube
-  description, and a 30–60 s promo teaser. Use when Amitai asks for "a
-  teaser", "a trailer", "טיזר", "פרומו", "cold open", "פרק מלא", "full
-  episode video", "וידאו" or "a teaser with each brother" for episode N.
-  Shorts and mid-form are investing-bros-shorts.
+  The video side of an Investing Bros / אחים להשקעות episode with burned-in
+  Hebrew captions: the combined full-frame cold-open teaser (15-30 s), the
+  full video episode (teaser, intro, episode, outro) with its YouTube
+  description, and a 30-60 s promo teaser on request. Use for "a teaser",
+  "טיזר", "פרומו", "cold open", "פרק מלא", "full episode video", "וידאו".
+  Shorts: investing-bros-shorts.
 ---
 # Investing Bros video
 
-Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts); the cold-open teaser moments are the exception: you choose them yourself (step 1).
+Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; the episode owner approves each cut before a rebuild or upload (show conventions → Episode owner); the cold-open teaser moments are the exception: you choose them yourself (step 1).
 
 Load `investing-bros-brand` for visual specifications and request graphic assets from it.
 It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
@@ -20,7 +18,7 @@ The approved full-frame teaser layout is implemented here; do not create competi
 brand rules or silently change approved artwork.
 
 ## When to use
-After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when Amitai explicitly says so for that episode, and record that with `postprod_checklist.py waive ... teaser`. The square promo teaser stays on request.
+After the audio edit (`investing-bros-post-production`), whenever the recording has video. The full video episode **always** opens with the combined full-frame cold-open teaser, before the intro: it is a required default step of every episode, not something to wait to be asked for. Skip it only when the episode owner explicitly says so for that episode, and record that with `investing-bros-producer` → `pipeline.py waive "$EP" teaser --by "<the owner's words>"`. The square promo teaser stays on request.
 
 ## Inputs
 From the episode's `extras/`:
@@ -66,7 +64,7 @@ Riverside records each host's camera as a separate file (Individual tracks; 720p
 - **Where:** Riverside → the recording → Individual tracks (highest resolution), or ask the host to drop them in Drive `extras/` as `track-amitai.mp4` / `track-nadav.mp4` (source-video notes in show conventions → environment).
 - **Align first:** the tracks are offset from the combined file (episode 8: combined ran 0.1666 s behind). `python3 scripts/align_tracks.py COMBINED.mp4 track-nadav.mp4 --start S` on a stretch where that host talks prints `OFFSET`; a moment at combined time T starts at `T − OFFSET` in the track. Run it per track.
 - **Verify:** render one clip and check lip sync on a hard consonant; mismatch over ~1 frame → re-run on another stretch.
-- Use the combined video only when no per-host track exists (then show the full frame, not a crop).
+- Use the combined video only when no per-host track exists: crop the speaking host's half as above (`"sxs": true`); the full side-by-side frame only for a genuine two-person exchange (`references/teaser-rules.md`).
 
 ### 2. Render the cold opens (1920×1080)
 The default is the approved full-frame speaker layout: about 1.2× face crop, solid
@@ -214,15 +212,15 @@ Watch each once: captions readable and right-to-left (English words in place), j
 | `promo/` | Cold opens, promo teaser |
 | `extras/` | Teaser JSONs, segment files, the music bed |
 
-Review copies over the transfer caps: compress (show conventions → references/environment.md). Drafts for review go to Telegram only when Amitai asks.
+Review copies over the transfer caps: compress (show conventions → references/environment.md). Drafts for review go to Telegram only when the episode owner asks.
 
 ## Done when
 - `video/` has the video episode, with the freshly fetched canonical clip as both
   intro and outro and a full 20-second outro window, plus its checked YouTube
   description (when a video episode was asked for).
-- `promo/` has the combined full-frame cold-open teaser (required unless Amitai waived it for this episode), plus any promo teaser that was asked for.
-- The full video is cold-open teaser → intro → episode → outro, and `investing-bros-post-production` → `scripts/postprod_checklist.py check` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
-- Nadav OK'd the cuts.
+- `promo/` has the combined full-frame cold-open teaser (required unless the episode owner waived it for this episode), plus any promo teaser that was asked for.
+- The full video is cold-open teaser → intro → episode → outro, and `investing-bros-producer` → `pipeline.py gate "$EP" --stage upload` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
+- The episode owner OK'd the cuts.
 - Every delivered edited file passed `verify_sync.py` (`SYNC OK`).
 
 ## Hand back
@@ -233,7 +231,7 @@ Review copies over the transfer caps: compress (show conventions → references/
   whether the optional Heebo callout was included
 
 ## Never
-- Post anywhere unless Amitai asks in chat for that post, and then only to a destination in `investing-bros-show`.
+- Post anywhere unless the episode owner asks in chat for that post, and then only to a destination in `investing-bros-show`.
 - Put words on screen the hosts didn't say, captions you haven't proofread, or splice lines so a host seems to say something he didn't.
 - Cut a caveat to make a line punchier, or cut a teaser moment before its payoff.
 - Use a teaser moment a viewer with no context can't follow (an unexplained niche name, a half-made point), or captions outside the safe area.

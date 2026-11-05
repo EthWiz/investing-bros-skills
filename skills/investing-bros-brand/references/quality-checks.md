@@ -23,7 +23,7 @@ for downloaded references. This list is what only eyes can check.
 ## After generation
 - All three options are present, labeled A/B/C in filenames, folders or the review
   presentation (never on the artwork), and made through the Codex backend. Review every
-  option; record Amitai's selection before assigning the final delivery filename.
+  option; record the episode owner's selection before assigning the final delivery filename.
 - Read every Hebrew word letter by letter (אמיתי, רסקין, אחים להשקעות); `?` on the
   left; numbers and Latin names (`S&P 500`) in the right order.
 - Headline and number match the supplied copy, not a guessed title.
@@ -50,8 +50,8 @@ for downloaded references. This list is what only eyes can check.
   (Shorts: `--config short.json`) must pass, with its output appended to
   `extras/cover-check.log`. It fails a headline with banned or missing glyphs (U+061F,
   brackets, box characters, niqqud, anything not in the font with `--font`), and an image
-  with no brand mustard or a green area. `--allow-green "amitai: <his words>"` only when
-  Amitai asked for green. Its warnings (real size below target) go in the hand-back.
+  with no brand mustard or a green area. `--allow-green "<Owner> HH:MM: <their words>"` only when
+  the episode owner asked for green (Amitai outside episodes). Its warnings (real size below target) go in the hand-back.
 
 ## Repair
 One localized imagegen edit for an isolated error, then re-inspect. If the Hebrew stays

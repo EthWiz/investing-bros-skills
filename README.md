@@ -16,21 +16,22 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | # | Step | Skill | Leaves in the Drive folder `פרק N — נושא/` | Approves |
 |---|---|---|---|---|
 | 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
-| 1 | Start the standing bundle; combine, level, transcribe and trim the audio | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Nadav (cuts) |
-| 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Amitai (title) |
-| 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Nadav |
-| 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Nadav |
-| 4b | Exactly 2 standalone search-first segment videos: 01 is the deep-dive sub-question; 02 is the next-best deep-dive sub-question or strongest other self-contained topic | `investing-bros-segment-video` | `segments/` | Amitai |
-| 5 | Review ping, RedCircle draft, YouTube review uploads, then publish in order, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Amitai (anything public)** |
-| 5b | Publish in order (RedCircle → episode → segments → Shorts), each item verified live before the next, Shorts' Related video verified, ticked checklist to Amitai | `investing-bros-publish` | `extras/publish-checklist.json` | **Amitai (anything public)** |
+| 1 | Combine, level, transcribe and trim the audio; start the Producer | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Episode owner (cuts) |
+| 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Episode owner (title) |
+| 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Episode owner |
+| 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Episode owner |
+| 4b | Exactly 2 standalone search-first segment videos: 01 is the deep-dive sub-question; 02 is the next-best deep-dive sub-question or strongest other self-contained topic | `investing-bros-segment-video` | `segments/` | Episode owner |
+| 5 | Review ping, RedCircle draft, YouTube review uploads, then publish in order, check Spotify/YouTube/RedCircle, WhatsApp | `investing-bros-episode-upload` | — | **Episode owner (anything public)** |
+| 5b | Publish in order (RedCircle → episode → segments → Shorts), each item verified live before the next, Shorts' Related video verified, ticked checklist to Amitai | `investing-bros-publish` | `extras/publish-checklist.json` | **Episode owner (anything public)** |
 | 6 | After publish, weekly (Sunday): read-only Studio/RedCircle stats, report Page, Telegram summary, history CSV | `investing-bros-analytics` | `investing-bros-youtube-weekly.csv` in Drive (analytics folder TBD) | — (weekly post pre-approved) |
+| all | The Producer: one state file, the next step on every track, review rounds with the episode owner, the retro (תחקיר) once everything is live | `investing-bros-producer` | `extras/pipeline.json`, `extras/retro-פרק-N.md` | Episode owner |
 
 - Starting step 1 commits every episode to the main flow plus exactly 2 complete segment videos and exactly 3 complete shorts. The post-production checklist remains open until all three tracks finish their owning skills.
 - Steps 2–4b only need step 1's transcript and `edit.json`, so different agents can run them at the same time. **Exception (Amitai, 2026-11-05):** Shorts (`investing-bros-shorts`) are run by the episode's Producer directly — there is no separate Shorts Grok bot.
 - Every skill ends with a **Done when** list of the files it leaves. To see where an episode stands, list its folder.
 - `investing-bros-analytics` reads YouTube Studio stats (read-only) for the weekly Sunday report and ad-hoc analyses; posts a short text to Telegram.
 - `investing-bros-show` holds shared show facts: hosts, naming, the Drive tree, accounts, WhatsApp/Telegram destinations and working rules. Load it with every skill; load `investing-bros-brand` for visual work and `investing-bros-remotion` for anything animated.
-- **Nothing goes public without Amitai's explicit OK in chat.**
+- **Nothing goes public without explicit OK in chat**: the episode owner's (Amitai or Nadav, whoever started the episode's post-production) for an episode, Amitai's for everything else (`investing-bros-show` → Episode owner).
 
 ## Crypto course
 
@@ -48,6 +49,8 @@ logo and the cover scripts.
 | Owner | Responsibility |
 |---|---|
 | `investing-bros-show` | Names, show facts, folders, approvals and publication rules |
+| `investing-bros-producer` | Runs an episode end to end: the gate map, `extras/pipeline.json`, review rounds, the retro |
+| `investing-bros-skill-change` | Turns a lesson into a one-fix PR: classify, find every site, retire old wording, validate |
 | `investing-bros-brand` | Visual identity, reference art, templates and artwork production |
 | `investing-bros-remotion` | Animation: the Remotion template that renders shorts and animated explainer cards |
 | `investing-bros-title-description` | Titles, descriptions and approved artwork headlines |
@@ -72,7 +75,7 @@ The skills get better a little after every run, from whichever agent did the wor
 | A fact (spelling, account, size limit, a decision) | `investing-bros-show` only |
 | Something you couldn't verify or fix yet | A GitHub issue |
 
-Small PRs, one fix each, merged the same day. Details in `AGENTS.md`.
+Small PRs, one fix each, merged the same day. How: `investing-bros-skill-change` (`scripts/rule_sites.py` finds every copy of a rule).
 
 ## Layout
 
@@ -105,4 +108,4 @@ Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `
 
 ## Contributing
 
-See `AGENTS.md` → *Editing the skills*. Run `python3 tools/validate_skills.py && python3 -m pytest skills tools` before pushing, and open a small PR saying what changed and why.
+See `investing-bros-skill-change` → `references/editing-rules.md`. Run `python3 tools/validate_skills.py && python3 -m pytest skills tools` before pushing, and open a small PR saying what changed and why.

@@ -1,0 +1,6 @@
+# Boilerplate every skill may repeat; validate_skills.py doesn't warn about sentences containing
+# one of these (whitespace collapsed, case-insensitive).
+Write your own code where
+Write your own render
+Load `investing-bros-show` first
+Load `investing-bros-brand` for visual specifications

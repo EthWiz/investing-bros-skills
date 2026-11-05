@@ -1,36 +1,28 @@
 ---
 name: investing-bros-post-production
 description: >-
-  Start the full post-production pipeline for a finished Investing Bros /
-  אחים להשקעות recording: edit the upload-ready audio, then track the main
-  episode flow plus exactly two complete segment videos and exactly three
-  complete shorts through their owning skills. Use when Amitai says the
-  recording is in, "edit episode N", "ההקלטה מוכנה", "עריכה", or sends
-  חלק 1 / חלק 2.
+  Edit a finished Investing Bros / אחים להשקעות recording into the
+  upload-ready audio: combine the parts, level the hosts, transcribe, build
+  the cut list for the episode owner's OK, trim and file it, and start the
+  episode's Producer (investing-bros-producer) for everything after. Use when
+  Amitai says the recording is in, "edit episode N", "ההקלטה מוכנה", "עריכה",
+  or sends חלק 1 / חלק 2.
 ---
 # Investing Bros post-production (audio edit)
 
 Load `investing-bros-show` first: naming, Drive tree, roles and the episode flow live there.
 
-Starting post-production opens one standing deliverable bundle:
-1. the main episode flow;
-2. **exactly two segment videos**: segment 01 is the required deep-dive segment, and segment 02 is the next-best self-contained sub-question from the deep dive or another strong topic;
-3. **exactly three shorts**.
+This skill makes the audio edit: the main track's first stages in `investing-bros-producer`
+(intake, master, cut list, cut approval, trim). The edited audio, the transcript and `edit.json`
+are the handoff to everything else. Starting post-production also starts the episode's
+**Producer** (`investing-bros-producer`), which runs the standing bundle (main flow, two
+segments, three Shorts; `investing-bros-show` → The show), the review rounds and the retro.
+After each step below, record it: `python3 <investing-bros-producer>/scripts/pipeline.py advance
+"$EP" main <stage>`.
 
-This skill performs the audio edit and starts and tracks that complete bundle. The edited audio is the handoff to the downstream skills, not completion of post-production. Everything after the audio edit reads the transcript and `edit.json` it leaves:
-- titles, description, artwork copy brief → `investing-bros-title-description`
-- show/episode cover art, thumbnails and graphic assets → `investing-bros-brand`
-- the **required** combined cold-open teaser, canonical intro + matching outro, video episode (teaser → intro → episode → outro), promo teaser on request → `investing-bros-video`
-- exactly two segment videos, each through selection, nudge, title, thumbnail, card/end screen, Drive, Private review and Amitai's OK → `investing-bros-segment-video`
-- exactly three shorts, each through picks, render, Codex cover (brand), Telegram approval, Drive, **Private** review upload, Related video and links — run by the Producer via `investing-bros-shorts` (no separate Shorts bot)
-- review ping, uploads, publish → `investing-bros-episode-upload`
-
-"Full treatment" (or "full post-production", "do everything") means the complete deliverable list in [references/CHECKLIST.md](references/CHECKLIST.md), every item, never a subset. Track it with `scripts/postprod_checklist.py`:
-- `check "$EP" --episode N` must PASS before any YouTube upload of the full episode;
-- `check "$EP" --episode N --stage done` must PASS before post-production is reported done;
-- an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
-
-**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. **You run `investing-bros-shorts` yourself** — there is no separate Shorts / periphery-marketing Grok bot to chase or `SendToAgent` to (retired 2026-11-05). Helper agents (segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
+The full deliverable list ("full treatment") is [references/CHECKLIST.md](references/CHECKLIST.md);
+its gate is `pipeline.py gate`. `scripts/postprod_checklist.py` stays as a compatibility wrapper
+with the same CLI for older installs.
 
 ## When to use
 The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
@@ -79,7 +71,7 @@ named `תמלול - פרק N` in the episode's `אחים להשקעות > פרק
 - Hebrew, UTF-8. First lines: `אחים להשקעות — פרק N`, the length, and
   `תמלול אוטומטי — ייתכנו שגיאות בשמות, במספרים ובמונחים באנגלית.`
 - One line or paragraph per segment, each starting with its `[m:ss]` timestamp (raw timeline;
-  say so if the edit later shifts it). Add the speaker (`נדב:` / `עמיתי:`) when known.
+  say so if the edit later shifts it). Add the speaker (`נדב:` / `אמיתי:`) when known.
 - Create it through the Google Drive connector as a text Google Doc (fine for text; only MP4s
   must go through the browser). Don't overwrite or move other Drive files; if the Doc already
   exists, update it rather than adding a duplicate.
@@ -93,9 +85,9 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
 - **Silences under 2 s are kept by default — never cut them** (Amitai, episode 10: the five 1–3 s silence trims were all put back). Only a silence of 2 s or longer may be trimmed, and even then leave a natural beat on each side so the join doesn't sound clipped.
 - Listen for what else should go: long silences (2 s+), false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
-- Send Nadav the list (raw times + the words around each) and wait for his OK. Ambiguous cut → ask Amitai.
+- Send the episode owner the list (raw times + the words around each) and wait for their OK. Ambiguous cut → ask them in the same round.
 - **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
-  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with Amitai/Nadav (e.g. "remove the 40 s") before cutting.
+  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with the episode owner (e.g. "remove the 40 s") before cutting.
   2. Cut on a pause, not mid-word; listen to the join.
   3. Make the cut in audio **and** video with the same times. `trim.sh --cut A-B` (repeatable) removes it from the audio and records it in `edit.json`; `investing-bros-video` → `assemble_episode.sh --edit edit.json` removes the same range from the video. Don't splice by hand.
   4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
@@ -140,49 +132,29 @@ verify the ID, and add it to the index by PR. After each episode goes up, add it
 (ID + topics). `episode-upload` sets the cards in Studio.
 
 ## Done when
-Post-production is not complete at the audio handoff. Every item below must be complete:
-
-**Audio edit**
+The audio edit is done; the episode is done only when `investing-bros-producer` says so.
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
-- `extras/` has `transcript/segments.json`, `edit.json` and the raw master (plus host tracks if shorts will use them).
+- `extras/` has `transcript/segments.json`, `edit.json`, `cuts-review/` (the cut list + one clip
+  per cut) and the raw master (plus host tracks if shorts will use them).
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
-- Once the episode art is final, the folder also has `cover-פרק-N.png` and
-  `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
-- Nadav OK'd the cut list.
-
-- `extras/past-episode-cards.json` exists (step 8) and the cards are set on YouTube.
-
-**Gate**
-- `scripts/postprod_checklist.py check "$EP" --episode N --stage done` exits 0, each missing item made or waived by Amitai in his own words; paste its output in the hand back.
-
-**Standing downstream deliverables**
-- The normal main episode flow has completed through its owning title/description,
-  brand, video and upload skills as applicable. Its full video uses the freshly
-  fetched canonical Drive-ID clip from `investing-bros-show` as both intro and
-  outro; the outro provides the final 20 seconds for the YouTube end screen.
-- `segments/` has **exactly two** complete segment packages: `סגמנט-01` is the deep-dive segment and `סגמנט-02` is the selected second topic. Both completed the full `investing-bros-segment-video` flow, including Drive files, nudge, title, thumbnail, card, end screen, Private review and Amitai's OK.
-- `Shorts/` has **exactly three** complete short packages. All three completed the full `investing-bros-shorts` flow run by the Producer, including approved picks, render and QA, Codex cover (brand), Telegram approval-round inclusion, Drive files, **Private** review upload, Related video to the full episode, and links back to the episode.
-- If an approval or publication step is still waiting, report the bundle as waiting, not done.
+- The episode owner OK'd the cut list (`pipeline.py approve "$EP" main cuts_ok`), and
+  `pipeline.py advance "$EP" main trim` passed.
+- Once the full video exists, `extras/past-episode-cards.json` (step 8).
 
 ## Hand back
 - Drive folder link
 - Link to the `תמלול - פרק N` Doc
 - Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
 - Loudness (integrated LUFS) and the host balance before → after leveling
-- Next: start titles/artwork/video, both segment videos and all three shorts in parallel from the transcript and `edit.json`; publish in the order owned by `investing-bros-episode-upload`.
-- Pipeline status: main episode flow (including canonical intro/outro and the
-  full-episode end screen), segment 01, segment 02 and shorts 01–03, with the next
-  incomplete approval or action for each.
+- `pipeline.py next "$EP"` output: the next step on every track.
 
 ## Never
-- Upload the full episode to YouTube, or call post-production done, while `postprod_checklist.py` fails; or treat a step as optional because its wording sounds conditional.
+- Treat a step as optional because its wording sounds conditional.
 - Auto-number the episode or create a second `פרק N` folder.
-- Make a cut Nadav hasn't OK'd, or an ambiguous cut without asking.
+- Make a cut the episode owner hasn't OK'd, or an ambiguous cut without asking.
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
-- Let a helper agent message Amitai directly, or send him status pings instead of one batched review.
-- Hand Shorts off to another Grok bot; run `investing-bros-shorts` in this Producer session.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 
 Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.

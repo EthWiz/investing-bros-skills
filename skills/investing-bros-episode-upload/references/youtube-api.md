@@ -11,12 +11,26 @@ On the Grok Bot box, `~/.config/youtube-uploader/` holds `client_secret.json` (D
 ```bash
 D=~/.config/youtube-uploader; PY=$D/venv/bin/python
 S=skills/investing-bros-episode-upload/scripts
-$PY $S/yt_upload.py --check-auth          # prints AUTH_OK channel: <title>; must be the Investing Bros channel
-$PY $S/yt_upload.py video.mp4 --title "$(cat title.txt)" --description-file desc.txt \
-    --tags "השקעות,פודקאסט" --thumbnail thumb.jpg [--playlist PLAYLIST_ID]   # privacy defaults to private
+$PY $S/yt_upload.py --check-auth          # AUTH_OK channel: <title> (<id>); WRONG_CHANNEL means rerun yt_auth.py
+$PY $S/yt_upload.py "$EP/extras/פרק-N-youtube.mp4" --source "$EP/video/פרק-N-וידאו.mp4" \
+    --title "$(cat title.txt)" --description-file desc.txt \
+    --tags "השקעות,פודקאסט" --thumbnail thumb.jpg [--playlist PLAYLIST_ID] \
+    --asset main --record "$EP/extras/uploads/main.json"                  # always Private
+$PY $S/yt_upload.py --resume "$EP/extras/uploads/main.json"           # after a failure: finish, never insert again
 $PY $S/yt_upload.py --set-thumbnail VIDEO_ID --thumbnail thumb.jpg   # thumbnail only
 ```
-It prints `VIDEO_ID` and `URL`. Copy the script from the repo; the credentials stay in `~/.config/youtube-uploader/` (override with `YT_UPLOADER_DIR`).
+It prints `VIDEO_ID`, `URL` and `RECORD`. The record (`asset`, `version`, `channel`, `video_id`,
+`steps`, `steps_done`, `file_sha256`, `source_sha256`, `superseded`) is the episode's proof of what
+is uploaded; `investing-bros-producer` reads it. `version` is the sha256 of `--source` (for the full
+episode: the master the compressed copy was made from, after `verify_sync.py` showed `SYNC OK`), else
+of the uploaded file; the Producer refuses a record whose version isn't the current video's. After a
+Studio upload, write the record by hand with `source_sha256` = `shasum -a 256` of that video. The script refuses:
+- any channel but אחים להשקעות (checked before every insert);
+- a second insert of the same asset version (finish with `--resume`, or pass `--replace` to
+  upload it again on purpose; the old ID goes to `superseded` for the cleanup);
+- `--privacy public|unlisted` (Public is set in Studio after the publish OK).
+A new version of an asset (a fixed file) uploads normally and lists the old ID under
+`superseded`. Copy the script from the repo; the credentials stay in `~/.config/youtube-uploader/` (override with `YT_UPLOADER_DIR`).
 
 ## Limits
 - **Private only.** The app is unaudited, so every API upload is locked Private. That fits the rule anyway: switching to Public/scheduled is done in Studio **only after Amitai's OK**.

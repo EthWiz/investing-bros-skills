@@ -1,12 +1,11 @@
 ---
 name: investing-bros-brand
 description: >-
-  Create and review Financial Journal artwork for Investing Bros / אחים להשקעות.
-  Use for podcast branding, cover art, episode and segment thumbnails, Shorts covers
-  ("קאבר לשורט", "תמונת שער לשורט"), discussion cards, lower thirds, intro art direction,
-  brand guides, templates, קאבר, תמונת פרק, מיתוג and שפה עיצובית. Indexes selected
-  reference images (kept in Drive), exact Hebrew copy, format specifications, reusable
-  image-generation prompts, Heebo title typesetting and cover checks.
+  Artwork for Investing Bros / אחים להשקעות in the Financial Journal identity:
+  show and episode covers, thumbnails, segment thumbnails, Shorts covers,
+  cards, lower thirds, intro art, templates and cover checks (Codex on
+  Amitai's Mac, Heebo). Use for "קאבר לשורט", "תמונת שער לשורט", קאבר, תמונת
+  פרק, מיתוג, שפה עיצובית, a brand guide or any visual decision.
 ---
 # Investing Bros brand
 
@@ -81,9 +80,9 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    under its final-form filename so `check_cover.py` can check all three before review.
    Never put the option label inside the artwork or claim typography, resolution, layers
    or source provenance from the prompt alone.
-6. Show Amitai the three labeled options (through the Producer when one runs the
-   episode, batched with the other reviews); he picks. Promote only his selection to the
-   final filename.
+6. Show the three labeled options to the episode owner (`investing-bros-show` → Episode owner;
+   Amitai for non-episode artwork), through the Producer when one runs the episode, batched
+   with the other reviews; the owner picks. Promote only that selection to the final filename.
 7. Record the selected artifact in the episode's `extras/artwork-register.json` (actual
    path, size, sources, `episode_tab`), then run
    `scripts/check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json --title "<line>" ...`
@@ -92,14 +91,14 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    register row's `headline` too. It checks the headline for characters that render as
    tofu or never belong (U+061F Arabic question mark, brackets, box characters, missing
    glyphs) and the palette (brand mustard present, no green disc). It must pass before
-   anything is shown to Amitai or filed; still look at the text yourself, letter by letter.
+   anything is shown to the owner or filed; still look at the text yourself, letter by letter.
 8. File the final artwork in Drive (find the episode folder by its `פרק N` prefix): main
    episodes get both `cover-פרק-N.png` and `thumbnail-פרק-N.jpg` in the episode root,
    next to `תמלול - פרק N`; segment thumbnails go in `segments/`, Shorts covers in
    `Shorts/`. Images can go through the Drive connector; confirm each shows as
    `image/png` or `image/jpeg`. Replace an existing file of the same name rather than
    adding a duplicate, and preserve other files. Nothing is published or sent to anyone
-   without his explicit OK.
+   without the owner's explicit OK.
 
 ## Done when
 - The requested artwork sits in its Drive folder under the `investing-bros-show` name:
@@ -109,7 +108,7 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
 - `check_cover.py` passes for each file and `extras/artwork-register.json` records actual
   paths, sizes, version, status and sources.
 - Until Amitai says the design is dialed in, each requested cover was presented as three
-  labeled Codex options and the final filename is only Amitai's selected option.
+  labeled Codex options and the final filename is only the owner's selected option.
 - For a prompt-only request, the filled prompt is delivered; no image is implied.
 - A brand change updates this skill and passes review. A new or replaced reference is in
   Drive `Brand Resources/references/` with its row in the asset index, and

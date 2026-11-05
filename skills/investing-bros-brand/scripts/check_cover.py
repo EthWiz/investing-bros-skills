@@ -4,7 +4,7 @@
     python3 check_cover.py FILE --kind episode-wide|episode-square|segment-wide|shorts-vertical
                            [--episode N] [--register extras/artwork-register.json]
                            [--title "headline line" ...] [--config short.json] [--font Heebo-Black.ttf]
-                           [--allow-green "Amitai HH:MM: why"]
+                           [--allow-green "<Owner> HH:MM: why"]
 
 Checks the file itself: real image format, file name for its kind, episode number in
 the name, aspect ratio and size, no transparency, and the YouTube 2 MB limit for
@@ -22,7 +22,8 @@ font's cmap.
 
 Palette (episode 10: a green disc instead of mustard): the image must contain brand
 mustard (#D8A52E) or screen gold (#F5B71F), and no large saturated green area. A green
-area that is really meant to be there needs --allow-green with Amitai's words.
+area that is really meant to be there needs --allow-green in the episode owner's words (the owner in
+the episode's extras/pipeline.json, found from --register or the file; Amitai when there is none).
 
 Exit code 1 on any failure; warnings do not fail.
 """
@@ -234,15 +235,19 @@ def main(argv=None) -> int:
     ap.add_argument("--title", action="append", default=[], help="a headline line on the cover (repeatable)")
     ap.add_argument("--config", type=Path, help="Short/cover config whose cover_title lines are checked")
     ap.add_argument("--font", type=Path, help="headline font; every headline character must have a glyph")
-    ap.add_argument("--allow-green", metavar="AMITAI_WORDS",
-                    help="a large green area is intended: quote Amitai (\"Amitai HH:MM: ...\")")
+    ap.add_argument("--allow-green", metavar="OWNER_WORDS",
+                    help="a large green area is intended: quote the episode owner (\"Nadav HH:MM: ...\")")
     a = ap.parse_args(argv)
     if not a.file.is_file():
         print(f"FAIL {a.file}: no such file")
         return 1
-    if a.allow_green is not None and not a.allow_green.strip().lower().startswith("amitai"):
-        print("FAIL --allow-green must quote Amitai: \"Amitai HH:MM: ...\"")
-        return 2
+    if a.allow_green is not None:
+        sys.path.insert(0, str(Path(__file__).parent))
+        import episode_owner
+        ok, _owner, msg = episode_owner.check_quote(a.allow_green, a.register or a.file)
+        if not ok:
+            print(f"FAIL --allow-green {msg}")
+            return 2
     errs, warns, dims = check_file(a.file, a.kind, a.episode)
     if a.register:
         errs += check_register(a.file, a.register, a.kind, dims)

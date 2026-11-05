@@ -12,6 +12,6 @@ The overall order after Amitai's OK. Detail in `../SKILL.md` step 4. Run it with
 4. **Segment videos** (deep dive every episode) - Public after the full episode (with Amitai's OK); each segment links
    back to the episode through its description, card and end screen (no pinned comment). Do not add segment links to the
    full episode's description. See `investing-bros-segment-video`.
-5. **Then the Shorts** - uploaded only once the full episode is live, with its YouTube link (`?t=`)
+5. **Then the Shorts** - already uploaded Private for the approval round; Public only once the full episode is live, with its YouTube link (`?t=`)
    and the Spotify link from its YouTube description (ask Nadav if missing). See `investing-bros-shorts`.
    **Related video is a hard rule:** set it to the full episode in Studio (Shorts → Details → Related video), then reopen the edit page and confirm the field shows the episode. A link in the description does NOT count. If it can't be set (e.g. "No matching results"), the Short stays Private and the failure is reported; never publish a Short with only a description link. The publish gate is `investing-bros-publish`.

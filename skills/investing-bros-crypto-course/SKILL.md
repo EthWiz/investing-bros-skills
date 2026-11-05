@@ -1,16 +1,12 @@
 ---
 name: investing-bros-crypto-course
 description: >-
-  Make the free seven-lesson Hebrew crypto course (קורס קריפטו) for the
-  אחים להשקעות YouTube channel: the lesson plan, a slide deck per lesson
-  in the show's brand with speaker notes, the recording script in beats, the
-  lesson video (Amitai on camera, Remotion animations on top), and filing
-  each lesson in its Drive folder. Carries Amitai's fixed stance (Bitcoin as
-  the base, a small Ethereum position, great caution with every other token)
-  and the disclaimer rules. Use when Amitai says "crypto course", "קורס
-  קריפטו", "lesson N", "שיעור N", "slides for lesson N", "מצגת לשיעור",
-  "תסריט לשיעור", "וידאו לשיעור", "beats", "קטעים" or asks about the course
-  plan.
+  The free seven-lesson Hebrew crypto course on the אחים להשקעות channel:
+  lesson plan, slides in the show's brand, the script in beats, the lesson
+  video (Amitai on camera, Remotion animation) and Drive filing, with Amitai's
+  fixed stance and disclaimers. Use for "crypto course", "קורס קריפטו",
+  "lesson N", "שיעור N", "מצגת לשיעור", "תסריט לשיעור", "וידאו לשיעור" or
+  "beats".
 ---
 # Investing Bros crypto course
 

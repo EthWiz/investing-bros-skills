@@ -19,7 +19,7 @@
 - **Moments: 10 candidates, AI picks 3.** Identify 10 teaser candidates, then choose the top 3
   most engaging and thought-provoking yourself - no host pick or approval of the moments is
   needed before building. List all 10 (timestamp, quote, why) with the 3 chosen in the hand-back.
-- **Preview.** Amitai always sees a teaser preview (Drive link) before anything is published;
+- **Preview.** The episode owner always sees a teaser preview (Drive link) before anything is published;
   a host may still swap a moment after seeing it.
 
 ## Quality: every moment must land on its own (episode 10)
