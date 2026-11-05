@@ -50,6 +50,7 @@ logo and the cover scripts.
 |---|---|
 | `investing-bros-show` | Names, show facts, folders, approvals and publication rules |
 | `investing-bros-producer` | Runs an episode end to end: the gate map, `extras/pipeline.json`, review rounds, the retro |
+| `investing-bros-skill-change` | Turns a lesson into a one-fix PR: classify, find every site, retire old wording, validate |
 | `investing-bros-brand` | Visual identity, reference art, templates and artwork production |
 | `investing-bros-remotion` | Animation: the Remotion template that renders shorts and animated explainer cards |
 | `investing-bros-title-description` | Titles, descriptions and approved artwork headlines |
@@ -74,7 +75,7 @@ The skills get better a little after every run, from whichever agent did the wor
 | A fact (spelling, account, size limit, a decision) | `investing-bros-show` only |
 | Something you couldn't verify or fix yet | A GitHub issue |
 
-Small PRs, one fix each, merged the same day. Details in `AGENTS.md`.
+Small PRs, one fix each, merged the same day. How: `investing-bros-skill-change` (`scripts/rule_sites.py` finds every copy of a rule).
 
 ## Layout
 
@@ -107,4 +108,4 @@ Script dependencies: `ffmpeg` (with libass for captions), Python 3 with numpy, `
 
 ## Contributing
 
-See `AGENTS.md` → *Editing the skills*. Run `python3 tools/validate_skills.py && python3 -m pytest skills tools` before pushing, and open a small PR saying what changed and why.
+See `investing-bros-skill-change` → `references/editing-rules.md`. Run `python3 tools/validate_skills.py && python3 -m pytest skills tools` before pushing, and open a small PR saying what changed and why.
