@@ -1,7 +1,7 @@
 interface:
   display_name: "Investing Bros Brand"
   short_description: "Episode, segment and Shorts covers, templates and brand rules"
-  default_prompt: "Use $investing-bros-brand to create consistent podcast artwork. For photo-cutout episodes and segments, follow the selected coin/facade references and verify both host identities. For Shorts covers, generate text-free art and set the title with make_cover_title.py (Heebo)."
+  default_prompt: "Use $investing-bros-brand to create consistent podcast artwork. For photo-cutout episodes and segments, follow the selected coin/facade references and verify both host identities. For Shorts covers, the default is the one-pass Codex cover (art, Hebrew title, pill and logo, with the real face frame as -i input); only if its Hebrew is not exact, fall back to text-free art with the title set by make_cover_title.py (Heebo)."
 policy:
   products:
   - "chatgpt"

@@ -86,13 +86,15 @@ replacement, his latest named file wins and this entry must be updated.
     הקלטה-ערוכה-פרק-N.m4a   edited, upload-ready audio                     ← post-production
     כותרות-פרק-N.txt        five titles + "בחירה סופית:" (plain UTF-8 text) ← title-description
     תיאור-פרק-N.txt         description + disclaimer + chapters (plain text) ← title-description
+    cover-פרק-N.png, thumbnail-פרק-N.jpg   square cover + 16:9 YouTube thumbnail  ← brand
+    תמלול - פרק N           Google Doc, automatic transcript                    ← post-production
     brief/       pre-recording docs (prep archive; keep)                     ← episode-preparation
     extras/      raw audio/video, parts, host tracks, transcripts, edit.json, RTL copies, temp files
     video/       full video episode + its YouTube description, when there is one ← video
     Shorts/      exactly 3 shorts: .m4v + -cover.jpg + .srt + youtube-שורט-NN.md  ← shorts
     segments/    exactly 2 segments: 01 deep dive + 02 next-best topic; full package each ← segment-video
     mid-form/    5–10 min highlights: .mp4 + .txt each, when made                  ← shorts
-    promo/       promo teaser, cold opens, cover + thumbnail                       ← video, brand
+    promo/       promo teaser, cold opens (never the cover or thumbnail)           ← video
   קורס קריפטו/                     the free crypto course (id 1NEF6tCwkr0J8MGnZ3gvV7ApyxeUn6SA7) + plan doc `קורס קריפטו - תוכנית השיעורים` ← crypto-course
     שיעור N — נושא/                one per lesson (1–7): מצגת-שיעור-N.pdf, Google Doc תסריט-שיעור-N, שיעור-N-וידאו.mp4 (or -טיוטה), extras/ (takes קטע-NN.mp4, words קטע-NN.json, base שיעור-N-בסיס.mp4, captions שיעור-N-כתוביות.srt), Shorts/
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
@@ -102,11 +104,11 @@ replacement, his latest named file wins and this entry must be updated.
 
 **Shorts rule (all episodes):** exactly three Shorts are required. Every Short's Drive video (`.m4v`, so Drive assigns playable `video/x-m4v`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
 
-The episode root holds **only** the three files above plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
+The episode root holds **only** the files above (audio, the two `.txt` files, cover, thumbnail and the transcript Doc) plus these subfolders. Anything else goes in `extras/` (`תוספות` is accepted if a folder already uses that name). A subfolder is created only when it gets a file.
 
 The title and description are plain `.txt` files (decided 2026-10-18), not Google Docs: what's in the file is exactly what gets pasted into RedCircle and YouTube. Create them with conversion to Google Docs **off**. Episodes 1–7 used Docs named `אפשרויות כותרת` / `תיאור הפרק`; leave those as they are.
 
-**Status = the folder.** Each skill's *Done when* lists the files it leaves in this tree. To see where an episode stands, list the folder; don't keep a separate tracker.
+**Drive is the evidence; the episode state file holds the rest.** Each skill's *Done when* lists the files it leaves in this tree, and listing the folder shows what has been made. What Drive can't show (approvals, video IDs, waivers, who owns the episode) lives in the episode state file `extras/pipeline.json`, kept by the Producer (`investing-bros-producer`). Don't keep any other tracker.
 
 ## Brand (video and graphics)
 - **Design owner:** load `investing-bros-brand` for all artwork and visual decisions. It owns the Financial Journal rules, palette, typography, templates, selected references and quality checks. Do not copy or redefine those rules here.
@@ -144,7 +146,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 |---|---|---|
 | Approver | Amitai | Episode number, cuts, final title, publish, new destinations. Contacted only for reviews and approvals (Ownership and contact) |
 | Producer | the agent running the episode's post-production | Owns the episode end to end; the only agent that messages Amitai about it |
-| Video producer | ליאורה | Shorts, cold opens, the intro, mid-form and the video episode. Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
+| Video producer | ליאורה | Cold opens, the intro, mid-form and the video episode (Shorts are run by the Producer). Nadav approves each video change before a rebuild or upload; anything public still needs Amitai's OK |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
 | Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Connector uploads cap at 100 MB, while large uploads in the box browser can stall. For finished videos, use the verified chunked handoff to the Mac in [references/environment.md](references/environment.md#delivering-files); connectors remain fine for Docs, folders and moves. |
@@ -187,7 +189,7 @@ Hand-off to the WhatsApp owner always includes: exact group name, exact message 
 Approved destinations — don't add new ones without Amitai's OK:
 | Id | Group | Use |
 |---|---|---|
-| `achim` | `אחים להשקעות` | Prep docs, review-ready pings, draft links; live ping only when Amitai asks (review drafts/cold opens/intros go to Telegram instead) |
+| `achim` | `אחים להשקעות` | Prep docs; live ping only when Amitai asks (review pings, drafts, cold opens and intros go to Telegram instead) |
 | `raskin-empire` | `רסקין אימפריה` (also seen as `רסקין אמפריה`) | Family promo of the published episode |
 
 Prefer a **Doc or folder link** over pasting long text — long messages split badly in WhatsApp. Prep/ideas Docs are always set to General access "Anyone with the link: Viewer" before sharing (box browser; the Drive connector can't set it) and verified; if that fails, the message says the Doc is restricted. See `investing-bros-episode-preparation` step 5.
@@ -195,13 +197,13 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 ## Telegram
 | Id | Group | Chat ID | Sent by | Use |
 |---|---|---|---|---|
-| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts; weekly analytics report (pre-approved, see `investing-bros-analytics`) |
+| `tg-achim` | `אחים להשקעות` | `-5592316645` | bot `@amitai_ai_bot` | Internal review of shorts and drafts, the review ping and the approval round (pipeline messages); weekly analytics report (pre-approved, see `investing-bros-analytics`) |
 
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
 - **Each post needs Amitai's OK in chat**, like WhatsApp (exception: the weekly analytics report, pre-approved). Don't add destinations without his OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
 - **Approval round:** once all of an episode's assets are ready (full episode Private, both segments Private, three Shorts with covers, RedCircle draft link), post **one** message to `tg-achim` automatically as part of the pipeline (no separate OK from Amitai), each asset with its link, ending with the line `sent by Grokbot`; never per-asset posts (`investing-bros-episode-upload` → approval round).
-- Cold opens, intros and drafts for review are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. Post drafts with the title only.
+- Cold opens, intros, drafts and the review-ready ping (`investing-bros-episode-upload` step 1) are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. The review ping is a pipeline message like the approval round. Post drafts with the title only.
 - Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
 - To see group messages/media a bot needs privacy mode off (@BotFather → /setprivacy → Disable).
 
@@ -212,7 +214,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | 1 | Audio edit | `investing-bros-post-production` | Nadav (cuts) |
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Amitai (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Nadav |
-| 4 | Exactly 3 shorts (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
+| 4 | Exactly 3 shorts, run by the Producer (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Nadav |
 | 4b | Exactly 2 segment videos (01 deep dive + 02 next-best topic) | `investing-bros-segment-video` | Amitai (title, publish) |
 | 5 | Review ping, uploads, publish, Spotify check, WhatsApp | `investing-bros-episode-upload` | Amitai (publish) |
 | 5b | Going Public in order with a live check per item; ticked checklist | `investing-bros-publish` | Amitai (publish) |

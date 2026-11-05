@@ -43,6 +43,7 @@ Typical docs in `brief/`: news/topic ideas, deep-dive brief, any one-pagers. Lea
 
 ### 4. Deep dive
 Structured brief: what it is → why now → key numbers (each sourced) → bull case / bear case → open questions for the hosts.
+Plan it around **two answerable sub-questions**, each with a clear opening (the question said on air) and a clear conclusion; they become segments 01 and 02 (`investing-bros-segment-video`).
 
 ### 5. Share
 Hand off to the WhatsApp owner (show conventions → WhatsApp) for group `אחים להשקעות`:

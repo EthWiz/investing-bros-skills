@@ -79,7 +79,7 @@ named `תמלול - פרק N` in the episode's `אחים להשקעות > פרק
 - Hebrew, UTF-8. First lines: `אחים להשקעות — פרק N`, the length, and
   `תמלול אוטומטי — ייתכנו שגיאות בשמות, במספרים ובמונחים באנגלית.`
 - One line or paragraph per segment, each starting with its `[m:ss]` timestamp (raw timeline;
-  say so if the edit later shifts it). Add the speaker (`נדב:` / `עמיתי:`) when known.
+  say so if the edit later shifts it). Add the speaker (`נדב:` / `אמיתי:`) when known.
 - Create it through the Google Drive connector as a text Google Doc (fine for text; only MP4s
   must go through the browser). Don't overwrite or move other Drive files; if the Doc already
   exists, update it rather than adding a duplicate.
