@@ -115,7 +115,18 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   `file_sha256` or `source_sha256` equals the sha256 of the track's current video (the master,
   the segment `.mp4`, the Short `.m4v`), so a record of an older render fails. It copies
   `video_id` into `data`; a new record (re-upload) changes the stage's version
-  and so stales `ok`, `publish_ok` and the publish checks for that group.
+  and so stales `ok`, `publish_ok` and the publish checks for that group. The thumbnail is not
+  a field of this record.
+- **Thumbnail records** (`extras/uploads/<asset>-thumb.json`, written by the upload's thumbnail
+  step and by `yt_upload.py --set-thumbnail`): `{asset, video_id, file, sha256, set_at}`.
+  `publish_checklist.py can-public` accepts `episode.thumb`, `segNN.thumb` and `shortNN.cover`
+  only when `sha256` is the approved pick (`of_hashes` on `main.art_ok`, `segNN.thumb_ok` or
+  `shortNN.cover_ok`) and `video_id` is the current upload. Those checklist items are never
+  waived, and with this file present they are not hand-ticked.
+- A segment package fingerprints the `.mp4`, the `.txt` and the notes file. A Short package
+  fingerprints the `.m4v`, the `.srt` and the notes file. `-thumb.jpg` and `-cover.jpg` stay
+  required on disk and stay out of those fingerprints, so promoting an A/B/C pick does not
+  stale the package, the upload or `ok`.
 - **Segment package records** (`extras/segment-NN.json`, written by `segment-video` →
   `make_segment.py`): the raw range, source type and offset, the mapped source range, the
   cuts, the render plan, the `verify_sync` result and the sha256 of each package file.

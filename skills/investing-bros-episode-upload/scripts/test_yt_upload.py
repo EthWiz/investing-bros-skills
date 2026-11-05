@@ -117,6 +117,11 @@ def test_record_written_and_private(tmp_path):
     assert r["video_id"] == "VID00000001" and r["channel"] == yu.SHOW_CHANNEL_ID
     assert r["steps_done"] == ["insert", "thumbnail"] and r["version"] == yu.sha256_file(v)
     assert yt.bodies[0]["status"]["privacyStatus"] == "private"
+    image_sha = yu.sha256_file(t)
+    assert image_sha not in rec.read_text()                         # the upload record is not the thumbnail proof
+    side = rec.parent / "main-thumb.json"
+    proof = json.loads(side.read_text())
+    assert proof["sha256"] == image_sha and proof["video_id"] == r["video_id"] and proof["asset"] == "main"
 
 
 def test_failure_after_insert_then_retry_never_inserts_twice(tmp_path):
@@ -170,6 +175,23 @@ def test_resume_without_a_record_refuses(tmp_path):
     yt = FakeYT()
     assert yu.main(["--resume", str(tmp_path / "none.json")], yt=yt) == 1
     assert yt.inserts == 0
+
+
+def test_set_thumbnail_writes_a_side_record_and_leaves_the_upload(tmp_path):
+    v, t, rec = files(tmp_path)
+    yt = FakeYT()
+    assert yu.main(args(v, t, rec), yt=yt) == 0
+    before = rec.read_bytes()
+    picked = tmp_path / "option-b.jpg"
+    picked.write_bytes(b"option-b")
+    assert yu.main(["--set-thumbnail", "VID00000001", "--thumbnail", str(picked),
+                    "--asset", "main", "--record", str(rec)], yt=yt) == 0
+    assert rec.read_bytes() == before
+    proof = json.loads((rec.parent / "main-thumb.json").read_text())
+    assert proof["sha256"] == yu.sha256_file(picked) and proof["video_id"] == "VID00000001"
+    assert yu.sha256_file(picked) not in rec.read_text()
+    with pytest.raises(SystemExit):
+        yu.main(["--set-thumbnail", "VID00000001", "--thumbnail", str(picked)], yt=yt)
 
 
 def test_record_of_another_asset_refuses(tmp_path):

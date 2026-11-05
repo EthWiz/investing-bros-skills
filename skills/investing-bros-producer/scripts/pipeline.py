@@ -22,6 +22,7 @@ Producer syncs it to Drive extras/ after every change. Tracks and stages: refere
 Exit 0 = done / pass, 1 = refused or failed (reasons printed), 2 = usage error.
 """
 import argparse
+import hashlib
 import json
 import os
 import re
@@ -394,20 +395,24 @@ def stage_map():
         A("main", "title_ok", td, "main.copy", "the final title (written after בחירה סופית:)",
           of_keys="כותרות-פרק-{n}.txt"),
         W("main", "art", br, "helper", f"<{br}> steps 3-8 (Codex on Amitai's Mac); check_cover.py >> "
-          "extras/cover-check.log", items("thumbnail_cover", "cover_checks", "face_identity"),
+          "extras/cover-check.log. Option A is the file that goes up; A/B/C differ in art only",
+          items("thumbnail_cover", "cover_checks", "face_identity"),
           out_files("cover-פרק-{n}.png", "thumbnail-פרק-{n}.jpg"), inputs=["main.title_ok"]),
-        A("main", "art_ok", br, "main.art", "the A/B/C pick for the episode cover and thumbnail"),
         W("main", "video", vd, "helper", f"python3 <{vd}>/scripts/build_fullframe_teaser.py; assemble_episode.sh; "
           "verify_sync.py > extras/verify_sync.log",
           items("teaser", "teaser_quality", "intro", "full_video", "verify_sync", "chapters"),
           join(out_teaser, out_files("video/פרק-{n}-וידאו.mp4", "text:video/תיאור-פרק-{n}-youtube.txt")),
           inputs=["main.trim", "main.copy"], needs=["main.cuts_ok"]),
         W("main", "upload", up, "producer", f"python3 <{up}>/scripts/yt_upload.py EP/extras/פרק-N-youtube.mp4 "
-          "--source EP/video/פרק-N-וידאו.mp4 ... --asset main --record EP/extras/uploads/main.json; cards; end "
-          "screen; then mark main.endscreen",
+          "--source EP/video/פרק-N-וידאו.mp4 --thumbnail EP/thumbnail-פרק-N.jpg (option A) ... --asset main "
+          "--record EP/extras/uploads/main.json; cards; end screen; then mark main.endscreen. The thumbnail "
+          "sha goes in extras/uploads/main-thumb.json, not in the upload record",
           join(gate("upload"), upload_record("main"), items("past_episode_cards"), marks("main.endscreen")),
           join(out_files("extras/uploads/main.json"), out_marks("main.endscreen")),
-          inputs=["main.video", "main.art_ok", "main.title_ok"], data=upload_data("main")),
+          inputs=["main.video", "main.title_ok"], data=upload_data("main")),
+        A("main", "art_ok", br, "main.art",
+          "the A/B/C pick for the episode cover and thumbnail (round 2; promote the pick onto the canonical "
+          "file, then approve; one quote may cover several picks)"),
         A("main", "ok", up, "main.upload", "the full episode (Private link) in the approval round"),
     ]
     for t in ("seg01", "seg02"):
@@ -420,14 +425,17 @@ def stage_map():
             W(t, "render", sg, "helper", f"python3 <{sg}>/scripts/make_segment.py --slot {n2} ...",
               segment_record(t), out_segment(t), inputs=[f"{t}.range_ok", "main.trim"],
               needs=["main.cuts_ok"], data=segment_data(t)),
-            W(t, "package", sg, "helper", f"<{sg}> steps 5-9: .txt, -thumb.jpg, youtube-סגמנט-{n2}.md; then mark "
-              f"{t}.nudge", join(package("segment", t), marks(f"{t}.nudge")),
-              out_slot("segment", t, [".mp4", ".txt", "-thumb.jpg"]), inputs=[f"{t}.render"]),
-            A(t, "thumb_ok", br, f"{t}.package", f"the A/B/C pick for segment {n2}'s thumbnail", of_keys="-thumb.jpg"),
-            W(t, "upload", sg, "helper", f"yt_upload.py ... --asset {t} --record EP/extras/uploads/{t}.json; card + "
-              f"end screen; then mark {t}.links", join(upload_record(t), marks(f"{t}.links")),
+            W(t, "package", sg, "helper", f"<{sg}> steps 5-9: .txt, -thumb.jpg (option A), youtube-סגמנט-{n2}.md; "
+              f"then mark {t}.nudge. The thumbnail is required on disk and is not part of this stage's fingerprint",
+              join(package("segment", t), marks(f"{t}.nudge")),
+              out_slot("segment", t, [".mp4", ".txt"]), inputs=[f"{t}.render"]),
+            W(t, "upload", sg, "helper", f"yt_upload.py ... --thumbnail <option A> --asset {t} --record "
+              f"EP/extras/uploads/{t}.json; card + end screen; then mark {t}.links. Thumbnail sha: "
+              f"extras/uploads/{t}-thumb.json", join(upload_record(t), marks(f"{t}.links")),
               join(out_files(f"extras/uploads/{t}.json"), out_marks(f"{t}.links")),
-              inputs=[f"{t}.package", f"{t}.thumb_ok", "main.upload"], data=upload_data(t)),
+              inputs=[f"{t}.package", "main.upload"], data=upload_data(t)),
+            A(t, "thumb_ok", br, f"{t}.package", f"the A/B/C pick for segment {n2}'s thumbnail (round 2; "
+              "promote the pick onto -thumb.jpg first)", of_keys="-thumb.jpg"),
             A(t, "ok", up, f"{t}.upload", f"segment {n2} (Private link) in the approval round"),
         ]
     for t in ("short01", "short02", "short03"):
@@ -441,23 +449,29 @@ def stage_map():
               f"EP/extras/check-short-{n2}.log", short_log(t), out_files(f"extras/check-short-{n2}.log"),
               inputs=[f"{t}.pick_ok", "main.trim"], needs=["main.cuts_ok"],
               data=render_data_from_mark(f"{t}.pick")),
-            W(t, "cover", br, "helper", f"<{br}> Shorts covers (Codex on Amitai's Mac); check_cover.py --kind "
-              "shorts-vertical >> EP/extras/cover-check.log", short_cover(t), out_short_cover(t),
-              inputs=[f"{t}.pick_ok"]),
-            A(t, "cover_ok", br, f"{t}.cover", f"the A/B/C pick for Short {n2}'s cover"),
-            W(t, "package", sh, "producer", f"<{sh}> step 7: the four files in Shorts/",
-              package("short", t), out_slot("short", t, [".m4v", "-cover.jpg", ".srt"]),
-              inputs=[f"{t}.render", f"{t}.cover_ok"]),
+            W(t, "cover", br, "helper", f"<{br}> Shorts covers (Codex on Amitai's Mac) only after round 1 "
+              f"(the episode title and this Short's cover title). A/B/C differ in art only; check_cover.py "
+              "--kind shorts-vertical >> EP/extras/cover-check.log", short_cover(t), out_short_cover(t),
+              inputs=[f"{t}.pick_ok"], needs=["main.title_ok"]),
+            W(t, "package", sh, "producer", f"<{sh}> step 7: the four files in Shorts/ (option A cover on disk; "
+              "it is not part of this stage's fingerprint)",
+              package("short", t), out_slot("short", t, [".m4v", ".srt"]),
+              inputs=[f"{t}.render"], needs=[f"{t}.cover"]),
             # Related video waits for the publish checklist (`related`, never waived): the full episode is
             # still Private here, and the Short only goes Public after it is live
-            W(t, "upload", sh, "producer", f"yt_upload.py ... --asset {t} --record EP/extras/uploads/{t}.json; "
-              ".srt in Studio (Related video is set before Public: investing-bros-publish `related`)",
+            W(t, "upload", sh, "producer", f"yt_upload.py ... --thumbnail <option A cover> --asset {t} --record "
+              f"EP/extras/uploads/{t}.json; .srt in Studio (Related video is set before Public: "
+              "investing-bros-publish `related`). Cover sha: extras/uploads/{t}-thumb.json",
               upload_record(t), out_files(f"extras/uploads/{t}.json"),
               inputs=[f"{t}.package", "main.upload"], data=upload_data(t)),
+            A(t, "cover_ok", br, f"{t}.cover", f"the A/B/C pick for Short {n2}'s cover (round 2; promote the "
+              "pick onto -cover.jpg first). A cover-title change is a re-render and a re-upload, not a pick"),
             A(t, "ok", up, f"{t}.upload", f"Short {n2} (Private link) in the approval round; this is its cut approval"),
         ]
     uploads = [f"{t}.upload" for t in TRACKS[:-1]]
     oks = [f"{t}.ok" for t in TRACKS[:-1]]
+    art_oks = (["main.art_ok"] + [f"{t}.thumb_ok" for t in ("seg01", "seg02")]
+               + [f"{t}.cover_ok" for t in ("short01", "short02", "short03")])
     m += [
         W("release", "redcircle_draft", up, "producer", f"<{up}> step 2; then {P} mark EP redcircle_draft "
           "--evidence <draft URL>", items("redcircle_draft"), out_marks("redcircle_draft"),
@@ -467,8 +481,9 @@ def stage_map():
         W("release", "approval_round", up, "producer", f"<{up}> step 3b: one Telegram message; then {P} mark EP "
           "release.approval_round --evidence \"<file, time>\"", marks("release.approval_round"),
           out_marks("release.approval_round"), inputs=["release.review_gate"]),
-        A("release", "publish_ok", pb, None, "the OK to publish, naming what may go Public",
-          needs=["release.approval_round"], inputs=oks),
+        A("release", "publish_ok", pb, None, "the OK to publish, naming what may go Public. "
+          "Record it after the asset oks and the art picks (the same quote may be passed to each approve)",
+          needs=["release.approval_round"], inputs=oks + art_oks),
         W("release", "publish", pb, "producer", f"python3 <{pb}>/scripts/publish_checklist.py ... (every item)",
           publish_done, out_files("extras/publish-checklist.json"), inputs=["release.publish_ok"]),
         W("release", "spotify_links", pb, "producer", f"<{pb}> step 7; then {P} mark EP spotify_links --evidence <URL>",
@@ -782,6 +797,25 @@ def cmd_advance(ep, a):
     return 0 if all(r == "passed" for _, r in rep) else 1
 
 
+def file_sha(ep, rel: str):
+    p = Path(ep) / rel
+    if not p.is_file():
+        return None
+    h = hashlib.sha256()
+    with open(p, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def live_of_keys(c: Ctx, spec, pat: str) -> list:
+    """A file the approval fingerprints that is not one of `of`'s outputs (the segment thumbnail)."""
+    if spec["track"].startswith("seg") and pat == "-thumb.jpg":
+        p = G.slot_file(c.ep, "segment", slot(spec["track"]), "-thumb.jpg")
+        return [c.rel(p)] if p else []
+    return []
+
+
 def cmd_approve(ep, a):
     s = need_state(ep)
     key = f"{a.track}.{a.stage}"
@@ -806,13 +840,23 @@ def cmd_approve(ep, a):
             pat = spec["of_keys"].format(n=s["episode"])
             keys = [k for k in of.get("outputs", {}) if str(k).endswith(pat)]
             if not keys:
-                print(f"refused: {key} fingerprints only outputs ending with {pat}; "
-                      f"{spec['of']} has none", file=sys.stderr)
+                keys = live_of_keys(c, spec, pat)
+            hashes = {}
+            for k in keys:
+                h = of.get("outputs", {}).get(k) or file_sha(ep, k)
+                if not h:
+                    keys = []
+                    break
+                hashes[k] = h
+            if not keys:
+                print(f"refused: {key} fingerprints only files ending with {pat}; none found", file=sys.stderr)
                 return 1
-            rec.update(of=spec["of"], of_keys=keys,
-                       of_version=PS.version_of({k: of["outputs"][k] for k in keys}))
+            rec.update(of=spec["of"], of_keys=keys, of_hashes=hashes, of_version=PS.version_of(hashes))
         else:
             rec.update(of=spec["of"], of_version=of["version"])
+            if spec["name"] in ("art_ok", "cover_ok"):
+                rec["of_hashes"] = {k: v for k, v in of.get("outputs", {}).items()
+                                    if v and not str(k).startswith(("mark:", "text:"))}
         rec["version"] = rec["of_version"]
     rec["inputs"] = {k: s["stages"][k]["version"] for k in spec["inputs"] if k in s["stages"]}
     if key == "release.publish_ok":

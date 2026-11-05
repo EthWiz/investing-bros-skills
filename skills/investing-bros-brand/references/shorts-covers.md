@@ -44,7 +44,11 @@ claims that aren't in the clip; a necessary Latin name such as `CoreWeave` is al
 ## Standing option rule (2026-10-22)
 Until Amitai says the design is dialed in, every individual Short cover is delivered as
 three clearly labeled Codex options A/B/C for him to choose from. This means three
-options for each of the episode's three Shorts, not one option per Short.
+options for each of the episode's three Shorts, not one option per Short. The three
+differ in art only: the same `cover_title`, the same `פרק N` pill. Render them only after
+round 1 approves the episode title and this Short's cover title. There is no best-guess
+title. A later change to that title is a re-render of the Short plus a re-upload, because
+the cover title is burned into the opening banner.
 
 ## How to make it (Codex on Amitai's Mac only)
 There is no box fallback: no Pillow compositing of faces, art or strips. Independent Codex renders (A/B/C for this Short, and other Shorts' covers) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). If Codex or the

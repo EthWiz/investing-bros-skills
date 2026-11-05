@@ -28,8 +28,11 @@ Rules enforced:
     and every pre item of its own group is ticked (or waived where waivable).
   * live items can be ticked only after their group's `public` item.
   * channel (the first check of every YouTube video: אחים להשקעות is the active Studio
-    channel), public, live, publish_ok and every Short's `related` item can never be waived. A Short whose
+    channel), public, live, publish_ok, thumb, cover and every Short's `related` item can never be waived. A Short whose
     Related video could not be set is `fail`ed and stays Private.
+  * With extras/pipeline.json, episode.thumb, segNN.thumb and shortNN.cover are not ticked by hand.
+    can-public treats one as done only when extras/uploads/<asset>-thumb.json names this video and its
+    sha256 is the approved pick (art_ok / thumb_ok / cover_ok `of_hashes`). A mismatch blocks Public.
   * With the episode state (extras/pipeline.json next to STATE, investing-bros-producer), every
     `can-public` and every `public` tick re-checks it, each time, against its current revision: the
     pipeline's release.publish_ok must be current, each group's `ok` approval current, and the video
@@ -88,7 +91,16 @@ CHECKS = {
         ("live", "live", "`check_live.py youtube ID --expect public` passes"),
     ],
 }
-NEVER_WAIVE = {"public", "live", "channel", "publish_ok"}
+NEVER_WAIVE = {"public", "live", "channel", "publish_ok", "thumb", "cover"}
+# With extras/pipeline.json these are proved by extras/uploads/<asset>-thumb.json, not by a tick.
+ART_PROOF = {
+    "episode": ("thumb", "main", "main.art_ok", (".jpg",)),
+    "seg01": ("thumb", "seg01", "seg01.thumb_ok", ("-thumb.jpg",)),
+    "seg02": ("thumb", "seg02", "seg02.thumb_ok", ("-thumb.jpg",)),
+    "short01": ("cover", "short01", "short01.cover_ok", ("-cover.jpg",)),
+    "short02": ("cover", "short02", "short02.cover_ok", ("-cover.jpg",)),
+    "short03": ("cover", "short03", "short03.cover_ok", ("-cover.jpg",)),
+}
 NEVER_WAIVE_SHORT = {"related"}
 TITLES = {"release": "Publish OK", "redcircle": "RedCircle", "episode": "Full episode", "seg01": "Segment 01",
           "seg02": "Segment 02", "short01": "Short 01", "short02": "Short 02", "short03": "Short 03"}
@@ -193,6 +205,88 @@ def pipeline_blockers(checklist_path: Path, state: dict, group: str) -> list:
     return probs["*"] + [p for g in ORDER[1:gi + 1] for p in probs.get(g, [])]
 
 
+def _load_pipeline(checklist_path: Path):
+    sys.path.insert(0, str(Path(__file__).parent))
+    import pipeline_state as PS
+    sp = PS.find_state_near(checklist_path)
+    if sp is None:
+        return None
+    ep = PS.episode_dir_of(sp)
+    return ep, PS.load(ep)
+
+
+def _approved_sha(stage: dict, suffixes) -> "str | None":
+    for key, val in (stage.get("of_hashes") or {}).items():
+        if any(str(key).endswith(s) for s in suffixes):
+            return str(val).split(":")[-1]
+    return None
+
+
+def art_proof(checklist_path: Path, state: dict, group: str):
+    """None when this group has no art check or the episode has no pipeline.
+    ('ok', '') when the thumbnail record matches the approved pick.
+    ('bad', reason) when a pipeline exists and the proof does not hold."""
+    spec = ART_PROOF.get(group)
+    loaded = _load_pipeline(checklist_path)
+    if spec is None or loaded is None:
+        return None
+    item_key, asset, stage_key, suffixes = spec
+    ep, ps = loaded
+    sys.path.insert(0, str(Path(__file__).parent))
+    import pipeline_state as PS
+    ev = PS.evaluate(ep, ps)
+    item = f"{group}.{item_key}"
+    st = ev.get(stage_key, {"status": "missing", "why": ""})
+    if st["status"] != "current":
+        return "bad", f"{item}: {stage_key} is {st['status']}" + (f" ({st['why']})" if st.get("why") else "")
+    want = _approved_sha(ps.get("stages", {}).get(stage_key) or {}, suffixes)
+    if not want:
+        return "bad", f"{item}: {stage_key} records no approved file hash"
+    rec_path = ep / "extras" / "uploads" / f"{asset}-thumb.json"
+    if not rec_path.is_file():
+        return "bad", f"{item}: missing extras/uploads/{asset}-thumb.json (yt_upload.py --set-thumbnail)"
+    try:
+        rec = json.loads(rec_path.read_text(encoding="utf-8"))
+    except ValueError:
+        return "bad", f"{item}: extras/uploads/{asset}-thumb.json is unreadable"
+    vid = ((ps.get("stages", {}).get(f"{asset}.upload") or {}).get("data") or {}).get("video_id")
+    if rec.get("sha256") != want:
+        return "bad", f"{item}: thumbnail record sha256 is not the approved pick"
+    if rec.get("video_id") != vid:
+        return "bad", f"{item}: thumbnail record is for {rec.get('video_id')}, the upload is {vid}"
+    if rec.get("video_id") != state["videos"].get(group):
+        return "bad", (f"{item}: thumbnail record is for {rec.get('video_id')}, "
+                       f"the checklist has {state['videos'].get(group)}")
+    return "ok", ""
+
+
+def art_item_ids(group: str) -> list:
+    spec = ART_PROOF.get(group)
+    return [f"{group}.{spec[0]}"] if spec else []
+
+
+def apply_art_proof(checklist_path: Path, state: dict, group: str, blocked: list) -> list:
+    """Drop a thumb/cover tick the thumbnail record already proves, and say so when it doesn't."""
+    if _load_pipeline(checklist_path) is None:
+        return blocked
+    gi = ORDER.index(group)
+    drop, extra = set(), []
+    for g in ORDER[:gi + 1]:
+        ids = art_item_ids(g)
+        if not ids:
+            continue
+        proof = art_proof(checklist_path, state, g)
+        if proof is None:
+            continue
+        status, why = proof
+        drop.update(ids)
+        if status != "ok":
+            extra.append(why)
+        elif ids[0] not in blocked:
+            pass
+    return [x for x in blocked if x not in drop] + extra
+
+
 def set_video(state: dict, group: str, vid: str) -> None:
     if group not in ORDER or group in ("release", "redcircle"):
         raise ValueError(f"{group} has no YouTube video")
@@ -234,12 +328,12 @@ def blockers(state: dict, item_id: str) -> list[str]:
             if not done(x) and (ORDER.index(x["group"]) < gi or (x["group"] == g and x["phase"] == "pre"))]
 
 
-def tick(state: dict, item_id: str, evidence: str) -> None:
+def tick(state: dict, item_id: str, evidence: str, ignore=()) -> None:
     if item_id == "release.publish_ok":
         raise PermissionError("refused: record the owner's OK with publish-ok --by, not tick")
     if not evidence.strip():
         raise ValueError("a tick needs --evidence: what you saw and where")
-    b = blockers(state, item_id)
+    b = [x for x in blockers(state, item_id) if x not in ignore]
     if b:
         raise PermissionError(f"refused: {item_id} is blocked by {', '.join(b)}")
     it = _find(state, item_id)
@@ -274,7 +368,14 @@ def owner_check_for(path: Path):
     return lambda by: episode_owner.check_quote(by, path)
 
 
-def render(state: dict) -> str:
+def proved(checklist_path: "Path | None", state: dict, it: dict) -> bool:
+    if checklist_path is None or it["id"].split(".", 1)[-1] not in ("thumb", "cover"):
+        return False
+    proof = art_proof(checklist_path, state, it["group"])
+    return bool(proof and proof[0] == "ok")
+
+
+def render(state: dict, checklist_path: "Path | None" = None) -> str:
     box = {"ticked": "[x]", "waived": "[x]", "open": "[ ]", "failed": "[ ]"}
     lines = [f"Publish checklist, episode {state['episode']}"]
     for g in ORDER:
@@ -282,10 +383,13 @@ def render(state: dict) -> str:
         head = TITLES[g] + (f" ({vid}, https://youtu.be/{vid})" if vid else "")
         lines += ["", f"**{head}**"]
         for it in (x for x in state["items"] if x["group"] == g):
+            mark = "ticked" if proved(checklist_path, state, it) else it["state"]
             tag = {"waived": " (waived)", "failed": " FAILED"}.get(it["state"], "")
+            if proved(checklist_path, state, it) and it["state"] == "open":
+                tag = " (thumbnail record)"
             note = f": {it['note']}" if it["note"] else ""
-            lines.append(f"- {box[it['state']]} {it['label']}{tag}{note}")
-    open_ = [x["id"] for x in state["items"] if not done(x)]
+            lines.append(f"- {box[mark]} {it['label']}{tag}{note}")
+    open_ = [x["id"] for x in state["items"] if not done(x) and not proved(checklist_path, state, x)]
     lines += ["", "All checks done." if not open_ else f"Still open or failed: {', '.join(open_)}"]
     return "\n".join(lines)
 
@@ -322,24 +426,34 @@ def main(argv=None) -> int:
             path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"set-video: {a.group} {a.id}; its checks are open again and the publish OK must be given again")
         elif a.cmd in ("tick", "fail", "waive"):
+            if a.cmd == "tick" and _find(state, a.item)["id"].split(".", 1)[-1] in ("thumb", "cover") \
+                    and _load_pipeline(path) is not None:
+                raise PermissionError(f"refused: {a.item} is proved by extras/uploads/<asset>-thumb.json, not a tick")
+            ignore = ()
             if a.cmd == "tick" and _find(state, a.item)["phase"] == "public":
-                pb = pipeline_blockers(path, state, _find(state, a.item)["group"])
-                if pb:
-                    raise PermissionError(f"refused: {a.item}: " + "; ".join(pb))
-            {"tick": lambda: tick(state, a.item, a.evidence), "fail": lambda: fail(state, a.item, a.reason),
+                g = _find(state, a.item)["group"]
+                raw = blockers(state, a.item)
+                shown = apply_art_proof(path, state, g, raw)
+                extra = [x for x in shown if x not in raw]
+                pb = pipeline_blockers(path, state, g)
+                if pb or extra:
+                    raise PermissionError(f"refused: {a.item}: " + "; ".join(pb + extra))
+                ignore = tuple(x for x in raw if x not in shown)
+            {"tick": lambda: tick(state, a.item, a.evidence, ignore),
+             "fail": lambda: fail(state, a.item, a.reason),
              "waive": lambda: waive(state, a.item, a.by, owner_check_for(path))}[a.cmd]()
             path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"{a.cmd}: {a.item}")
         elif a.cmd == "can-public":
-            b = blockers(state, f"{a.group}.public")
+            b = apply_art_proof(path, state, a.group, blockers(state, f"{a.group}.public"))
             pb = pipeline_blockers(path, state, a.group)
             print("yes" if not (b or pb) else "NO, " + "; ".join((["open: " + ", ".join(b)] if b else []) + pb))
             return 0 if not (b or pb) else 1
         elif a.cmd == "status":
-            nxt = next((x for x in state["items"] if not done(x)), None)
+            nxt = next((x for x in state["items"] if not done(x) and not proved(path, state, x)), None)
             print("all done" if nxt is None else f"next: {nxt['id']} [{nxt['state']}] {nxt['label']}")
         else:
-            print(render(state))
+            print(render(state, path))
     except (PermissionError, ValueError, KeyError, FileExistsError) as e:
         print(e, file=sys.stderr)
         return 1

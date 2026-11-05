@@ -130,15 +130,17 @@ only after the full episode is live and publishing is OK'd.
   Recheck each time against the delivered file (cuts shift times). After a re-upload, set the
   cards on the new video. Mark `past_episode_cards` with the times you set. These are added to
   the Private upload, no extra approval needed.
-- Thumbnail: the episode's 16:9 `thumbnail-פרק-N.jpg` from the episode root (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
+- Thumbnail: upload option A, the episode's 16:9 `thumbnail-פרק-N.jpg` from the episode root (made from the square cover by `investing-bros-brand`). The same for a segment's `-thumb.jpg` and a Short's `-cover.jpg`. The A/B/C pick is round 2 and gates publish, not this upload. If the pick is not A, promote that file onto the canonical name and run `yt_upload.py --set-thumbnail VIDEO_ID --thumbnail <pick> --asset <track> --record extras/uploads/<track>.json`. That writes `extras/uploads/<track>-thumb.json` (the file's sha256 and the video ID) and does not rewrite the upload record.
 
 ### 3b. Approval round: one Telegram message
 The episode owner approves the episode's assets together. Once **all** of them are ready — the
 full episode (YouTube Private), both segment videos (YouTube Private; Nadav owns the
-channel), the three Shorts (with covers) and the RedCircle draft link — write **one**
-message for the `אחים להשקעות` Telegram group (show conventions → Telegram) listing
-every asset with its copied link (YouTube, Drive for covers, RedCircle draft), ending
-with the line `sent by Grokbot`. Check it, then post it automatically as part of the
+channel), the three Shorts (uploaded Private with option A) and the RedCircle draft link — write **one**
+message for the `אחים להשקעות` Telegram group (show conventions → Telegram). Each asset
+gets its copied link and, beside it, the A/B/C options (the file name of each; option A is
+the one on the video). End with the line `sent by Grokbot`. A contact sheet that would
+draw those options is a follow-up (`investing-bros-producer` → `references/gates.md`); until
+then the names are enough. Check it, then post it automatically as part of the
 pipeline; no separate preview or OK is needed for this message (Amitai,
 2026-11-05, ep10):
 ```bash

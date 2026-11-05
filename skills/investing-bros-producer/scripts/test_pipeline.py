@@ -71,7 +71,8 @@ def started(tmp_path, owner="amitai", by=AM):
     return tmp_path
 
 
-def through_main(ep, by=AM):
+def to_upload(ep, by=AM):
+    """Draft trim through the Private upload. Art is on the video as option A; the pick is still open."""
     main_files(ep)
     for m in ("transcript_doc", "cover_checks", "face_identity", "teaser_quality", "chapters", "past_episode_cards",
               "main.endscreen"):
@@ -80,9 +81,15 @@ def through_main(ep, by=AM):
     assert run("approve", ep, "main", "cuts_ok", "--by", by) == 0
     assert run("advance", ep, "main") == 1                       # stops at title_ok
     assert run("approve", ep, "main", "title_ok", "--by", by) == 0
-    assert run("advance", ep, "main", "art") == 0
+    assert run("advance", ep, "main") == 1                       # art, video, upload (option A); stops at art_ok
+    assert ps.load(ep)["stages"]["main.upload"]["state"] == "done"
+    assert "main.art_ok" not in ps.load(ep)["stages"]
+
+
+def through_main(ep, by=AM):
+    to_upload(ep, by)
     assert run("approve", ep, "main", "art_ok", "--by", by) == 0
-    assert run("advance", ep, "main") == 1                       # video, upload; stops at ok
+    assert run("advance", ep, "main") == 1                       # stops at ok
     assert run("approve", ep, "main", "ok", "--by", by) == 0
 
 
@@ -236,6 +243,59 @@ def test_draft_trim_and_cuts_ok_gates_renders(tmp_path, capsys):
     assert run("advance", ep, "short01", "render") == 1
 
 
+def test_art_swap_stales_the_pick_not_the_upload(tmp_path):
+    ep = started(tmp_path)
+    to_upload(ep)
+    jpg = ep / f"thumbnail-פרק-{N}.jpg"
+    jpg.write_text("option B", encoding="utf-8")
+    e = ev(ep)
+    assert e["main.art"]["status"] == "stale" and e["main.upload"]["status"] == "current"
+    assert run("advance", ep, "main", "art") == 0          # the promoted file, before the approval
+    assert run("approve", ep, "main", "art_ok", "--by", AM) == 0
+    rec = ps.load(ep)["stages"]["main.art_ok"]
+    assert rec["of_hashes"][f"thumbnail-פרק-{N}.jpg"] == sha(jpg)
+    assert run("approve", ep, "main", "ok", "--by", AM) == 0
+    jpg.write_text("option C", encoding="utf-8")           # a later change of mind
+    e = ev(ep)
+    assert e["main.art_ok"]["status"] == "stale" and e["main.ok"]["status"] == "current"
+    assert e["main.upload"]["status"] == "current"
+    # the segment thumbnail is not part of the package fingerprint
+    assert run("mark", ep, "seg01.select", "--evidence", "raw 100-200, no cuts") == 0
+    assert run("advance", ep, "seg01", "select") == 0
+    assert run("approve", ep, "seg01", "range_ok", "--by", AM) == 0
+    touch(ep / "segments/סגמנט-01-צלילה-זהב.mp4", "seg")
+    touch(ep / "segments/סגמנט-01-צלילה-זהב.txt", "title")
+    touch(ep / "segments/סגמנט-01-צלילה-זהב-thumb.jpg", "option A")
+    touch(ep / "segments/youtube-סגמנט-01.md", "notes")
+    touch(ep / "extras/segment-01.json", json.dumps({"sync": "SYNC OK", "output": "segments/סגמנט-01-צלילה-זהב.mp4"}))
+    assert run("advance", ep, "seg01", "render") == 0
+    assert run("mark", ep, "seg01.nudge", "--evidence", "0:31 clear") == 0
+    assert run("advance", ep, "seg01", "package") == 0
+    outs = ps.load(ep)["stages"]["seg01.package"]["outputs"]
+    assert not any(str(k).endswith("-thumb.jpg") for k in outs)
+    thumb = ep / "segments/סגמנט-01-צלילה-זהב-thumb.jpg"
+    thumb.write_text("option B", encoding="utf-8")
+    assert ev(ep)["seg01.package"]["status"] == "current"
+    record(ep, "seg01", "SEGvid00001", version=sha(ep / "segments/סגמנט-01-צלילה-זהב.mp4"))
+    assert run("mark", ep, "seg01.links", "--evidence", "card + end screen") == 0
+    assert run("advance", ep, "seg01", "upload") == 0
+    assert run("approve", ep, "seg01", "thumb_ok", "--by", AM) == 0
+    picked = ps.load(ep)["stages"]["seg01.thumb_ok"]
+    assert picked["of_keys"] == ["segments/סגמנט-01-צלילה-זהב-thumb.jpg"]
+    assert picked["of_hashes"]["segments/סגמנט-01-צלילה-זהב-thumb.jpg"] == sha(thumb)
+    thumb.write_text("option C", encoding="utf-8")
+    e = ev(ep)
+    assert e["seg01.thumb_ok"]["status"] == "stale"
+    assert e["seg01.package"]["status"] == "current" and e["seg01.upload"]["status"] == "current"
+    assert "main.art_ok" not in pl.SPEC["main.upload"]["inputs"]
+    assert "seg01.thumb_ok" not in pl.SPEC["seg01.upload"]["inputs"]
+    assert "short01.cover_ok" not in pl.SPEC["short01.package"]["inputs"]
+    assert pl.SPEC["short01.cover"]["inputs"] == ["short01.pick_ok"]
+    assert "main.title_ok" in pl.SPEC["short01.cover"]["needs"]
+    for key in ("main.art_ok", "seg01.thumb_ok", "short01.cover_ok"):
+        assert key in pl.SPEC["release.publish_ok"]["inputs"]
+
+
 def test_description_or_chapters_change_does_not_stale_title_ok(tmp_path):
     """title_ok fingerprints only כותרות-פרק-N.txt. Restoring a cut shifts chapters in the
     description (and the YouTube chapter file); that must not force another title round."""
@@ -386,6 +446,9 @@ def test_publish_ok_covers_every_ok_and_goes_stale(tmp_path):
         s["stages"][f"{t}.ok"] = {"state": "approved", "of": f"{t}.upload", "of_version": f"sha256:{t}",
                                   "version": f"sha256:{t}", "inputs": {}}
     s["stages"]["release.approval_round"] = {"state": "done", "version": "sha256:r", "outputs": {}, "inputs": {}}
+    for key in ("main.art_ok", "seg01.thumb_ok", "seg02.thumb_ok",
+                "short01.cover_ok", "short02.cover_ok", "short03.cover_ok"):
+        s["stages"][key] = {"state": "approved", "version": f"sha256:{key}", "inputs": {}}
     ps.save(ep, s)
     assert run("approve", ep, "release", "publish_ok", "--by", AM) == 0
     s = ps.load(ep)

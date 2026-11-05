@@ -26,7 +26,7 @@ for downloaded references. This list is what only eyes can check.
   option; record the episode owner's selection before assigning the final delivery filename.
 - Read every Hebrew word letter by letter (אמיתי, רסקין, אחים להשקעות); `?` on the
   left; numbers and Latin names (`S&P 500`) in the right order.
-- Headline and number match the supplied copy, not a guessed title.
+- Headline and number match the supplied copy, not a guessed title. A/B/C options differ in art only. A Short cover is rendered only after the episode title and that Short's cover title are approved.
 - Navy, cream paper and printed mustard dominate; no palette or style drift.
 - Photo-cutout covers: each face against its own original; exactly one Amitai and one
   Nadav; open eyes looking at the lens (no stare, no downcast lids), real smiles with no
