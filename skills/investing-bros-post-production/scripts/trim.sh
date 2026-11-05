@@ -4,7 +4,7 @@
 # Usage:
 #   trim.sh RAW START END OUT [--cut A-B]...
 #     START / END: seconds (e.g. 42.5) or HH:MM:SS(.ms), on the RAW timeline.
-#     --cut A-B:   also remove raw A..B inside the episode (a long silence, a false
+#     --cut A-B:   also remove raw A..B inside the episode (a silence of 2 s+ -- shorter ones are kept --, a false
 #                  start). Repeatable. Cut inside a pause; each join gets a 10 ms fade.
 #     OUT: .m4a (AAC 192k) or .mp3 (192k).
 #

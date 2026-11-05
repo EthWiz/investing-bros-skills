@@ -84,7 +84,8 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
   --start START --end END                                                  # long silences, with context
 ```
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
-- Listen for what else should go: long silences, false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
+- **Silences under 2 s are kept by default — never cut them** (Amitai, episode 10: the five 1–3 s silence trims were all put back). Only a silence of 2 s or longer may be trimmed, and even then leave a natural beat on each side so the join doesn't sound clipped.
+- Listen for what else should go: long silences (2 s+), false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
 - Send Nadav the list (raw times + the words around each) and wait for his OK. Ambiguous cut → ask Amitai.
 - **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
   1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with Amitai/Nadav (e.g. "remove the 40 s") before cutting.
@@ -93,7 +94,7 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
   4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
   5. Check A/V drift at the end of the assembled video (`assemble_episode.sh` prints the sync check) and spot-check lips right after the join. Then measure it: `investing-bros-video` → `verify_sync.py` must report `SYNC OK` (0 ms audio offset, 0-frame picture shift before, between and after every cut and near the end) before the video goes to anyone.
   6. A cut made **after** the video is assembled (a re-cut sample or master) goes through `investing-bros-video` → `render_cuts.py`: one pass, video and audio from the same input with the same frame-snapped boundaries. Never cut the audio on its own and mux it back.
-- Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation.
+- Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation. A pause shorter than 2 s is never a cut on its own.
 
 ### 6. Trim and check
 ```bash
