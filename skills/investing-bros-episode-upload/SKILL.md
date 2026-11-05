@@ -114,6 +114,20 @@ full episode is live.
 - **Superseded uploads (any asset):** the same rule applies to segments and Shorts. Before
   deleting, confirm in Studio that the video is Private, is the same asset as a newer verified
   upload, and is not linked from any current description, card, end screen or Related video.
+- **Past-episode cards (required, full episode):** whenever the hosts reference a past
+  episode, by number ("פרק 8", "בפרק שמונה") or by topic ("the nuclear / SpaceX episode"),
+  add a YouTube info card (Studio → Editor → Cards → Video) at that moment linking to the
+  referenced episode. Amitai, episode 10: "whenever a previous episode is mentioned, then a
+  card at the top of the YouTube is shown with a reference to the episode". Rules: **max 4
+  cards** per episode; **one card per referenced episode**, at its first strong mention;
+  prioritise the clearest and most-repeated references (number references beat topic ones).
+  Source: `extras/past-episode-cards.json`, made in post-production by
+  `<investing-bros-post-production>/scripts/find_past_episode_refs.py` and resolved through
+  `<investing-bros-show>/references/episode-index.json`. Read every quote yourself; drop false
+  hits (a topic word that isn't a back-reference). Card teaser text = the episode title.
+  Recheck each time against the delivered file (cuts shift times). After a re-upload, set the
+  cards on the new video. Mark `past_episode_cards` with the times you set. These are added to
+  the Private upload, no extra approval needed.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 3b. Approval round: one Telegram message

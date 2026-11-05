@@ -124,6 +124,21 @@ Large files: if a final video must reach Amitai's Mac, use the verified
 references/environment.md → Delivering files); large Drive web uploads from the
 box can stall.
 
+### 8. Past-episode references (cards)
+Find every reference to a past episode (by number or by topic) for the YouTube info cards:
+```bash
+python3 scripts/find_past_episode_refs.py "$EP/extras/transcript/segments.json" --episode N \
+  --index <investing-bros-show>/references/episode-index.json --offset <raw→video shift> \
+  --out "$EP/extras/past-episode-cards.json"
+```
+The transcript is in raw-master time: convert to the delivered video (teaser + intro shift,
+minus any cuts before that point; `edit_map.py`), then check each time by ear. Max 4 cards,
+one per referenced episode at its first strong mention, clearest / most repeated first. Read
+every quote and delete false hits; write `[]` when nothing references a past episode. A topic
+reference to an episode missing from `episode-index.json`: look it up (Drive tree, channel),
+verify the ID, and add it to the index by PR. After each episode goes up, add it to the index
+(ID + topics). `episode-upload` sets the cards in Studio.
+
 ## Done when
 Post-production is not complete at the audio handoff. Every item below must be complete:
 
@@ -134,6 +149,8 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - Once the episode art is final, the folder also has `cover-פרק-N.png` and
   `thumbnail-פרק-N.jpg` (made and filed by `investing-bros-brand`, steps 7–8).
 - Nadav OK'd the cut list.
+
+- `extras/past-episode-cards.json` exists (step 8) and the cards are set on YouTube.
 
 **Gate**
 - `scripts/postprod_checklist.py check "$EP" --episode N --stage done` exits 0, each missing item made or waived by Amitai in his own words; paste its output in the hand back.

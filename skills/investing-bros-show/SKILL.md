@@ -33,6 +33,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 2. **The hand-back lists what ran:** the scripts run, any generated command patched by hand and why, and the PR that will fix it.
 3. **End every run by asking what it taught.** A mistake that could happen again becomes a script check with a test if a script can catch it, otherwise one line in the skill that owns the step, or a fact in this skill. Send it as a small PR the same day. Something you couldn't verify or fix becomes a GitHub issue on the repo. Nothing learned means no PR. Details in the repo's `AGENTS.md` → Improving the skills.
 4. **Know the environment before working around it.** Limits of the Drive connector, Amitai's Mac, the network and the tools are in [references/environment.md](references/environment.md).
+5. **Episode index.** [references/episode-index.json](references/episode-index.json) maps every episode to its current full-episode YouTube ID and key topics (Hebrew + English). It resolves past-episode references for YouTube cards; update it by PR after each upload, and never use dead IDs from the old channel.
 
 ## Naming
 | Thing | Pattern | Example |
