@@ -5,6 +5,7 @@ Usage:
     python3 make_lesson_base.py suggest lesson-N.json --takes-dir DIR [--words-dir WORDS]   # trims
     python3 make_lesson_base.py frame lesson-N.json --takes-dir DIR [--width PX]   # line up the framing
     python3 make_lesson_base.py build lesson-N.json --takes-dir DIR -o base.mp4 [--extras OUT_DIR]
+    python3 make_lesson_base.py finalize lesson-N.json --takes-dir DIR -o base.mp4  # old base's small tail padding
 
 lesson-N.json `takes`: [{"beat": 1, "file": "Beat 1 - take 1.mov", "from": 2.0, "to": 43.0}, ...] in
 beat order; `from`/`to` are seconds of the take. `suggest` prints a from/to per take: 0.3 s before the
@@ -60,6 +61,32 @@ def duration(path) -> float:
     out = subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(path)],
                          capture_output=True, text=True, check=True).stdout
     return float(out.strip())
+
+
+def finalize_base(path: Path, takes, probe=duration, run=subprocess.run):
+    """Limit concat/AAC tail padding to the planned timeline without re-encoding.
+
+    A fractional-frame trim can round up at every join. Refuse larger discrepancies,
+    short bases and failed remuxes rather than concealing missing or extra content.
+    """
+    planned = round(sum(t['to'] - t['from'] for t in takes), 9)
+    actual = probe(path)
+    tolerance = 0.1  # the delivery check's limit; packet-copy video retains B-frame reordering
+    if abs(actual - planned) <= tolerance:
+        return actual
+    if actual < planned or actual - planned > len(takes) / FPS + 2 * 1024 / 48000:
+        raise SystemExit(f"error: base is {actual:.3f} s, planned {planned:.3f} s: not small concat tail padding")
+    part = path.with_name(path.stem + '.duration.part.mp4')
+    try:
+        run(['ffmpeg', '-v', 'error', '-y', '-i', str(path), '-t', str(planned),
+             '-map', '0:v:0', '-map', '0:a:0', '-c', 'copy', '-movflags', '+faststart', str(part)], check=True)
+        fixed = probe(part)
+        if abs(fixed - planned) > tolerance:
+            raise SystemExit(f"error: duration remux is {fixed:.3f} s, planned {planned:.3f} s; original kept")
+        part.replace(path)
+        return fixed
+    finally:
+        part.unlink(missing_ok=True)
 
 
 def silences(path, noise="-38dB", min_len=0.6):
@@ -364,7 +391,7 @@ def status(cfg: dict, takes_dir: Path, words_dir: Path, record=None, hasher=sha2
 
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    ap.add_argument("cmd", choices=("suggest", "frame", "build", "stamp", "status"))
+    ap.add_argument("cmd", choices=("suggest", "frame", "build", "stamp", "status", "finalize"))
     ap.add_argument("config")
     ap.add_argument("--takes-dir", required=True)
     ap.add_argument("-o", "--out")
@@ -416,7 +443,10 @@ def main(argv=None) -> int:
                 print(f"warning: beat {t['beat']}: {how}", file=sys.stderr)
         return 0
     if not a.out:
-        ap.error("build needs -o")
+        ap.error(f"{a.cmd} needs -o")
+    if a.cmd == "finalize":
+        print(f"{a.out}: {finalize_base(Path(a.out), takes):.3f} s after tail-padding check")
+        return 0
     here = Path(a.config).resolve().parent
     background, image, mattes = None, None, []
     if cfg.get("background"):
@@ -432,6 +462,7 @@ def main(argv=None) -> int:
                 mattes.append(lesson_background.matte(take, sha256_file(take), folder, tool))
                 print(f"beat {t['beat']}: matte {mattes[-1]}")
     subprocess.run(build_cmd(takes, tdir, Path(a.out), background=background, image=image, mattes=mattes), check=True)
+    finalize_base(Path(a.out), takes)
     total = sum(t["to"] - t["from"] for t in takes)
     print(f"{a.out}: {duration(a.out):.2f} s (takes add up to {total:.2f} s)")
     if a.extras:

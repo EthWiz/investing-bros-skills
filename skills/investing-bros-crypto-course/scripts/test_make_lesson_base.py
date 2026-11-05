@@ -8,7 +8,7 @@ import pytest
 
 sys.path.insert(0, os.path.dirname(__file__))
 from make_lesson_base import (build_cmd, copy_words, digest, extras_name, filter_graph, fingerprint,  # noqa: E402
-                              latest_record, manifest, parse_silences, stamp, status, take_path, trims_from_silences)
+                              finalize_base, latest_record, manifest, parse_silences, stamp, status, take_path, trims_from_silences)
 
 EXAMPLE = Path(__file__).resolve().parent.parent / "references" / "example-lesson-video.json"
 
@@ -49,6 +49,45 @@ def test_join_trims_scales_and_levels_every_take_in_order(tmp_path):
 
 def test_extras_names_follow_the_drive_convention():
     assert extras_name(1) == "קטע-01.mp4" and extras_name(12) == "קטע-12.mp4"
+
+
+def test_small_concat_padding_is_trimmed_without_reencoding(tmp_path):
+    base = tmp_path / 'base.mp4'
+    base.write_bytes(b'original')
+    takes = [{'from': 0, 'to': 419.28 / 6}] * 6
+    calls = []
+    def probe(path):
+        return 419.4 if path == base else 419.366667
+    def run(cmd, check):
+        calls.append(cmd)
+        Path(cmd[-1]).write_bytes(b'fixed')
+    assert finalize_base(base, takes, probe=probe, run=run) == 419.366667
+    cmd = calls[0]
+    assert cmd[cmd.index('-t') + 1] == '419.28'
+    assert cmd[cmd.index('-c') + 1] == 'copy'
+    assert base.read_bytes() == b'fixed'
+    assert not list(tmp_path.glob('*.part.mp4'))
+
+
+@pytest.mark.parametrize('actual', [418.8, 420.0])
+def test_finalize_refuses_missing_content_or_large_excess(tmp_path, actual):
+    base = tmp_path / 'base.mp4'
+    base.write_bytes(b'original')
+    with pytest.raises(SystemExit, match='not small concat tail padding'):
+        finalize_base(base, [{'from': 0, 'to': 419.28 / 6}] * 6, probe=lambda _: actual)
+    assert base.read_bytes() == b'original'
+
+
+def test_failed_duration_remux_keeps_the_original(tmp_path):
+    base = tmp_path / 'base.mp4'
+    base.write_bytes(b'original')
+    def run(cmd, check):
+        Path(cmd[-1]).write_bytes(b'bad')
+    with pytest.raises(SystemExit, match='original kept'):
+        finalize_base(base, [{'from': 0, 'to': 419.28 / 6}] * 6,
+                      probe=lambda p: 419.4 if p == base else 419.0, run=run)
+    assert base.read_bytes() == b'original'
+    assert not list(tmp_path.glob('*.part.mp4'))
 
 
 def test_a_take_is_found_by_its_own_name_then_its_drive_name(tmp_path):
