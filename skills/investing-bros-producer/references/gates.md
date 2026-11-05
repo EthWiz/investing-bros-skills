@@ -44,14 +44,14 @@ their ids; the table says which stage each belongs to.
 |---|---|---|---|---|---|
 | `intake` | post-production (steps 1–2) | the recording parts | file: `extras/investing-bros-episode-raw-untrimmed.m4a` (or `.mp4`) | — | a new raw master (everything below) |
 | `master` | post-production (steps 3–4, 8 transcript Doc) | `intake` | file: `extras/transcript/segments.json` (item `transcript`); mark: `transcript_doc` (Doc URL) | — | `intake` |
-| `cut_list` | post-production (step 5) | `master` | file: `extras/cuts-review/cuts-list.txt` | — | `master` |
-| `cuts_ok` | post-production (step 5) | `cut_list` | approval of the cut-list version (raw times + words around each cut) | owner | a changed cut list |
-| `trim` | post-production (step 6) | `cuts_ok` | file: edited audio in the root (item `audio`), `extras/edit.json` + one review clip per cut (item `cut_list`) | — | `cuts_ok`; a new `edit.json` stales `copy`, `video`, `upload`, `release.redcircle_draft` and every segment/Short whose raw ranges overlap the changed span |
+| `cut_list` | post-production (step 5) | `master` | file: `extras/cuts-review/cuts-list.txt`, every cut tagged `[routine]` or `[content]` | — | `master` |
+| `trim` | post-production (step 6) | `cut_list` | file: edited audio in the root (item `audio`), `extras/edit.json` + one review clip per cut (item `cut_list`). Runs on the full draft list, before `cuts_ok` | — | `cut_list`; a new `edit.json` stales `copy`, `video`, `upload`, `release.redcircle_draft` and every segment/Short whose raw ranges overlap the changed span |
 | `copy` | title-description | `trim` | file: `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt` (item `titles_description`) | — | `trim` (chapters are mapped through `edit.json`) |
+| `cuts_ok` | post-production (step 5) | `cut_list` | approval of the cut-list version (raw times + words around each cut). Each `[content]` cut is asked as a question; the whole list, routine cuts included, stays visible. Gates the renders, not the trim | owner | a changed cut list |
 | `title_ok` | title-description | `copy` | approval: the owner's `בחירה סופית:` title, tied to `כותרות-פרק-N.txt` only (`of_keys`, the same way a segment thumbnail pick is tied to `-thumb.jpg`) | owner | a changed titles file. A description or chapter edit does not |
 | `art` | brand (steps 3–8) | `title_ok` | file: `cover-פרק-N.png`, `thumbnail-פרק-N.jpg` in the root (item `thumbnail_cover`); log: `extras/cover-check.log` OK for both + mark: Codex provenance (item `cover_checks`); mark: `face_identity` | — | `title_ok` (the headline) |
 | `art_ok` | brand (step 6) | `art` | approval: the owner's A/B/C pick, tied to the cover and thumbnail files | owner | a changed cover or thumbnail |
-| `video` | video | `trim`, `copy` | file: teaser in `promo/` (item `teaser`); log `extras/teaser-check.log` CAPTIONS OK + mark (item `teaser_quality`); intro in `extras/` (item `intro`); `video/פרק-N-וידאו.mp4` (item `full_video`); log `extras/verify_sync.log` SYNC OK (item `verify_sync`); `video/תיאור-פרק-N-youtube.txt` with chapters + mark (item `chapters`) | — (the owner sees it in the approval round) | `trim`, `copy` |
+| `video` | video | `trim`, `copy`, `cuts_ok` | file: teaser in `promo/` (item `teaser`); log `extras/teaser-check.log` CAPTIONS OK + mark (item `teaser_quality`); intro in `extras/` (item `intro`); `video/פרק-N-וידאו.mp4` (item `full_video`); log `extras/verify_sync.log` SYNC OK (item `verify_sync`); `video/תיאור-פרק-N-youtube.txt` with chapters + mark (item `chapters`) | — (the owner sees it in the approval round) | `trim`, `copy` (`cuts_ok` blocks the render until it is current; a later re-approval does not by itself stale a video whose picture did not change) |
 | `upload` | episode-upload (step 3) | `video`, `art_ok`, `title_ok`; the postprod `upload` stage passes | record: `extras/uploads/main.json` from `yt_upload.py --source <master> --record` (Private, show channel, video ID, version = the current master's sha256: a record of an older render fails); file + mark: `extras/past-episode-cards.json`, cards set (item `past_episode_cards`); mark: `main.endscreen` (previous episode(s) + Subscribe over the outro, Editor preview) | — | `video`, `art_ok`, `title_ok`; a re-upload (new video ID) |
 | `ok` | episode-upload (3b approval round) | `upload` | approval of the uploaded version (file sha256 + video ID) | owner | `upload` |
 
@@ -61,7 +61,7 @@ their ids; the table says which stage each belongs to.
 |---|---|---|---|---|---|
 | `select` | segment-video (step 1) | `main.trim` | mark: `segNN.select` (raw in/out, internal cuts, length, the alternative) | — | — |
 | `range_ok` | segment-video (step 1) | `select` | approval of the range | owner | a changed selection |
-| `render` | segment-video (`make_segment.py`) | `range_ok` | record: `extras/segment-NN.json` (raw range, source, mapping, `SYNC OK`, output sha256) | — | `range_ok`; a `main.trim` change that overlaps the picked range minus the segment's own drops (`selected_ranges`: a new cut there, or restoring one the segment crossed) |
+| `render` | segment-video (`make_segment.py`) | `range_ok`, `main.cuts_ok` | record: `extras/segment-NN.json` (raw range, source, mapping, `SYNC OK`, output sha256) | — | `range_ok`; a `main.trim` change that overlaps the picked range minus the segment's own drops (`selected_ranges`: a new cut there, or restoring one the segment crossed). `cuts_ok` blocks the render until it is current |
 | `package` | segment-video (steps 5–9) | `render` | file: the slot's four files in `segments/`, none empty (item `segments`, this slot); mark: `segNN.nudge` (0:31 frame checked) | — | `render` |
 | `thumb_ok` | segment-video (step 7) / brand | `package` | approval: the owner's A/B/C pick, tied to `-thumb.jpg` | owner | a changed thumbnail |
 | `upload` | segment-video (steps 10–11) | `thumb_ok` | record: `extras/uploads/segNN.json` (Private, version = the current `.mp4`'s sha256); mark: `segNN.links` (one card at 0:30 + end screen to the full episode, verified) | — | `package`, `thumb_ok`, `main.upload` (the full-episode link); a re-upload |
@@ -73,7 +73,7 @@ their ids; the table says which stage each belongs to.
 |---|---|---|---|---|---|
 | `pick` | shorts (step 1) | `main.trim` | mark: `shortNN.pick` (raw ranges, cover title) | — | — |
 | `pick_ok` | shorts (step 1) | `pick` | approval: the owner's three picks (one quote may approve all three) | owner | a changed pick |
-| `render` | shorts (steps 2–6) / remotion | `pick_ok` | log: `extras/check-short-NN.log` (saved `check_short.py` output: a LUFS line, no `warning:`) | — | `pick_ok`; a `main.trim` change that overlaps the Short's raw ranges |
+| `render` | shorts (steps 2–6) / remotion | `pick_ok`, `main.cuts_ok` | log: `extras/check-short-NN.log` (saved `check_short.py` output: a LUFS line, no `warning:`) | — | `pick_ok`; a `main.trim` change that overlaps the Short's raw ranges. `cuts_ok` blocks the render until it is current |
 | `cover` | brand (Shorts covers) | `pick_ok` | file: `Shorts/שורט-NN-<נושא>-cover.jpg`; log: `extras/cover-check.log` has `OK` for it (the provenance mark, item `shorts_covers`, is checked by `release.review_gate`) | — | `pick_ok` (the cover title) |
 | `cover_ok` | brand | `cover` | approval: the owner's A/B/C pick, tied to the cover file | owner | a changed cover |
 | `package` | shorts (step 7) | `render`, `cover_ok` | file: the slot's four files in `Shorts/`, none empty (item `shorts`, this slot) | — | `render`, `cover_ok` |
@@ -112,6 +112,17 @@ The postprod `done` stage passes once `publish`, `spotify_links` and `old_upload
   Mac, segment helper); the Producer checks what comes back.
 - `waits: owner`: an approval. The Producer batches every pending approval into one review
   round (`investing-bros-show` → Ownership and contact) and never pings per item.
+- `next` lists every approval on a track that can be asked now, not only the first. Round 1
+  (before any render) holds the cut list, the title, the segment ranges and the Short picks.
+  Trim and copy have already run on the draft cut list, so a restore in that round re-trims
+  and re-copies only. Silences under 2 s are never cut.
+
+## Review rounds
+
+Round 1, one message: the cut list (each `[content]` cut as its own question, every `[routine]`
+line still on the list), the title, the two segment ranges, the three Short picks. `cuts_ok`
+gates `main.video`, `segNN.render` and `shortNN.render`. It does not gate `trim`, `copy`,
+`segNN.select` or `shortNN.pick`.
 
 ## Open questions (for Amitai)
 

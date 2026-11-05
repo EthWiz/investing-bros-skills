@@ -12,7 +12,7 @@ Gate: `investing-bros-producer` → `scripts/pipeline.py gate "$EP" --stage …`
 | `audio` | Edited audio `הקלטה-ערוכה-פרק-N.m4a` (−16 LUFS, hosts within 3 dB) | post-production | upload |
 | `transcript` | `extras/transcript/segments.json` | post-production | upload |
 | `transcript_doc` | Google Doc `תמלול - פרק N` (mark with URL) | post-production | upload |
-| `cut_list` | `extras/edit.json`, `extras/cuts-review/cuts-list.txt` + one review clip per cut | post-production | upload |
+| `cut_list` | `extras/edit.json`, `extras/cuts-review/cuts-list.txt` (each cut tagged `[routine]` or `[content]`) + one review clip per cut | post-production | upload |
 | `teaser` | Combined full-frame cold-open teaser in `promo/` (**required**, before the intro) | video | upload |
 | `teaser_quality` | `extras/teaser-check.log` = `CAPTIONS OK` from `build_fullframe_teaser.py --check`, then mark after re-reading every moment against `teaser-rules.md` (stands alone, payoff kept, no unexplained names). Waived with `teaser`. | video | upload |
 | `intro` | Freshly fetched canonical intro/outro clip in `extras/` | video / show | upload |

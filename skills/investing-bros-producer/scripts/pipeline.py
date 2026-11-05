@@ -40,6 +40,7 @@ import pipeline_state as PS  # noqa: E402
 TRACKS = ["main", "seg01", "seg02", "short01", "short02", "short03", "release"]
 SHOW_CHANNEL_ID = "UCWIlggXQNDFiyJghl6VB6Xw"  # אחים להשקעות (investing-bros-show -> Roles and accounts)
 RANGE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)")
+CUT_TAG_RE = re.compile(r"^\[(routine|content)\]\s+\S")
 TRACK_MARKS = {"main.endscreen", "seg01.select", "seg02.select", "seg01.nudge", "seg02.nudge", "seg01.links",
                "seg02.links", "short01.pick", "short02.pick", "short03.pick", "release.approval_round", "release.retro"}
 MARKABLE = TRACK_MARKS | G.MANUAL | G.NEEDS_MARK
@@ -82,6 +83,27 @@ def marks(*ids):
     def f(c):
         return [f"needs `{P} mark EP {i} --evidence ...`" for i in ids if i not in c.marks]
     return f
+
+
+def cut_list_problems(text: str) -> list:
+    """Every cut line in cuts-list.txt is tagged [routine] or [content]. Content cuts are the ones
+    the review asks as questions; routine cuts stay on the list too. Blank lines and # comments are not cuts."""
+    bad = []
+    for i, line in enumerate(text.splitlines(), 1):
+        s = line.strip()
+        if not s or s.startswith("#"):
+            continue
+        if not CUT_TAG_RE.match(s):
+            bad.append(f"extras/cuts-review/cuts-list.txt:{i}: tag the cut [routine] or [content] "
+                       "(content cuts are asked as questions; the whole list stays visible)")
+    return bad
+
+
+def cut_list_check(c):
+    probs = files("extras/cuts-review/cuts-list.txt")(c)
+    if probs:
+        return probs
+    return cut_list_problems((c.ep / "extras/cuts-review/cuts-list.txt").read_text(encoding="utf-8"))
 
 
 def files(*rels):
@@ -359,14 +381,16 @@ def stage_map():
           "transcript_doc --evidence <Doc URL>", items("transcript", "transcript_doc"),
           join(out_files("extras/transcript/segments.json"), out_marks("transcript_doc")), inputs=["main.intake"]),
         W("main", "cut_list", pp, "producer", f"python3 <{pp}>/scripts/find_bounds.py + find_gaps.py (step 5) -> "
-          "extras/cuts-review/cuts-list.txt + a clip per cut", files("extras/cuts-review/cuts-list.txt"),
-          out_files("extras/cuts-review/cuts-list.txt"), inputs=["main.master"]),
-        A("main", "cuts_ok", pp, "main.cut_list", "the cut list (raw times + the words around each cut)"),
-        W("main", "trim", pp, "producer", f"<{pp}>/scripts/trim.sh ... --cut A-B (step 6), file the audio + edit.json",
+          "extras/cuts-review/cuts-list.txt (each cut tagged [routine] or [content]) + a clip per cut",
+          cut_list_check, out_files("extras/cuts-review/cuts-list.txt"), inputs=["main.master"]),
+        W("main", "trim", pp, "producer", f"<{pp}>/scripts/trim.sh ... --cut A-B (step 6) on the full draft list; "
+          "file the audio + edit.json. Do not wait for cuts_ok",
           items("audio", "cut_list"), out_files("הקלטה-ערוכה-פרק-{n}.m4a", "extras/edit.json"),
-          inputs=["main.cuts_ok"], data=trim_data),
+          inputs=["main.cut_list"], data=trim_data),
         W("main", "copy", td, "producer", f"python3 <{td}>/scripts/check_copy.py ... (steps 1-5)",
           items("titles_description"), out_files("כותרות-פרק-{n}.txt", "תיאור-פרק-{n}.txt"), inputs=["main.trim"]),
+        A("main", "cuts_ok", pp, "main.cut_list",
+          "the cut list (raw times + the words around each cut; ask each [content] cut as a question and show every line)"),
         A("main", "title_ok", td, "main.copy", "the final title (written after בחירה סופית:)",
           of_keys="כותרות-פרק-{n}.txt"),
         W("main", "art", br, "helper", f"<{br}> steps 3-8 (Codex on Amitai's Mac); check_cover.py >> "
@@ -377,7 +401,7 @@ def stage_map():
           "verify_sync.py > extras/verify_sync.log",
           items("teaser", "teaser_quality", "intro", "full_video", "verify_sync", "chapters"),
           join(out_teaser, out_files("video/פרק-{n}-וידאו.mp4", "text:video/תיאור-פרק-{n}-youtube.txt")),
-          inputs=["main.trim", "main.copy"]),
+          inputs=["main.trim", "main.copy"], needs=["main.cuts_ok"]),
         W("main", "upload", up, "producer", f"python3 <{up}>/scripts/yt_upload.py EP/extras/פרק-N-youtube.mp4 "
           "--source EP/video/פרק-N-וידאו.mp4 ... --asset main --record EP/extras/uploads/main.json; cards; end "
           "screen; then mark main.endscreen",
@@ -394,7 +418,8 @@ def stage_map():
               data=render_data_from_mark(f"{t}.select")),
             A(t, "range_ok", sg, f"{t}.select", f"segment {n2}'s range"),
             W(t, "render", sg, "helper", f"python3 <{sg}>/scripts/make_segment.py --slot {n2} ...",
-              segment_record(t), out_segment(t), inputs=[f"{t}.range_ok", "main.trim"], data=segment_data(t)),
+              segment_record(t), out_segment(t), inputs=[f"{t}.range_ok", "main.trim"],
+              needs=["main.cuts_ok"], data=segment_data(t)),
             W(t, "package", sg, "helper", f"<{sg}> steps 5-9: .txt, -thumb.jpg, youtube-סגמנט-{n2}.md; then mark "
               f"{t}.nudge", join(package("segment", t), marks(f"{t}.nudge")),
               out_slot("segment", t, [".mp4", ".txt", "-thumb.jpg"]), inputs=[f"{t}.render"]),
@@ -414,7 +439,8 @@ def stage_map():
             A(t, "pick_ok", sh, f"{t}.pick", f"Short {n2}'s moment (the three picks)"),
             W(t, "render", sh, "producer", f"make_base.py, make_props.py, render_short.py; check_short.py ... > "
               f"EP/extras/check-short-{n2}.log", short_log(t), out_files(f"extras/check-short-{n2}.log"),
-              inputs=[f"{t}.pick_ok", "main.trim"], data=render_data_from_mark(f"{t}.pick")),
+              inputs=[f"{t}.pick_ok", "main.trim"], needs=["main.cuts_ok"],
+              data=render_data_from_mark(f"{t}.pick")),
             W(t, "cover", br, "helper", f"<{br}> Shorts covers (Codex on Amitai's Mac); check_cover.py --kind "
               "shorts-vertical >> EP/extras/cover-check.log", short_cover(t), out_short_cover(t),
               inputs=[f"{t}.pick_ok"]),
@@ -567,27 +593,55 @@ def advance_track(ep, c: Ctx, track: str) -> list:
 
 # ---- next / status --------------------------------------------------------------------------------
 
+def _approval_ask(ready) -> str:
+    bits = []
+    for key, _, _ in ready:
+        spec = SPEC[key]
+        bits.append(f"{spec['cmd']} ({P} approve EP {spec['track']} {spec['name']} "
+                    "--by \"<Owner> HH:MM: <their words>\")")
+    return "ask in the next review round: " + "; ".join(bits)
+
+
+def _approval_row(track, ready) -> dict:
+    names = [SPEC[k]["name"] for k, _, _ in ready]
+    return {"track": track, "stage": ", ".join(names), "status": ready[0][1], "why": ready[0][2],
+            "skill": SPEC[ready[0][0]]["skill"], "waits": "owner", "blocked_by": [],
+            "command": _approval_ask(ready), "approvals": names}
+
+
 def next_steps(c: Ctx) -> list:
+    """One row per track. Ready approvals on that track are listed together (round 1 can hold the cut
+    list and the title at once). An approval that is not a prerequisite of the next work does not hide it."""
     out = []
     for track in TRACKS:
-        row = None
+        ready = []
+        hold = None
         for key in track_keys(track):
             st, why = stage_status(c, key)
             if st == "current":
                 continue
             spec = SPEC[key]
             blocked = unmet(c, spec)
-            ext = [b for b in blocked if not b.startswith(track + ".")]
-            if spec["kind"] == "approval":
-                cmd = (f"ask in the next review round: {spec['cmd']}; then "
-                       f"{P} approve EP {track} {spec['name']} --by \"<Owner> HH:MM: <their words>\"")
-            else:
-                cmd = f"{spec['cmd']}; then {P} advance EP {track} {spec['name']}"
-            row = {"track": track, "stage": spec["name"], "status": st, "why": why, "skill": spec["skill"],
-                   "waits": "blocked" if ext else spec["waits"], "blocked_by": ext, "command": cmd}
+            if spec["kind"] == "approval" and not blocked:
+                ready.append((key, st, why))
+                continue
+            hold = (key, st, why, blocked, spec)
             break
-        out.append(row or {"track": track, "stage": "done", "status": "current", "why": "", "skill": "",
-                           "waits": "", "blocked_by": [], "command": ""})
+        if hold is None and not ready:
+            out.append({"track": track, "stage": "done", "status": "current", "why": "", "skill": "",
+                        "waits": "", "blocked_by": [], "command": "", "approvals": []})
+            continue
+        if ready and (hold is None or hold[3]):
+            out.append(_approval_row(track, ready))
+            continue
+        key, st, why, blocked, spec = hold
+        ext = [b for b in blocked if not b.startswith(track + ".")]
+        cmd = f"{spec['cmd']}; then {P} advance EP {track} {spec['name']}"
+        if ready:
+            cmd += ". Also " + _approval_ask(ready)
+        out.append({"track": track, "stage": spec["name"], "status": st, "why": why, "skill": spec["skill"],
+                    "waits": "blocked" if ext else spec["waits"], "blocked_by": ext, "command": cmd,
+                    "approvals": [SPEC[k]["name"] for k, _, _ in ready]})
     return out
 
 

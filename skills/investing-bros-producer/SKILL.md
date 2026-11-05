@@ -54,8 +54,11 @@ python3 $P retro "$EP"                             # after the last track is liv
    each hand-back against its stage's evidence; send back what fails (`note --kind handback_returned`).
    You run `investing-bros-shorts` yourself; there is no Shorts bot.
 4. **Review rounds.** Collect every pending `waits: owner` stage into **one** message to the
-   episode owner per round (cut list, title, picks, covers, ranges, the approval round's links).
-   Record each answer with `approve` in the owner's own words; a change they ask for is
+   episode owner per round. `next` names every approval that can be asked now, including two on
+   the same track. Round 1 holds the cut list (each `[content]` cut as a question, every
+   `[routine]` line still listed), the title, the segment ranges and the Short picks. Trim and
+   copy have already run on the draft list, so a restore re-trims and re-copies only. Record each
+   answer with `approve` in the owner's own words; a change they ask for is
    `note --kind owner_fix` and the fixed stage goes through `advance` again. After the owner signs
    a round off, post the one round summary for the other brother (`investing-bros-show` → Telegram).
 5. **Stale.** A changed input makes every stage made from it stale, and approvals of it with them

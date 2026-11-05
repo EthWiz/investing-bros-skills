@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """List long silences in the episode, with the transcript around each, to build
-the cut list Nadav approves before the trim (investing-bros-post-production).
+the draft cut list. Trim runs on the full list immediately; the episode owner
+approves it in round 1, and that approval gates renders, not the trim
+(investing-bros-post-production).
 
 Suggestions only: a pause can be a thinking beat that belongs in the episode.
 Silences under 2 s are kept by default and never listed (--min-gap is floored at 2.0);
@@ -95,7 +97,8 @@ def main(argv=None) -> int:
         print(f"{_fmt(s)}-{_fmt(e)}  {e - s:4.1f} s   ...{b[-40:]}  ||  {f[:40]}...")
     total = sum(r["length"] for r in rows)
     print(f"{len(rows)} gap(s) of {a.min_gap}+ s, {total:.1f} s in all (raw timeline). "
-          "Put the ones worth cutting on the cut list for Nadav; don't cut without his OK.")
+          "Tag each kept gap [routine] on the draft cut list and trim it; "
+          "a content cut is tagged [content] and asked in round 1. Never cut a silence under 2 s.")
     if a.json:
         json.dump(rows, open(a.json, "w", encoding="utf-8"), ensure_ascii=False, indent=2)
     return 0

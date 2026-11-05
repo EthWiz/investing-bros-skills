@@ -32,7 +32,7 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
       "at": "...",
       "version": "sha256:…",            // digest of `outputs` (approvals: the approved version)
       "outputs": {"extras/edit.json": "<sha256>", "הקלטה-ערוכה-פרק-11.m4a": "<sha256>"},
-      "inputs": {"main.cuts_ok": "sha256:…"},   // each input stage's version when this passed
+      "inputs": {"main.cut_list": "sha256:…"},  // each input stage's version when this passed (trim follows the draft list)
       "data": {"edit": {"start": 12.4, "end": 2710.0, "cuts": [[1605.0, 1645.2]]}}
     },
     "main.cuts_ok": {
@@ -93,7 +93,10 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   publishing don't stale them.
 - A stage is **stale** when (a) one of its output files no longer matches its recorded
   sha256, or (b) an input stage's current version differs from the one recorded in `inputs`,
-  or that input is itself stale. An approval with no `of_keys` is stale when the version of
+  or that input is itself stale. A prerequisite listed only as a need (not an input) blocks
+  `advance` until it is current and is not recorded, so it does not stale the stage by itself.
+  `main.cuts_ok` is a need of `main.video`, `segNN.render` and `shortNN.render`, and an input
+  of none of them: trim follows the draft cut list. An approval with no `of_keys` is stale when the version of
   `of` differs from the approved `version`, or `of` is stale. An approval with `of_keys` is
   stale only when one of those files is missing or its bytes differ from the approved
   fingerprint (compared on disk, not via the parent's recorded hash). Another output of `of`

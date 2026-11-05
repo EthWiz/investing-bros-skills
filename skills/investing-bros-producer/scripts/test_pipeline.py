@@ -42,7 +42,7 @@ def record(ep, track, vid, version=None, superseded=()):
 def audio_files(ep, cuts=([500, 520],)):
     touch(ep / "extras/investing-bros-episode-raw-untrimmed.m4a", "raw")
     touch(ep / "extras/transcript/segments.json", "[]")
-    touch(ep / "extras/cuts-review/cuts-list.txt", "500-520 the courier call")
+    touch(ep / "extras/cuts-review/cuts-list.txt", "[routine] 500-520 the courier call")
     touch(ep / "extras/cuts-review/cut-01.mp4")
     touch(ep / f"הקלטה-ערוכה-פרק-{N}.m4a", "audio")
     touch(ep / "extras/edit.json", json.dumps({"start": 10, "end": 2000, "cuts": [list(c) for c in cuts]}))
@@ -76,9 +76,9 @@ def through_main(ep, by=AM):
     for m in ("transcript_doc", "cover_checks", "face_identity", "teaser_quality", "chapters", "past_episode_cards",
               "main.endscreen"):
         assert run("mark", ep, m, "--evidence", "seen it") == 0
-    assert run("advance", ep, "main") == 1                       # stops at cuts_ok (an approval)
+    assert run("advance", ep, "main") == 1                       # draft trim + copy; stops at cuts_ok
     assert run("approve", ep, "main", "cuts_ok", "--by", by) == 0
-    assert run("advance", ep, "main") == 1                       # trim, copy; stops at title_ok
+    assert run("advance", ep, "main") == 1                       # stops at title_ok
     assert run("approve", ep, "main", "title_ok", "--by", by) == 0
     assert run("advance", ep, "main", "art") == 0
     assert run("approve", ep, "main", "art_ok", "--by", by) == 0
@@ -119,7 +119,7 @@ def test_advance_refuses_on_a_failed_check_and_logs_it(tmp_path):
 def test_main_track_end_to_end_and_approvals_need_the_owner(tmp_path, capsys):
     ep = started(tmp_path)
     main_files(ep)
-    assert run("advance", ep, "main", "trim") == 1               # needs cuts_ok first
+    assert run("advance", ep, "main", "trim") == 1               # cut_list has not passed yet
     assert run("approve", ep, "main", "cuts_ok", "--by", AM) == 1   # cut_list not passed yet
     through_main(ep)
     e = ev(ep)
@@ -146,23 +146,29 @@ def test_new_cut_stales_main_and_only_overlapping_renders(tmp_path):
     assert run("approve", ep, "short01", "pick_ok", "--by", AM) == 0
     touch(ep / "extras/check-short-01.log", "s.mp4: 41.2 s, -14.0 LUFS, peak -1.6 dB -> strip.jpg\n")
     assert run("advance", ep, "short01", "render") == 0
-    # the owner approves a second cut inside the episode, at raw 720-730
-    touch(ep / "extras/cuts-review/cuts-list.txt", "500-520 the courier call\n720-730 a false start")
+    # a restore in review: the list changes, trim runs again on the draft, renders wait for cuts_ok
+    touch(ep / "extras/cuts-review/cuts-list.txt",
+          "[routine] 500-520 the courier call\n[content] 720-730 a false start — drop it?\n")
     e = ev(ep)
     assert e["main.cut_list"]["status"] == "stale" and e["main.cuts_ok"]["status"] == "stale"
     assert e["main.trim"]["status"] == "stale" and e["seg01.render"]["status"] == "stale"
-    assert run("advance", ep, "main", "cut_list") == 0
-    assert run("advance", ep, "main", "trim") == 1               # cuts_ok is stale: re-approve first
-    assert run("approve", ep, "main", "cuts_ok", "--by", AM) == 0
     touch(ep / "extras/edit.json", json.dumps({"start": 10, "end": 2000, "cuts": [[500, 520], [720, 730]]}))
     touch(ep / "extras/cuts-review/cut-02.mp4")
     touch(ep / f"הקלטה-ערוכה-פרק-{N}.m4a", "audio v2")
-    assert run("advance", ep, "main", "trim") == 0
+    assert run("advance", ep, "main", "cut_list") == 0
+    assert run("advance", ep, "main", "trim") == 0               # the draft trim does not wait for cuts_ok
+    assert ps.load(ep)["stages"]["main.cuts_ok"]["state"] == "approved"
+    assert ev(ep)["main.cuts_ok"]["status"] == "stale"
+    assert run("advance", ep, "main", "copy") == 0               # re-copy only; nothing is re-rendered yet
     e = ev(ep)
-    assert e["main.copy"]["status"] == "stale"                    # chapters map through edit.json
+    assert e["main.title_ok"]["status"] == "current"             # chapters moved; the titles file did not
     assert e["main.video"]["status"] == "stale" and e["main.ok"]["status"] == "stale"
     assert e["seg01.render"]["status"] == "current"               # 1200-1600 doesn't touch 720-730
     assert e["short01.render"]["status"] == "stale"               # 700-740 does
+    assert run("advance", ep, "main", "video") == 1              # cuts_ok gates the render
+    assert run("advance", ep, "short01", "render") == 1
+    assert run("approve", ep, "main", "cuts_ok", "--by", AM) == 0
+    assert run("advance", ep, "short01", "render") == 0
     assert run("status", ep) == 0
     stale = [x for x in ps.load(ep)["events"] if x["kind"] == "stale"]
     assert any(x["track"] == "short01" and x["stage"] == "render" for x in stale)
@@ -185,6 +191,49 @@ def test_reupload_stales_the_approval_and_publish_ok(tmp_path):
     assert ps.evaluate(ep, ps.load(ep))["main.ok"]["status"] == "stale"
     assert run("approve", ep, "main", "ok", "--by", AM) == 0
     assert ps.load(ep)["stages"]["main.ok"]["version"] != old
+
+
+def test_draft_trim_and_cuts_ok_gates_renders(tmp_path, capsys):
+    ep = started(tmp_path)
+    audio_files(ep)
+    touch(ep / f"כותרות-פרק-{N}.txt", "1. x\nבחירה סופית: x")
+    touch(ep / f"תיאור-פרק-{N}.txt", "desc")
+    assert run("mark", ep, "transcript_doc", "--evidence", "https://docs.google.com/x") == 0
+    assert run("advance", ep, "main") == 1
+    s = ps.load(ep)
+    assert s["stages"]["main.trim"]["state"] == "done"
+    assert "main.cut_list" in s["stages"]["main.trim"]["inputs"]
+    assert "main.cuts_ok" not in s["stages"]["main.trim"]["inputs"]
+    assert "main.cuts_ok" not in s["stages"] and s["stages"]["main.copy"]["state"] == "done"
+    capsys.readouterr()
+    assert run("next", ep, "--json") == 0
+    rows = json.loads(capsys.readouterr().out)
+    main = next(r for r in rows if r["track"] == "main")
+    assert main["waits"] == "owner" and main["approvals"] == ["cuts_ok", "title_ok"]
+    # an untagged line does not pass the cut list
+    assert pl.cut_list_problems("500-520 silence\n")
+    assert pl.cut_list_problems("[routine] 12.0-20.0 silence\n[content] 1605-1645 the courier call\n# note\n") == []
+    # renders wait for cuts_ok; select and pick do not
+    touch(ep / f"video/פרק-{N}-וידאו.mp4", "video")
+    touch(ep / f"video/תיאור-פרק-{N}-youtube.txt", "00:00 a\n01:00 b\n02:00 c\n")
+    touch(ep / "promo/טיזר.mp4", "t")
+    touch(ep / "extras/teaser-check.log", "CAPTIONS OK\n")
+    touch(ep / "extras/x-intro.mp4", "i")
+    touch(ep / "extras/verify_sync.log", "SYNC OK\n")
+    for m in ("teaser_quality", "chapters"):
+        assert run("mark", ep, m, "--evidence", "seen") == 0
+    assert run("advance", ep, "main", "video") == 1
+    assert run("mark", ep, "seg01.select", "--evidence", "raw 100-200, no cuts") == 0
+    assert run("advance", ep, "seg01", "select") == 0
+    assert run("approve", ep, "seg01", "range_ok", "--by", AM) == 0
+    touch(ep / "extras/segment-01.json", json.dumps({"sync": "SYNC OK", "output": "segments/סגמנט-01-צלילה-x.mp4"}))
+    touch(ep / "segments/סגמנט-01-צלילה-x.mp4", "seg")
+    assert run("advance", ep, "seg01", "render") == 1
+    assert run("mark", ep, "short01.pick", "--evidence", "raw 100-140, cover: x") == 0
+    assert run("advance", ep, "short01", "pick") == 0
+    assert run("approve", ep, "short01", "pick_ok", "--by", AM) == 0
+    touch(ep / "extras/check-short-01.log", "s.mp4: 41.2 s, -14.0 LUFS\n")
+    assert run("advance", ep, "short01", "render") == 1
 
 
 def test_description_or_chapters_change_does_not_stale_title_ok(tmp_path):
@@ -308,11 +357,12 @@ def test_migrate_imports_legacy_evidence_never_approvals_then_resumes(tmp_path, 
     s = ps.load(ep)
     assert s["legacy"]["marked"]["chapters"] == "shifted +65s"
     assert not [k for k, v in s["stages"].items() if v["state"] == "approved"]
-    assert ev(ep)["main.cut_list"]["status"] == "current" and "main.trim" not in s["stages"]
+    assert ev(ep)["main.cut_list"]["status"] == "current" and ev(ep)["main.trim"]["status"] == "current"
+    assert ev(ep)["main.copy"]["status"] == "current" and "main.cuts_ok" not in s["stages"]
     assert "Approvals are never imported" in capsys.readouterr().out
     assert run("approve", ep, "main", "cuts_ok", "--by", AM) == 0
-    assert run("advance", ep, "main") == 1                      # trim + copy pass, title_ok waits
-    assert ev(ep)["main.copy"]["status"] == "current"
+    assert run("advance", ep, "main") == 1                      # stops at title_ok; trim already passed on the draft
+    assert "main.title_ok" not in ps.load(ep)["stages"]
     assert ps.load(ep)["owner"]["confirmed"] is False
     assert run("gate", ep, "--stage", "upload") == 0             # legacy marks and waivers still count as evidence
     run("next", ep)

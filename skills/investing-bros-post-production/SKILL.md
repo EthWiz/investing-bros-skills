@@ -2,9 +2,10 @@
 name: investing-bros-post-production
 description: >-
   Edit a finished Investing Bros / אחים להשקעות recording into the
-  upload-ready audio: combine the parts, level the hosts, transcribe, build
-  the cut list for the episode owner's OK, trim and file it, and start the
-  episode's Producer (investing-bros-producer) for everything after. Use when
+  upload-ready audio: combine the parts, level the hosts, transcribe, draft
+  the cut list, trim from that full draft, and start the episode's Producer
+  (investing-bros-producer) for everything after. The episode owner's cut OK
+  is round 1 and gates renders, not the trim. Use when
   Amitai says the recording is in, "edit episode N", "ההקלטה מוכנה", "עריכה",
   or sends חלק 1 / חלק 2.
 ---
@@ -13,7 +14,8 @@ description: >-
 Load `investing-bros-show` first: naming, Drive tree, roles and the episode flow live there.
 
 This skill makes the audio edit: the main track's first stages in `investing-bros-producer`
-(intake, master, cut list, cut approval, trim). The edited audio, the transcript and `edit.json`
+(intake, master, cut list, trim from the draft). The cut approval is round 1 and gates
+renders, not the trim. The edited audio, the transcript and `edit.json`
 are the handoff to everything else. Starting post-production also starts the episode's
 **Producer** (`investing-bros-producer`), which runs the standing bundle (main flow, two
 segments, three Shorts; `investing-bros-show` → The show), the review rounds and the retro.
@@ -85,9 +87,10 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - **Start:** the first real open (ברוכים הבאים / אחים להשקעות / פרק). **End:** right after the real outro. Both scripts only suggest; read the transcript around each point.
 - **Silences under 2 s are kept by default — never cut them** (Amitai, episode 10: the five 1–3 s silence trims were all put back). Only a silence of 2 s or longer may be trimmed, and even then leave a natural beat on each side so the join doesn't sound clipped.
 - Listen for what else should go: long silences (2 s+), false starts, a restarted sentence, a technical drop-out, chatter about the recording. Use the gap list as the starting point.
-- Send the episode owner the list (raw times + the words around each) and wait for their OK. Ambiguous cut → ask them in the same round.
+- Write `extras/cuts-review/cuts-list.txt` with one line per cut, tagged `[routine]` (a long silence, a false start, a technical drop) or `[content]` (a section the owner should be asked about). Then trim immediately (step 6) from the **full** list. Do not wait for `cuts_ok`.
+- Round 1 (`investing-bros-producer`) shows the whole list and asks each `[content]` line as its own question (raw times + the words around the cut). Routine lines stay visible; they are not a separate approval. `cuts_ok` gates `main.video`, `segNN.render` and `shortNN.render`. A restore in that round re-trims and re-copies only: nothing has been rendered yet.
 - **A section cut from the middle** (an off-topic call, a part the hosts asked the editor to remove; episode 8: the courier call, raw 1605.0–1645.2 s):
-  1. Find it in the transcript and propose exact raw start/end times with the words on both sides. Confirm the exact cut with the episode owner (e.g. "remove the 40 s") before cutting.
+  1. Find it in the transcript and put exact raw start/end times, with the words on both sides, on the list as `[content]` (e.g. "remove the 40 s"). It is in the draft trim; round 1 asks it as a question. A restore re-trims and re-copies only.
   2. Cut on a pause, not mid-word; listen to the join.
   3. Make the cut in audio **and** video with the same times. `trim.sh --cut A-B` (repeatable) removes it from the audio and records it in `edit.json`; `investing-bros-video` → `assemble_episode.sh --edit edit.json` removes the same range from the video. Don't splice by hand.
   4. Chapters: when the copy is written after `trim.sh --cut`, map raw times with `edit_map.py` (the cut is already accounted for). Only when a description already exists on the old timeline, move its later chapters with `investing-bros-title-description` → `shift_after_cut.py --cut A-B` (times on that description's timeline).
@@ -96,9 +99,10 @@ python3 scripts/find_gaps.py "$EP/episode-leveled.wav" --segments "$EP/transcrip
 - Every cut inside the episode is a raw `A-B` range that starts and ends in a pause. Don't cut a caveat, and keep cuts few: a thinking pause can belong in the conversation. A pause shorter than 2 s is never a cut on its own.
 
 ### 6. Trim and check
+Trim right after the cut list, using every line on it (routine and content) as the draft. `cuts_ok` comes later, in round 1, and does not block this step.
 ```bash
 scripts/trim.sh "$EP/episode-leveled.wav" START END "$EP/investing-bros-episode-edited.m4a" \
-  --cut 1203.4-1209.9 --cut 1830-1836.2      # the approved cuts inside the episode, if any
+  --cut 1203.4-1209.9 --cut 1830-1836.2      # every cut on the draft list, routine and content
 ffmpeg -i "$EP/investing-bros-episode-edited.m4a" -af ebur128=peak=true -f null - 2>&1 | tail -12
 ```
 `trim.sh` writes `edit.json` (`start`, `end` and `cuts`, in raw seconds); each join gets a 10 ms fade. Chapters, shorts and the video map raw → edited time with it: `python3 scripts/edit_map.py edit.json --raw 754.2` (with no cuts that is `raw − start`). Listen to the first and last 20 seconds and to every cut. Loudness: about −16 LUFS, true peak ≤ −1.5 dBTP.
@@ -137,8 +141,9 @@ The audio edit is done; the episode is done only when `investing-bros-producer` 
 - `extras/` has `transcript/segments.json`, `edit.json`, `cuts-review/` (the cut list + one clip
   per cut) and the raw master (plus host tracks if shorts will use them).
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
-- The episode owner OK'd the cut list (`pipeline.py approve "$EP" main cuts_ok`), and
-  `pipeline.py advance "$EP" main trim` passed.
+- `pipeline.py advance "$EP" main trim` passed on the draft cut list. `extras/cuts-review/cuts-list.txt`
+  tags every cut `[routine]` or `[content]`. `cuts_ok` is in round 1 (with the title, the segment
+  ranges and the Short picks); it gates renders, not this trim.
 - Once the full video exists, `extras/past-episode-cards.json` (step 8).
 
 ## Hand back
@@ -151,7 +156,8 @@ The audio edit is done; the episode is done only when `investing-bros-producer` 
 ## Never
 - Treat a step as optional because its wording sounds conditional.
 - Auto-number the episode or create a second `פרק N` folder.
-- Make a cut the episode owner hasn't OK'd, or an ambiguous cut without asking.
+- Cut a silence under 2 s, drop a `[content]` cut from the review, or hide the `[routine]` lines.
+- Render the full video, a segment or a Short before `cuts_ok`. A content cut is trimmed in the draft and asked in round 1; a restore re-trims and re-copies only.
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.

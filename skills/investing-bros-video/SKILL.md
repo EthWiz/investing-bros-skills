@@ -220,7 +220,7 @@ Review copies over the transfer caps: compress (show conventions → references/
   description (when a video episode was asked for).
 - `promo/` has the combined full-frame cold-open teaser (required unless the episode owner waived it for this episode), plus any promo teaser that was asked for.
 - The full video is cold-open teaser → intro → episode → outro, and `investing-bros-producer` → `pipeline.py gate "$EP" --stage upload` passes before any YouTube upload of it (`investing-bros-post-production` → `references/CHECKLIST.md`).
-- The episode owner OK'd the cuts.
+- The episode owner approved the cut list (`cuts_ok`) before this video was rendered.
 - Every delivered edited file passed `verify_sync.py` (`SYNC OK`).
 
 ## Hand back
