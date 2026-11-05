@@ -126,7 +126,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **Episode art:** every episode has a square cover and a 16:9 YouTube thumbnail made from it (square centred on a blurred background), both filed in the episode's Drive folder. `investing-bros-title-description` supplies the headline; `investing-bros-brand` owns the rules and the artwork.
-- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own track**: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; ask Amitai for the recording link (decided 2026-10-25).
+- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own canonical camera track as-is** — never crop, zoom or upscale the combined / side-by-side export: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; if the tracks are missing, **stop and ask Amitai for the recording share link** (decided 2026-10-25; reinforced 2026-11-05). `--allow-side-by-side` needs Amitai's OK.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
 ## Animation
@@ -153,12 +153,17 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 
 ## Ownership and contact (Amitai, episode 10)
 - **The Producer owns the episode end to end.** The agent running post-production for episode N
-  is its Producer: it tracks every deliverable in `postprod_checklist.py`, starts and chases the
-  helper agents, fixes what they hand back, and is the single voice to Amitai about that episode.
-- **Helper agents never message Amitai directly.** Shorts, segment, analytics, brand and other
-  helper agents report to the Producer (their hand-back), never to Amitai in chat, WhatsApp or
-  Telegram. When a helper is blocked on something only Amitai can decide, it says so in its
-  hand-back; the Producer asks him, batched with anything else pending.
+  is its Producer: it tracks every deliverable in `postprod_checklist.py`, runs Shorts itself,
+  starts and chases the remaining helper agents, fixes what they hand back, and is the single
+  voice to Amitai about that episode.
+- **Shorts are Producer-owned (Amitai, 2026-11-05).** The Producer runs `investing-bros-shorts`
+  directly. The separate Grok bot "Investing Bro Shorts" (periphery-marketing helper, agent
+  `11e5db1a-5535-4d25-a454-3266d868c7cf`) is **retired**: do not `SendToAgent` to it, do not
+  hand Shorts picks/renders/uploads off to another bot, and do not expect a Shorts-bot hand-back.
+- **Helper agents never message Amitai directly.** Segment, analytics, brand and other helper
+  agents (not Shorts) report to the Producer (their hand-back), never to Amitai in chat,
+  WhatsApp or Telegram. When a helper is blocked on something only Amitai can decide, it says
+  so in its hand-back; the Producer asks him, batched with anything else pending.
 - **Contact Amitai only for reviews and approvals**: one batched message per review round, with
   every asset and decision in it. Not for progress updates, status pings, routine choices the
   skills already decide, or questions a skill or the transcript answers.
@@ -217,7 +222,8 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in parallel, by different agents. Every run ends with a learnings PR (Working rules).
 
 ## Never
-- Have a helper agent (Shorts, segments, analytics, brand) message Amitai directly while a Producer runs the episode, or ping Amitai with status updates instead of one batched review.
+- Have a helper agent (segments, analytics, brand) message Amitai directly while a Producer runs the episode, or ping Amitai with status updates instead of one batched review.
+- Hand Shorts off to a separate Grok bot (`SendToAgent`, "Investing Bro Shorts", periphery-marketing). The Producer runs `investing-bros-shorts` directly.
 - Delete a Public video, the current version of an asset, or an Unlisted review upload that hasn't been replaced.
 - Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.
 - Sign in to Amitai's Google account from a browser: Advanced Protection blocks automated sign-in (see [references/environment.md](references/environment.md)).

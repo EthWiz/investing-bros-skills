@@ -15,7 +15,7 @@ This repo holds the production skills for the Investing Bros (אחים להשק�
 | Visual identity, artwork, templates, covers and design QA | `investing-bros-brand` |
 | Animation: rendering shorts and animated explainer cards (Remotion template) | `investing-bros-remotion` |
 | Cold opens, intro, full video episode, promo teaser | `investing-bros-video` |
-| Exactly 3 shorts with Codex covers (rendered with `investing-bros-remotion`), optional mid-form highlights | `investing-bros-shorts` |
+| Exactly 3 shorts with Codex covers (rendered with `investing-bros-remotion`), optional mid-form highlights — **Producer runs this skill directly** (no separate Shorts bot) | `investing-bros-shorts` |
 | Exactly 2 standalone search-first segment videos: 01 deep dive, 02 next-best qualifying topic | `investing-bros-segment-video` |
 | Review ping, RedCircle draft, YouTube, publish, Spotify check, WhatsApp share | `investing-bros-episode-upload` |
 | Going Public after Amitai's OK: RedCircle → episode → segments → Shorts, each verified live, ticked checklist | `investing-bros-publish` |
