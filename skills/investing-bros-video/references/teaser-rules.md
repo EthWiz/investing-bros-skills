@@ -9,5 +9,8 @@
   using their timestamps, or lips won't match. If only a side-by-side exists (ep 6), show it whole.
 - **Caption order.** Highlighted words must follow speech order; the renderer rejects cards out of
   time order or a highlight going backwards (the "15%" mix-up). Still compare cards to `words.json` by ear.
-- **Approval.** Nadav approves the teaser moments (Amitai can override and approve himself).
-  Amitai always sees a teaser preview (Drive link) before anything is uploaded.
+- **Moments: 10 candidates, AI picks 3.** Identify 10 teaser candidates, then choose the top 3
+  most engaging and thought-provoking yourself - no host pick or approval of the moments is
+  needed before building. List all 10 (timestamp, quote, why) with the 3 chosen in the hand-back.
+- **Preview.** Amitai always sees a teaser preview (Drive link) before anything is published;
+  a host may still swap a moment after seeing it.

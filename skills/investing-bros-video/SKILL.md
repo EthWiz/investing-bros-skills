@@ -12,7 +12,7 @@ description: >-
 ---
 # Investing Bros video
 
-Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts).
+Load `investing-bros-show` first: show facts, deployed assets, loudness, the canonical intro/outro clip and recording layout live there. Video assets are made by ליאורה; Nadav approves each cut before a rebuild or upload (show conventions → Roles and accounts); the cold-open teaser moments are the exception: you choose them yourself (step 1).
 
 Load `investing-bros-brand` for visual specifications and request graphic assets from it.
 It owns cover art, lower thirds and other visual assets; this skill owns video assembly.
@@ -40,12 +40,16 @@ video in step 4. Do not invent raw-time mappings that no longer exist.
 
 ## Steps
 
-### 1. Pick moments with Nadav and Amitai
-Tease, don't resolve: a question raised, a number dropped, a story started; cut before the answer. Wait for the OK unless Amitai said to go ahead.
-- **Cold open teaser** (one combined 30–60 s video): 3–5 short moments per host,
-  Amitai first and then Nadav. Open on the most surprising line, end each moment on
-  a full sentence: a question or a hook. Reordering whole lines is fine; splicing
-  half-sentences into a new claim is not.
+### 1. Pick the moments
+Tease, don't resolve: a question raised, a number dropped, a story started; cut before the answer.
+- **Cold open teaser** (one combined 15–30 s video, `references/teaser-rules.md`): identify
+  **10 candidate moments** from the transcript (both hosts, each a full sentence with its
+  timestamp, quote and why it hooks), then choose the **top 3 most engaging and
+  thought-provoking** yourself. No host pick is needed: build the teaser from your 3 and
+  report all 10 candidates with the 3 chosen (and why) in the hand-back, so Amitai or Nadav
+  can swap one later. Order the 3 with Amitai's moments first and then Nadav's. Open on the
+  most surprising line, end each moment on a full sentence: a question or a hook.
+  Reordering whole lines is fine; splicing half-sentences into a new claim is not.
 - **Promo teaser** (30–60 s, square): 2–4 moments of 5–15 s, strongest first, covering news, deep dive and an idea.
 
 Cut in the pauses between words, never mid-word (audio energy, or re-transcribe a short window). Proofread every caption against the audio; leave out words you can't verify and report them.
