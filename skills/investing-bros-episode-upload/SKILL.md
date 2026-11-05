@@ -4,7 +4,7 @@ description: >-
   Take a finished Investing Bros / אחים להשקעות episode out: review ping,
   RedCircle draft (edited audio, final Hebrew title and description with the
   RTL + "?" fix, episode number), a Private full episode when made, exactly two
-  Unlisted segment evaluations, then exactly three shorts uploaded after the
+  Private segment evaluations, then exactly three shorts uploaded after the
   episode is live, plus optional mid-form. With Amitai's OK, publish and check how it
   renders on Spotify, RedCircle and YouTube, and share it on WhatsApp. Use
   when Amitai says "upload episode N", "put it on RedCircle", "העלאה",
@@ -63,7 +63,7 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 6. **Save as Draft** / leave **Unpublished**. Leave RedCircle's default ad insertion points unless Amitai asks.
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
-### 3. YouTube uploads (Private episode, Unlisted segments, Shorts after live)
+### 3. YouTube uploads (Private episode, Private segments, Shorts after live)
 **Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`. It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by Amitai for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
 
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
@@ -86,9 +86,11 @@ domain (`youtube.com.evil.io`, `y0utube.com`) fails. Links to hosts outside the
 show's usual list (sponsors) are flagged for you to open, not failed.
 
 Follow [the Studio checklist](references/youtube-studio.md). Its first check can't be waived: before any Studio action (upload, edit, comment, Related video), open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos`, confirm in the avatar menu that **אחים להשקעות** (not the account's personal **Grok Bot** channel, `UCj9n6mOn7uWpN8G51nPggfA`) is active, and click into videos from that list. Direct `studio.youtube.com/video/<id>/edit` links load as Grok Bot even with `authuser=1`. Check the avatar again on every edit page, and post comments only with אחים להשקעות active. Upload the full episode as **Private** and
-the two segment evaluations as **Unlisted**; choose **No, it's not made for kids**.
-The API uploader creates Private uploads, so switch both segment videos to Unlisted
-in Studio before card/end-screen review. Do not upload the three Shorts until the
+the two segment evaluations as **Private** too (Amitai, 2026-11-05: all review uploads
+stay Private; Nadav owns the channel, so Private is enough, and segment cards/end
+screens pointing to the Private episode work); choose **No, it's not made for kids**.
+The API uploader's Private default is correct; don't switch anything to Unlisted.
+Do not upload the three Shorts until the
 full episode is live.
 - **Video episode** (`video/`): title from `כותרות-פרק-N.txt`, description from `video/תיאור-פרק-N-youtube.txt`, pasted **plain** (no RTL marks). It must include the `האזינו בספוטיפיי:` line (show link until step 5 swaps in the episode link).
   Add one or two previous-episode video elements (best related first) plus Subscribe
@@ -132,8 +134,8 @@ full episode is live.
 
 ### 3b. Approval round: one Telegram message
 Nadav approves the episode's assets together. Once **all** of them are ready — the
-full episode (YouTube Private), both segment videos (YouTube Unlisted, so Nadav can
-open them), the three Shorts (with covers) and the RedCircle draft link — write **one**
+full episode (YouTube Private), both segment videos (YouTube Private; Nadav owns the
+channel), the three Shorts (with covers) and the RedCircle draft link — write **one**
 message for the `אחים להשקעות` Telegram group (show conventions → Telegram) listing
 every asset with its copied link (YouTube, Drive for covers, RedCircle draft), ending
 with the line `sent by Grokbot`. Check it, then post it automatically as part of the

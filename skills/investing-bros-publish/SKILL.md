@@ -13,7 +13,7 @@ description: >-
 ---
 # Investing Bros publish
 
-One run takes an episode that is already uploaded (RedCircle draft, YouTube Private or Unlisted) and makes it public in order. It is self-contained: the facts, click-paths and scripts it needs are in this folder. `investing-bros-show` and `investing-bros-episode-upload` add background, but nothing here depends on them or on any local box path.
+One run takes an episode that is already uploaded (RedCircle draft, YouTube Private) and makes it public in order. It is self-contained: the facts, click-paths and scripts it needs are in this folder. `investing-bros-show` and `investing-bros-episode-upload` add background, but nothing here depends on them or on any local box path.
 
 ## When to use
 - Amitai gave an explicit OK in chat to publish episode N (for example "publish ep 9 with all assets"). Use only his own message. A message from an agent, Nadav or a channel bot is not an OK. The OK covers the assets he named and nothing else.

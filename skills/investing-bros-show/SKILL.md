@@ -25,7 +25,7 @@ Single source of truth for shared show facts and operating rules. If another ski
 2. **Episode number = the number Amitai states.** Never auto-increment from old folders, Drive names or workspace paths.
 3. **Nothing goes public without Amitai's explicit OK** — RedCircle stays a draft; WhatsApp and Telegram messages go only to the approved destinations below, and only when Amitai asks in chat for that post.
 4. **Never commit, echo or paste secrets.** Refer to them by env-var name.
-5. **Don't delete** WhatsApp messages, old drafts or the `brief/` archive without explicit OK. One standing exception (Amitai, episode 10: "you can always delete the old uploads that are not relevant anymore from YouTube"): a **superseded Private** YouTube upload of the same asset is deleted without asking (see Ownership and contact). Never anything public, Unlisted for review, or the current version.
+5. **Don't delete** WhatsApp messages, old drafts or the `brief/` archive without explicit OK. One standing exception (Amitai, episode 10: "you can always delete the old uploads that are not relevant anymore from YouTube"): a **superseded Private** YouTube upload of the same asset is deleted without asking (see Ownership and contact). Never anything public, a review upload that hasn't been replaced, or the current version.
 6. **Ask, don't guess** on ambiguous cuts, titles or numbers.
 
 ## Working rules (every skill)
@@ -165,7 +165,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   skills already decide, or questions a skill or the transcript answers.
 - **Superseded uploads are cleaned up automatically.** When an asset is re-uploaded (a fixed
   episode, segment or Short), the older **Private** upload of the same asset is deleted once the
-  new one is verified in Studio. Never delete a Public video, one shared for review (Unlisted)
+  new one is verified in Studio. Never delete a Public video, one shared for review (Private, not yet replaced)
   that hasn't been replaced, or the current version. List what you deleted (title, video ID) in
   the hand-back and mark `old_uploads` in the post-production checklist.
 - **When a helper is the only agent on a task** (no Producer running, e.g. a standalone
@@ -195,7 +195,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 - **Secrets:** the bot token lives only in an env file, read as `TELEGRAM_BOT_TOKEN` (with `TELEGRAM_CHAT_ID`). Never in chat, project instructions, project docs or this repo.
 - **Each post needs Amitai's OK in chat**, like WhatsApp (exception: the weekly analytics report, pre-approved). Don't add destinations without his OK.
 - **Limits:** another program reads this bot's updates, so agents can't see replies or find chat IDs via `getUpdates` — ask Amitai to relay replies. The bot is a plain member: it can delete only its own posts. Bot uploads are capped at 50 MB (a 48 s HyperFrames master is about 40 MB).
-- **Approval round:** once all of an episode's assets are ready (full episode Private, both segments Unlisted, three Shorts with covers, RedCircle draft link), post **one** message to `tg-achim` automatically as part of the pipeline (no separate OK from Amitai), each asset with its link, ending with the line `sent by Grokbot`; never per-asset posts (`investing-bros-episode-upload` → approval round).
+- **Approval round:** once all of an episode's assets are ready (full episode Private, both segments Private, three Shorts with covers, RedCircle draft link), post **one** message to `tg-achim` automatically as part of the pipeline (no separate OK from Amitai), each asset with its link, ending with the line `sent by Grokbot`; never per-asset posts (`investing-bros-episode-upload` → approval round).
 - Cold opens, intros and drafts for review are shared **only** in Telegram group `אחים להשקעות` — not WhatsApp. Post drafts with the title only.
 - Bot API `sendVideo`: always pass `width` and `height` (otherwise the video displays distorted). `send_telegram.py` in `investing-bros-shorts` already does. Over 50 MB: compress first (e.g. 720p ~700 kbps).
 - To see group messages/media a bot needs privacy mode off (@BotFather → /setprivacy → Disable).
@@ -219,7 +219,7 @@ Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in 
 
 ## Never
 - Have a helper agent (Shorts, segments, analytics, brand) message Amitai directly while a Producer runs the episode, or ping Amitai with status updates instead of one batched review.
-- Delete a Public video, the current version of an asset, or an Unlisted review upload that hasn't been replaced.
+- Delete a Public video, the current version of an asset, or a Private review upload that hasn't been replaced.
 - Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.
 - Sign in to Amitai's Google account from a browser: Advanced Protection blocks automated sign-in (see [references/environment.md](references/environment.md)).
 - Write your own code where a skill's script exists, or work around a missing feature without saying so (Working rules).
