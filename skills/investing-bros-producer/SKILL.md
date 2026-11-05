@@ -59,8 +59,9 @@ python3 $P retro "$EP"                             # after the last track is liv
    `note --kind owner_fix` and the fixed stage goes through `advance` again. After the owner signs
    a round off, post the one round summary for the other brother (`investing-bros-show` → Telegram).
 5. **Stale.** A changed input makes every stage made from it stale, and approvals of it with them
-   (a new cut: the main renders, chapters and the overlapping Shorts/segments). `next` lists them
-   first; redo them and ask for the approval again in the next round.
+   (a new cut: the main renders, chapters and the overlapping Shorts/segments). The title approval
+   (`main.title_ok`) follows only `כותרות-פרק-N.txt`: a description or chapter edit does not reopen
+   it. `next` lists stale stages first; redo them and ask for the approval again in the next round.
 6. **Uploads** are Private, through `investing-bros-episode-upload` → `yt_upload.py --record
    "$EP/extras/uploads/<track>.json"`; the record is the upload stage's evidence. A re-upload makes
    that track's `ok` and the publish OK stale.

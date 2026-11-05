@@ -187,6 +187,25 @@ def test_reupload_stales_the_approval_and_publish_ok(tmp_path):
     assert ps.load(ep)["stages"]["main.ok"]["version"] != old
 
 
+def test_description_or_chapters_change_does_not_stale_title_ok(tmp_path):
+    """title_ok fingerprints only כותרות-פרק-N.txt. Restoring a cut shifts chapters in the
+    description (and the YouTube chapter file); that must not force another title round."""
+    ep = started(tmp_path)
+    through_main(ep)
+    rec = ps.load(ep)["stages"]["main.title_ok"]
+    assert rec["of_keys"] == [f"כותרות-פרק-{N}.txt"]
+    touch(ep / f"תיאור-פרק-{N}.txt", "00:00 פתיחה\n01:22 חדשות אחרי שחזור\n")
+    e = ev(ep)
+    assert e["main.copy"]["status"] == "stale"
+    assert e["main.title_ok"]["status"] == "current"
+    d = ep / f"video/תיאור-פרק-{N}-youtube.txt"
+    touch(d, d.read_text(encoding="utf-8").replace("01:05 חדשות", "01:22 חדשות"))
+    e = ev(ep)
+    assert e["main.video"]["status"] == "stale" and e["main.title_ok"]["status"] == "current"
+    touch(ep / f"כותרות-פרק-{N}.txt", "1. y\nבחירה סופית: y")
+    assert ev(ep)["main.title_ok"]["status"] == "stale"
+
+
 def test_publication_edits_do_not_stale_what_was_approved(tmp_path):
     ep = started(tmp_path)
     through_main(ep)

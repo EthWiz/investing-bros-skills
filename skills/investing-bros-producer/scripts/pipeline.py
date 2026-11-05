@@ -367,7 +367,8 @@ def stage_map():
           inputs=["main.cuts_ok"], data=trim_data),
         W("main", "copy", td, "producer", f"python3 <{td}>/scripts/check_copy.py ... (steps 1-5)",
           items("titles_description"), out_files("כותרות-פרק-{n}.txt", "תיאור-פרק-{n}.txt"), inputs=["main.trim"]),
-        A("main", "title_ok", td, "main.copy", "the final title (written after בחירה סופית:)"),
+        A("main", "title_ok", td, "main.copy", "the final title (written after בחירה סופית:)",
+          of_keys="כותרות-פרק-{n}.txt"),
         W("main", "art", br, "helper", f"<{br}> steps 3-8 (Codex on Amitai's Mac); check_cover.py >> "
           "extras/cover-check.log", items("thumbnail_cover", "cover_checks", "face_identity"),
           out_files("cover-פרק-{n}.png", "thumbnail-פרק-{n}.jpg"), inputs=["main.title_ok"]),
@@ -748,7 +749,12 @@ def cmd_approve(ep, a):
     if spec["of"]:
         of = s["stages"][spec["of"]]
         if spec["of_keys"]:
-            keys = [k for k in of.get("outputs", {}) if k.endswith(spec["of_keys"])]
+            pat = spec["of_keys"].format(n=s["episode"])
+            keys = [k for k in of.get("outputs", {}) if str(k).endswith(pat)]
+            if not keys:
+                print(f"refused: {key} fingerprints only outputs ending with {pat}; "
+                      f"{spec['of']} has none", file=sys.stderr)
+                return 1
             rec.update(of=spec["of"], of_keys=keys,
                        of_version=PS.version_of({k: of["outputs"][k] for k in keys}))
         else:

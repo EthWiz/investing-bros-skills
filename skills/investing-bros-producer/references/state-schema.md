@@ -38,7 +38,8 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
     "main.cuts_ok": {
       "state": "approved", "at": "...",
       "of": "main.cut_list", "of_version": "sha256:…", "version": "sha256:…",  // the version of `of` approved
-      "of_keys": null,                  // or the outputs of `of` it covers (a thumbnail pick: only -thumb.jpg)
+      "of_keys": null,                  // or the outputs of `of` it covers (title_ok: only כותרות-פרק-N.txt;
+                                        // a thumbnail pick: only -thumb.jpg). Other outputs of `of` do not stale it.
       "inputs": {},
       "by": "nadav", "quote": "Nadav 11:40: מאשר את כל החיתוכים"
     },
@@ -92,8 +93,12 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   publishing don't stale them.
 - A stage is **stale** when (a) one of its output files no longer matches its recorded
   sha256, or (b) an input stage's current version differs from the one recorded in `inputs`,
-  or that input is itself stale. An approval is stale when the version of `of` differs from
-  the approved `version`, or `of` is stale.
+  or that input is itself stale. An approval with no `of_keys` is stale when the version of
+  `of` differs from the approved `version`, or `of` is stale. An approval with `of_keys` is
+  stale only when one of those files is missing or its bytes differ from the approved
+  fingerprint (compared on disk, not via the parent's recorded hash). Another output of `of`
+  changing — the description and its chapters under `title_ok`, the segment video under a
+  thumbnail pick — does not stale it, even while `of` itself is stale.
 - **Overlap rule:** a segment or Short render records its raw ranges and the `edit` snapshot
   it was made from (a segment: `selected_ranges`, the picked range minus its own drops, with
   the episode cuts inside it kept in, so restoring a cut the segment crossed stales it too). When `main.trim` changes, the render is stale only if a raw range overlaps
