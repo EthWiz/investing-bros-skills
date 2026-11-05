@@ -176,3 +176,20 @@ def test_long_moment_is_flagged_as_not_punchy():
     ])
     assert any("punchy" in w or "hole punches" in w for w in warnings)
 
+def test_sxs_without_crop_is_flagged():
+    from build_fullframe_teaser import moment_warnings
+    warnings = moment_warnings([
+        {"host": "amitai", "start": 0, "end": 6, "cards": []},
+        {"host": "nadav", "start": 20, "end": 26, "cards": [], "sxs": True},  # full SxS, one speaker
+    ])
+    assert any("side-by-side" in w and "speaking host" in w for w in warnings)
+
+
+def test_sxs_with_crop_is_ok():
+    from build_fullframe_teaser import moment_warnings
+    warnings = moment_warnings([
+        {"host": "amitai", "start": 0, "end": 6, "cards": []},
+        {"host": "nadav", "start": 20, "end": 26, "cards": [], "sxs": True,
+         "crop": [0, 270, 960, 540]},
+    ])
+    assert not any("side-by-side" in w for w in warnings)

@@ -6,8 +6,9 @@ references/teaser-fullframe.example.json. Relative paths are resolved from the
 JSON file, so configs are portable and contain no machine-specific paths.
 Rules (Amitai, Oct 2026): the teaser is at most 30 s (TEASER_MAX_S); each
 piece may name its own `source`/`audio` (e.g. that host's own Riverside camera
-track, aligned first); a piece with no crop is shown full frame - never crop
-or zoom into a side-by-side frame; caption cards must follow speech order.
+track, aligned first); a one-speaker side-by-side moment must set `crop` (or a
+per-host source) so only the speaking host is on screen — mark it `"sxs": true`
+so `--check` warns when the crop is missing; caption cards must follow speech order.
 When `assembly_audio` is set, the same normalized PCM samples used for the
 standalone AAC output are retained for sample-accurate episode assembly.
 """
@@ -309,6 +310,18 @@ def moment_warnings(pieces: list[dict]) -> list[str]:
                 f"{label} is {length:.1f} s: too long for a punchy hook "
                 f"(keep under {MOMENT_MAX_S:.0f} s; long explainers like "
                 f"'20 hole punches' are a bad example)"
+            )
+        # One-speaker side-by-side must be cropped to the speaking host (teaser-rules.md).
+        sxs = bool(piece.get("sxs")) or str(piece.get("view", "")).strip().lower() in {
+            "sxs", "side-by-side", "side_by_side", "split"
+        }
+        has_crop = bool(piece.get("crop"))
+        has_own_source = bool(piece.get("source"))
+        if sxs and not has_crop and not has_own_source:
+            warnings.append(
+                f"{label} is marked side-by-side with no crop and no per-host source: "
+                f"show only the speaking host (crop their half or use their camera track; "
+                f"ep10 v2 clip 2 was the bad example)"
             )
     if total > TEASER_MAX_S + 0.05:
         warnings.append(f"teaser is {total:.1f} s; keep it to {TEASER_MAX_S:.0f} s or less")
