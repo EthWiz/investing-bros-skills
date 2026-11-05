@@ -63,6 +63,8 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 7. Screenshot the title and description: `?` at the end of the Hebrew sentence, timestamps at the start of chapter lines. A draft edited back and forth that still looks broken: make a **fresh draft** and leave the old one for Amitai.
 
 ### 3. YouTube uploads (Private episode, Unlisted segments, Shorts after live)
+**Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`. It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by Amitai for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
+
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py` (resumable, frees the browser, Private-only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). See [references/youtube-api.md](references/youtube-api.md). Otherwise, or if it fails, use Studio in the browser as below. Either way, publishing still needs Amitai's OK.
 
 **Upload a compressed copy, not the master.** Make a ~1 GB copy (H.264 CRF 23,
