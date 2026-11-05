@@ -2,7 +2,7 @@
 name: investing-bros-video
 description: >-
   Make the video side of an Investing Bros / אחים להשקעות episode with
-  burned-in Hebrew captions: a combined full-frame cold-open teaser (30–60 s,
+  burned-in Hebrew captions: a combined full-frame cold-open teaser (15–30 s,
   16:9), the
   full video episode (cold opens + intro + episode + matching outro) with its YouTube
   description, and a 30–60 s promo teaser. Use when Amitai asks for "a
@@ -41,15 +41,22 @@ video in step 4. Do not invent raw-time mappings that no longer exist.
 ## Steps
 
 ### 1. Pick the moments
-Tease, don't resolve: a question raised, a number dropped, a story started; cut before the answer.
+Tease, don't resolve the episode: a question raised, a number dropped, a story started.
+But every moment must make sense on its own to a viewer with no context, and must run until
+its own point lands (`references/teaser-rules.md` → Quality).
 - **Cold open teaser** (one combined 15–30 s video, `references/teaser-rules.md`): identify
   **10 candidate moments** from the transcript (both hosts, each a full sentence with its
   timestamp, quote and why it hooks), then choose the **top 3 most engaging and
-  thought-provoking** yourself. No host pick is needed: build the teaser from your 3 and
-  report all 10 candidates with the 3 chosen (and why) in the hand-back, so Amitai or Nadav
-  can swap one later. Order the 3 with Amitai's moments first and then Nadav's. Open on the
-  most surprising line, end each moment on a full sentence: a question or a hook.
-  Reordering whole lines is fine; splicing half-sentences into a new claim is not.
+  thought-provoking** yourself (2 strong ones beat 3 with a weak one). No host pick is needed: build the teaser from them and
+  report all 10 candidates with the ones chosen (and why) in the hand-back, so Amitai or Nadav
+  can swap one later. Order them with Amitai's moments first and then Nadav's. Open on the
+  most surprising line.
+  - Reject a candidate a stranger wouldn't follow: a niche name with no context (episode 10:
+    "Greg Abel"), or an idea cut before its payoff (episode 10: the "20 hole punches" clip).
+  - Good examples: "if you'd invested $1,000 in Berkshire Hathaway, what's it worth today",
+    Nadav's "Coca-Cola is a good moat".
+  - Reordering whole lines is fine; splicing half-sentences into a new claim is not.
+  - After feedback, keep the moments they liked and replace or extend only the flagged ones.
 - **Promo teaser** (30–60 s, square): 2–4 moments of 5–15 s, strongest first, covering news, deep dive and an idea.
 
 Cut in the pauses between words, never mid-word (audio energy, or re-transcribe a short window). Proofread every caption against the audio; leave out words you can't verify and report them.
@@ -78,8 +85,12 @@ states, then run:
   "$EP/extras/investing-bros-episode-raw-untrimmed.mp4" "$EP/extras/source-audio-pts.wav"
 cp <investing-bros-brand>/assets/logo-solid.png "$EP/extras/logo_solid.png"
 python3 <investing-bros-video>/scripts/brand.py fonts Heebo[wght].ttf "$EP/extras/fonts/"
+python3 <investing-bros-video>/scripts/build_fullframe_teaser.py "$EP/extras/teaser.json" --check  # CAPTIONS OK
 python3 <investing-bros-video>/scripts/build_fullframe_teaser.py "$EP/extras/teaser.json"
 ```
+Captions wrap inside a ~12% safe margin on each side; the renderer refuses captions that
+leave it (`references/teaser-rules.md` → Captions). Watch the preview for weak moments
+before handing it over; then mark `teaser_quality` in the post-production checklist.
 Use the source's native frame rate (auto-detected if `fps` is omitted). Choose one crop
 per host after checking the first frame; the template's 1280×720 values are examples,
 not defaults for every recording. `make_pts_audio.sh` preserves packet timestamp gaps,
@@ -224,7 +235,8 @@ Review copies over the transfer caps: compress (show conventions → references/
 ## Never
 - Post anywhere unless Amitai asks in chat for that post, and then only to a destination in `investing-bros-show`.
 - Put words on screen the hosts didn't say, captions you haven't proofread, or splice lines so a host seems to say something he didn't.
-- Cut a caveat to make a line punchier.
+- Cut a caveat to make a line punchier, or cut a teaser moment before its payoff.
+- Use a teaser moment a viewer with no context can't follow (an unexplained niche name, a half-made point), or captions outside the safe area.
 - Cut or splice audio and video in separate passes and mux them, or deliver an edited sample or master without a `SYNC OK` from `verify_sync.py`.
 - Add music or stock footage Amitai didn't supply, except a cold-open bed mixed per the reference.
 - Write your own render, caption, download or upload code, or work around a missing feature without saying so (show conventions → Working rules).

@@ -60,7 +60,22 @@ a sample and get it approved first.
   best-effort stills per speaker, he picks the ones he wants and rejects the rest with
   a reason, and each episode's choices are kept as eval labels
   (`evals/face-picks/episodes/ep09.json` is the first). Thumbnails use only real frames
-  he picked; no image generation on real faces.
+  he picked; no image generation on real faces (clarified in episode 10: the real frames
+  are passed to Codex as photographic cutouts; inventing or reshaping a face is what is
+  forbidden).
+
+## Episode 10 (2026-11-04)
+- The face grids were labelled by seat and came out swapped (the hosts changed seats
+  mid-recording). Grids are now labelled by verified identity: `make_face_grid.py`
+  needs `--verified` per seating period and `--swap-at` for each swap.
+- Thumbnails shipped with bracket tofu, no template and a green circle. Covers are now
+  Codex-only on Amitai's Mac (no Pillow fallback), and `check_cover.py` fails banned or
+  missing headline glyphs (U+061F, brackets, box characters), checks the Short config
+  headline, and checks the palette (mustard present, no green).
+- Shorts covers in the old faceless format were rejected. The face format, a real frame
+  of the speaking host passed to Codex, is the standard; one-pass Codex covers are
+  allowed when the Hebrew verifies exactly, with `make_cover_title.py` as the fallback.
+  Which of the two becomes the final house format is pending Amitai's pick.
 - The same episode's editing and upload lessons (single-pass cuts with measured sync,
   the compressed YouTube copy, verified links, one approval message) live in
   `investing-bros-video` and `investing-bros-episode-upload`.

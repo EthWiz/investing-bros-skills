@@ -33,6 +33,8 @@ Short 5–10 min highlights that are not one of these stay mid-form (`investing-
 
 Load `investing-bros-show` (naming, Drive tree, approvals) and `investing-bros-brand` (look) first.
 
+**Helper rule** (`investing-bros-show` → Ownership and contact): report to the episode's Producer, never to Amitai directly; wherever this skill says "tell Amitai", "offer Amitai" or "show Amitai", put it in your hand-back and the Producer batches it into one review for him. You contact Amitai yourself only when no Producer runs the episode. Superseded Private uploads of a segment are deleted once the replacement is verified (list the IDs).
+
 ## Inputs
 The edited episode video (`video/פרק-N-וידאו.mp4`) or its source, the transcript and `edit.json` from `investing-bros-post-production`, the chapters in `תיאור-פרק-N.txt`, the `brief/` docs.
 

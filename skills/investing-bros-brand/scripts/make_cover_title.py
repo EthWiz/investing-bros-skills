@@ -1,8 +1,10 @@
 #!/usr/bin/env python3
 """Typeset the exact Hebrew title on a vertical Shorts cover (Financial Journal style).
 
-Image models misspell Hebrew, so a Shorts cover is made in two steps: generate the
-artwork text-free, then put the title on with this script. Torn-paper strips (line 1
+The fallback for Shorts covers (references/shorts-covers.md): when a one-pass Codex
+cover's Hebrew does not verify exactly, Codex makes the face-format artwork text-free on
+Amitai's Mac and this script puts the title on. The headline is checked first with
+check_cover.py's glyph rules (no U+061F, brackets, box characters or missing glyphs). Torn-paper strips (line 1
 cream, line 2 mustard, slight opposite tilts, white paper fringe), navy Heebo Black
 type, an optional `פרק N` pill under the strips and the logo bottom-right.
 
@@ -180,6 +182,22 @@ def make_cover(art_path, out_path, line1, line2, font_path, pill=None, logo_path
     return out_path
 
 
+def headline_problems(lines, font_path=None):
+    """The same headline-glyph check as check_cover.py (no U+061F, brackets, tofu, missing glyphs)."""
+    import importlib.util
+    from pathlib import Path
+    spec = importlib.util.spec_from_file_location("check_cover", Path(__file__).with_name("check_cover.py"))
+    cc = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(cc)
+    cmap = None
+    if font_path and Path(font_path).is_file():
+        try:
+            cmap = cc.font_cmap(Path(font_path))
+        except Exception:  # not a font fontTools can read: make_cover reports that itself
+            cmap = None
+    return [p for line in lines for p in cc.check_headline(line, cmap)]
+
+
 def title_from_config(path):
     cfg = json.load(open(path, encoding="utf-8"))
     title = cfg.get("cover_title")
@@ -209,6 +227,9 @@ def main(argv=None):
             line1, line2 = a.line1, a.line2
         else:
             raise ValueError("give --config (preferred) or both --line1 and --line2")
+        problems = headline_problems([line1, line2] + ([a.pill] if a.pill else []), a.font)
+        if problems:
+            raise ValueError("headline text would not render cleanly:\n  " + "\n  ".join(problems))
         print(make_cover(a.art, a.out, line1, line2, a.font, a.pill, a.logo, a.top))
     except (ValueError, RuntimeError) as e:
         print(f"FAIL {e}", file=sys.stderr)

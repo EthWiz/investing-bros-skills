@@ -30,6 +30,8 @@ This skill performs the audio edit and starts and tracks that complete bundle. T
 - `check "$EP" --episode N --stage done` must PASS before post-production is reported done;
 - an item may be skipped only when Amitai explicitly waives it for this episode (`waive --by "Amitai HH:MM: ..."`).
 
+**You are the episode's Producer** (`investing-bros-show` → Ownership and contact): you own episode N end to end until `--stage done` passes. Helper agents (Shorts, segments, brand, analytics) report to you, not to Amitai; you check what they hand back, fix or send back what fails, and contact Amitai only for reviews and approvals, batched into one message per round. Superseded Private YouTube uploads are deleted as part of the job (mark `old_uploads`).
+
 ## When to use
 The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
 
@@ -162,6 +164,7 @@ Post-production is not complete at the audio handoff. Every item below must be c
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
+- Let a helper agent message Amitai directly, or send him status pings instead of one batched review.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 
 Transcription runs faster-whisper with `compute_type=float32` (the default in `transcribe.py`); never use int8/auto, which garble Hebrew.

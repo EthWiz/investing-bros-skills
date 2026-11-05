@@ -69,3 +69,13 @@ def test_renders_1080x1920(tmp_path):
     mct.make_cover(str(art), str(out), "מי ינצח", "במרוץ הרובוטקסי?", fonts[0], "פרק 1", str(logo))
     im = Image.open(out)
     assert (im.format, im.size) == ("JPEG", (1080, 1920))
+
+
+def test_refuses_tofu_and_arabic_question_mark_before_rendering(tmp_path, capsys):
+    cfg = tmp_path / "short.json"
+    cfg.write_text(json.dumps({"cover_title": {"top_line": "כמה זה", "bottom_line": "שווה היום\u061f"}}),
+                   encoding="utf-8")
+    assert mct.main(["art.png", str(tmp_path / "out.jpg"), "--config", str(cfg), "--font", "missing.ttf"]) == 1
+    assert "U+061F" in capsys.readouterr().err
+    assert mct.headline_problems(["[פרק] 10"])
+    assert mct.headline_problems(["כמה זה", "שווה היום?", "פרק 10"]) == []

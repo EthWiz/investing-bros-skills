@@ -44,14 +44,18 @@ FONT_BLACK = "Heebo Black"
 # pixels unless an ASS anchor is noted.
 TEASER = {
     "size": (1920, 1080),
-    "caption": {"font": FONT_EXTRABOLD, "size": 84, "x": 960, "y": 1000},
+    # Captions: ~12% horizontal safe margins each side (YouTube UI / phone edges).
+    # Size 72 + wrapped lines keep the block inside the plate; do not rely on ASS
+    # MarginL/R alone when \pos is used.
+    "caption": {"font": FONT_EXTRABOLD, "size": 72, "x": 960, "y": 990,
+                "max_width": 1419, "margin_pct": 0.12},
     "kicker": {"font": FONT_BLACK, "size": 112, "x": 1862, "y": 22, "outline": 3, "shadow": 5},
     "title": {"font": FONT_BLACK, "size": 72, "x": 1862, "y": 148, "outline": 2.5, "shadow": 4},
     "logo": {"x": 60, "y": 48, "width": 300},
-    "caption_plate": (330, 880, 1590, 1060, 150),
-    "blur_plate": (380, 890, 1540, 1050, 255),
+    "caption_plate": (230, 860, 1690, 1060, 160),
+    "blur_plate": (250, 870, 1670, 1050, 255),
     "title_plate": (1120, 20, 1910, 250, 120),
-    "bottom_plate": (0, 960, 1920, 1080, 60),
+    "bottom_plate": (0, 940, 1920, 1080, 70),
 }
 
 

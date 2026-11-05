@@ -112,4 +112,4 @@ Send Amitai the output of `publish_checklist.py render`: the ticked checklist, g
 - Take any Studio action (upload, edit, comment, Related video) without first confirming אחים להשקעות is the active channel, or work from a direct `studio.youtube.com/video/<id>/edit` link.
 - Post or pin a comment from the Grok Bot personal channel.
 - Echo a password, cookie or token, or put one in the state file or the report.
-- Delete a video or comment, or change RedCircle show settings, without Amitai's OK.
+- Delete a Public video, the current version of an asset, or a comment, or change RedCircle show settings, without Amitai's OK. Superseded Private uploads of the same asset are the exception (Amitai, episode 10): once the newer upload is verified, delete them without asking, never anything Public or current, and list them (title, ID) in the report.

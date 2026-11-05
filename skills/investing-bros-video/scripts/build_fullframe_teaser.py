@@ -180,18 +180,127 @@ def ass_time(value: float) -> str:
     return f"{hours}:{minutes:02d}:{seconds:05.2f}"
 
 
-def caption_text(text: str) -> str:
+CAPTION_MAX_LINES = 2
+# Conservative Heebo ExtraBold advance (em) used only when the font file is
+# missing, so wrapping and the safe-area check never silently fall back to "fits".
+FALLBACK_EM_PER_CHAR = 0.62
+
+
+def safe_area() -> tuple[float, float]:
+    """Horizontal caption safe area (x0, x1) in canvas pixels."""
+    width = TEASER["size"][0]
+    margin = float(TEASER["caption"].get("margin_pct") or 0.12)
+    return width * margin, width * (1 - margin)
+
+
+def load_caption_font(fonts_dir: Path | None, font_size: int):
+    """The Heebo ExtraBold face the captions render with, or None."""
+    if not fonts_dir or not Path(fonts_dir).is_dir():
+        return None
+    try:
+        from PIL import ImageFont
+    except ImportError:
+        return None
+    for name in ("Heebo-ExtraBold.ttf", "Heebo-Black.ttf", "Heebo.ttf"):
+        candidate = Path(fonts_dir) / name
+        if candidate.is_file():
+            return ImageFont.truetype(str(candidate), font_size)
+    return None
+
+
+def caption_width(text: str, font, font_size: int) -> float:
+    plain = re.sub(r"[\[\]]", "", text)
+    if font is not None:
+        return float(font.getlength(plain))
+    return len(plain) * font_size * FALLBACK_EM_PER_CHAR
+
+
+def wrap_caption(text: str, max_width: float, font, font_size: int) -> list[str]:
+    """Greedy word wrap (a [bracketed] highlight stays whole) to max_width."""
+    parts = re.findall(r"\[[^\]]+\]|\S+", text)
+    lines: list[str] = []
+    cur: list[str] = []
+    for part in parts:
+        trial = " ".join(cur + [part])
+        if not cur or caption_width(trial, font, font_size) <= max_width:
+            cur.append(part)
+        else:
+            lines.append(" ".join(cur))
+            cur = [part]
+    if cur:
+        lines.append(" ".join(cur))
+    return lines or [text]
+
+
+def caption_text(text: str, fonts_dir: Path | None = None) -> str:
     gold = ass_colour(ACCENT)
     white = ass_colour(WHITE)
+    caption = TEASER["caption"]
+    max_width = float(caption.get("max_width") or 0)
+    font_size = int(caption.get("size") or 72)
+    if max_width > 0:
+        font = load_caption_font(fonts_dir, font_size)
+        wrapped = "\\N".join(wrap_caption(text, max_width, font, font_size))
+    else:
+        wrapped = text
     highlighted = re.sub(
         r"\[(.+?)\]",
         lambda match: rf"{{\c{gold}}}{match.group(1)}{{\c{white}}}",
-        text,
+        wrapped,
     )
     return RLM + highlighted + RLM
 
 
-def build_ass(config: dict, timeline: Timeline) -> str:
+def check_caption_safe_area(pieces: list[dict], fonts_dir: Path | None = None) -> list[str]:
+    """Every wrapped caption line must sit inside the horizontal safe area.
+
+    Captions are centred on caption.x; a line of width w spans x +/- w/2. Lines
+    must stay within [W*margin, W*(1-margin)] (about 12% each side), and a card
+    may wrap to at most CAPTION_MAX_LINES lines (more means the card is too long).
+    """
+    caption = TEASER["caption"]
+    font_size = int(caption.get("size") or 72)
+    max_width = float(caption.get("max_width") or 0)
+    font = load_caption_font(fonts_dir, font_size)
+    x0, x1 = safe_area()
+    centre = float(caption["x"])
+    problems = []
+    for piece in pieces:
+        for start, _end, text in piece.get("cards", []):
+            lines = wrap_caption(text, max_width, font, font_size) if max_width > 0 else [text]
+            if len(lines) > CAPTION_MAX_LINES:
+                problems.append(f"caption @ {start}: {len(lines)} lines (max {CAPTION_MAX_LINES}): {text!r}")
+            for line in lines:
+                width = caption_width(line, font, font_size)
+                left, right = centre - width / 2, centre + width / 2
+                if left < x0 - 0.5 or right > x1 + 0.5:
+                    problems.append(
+                        f"caption @ {start} leaves the safe area ({left:.0f}-{right:.0f} px, "
+                        f"safe {x0:.0f}-{x1:.0f} px): {line!r}"
+                    )
+    return problems
+
+
+MOMENT_MIN_S = 4.0
+
+
+def moment_warnings(pieces: list[dict]) -> list[str]:
+    """Flag moments too short to carry an idea and its payoff (teaser-rules.md)."""
+    warnings = []
+    total = sum(float(p["end"]) - float(p["start"]) for p in pieces)
+    for piece in pieces:
+        length = float(piece["end"]) - float(piece["start"])
+        if length < MOMENT_MIN_S:
+            warnings.append(
+                f"moment {piece.get('host', '?')} @ {piece['start']} is {length:.1f} s: "
+                "check it is not cut before its payoff"
+            )
+    if total > TEASER_MAX_S + 0.05:
+        warnings.append(f"teaser is {total:.1f} s; keep it to {TEASER_MAX_S:.0f} s or less")
+    return warnings
+
+
+def build_ass(config: dict, timeline: Timeline, fonts_dir: Path | None = None) -> str:
     caption = TEASER["caption"]
     kicker = TEASER["kicker"]
     title = TEASER["title"]
@@ -236,7 +345,7 @@ Format: Layer, Start, End, Style, Name, MarginL, MarginR, MarginV, Effect, Text
                 min(segment["output_start"] + end, segment_end),
                 "Cap",
                 rf"{{\an2\pos({caption['x']},{caption['y']})\blur0.7\shad3\4a&H60&}}"
-                + caption_text(text),
+                + caption_text(text, fonts_dir),
             )
     return head + body
 
@@ -320,11 +429,13 @@ def render(config: dict, config_path: Path, force: bool = False, ass_only: bool 
     fps_expression = str(config.get("fps") or probe_fps(source))
     fps = float(Fraction(fps_expression))
     timeline = Timeline(config["pieces"], fps)
-    if timeline.duration > TEASER_MAX_S + 0.05:
-        print(f"warning: teaser is {timeline.duration:.2f} s; keep it to {TEASER_MAX_S:.0f} s or less",
-              file=sys.stderr)
-    elif timeline.duration < TEASER_MIN_S:
+    for warning in moment_warnings(config["pieces"]):
+        print(f"warning: {warning}", file=sys.stderr)
+    if timeline.duration < TEASER_MIN_S:
         print(f"warning: teaser is only {timeline.duration:.2f} s", file=sys.stderr)
+    caption_problems = check_caption_safe_area(config["pieces"], fonts)
+    if caption_problems:
+        raise ValueError("captions outside the safe area (teaser-rules.md):\n  " + "\n  ".join(caption_problems))
     for segment in timeline.segments:
         segment["source_path"] = resolve_path(config_path, segment["source"]) if segment["source"] else source
         segment["audio_path"] = resolve_path(config_path, segment["audio"]) if segment["audio"] else audio
@@ -338,7 +449,7 @@ def render(config: dict, config_path: Path, force: bool = False, ass_only: bool 
         work_dir = Path(temp)
         overlay, blur_mask = make_overlays(logo, work_dir)
         ass = work_dir / "teaser.ass"
-        ass.write_text(build_ass(config, timeline), encoding="utf-8")
+        ass.write_text(build_ass(config, timeline, fonts), encoding="utf-8")
         if ass_only:
             destination = output.with_suffix(".ass")
             destination.parent.mkdir(parents=True, exist_ok=True)
@@ -400,11 +511,25 @@ def main() -> int:
     parser.add_argument("config", type=Path)
     parser.add_argument("--ass-only", action="store_true", help="write OUT with an .ass suffix without rendering")
     parser.add_argument("--force", action="store_true", help="overwrite an existing output")
+    parser.add_argument("--check", action="store_true",
+                        help="only check captions (safe area, line count) and moment lengths; no media needed")
     args = parser.parse_args()
     config_path = args.config.resolve()
     config = json.loads(config_path.read_text(encoding="utf-8"))
     if config.get("layout", "fullframe") != "fullframe":
         parser.error("this renderer supports only layout=fullframe")
+    if args.check:
+        fonts = resolve_path(config_path, config["fonts"]) if config.get("fonts") else None
+        problems = check_caption_safe_area(config["pieces"], fonts)
+        for warning in moment_warnings(config["pieces"]):
+            print(f"warning: {warning}", file=sys.stderr)
+        for problem in problems:
+            print(f"FAIL {problem}")
+        if fonts is None or load_caption_font(fonts, int(TEASER["caption"]["size"])) is None:
+            print("note: Heebo ExtraBold not found in fonts; measured with a conservative estimate",
+                  file=sys.stderr)
+        print("CAPTIONS OK" if not problems else f"{len(problems)} caption problem(s)")
+        return 1 if problems else 0
     try:
         render(config, config_path, args.force, args.ass_only)
     except (FileNotFoundError, FileExistsError, ValueError, subprocess.CalledProcessError) as error:

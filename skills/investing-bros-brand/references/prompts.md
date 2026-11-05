@@ -84,9 +84,11 @@ Edit this EXACT selected image. Change ONLY {REQUESTED_CHANGE_AND_REGION}. Prese
 or known wrong: 'עם אמיתי ונדב רסקין'. Do not redesign unrelated elements. Maintain
 original aspect ratio and transparency unless the user asks otherwise.
 
-## Shorts cover art (text-free)
+## Shorts cover art (face format, text-free)
 Rules and the typesetting step: [Shorts covers](shorts-covers.md). Attach this episode's
-approved cover and episode-07-gold.png as style references, named in the prompt. This
+approved cover and episode-07-gold.png as style references, plus the picked real frame of
+the host who speaks in the Short ({HOST_FRAME_FILE}, from a verified face grid), all
+named in the prompt. This
 prompt is complete on its own; don't add the base style block, which asks for text.
 
 Create vertical 9:16 Shorts cover artwork for Hebrew podcast אחים להשקעות, saved as
@@ -95,8 +97,12 @@ Short. The option label belongs in the output filename and review presentation, 
 the art. NO text, letters, numbers, strips, labels or logos anywhere: the title is
 typeset afterwards. Match the illustration style of the attached {EPISODE_COVER_FILE} and
 episode-07-gold.png (Financial Journal identity). Deep navy textured paper #09243B with
-subtle grain. Centre and lower half: {HERO_AND_MEANING}, one gold and cream #F5EBD5
-engraved, line-hatched illustration over a large rough printed-mustard #D8A52E disc.
+subtle grain. Lower half: the host from the attached {HOST_FRAME_FILE} as a natural-color
+photographic head-and-shoulders cutout over a large rough printed-mustard #D8A52E disc
+(never green). Use his real face exactly as in the frame: do not redraw, reshape, restyle
+or invent any facial feature; clean hair edges, no filters. Beside him, small and
+subordinate: {HERO_AND_MEANING} as a gold and cream #F5EBD5 engraved, line-hatched
+illustration.
 Leave the top half above the disc empty navy for a two-line title and keep the
 bottom-right corner empty for the show mark. One subject, generous breathing room; no
 glossy cinematic scene, metallic shine, neon, charts or clutter.
@@ -106,7 +112,9 @@ title line 1 exact '{HEADLINE_LINE_1}' on a cream torn strip and line 2 exact
 '{HEADLINE_LINE_2}' on a mustard torn strip, heavy navy Heebo Black, inside the centre
 square of the frame; a small white torn pill exact 'פרק {EPISODE_NUMBER}' on the bottom
 edge of the mustard strip; compact show mark bottom-right ('אחים' on cream above
-'להשקעות' on mustard). No host names. All Hebrew exact and right-to-left.
+'להשקעות' on mustard). No host names. All Hebrew exact and right-to-left, with no
+brackets, no Arabic question mark and no other text. The one-pass cover is kept only if
+every letter matches `cover_title` exactly ([Shorts covers](shorts-covers.md) step 3).
 
 ## Other formats
 {BASE_STYLE}
@@ -118,7 +126,8 @@ proposed format adaptation until reviewed. Do not merely stretch a square image.
 Until Amitai says the design is dialed in, every main-episode, segment and individual
 Short cover is generated as three labeled options A/B/C through Codex on Amitai's Mac
 (machine 566a74b2-614d-458f-be63-660743243124) with the device shell (Shell with that
-machineId). If that backend is unavailable, report the blocker; do not switch generators.
+machineId). If that backend is unavailable, report the blocker; do not switch generators and do not
+fall back to a Pillow composite on the box (hard rule since episode 10).
 For non-cover artwork, Grokbot may use its own image tool with the same prompt when the
 Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
 1. Before a run, refresh the Mac's `~/.agents/skills` copies from this repo's `main`
@@ -127,8 +136,8 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    `episode-<N>/cover/` for main-episode artwork, or
    `episode-<N>/segment-<NN>/` for segment artwork. Put the relevant references there
    (for main episodes and segments: the selected photo-cutout reference plus original
-   host frames from episode N; for illustrated Shorts: the episode and gold style
-   references) and the filled prompt as `prompt-{a|b|c}.txt`. CopyToBox/CopyFromBox need
+   host frames from episode N; for face-format Shorts: the episode and gold style
+   references and the speaking host's picked frame) and the filled prompt as `prompt-{a|b|c}.txt`. CopyToBox/CopyFromBox need
    absolute `/Users/amitairuskin/...` paths; `~` is not expanded.
 3. For Shorts, start the prompt with `Use $imagegen to create`, then the Shorts cover art
    template above, and add: "Output will be upscaled to 1080x1920 afterwards;
@@ -143,6 +152,7 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
      --skip-git-repo-check -i ref-episode-<N>-cover.png -i ref-episode-07-gold.png \
      -- "$(cat prompt-a.txt)" < /dev/null > codex-a.log 2>&1
    ```
+   For a face-format Short add `-i <host-frame>.jpg` (the speaking host's picked frame).
    Repeat with the B and C prompt and log names. Replace the example Shorts reference
    arguments with the matching style reference and both same-episode host frames for a
    photo-cutout cover.

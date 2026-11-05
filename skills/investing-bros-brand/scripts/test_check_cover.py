@@ -9,9 +9,16 @@ cc = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(cc)
 
 
-def img(tmp_path, name, size, fmt="JPEG", mode="RGB"):
+def img(tmp_path, name, size, fmt="JPEG", mode="RGB", disc=(216, 165, 46)):
+    """A navy cover with a brand mustard disc (the palette check needs brand colour)."""
+    from PIL import ImageDraw
     p = tmp_path / name
-    Image.new(mode, size, (9, 36, 59) if mode == "RGB" else (9, 36, 59, 255)).save(p, fmt)
+    im = Image.new(mode, size, (9, 36, 59) if mode == "RGB" else (9, 36, 59, 255))
+    w, h = size
+    r = min(w, h) // 4
+    ImageDraw.Draw(im).ellipse((w // 2 - r, h // 2 - r, w // 2 + r, h // 2 + r),
+                               fill=disc if mode == "RGB" else disc + (255,))
+    im.save(p, fmt)
     return p
 
 
@@ -81,3 +88,89 @@ def test_register_rules(tmp_path):
     ep = img(tmp_path, "thumbnail-פרק-8.jpg", (1920, 1080))
     no_tab = register(tmp_path, output_path=ep.name, format="episode-wide", width=1920, height=1080, episode_tab=None)
     assert "must be true" in cc.check_register(ep, no_tab, "episode-wide", (1920, 1080))[0]
+
+
+# --- headline text (episode 10: U+061F and bracket tofu on a thumbnail) ---
+
+def test_clean_hebrew_headline_passes():
+    assert cc.check_headline("מה היה שווה 1,000$ בברקשייר?") == []
+    assert cc.check_headline("קוקה-קולה: חפיר טוב") == []
+
+
+def test_arabic_question_mark_is_rejected():
+    errs = cc.check_headline("כמה זה שווה היום\u061f")
+    assert errs and "U+061F" in errs[0]
+
+
+def test_square_bracket_tofu_is_rejected():
+    assert any("square bracket" in e for e in cc.check_headline("[ברקשייר] היום"))
+    assert any("tofu" in e for e in cc.check_headline("ברקשייר \u25a1"))
+    assert any("replacement" in e for e in cc.check_headline("ברקשייר \ufffd"))
+
+
+def test_invisible_niqqud_and_foreign_script_are_rejected():
+    assert cc.check_headline("שלום\u200b")          # zero-width space
+    assert cc.check_headline("שָׁלוֹם")                # niqqud
+    assert cc.check_headline("Привет")               # Cyrillic
+    assert cc.check_headline("   ") == ["headline is empty"]
+
+
+def test_missing_glyph_in_font_cmap_is_rejected():
+    cmap = {ord(c) for c in "שלום "}
+    assert cc.check_headline("שלום", cmap) == []
+    errs = cc.check_headline("שלום?", cmap)
+    assert errs and "no glyph" in errs[0]
+
+
+def test_config_and_title_headlines_are_checked(tmp_path):
+    cover = img(tmp_path, "שורט-01-סוויפט-cover.jpg", (1080, 1920))
+    good = tmp_path / "short.json"
+    good.write_text(json.dumps({"cover_title": {"top_line": "כמה זה", "bottom_line": "שווה היום?"}}), encoding="utf-8")
+    bad = tmp_path / "bad.json"
+    bad.write_text(json.dumps({"cover_title": {"top_line": "כמה זה", "bottom_line": "שווה היום\u061f"}}), encoding="utf-8")
+    empty = tmp_path / "empty.json"
+    empty.write_text(json.dumps({"cover_title": {"top_line": "כמה זה"}}), encoding="utf-8")
+    assert cc.main([str(cover), "--kind", "shorts-vertical", "--config", str(good)]) == 0
+    assert cc.main([str(cover), "--kind", "shorts-vertical", "--config", str(bad)]) == 1
+    assert cc.main([str(cover), "--kind", "shorts-vertical", "--config", str(empty)]) == 1
+    assert cc.main([str(cover), "--kind", "shorts-vertical", "--title", "[פרק] 10"]) == 1
+
+
+def test_register_headline_is_checked(tmp_path):
+    p = img(tmp_path, "thumbnail-פרק-10.jpg", (1920, 1080))
+    row = dict(output_path="art/thumbnail-פרק-10.jpg", format="episode-wide", width=1920, height=1080,
+               episode_tab=True, headline=["1,000$ בברקשייר", "כמה זה שווה היום\u061f"])
+    assert cc.main([str(p), "--kind", "episode-wide", "--register", str(register(tmp_path, **row))]) == 1
+    row["headline"] = ["1,000$ בברקשייר", "כמה זה שווה היום?"]
+    assert cc.main([str(p), "--kind", "episode-wide", "--register", str(register(tmp_path, **row))]) == 0
+
+
+# --- palette (episode 10: green disc instead of mustard) ---
+
+def test_green_disc_fails_and_mustard_passes(tmp_path):
+    good = img(tmp_path, "thumbnail-פרק-10.jpg", (1920, 1080))
+    assert cc.check_palette(good)[0] == []
+    (tmp_path / "g").mkdir()
+    green = img(tmp_path / "g", "thumbnail-פרק-10.jpg", (1920, 1080), disc=(60, 170, 70))
+    errs, _ = cc.check_palette(green)
+    assert any("green" in e for e in errs) and any("mustard" in e for e in errs)
+    assert cc.main([str(green), "--kind", "episode-wide"]) == 1
+
+
+def test_screen_gold_counts_as_brand_gold(tmp_path):
+    (tmp_path / "s").mkdir()
+    p = img(tmp_path / "s", "thumbnail-פרק-10.jpg", (1920, 1080), disc=(245, 183, 31))
+    assert cc.check_palette(p)[0] == []
+
+
+def test_allow_green_needs_amitai_words(tmp_path):
+    p = tmp_path / "thumbnail-פרק-10.jpg"
+    from PIL import ImageDraw
+    im = Image.new("RGB", (1920, 1080), (9, 36, 59))
+    d = ImageDraw.Draw(im)
+    d.ellipse((700, 300, 1220, 820), fill=(60, 170, 70))
+    d.rectangle((0, 0, 300, 200), fill=(216, 165, 46))
+    im.save(p, "JPEG")
+    assert cc.main([str(p), "--kind", "episode-wide"]) == 1
+    assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "me: fine"]) == 2
+    assert cc.main([str(p), "--kind", "episode-wide", "--allow-green", "Amitai 10:02: the topic is a green dollar"]) == 0

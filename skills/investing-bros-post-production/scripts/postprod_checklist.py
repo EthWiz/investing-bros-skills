@@ -27,19 +27,32 @@ ITEMS = [
     ("transcript_doc", "upload", "Google Doc 'תמלול - פרק N' in Drive (mark with its URL)"),
     ("cut_list", "upload", "extras/edit.json + extras/cuts-review/cuts-list.txt + a review clip per cut"),
     ("teaser", "upload", "Combined full-frame cold-open teaser in promo/ (teaser|cold|טיזר in name)"),
+    ("teaser_quality", "upload", "extras/teaser-check.log says CAPTIONS OK (build_fullframe_teaser.py --check) + mark: "
+     "every moment checked against teaser-rules.md (stands alone, payoff kept, no unexplained names)"),
     ("intro", "upload", "Canonical intro/outro clip fetched into extras/ (*intro*.mp4)"),
     ("full_video", "upload", "video/פרק-N-וידאו.mp4"),
     ("chapters", "upload", "video/תיאור-פרק-N-youtube.txt with >=3 chapter timestamps, shifted past teaser+intro (mark)"),
     ("verify_sync", "upload", "extras/verify_sync.log says SYNC OK and no FAIL"),
     ("titles_description", "upload", "כותרות-פרק-N.txt and תיאור-פרק-N.txt"),
     ("thumbnail_cover", "upload", "thumbnail-פרק-N.jpg and cover-פרק-N.png"),
+    ("face_identity", "upload", "Face grids labeled by verified host identity: side mapping checked at the start and "
+     "after any swap, every grid eyeballed before it went to Amitai (mark with what you saw)"),
+    ("cover_checks", "upload", "extras/cover-check.log: check_cover.py OK for both episode covers with --title/--register "
+     "headlines, no FAIL + mark: made by Codex on Amitai's Mac (session/prompt path)"),
     ("segments", "done", "segments/סגמנט-01 and סגמנט-02, each with an .mp4"),
     ("shorts", "done", "Shorts/ with exactly three rendered shorts (.mp4)"),
+    ("shorts_covers", "done", "Three Shorts covers (*-cover.jpg) in Shorts/ + mark: face format from real frames, "
+     "Codex on Amitai's Mac, check_cover.py OK"),
     ("redcircle_draft", "done", "RedCircle unpublished draft (mark with the draft URL)"),
+    ("old_uploads", "done", "Superseded Private YouTube uploads of this episode's assets deleted, nothing public or "
+     "current touched (mark with the deleted IDs, or 'none')"),
 ]
 IDS = [i for i, _, _ in ITEMS]
-MANUAL = {"transcript_doc", "redcircle_draft"}
-NEEDS_MARK = {"chapters"}  # file check AND a mark that chapters were shifted
+MANUAL = {"transcript_doc", "redcircle_draft", "face_identity", "old_uploads"}
+# file check AND a mark (chapters shifted; teaser moments reviewed; cover provenance)
+NEEDS_MARK = {"chapters", "teaser_quality", "cover_checks", "shorts_covers"}
+# an item that falls away when Amitai waives its parent
+WAIVED_WITH = {"teaser_quality": "teaser", "shorts_covers": "shorts"}
 
 
 def state_path(ep: Path) -> Path:
@@ -89,6 +102,25 @@ def file_check(ep: Path, n: int, item: str):
         promo = ep / "promo"
         hits = [p for p in promo.glob("*.mp4") if re.search(r"teaser|cold|טיזר", p.name, re.I)] if promo.is_dir() else []
         return None if hits else "no cold-open teaser in promo/"
+    if item == "teaser_quality":
+        log = x / "teaser-check.log"
+        if not log.is_file():
+            return "missing extras/teaser-check.log (build_fullframe_teaser.py --check > it)"
+        t = log.read_text(encoding="utf-8", errors="replace")
+        return None if "CAPTIONS OK" in t and "FAIL" not in t else "teaser captions not OK"
+    if item == "cover_checks":
+        log = x / "cover-check.log"
+        if not log.is_file():
+            return "missing extras/cover-check.log (check_cover.py output for both covers)"
+        t = log.read_text(encoding="utf-8", errors="replace")
+        if "FAIL" in t:
+            return "check_cover.py reported FAIL"
+        miss = [f for f in (f"thumbnail-פרק-{n}.jpg", f"cover-פרק-{n}.png") if f"OK {f}" not in t]
+        return None if not miss else "no check_cover OK for " + ", ".join(miss)
+    if item == "shorts_covers":
+        sh = ep / "Shorts"
+        k = len(list(sh.rglob("*-cover.jpg"))) if sh.is_dir() else 0
+        return None if k >= 3 else f"{k}/3 Shorts covers"
     if item == "intro":
         return None if list(x.glob("*intro*.mp4")) else "no intro clip in extras/"
     if item == "full_video":
@@ -129,6 +161,10 @@ def check(ep: Path, n: int, stage: str = "upload"):
     for item, _, label in wanted:
         if item in s["waived"]:
             rows.append(("WAIVED", item, s["waived"][item]))
+            continue
+        parent = WAIVED_WITH.get(item)
+        if parent in s["waived"]:
+            rows.append(("WAIVED", item, f"with {parent}: {s['waived'][parent]}"))
             continue
         reason = None if item in MANUAL else file_check(ep, n, item)
         if reason is None and (item in MANUAL or item in NEEDS_MARK) and item not in s["marked"]:

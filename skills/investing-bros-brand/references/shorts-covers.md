@@ -2,9 +2,16 @@
 
 The image Reels, Shorts and TikTok show before play and in the profile grid. One cover
 per Short; `investing-bros-shorts` asks for it and uses it as `-cover.jpg` and as the
-YouTube custom thumbnail. Approved style: Amitai's "cut newspaper" title over an
-engraved topic illustration. Reference: `shorts-title-strips-ep1.png` (Drive
-`references/covers`, ID in the [asset index](asset-index.md)).
+YouTube custom thumbnail.
+
+**Standard since episode 10: the face format.** A real frame of the host who speaks in
+the Short, as a photographic cutout, under Amitai's "cut newspaper" title strips.
+Episode 10's faceless covers (title over an engraved illustration only) were rejected as
+the old format; that style (reference `shorts-title-strips-ep1.png`, Drive
+`references/covers`, ID in the [asset index](asset-index.md)) now sets only the strips,
+pill and show mark. Whether the final house version is the one-pass Codex cover or Codex
+art plus `make_cover_title.py` is **pending Amitai's pick**; until he picks, make both
+kinds where you can and label which is which.
 
 ## Layout (`shorts-vertical`, top to bottom)
 - **Background:** navy textured paper.
@@ -14,8 +21,12 @@ engraved topic illustration. Reference: `shorts-title-strips-ep1.png` (Drive
   soft shadow. Very heavy navy **Heebo Black**, filling the strip, both lines the same
   type size.
 - **`פרק N` pill:** white torn-paper pill on the bottom edge of the mustard strip.
-- **Illustration:** one gold/cream engraved (line-hatched) illustration of the Short's
-  topic over a large mustard disc, centre and lower half. No brand logos in the art.
+- **Host (`host` zone):** the speaking host from a picked frame of this episode (verified
+  identity, [face picks](face-picks.md)), natural-color head-and-shoulders cutout over a
+  large brand-mustard disc (never green), lower half. His face stays exactly as in the
+  frame ([covers](covers.md) → What the face rule means).
+- **Topic prop (optional, `hero` zone):** a small gold/cream engraved illustration of the
+  topic beside him, subordinate to the face. No brand logos in the art.
 - **Show mark bottom-right**, high contrast. No host-name strip, no show mark at the top.
 
 Title = the Short config's shared `cover_title`: one short punchy idea, two lines,
@@ -28,41 +39,52 @@ Until Amitai says the design is dialed in, every individual Short cover is deliv
 three clearly labeled Codex options A/B/C for him to choose from. This means three
 options for each of the episode's three Shorts, not one option per Short.
 
-## How to make it
-1. **Generate three labeled art options A/B/C, text-free, with Codex on Amitai's Mac**
-   (prompt: [prompts](prompts.md) → Shorts cover art, run through prompts → Codex
-   backend): vertical 9:16, navy textured paper, engraved illustration of the topic over
-   a mustard disc, empty top half for the title, empty bottom-right corner, no text,
-   letters or logos. If Codex is unavailable, report the blocker instead of switching
-   generator. Image models misspell Hebrew; never keep generated text.
-2. **Typeset the title with Heebo:**
+## How to make it (Codex on Amitai's Mac only)
+There is no box fallback: no Pillow compositing of faces, art or strips. If Codex or the
+Mac is unavailable, report the blocker (to the Producer when one runs the episode).
+
+1. **Pick the face.** From the episode's verified face grids, take a picked frame of the
+   host who speaks in this Short (a different frame per option where possible). Copy it
+   into the Codex workdir.
+2. **One-pass cover (preferred when it verifies).** Run [prompts](prompts.md) → Shorts
+   cover art with the one-pass replacement and `-i` the host frame and style references
+   (prompts → Codex backend). Codex draws the strips, title, pill and show mark.
+3. **Verify the Hebrew exactly.** Read every letter at full size and ~200 px wide against
+   `cover_title` in `short.json`: same letters, same order, `?` on the left, no
+   brackets, no `؟`, no stray text. Then run
+   `python3 scripts/check_cover.py COVER.jpg --kind shorts-vertical --config short.json`.
+   Any mismatch: one targeted regenerate; if it is still wrong, go to step 4. Upscale a
+   kept one-pass cover as in prompts → Codex backend step 5.
+4. **Fallback: text-free Codex face art + Heebo title.** Run the same prompt text-free
+   (with the host frame), then typeset the title:
    ```bash
    python3 scripts/make_cover_title.py ART-A.png "option-A/שורט-NN-<נושא>-cover.jpg" \
-     --config short.json --pill "פרק 1" \
+     --config short.json --pill "פרק N" \
      --font fonts/Heebo-Black.ttf --logo assets/logo-solid.png
    ```
-   Repeat in `option-B/` and `option-C/`; the folder labels the option without adding a
-   label to the artwork.
    `--config` reads the same `cover_title` field as the Remotion banner; do not copy the
-   lines into separate cover or banner fields. It crops the art to 1080×1920 without stretching, keeps both lines the same size, puts
-   the pill and the logo in place, and fails if the title would leave the centre square.
-3. **Check all three options** with
-   `python3 scripts/check_cover.py "option-X/שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`,
-   then at full size and at ~200 px wide: title readable, `?` on the left, pill not
-   clipped, logo readable, nothing important outside the centre square. Show the labeled
-   set to Amitai and wait for his selection.
-4. **Promote and check the selected option:**
-   `python3 scripts/check_cover.py "שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical`.
-   Then file it next to its Short in the episode's Drive `Shorts/` folder
-   (`investing-bros-show` → Drive tree, Shorts rule), then hand it to `investing-bros-shorts`.
+   lines into separate fields. It refuses a headline with characters that would render as
+   tofu (U+061F, brackets, box characters, glyphs missing from the font), crops the art
+   to 1080×1920 without stretching, keeps both lines the same size, places the pill and
+   logo, and fails if the title would leave the centre square. Make sure the title strips
+   don't cover the host's face.
+5. **Check all three options** with
+   `python3 scripts/check_cover.py "option-X/שורט-NN-<נושא>-cover.jpg" --kind shorts-vertical --config short.json`
+   (palette: brand mustard present, no green), then by eye: the face is the right host
+   and unaltered, title readable, pill not clipped, logo readable, nothing important
+   outside the centre square. Label each option one-pass or typeset. Show the labeled set
+   to Amitai (through the Producer) and wait for his selection.
+6. **Promote and check the selected option** with the same `check_cover.py` command,
+   appending the output to `extras/cover-check.log`. Then file it next to its Short in
+   the episode's Drive `Shorts/` folder (`investing-bros-show` → Drive tree, Shorts
+   rule), then hand it to `investing-bros-shorts`.
 
-A whole cover generated in one pass by Codex ([prompts](prompts.md) → one-pass cover) is
-acceptable when every Hebrew letter checks out at full and thumbnail size; otherwise redo
-the text with step 2. The legacy video-frame cover (`make_cover.py`
-in `investing-bros-shorts`) is only for rebuilding older Shorts.
+The legacy video-frame cover (`make_cover.py` in `investing-bros-shorts`) is only for
+rebuilding older Shorts.
 
 ## Done when
-`שורט-NN-<נושא>-cover.jpg` (1080×1920 JPEG) sits next to its Short in `Shorts/` with the
-exact Hebrew hook, the `פרק N` pill and the bottom-right show mark, no name strip, and
-`check_cover.py` passes. Until the design is dialed in, Amitai selected it from three
-clearly labeled Codex options.
+`שורט-NN-<נושא>-cover.jpg` (1080×1920 JPEG) sits next to its Short in `Shorts/` in the
+face format, made by Codex on Amitai's Mac, with the exact Hebrew hook, the `פרק N`
+pill and the bottom-right show mark, no name strip, and `check_cover.py --config` passes.
+Until the design is dialed in, Amitai selected it from three clearly labeled Codex
+options.

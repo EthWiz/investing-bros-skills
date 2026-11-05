@@ -80,13 +80,13 @@ def test_second_round_does_not_overwrite_the_first(tmp_path, monkeypatch):
     monkeypatch.setattr(mg, "extract", fake_extract)
     out = tmp_path / "faces"
     assert mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "A",
-                    "--times", "00:10", "00:50"]) == 0
+                    "--verified", "00:05 Amitai left", "--times", "00:10", "00:50"]) == 0
     assert mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "B",
-                    "--times", "01:10"]) == 0
+                    "--verified", "00:05 Amitai left", "--times", "01:10"]) == 0
     files = sorted(p.name for p in out.iterdir())
     assert {"grid-amitai-A.jpg", "grid-amitai-B.jpg", "manifest-amitai-A.json", "manifest-amitai-B.json"} <= set(files)
     with pytest.raises(SystemExit):  # same round again: refused
-        mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "A", "--times", "00:20"])
+        mg.main(["rec.mp4", str(out), "--host", "amitai", "--side", "left", "--prefix", "A", "--verified", "x", "--times", "00:20"])
     # record_face_picks reads both rounds from the directory, with the right times
     lab_path = tmp_path / "ep.json"
     assert rp.main(["--episode", "9", "--manifest", str(out), "--good", "B1",
@@ -108,3 +108,47 @@ def test_manifest_ids_must_match_their_round():
 def test_empty_manifest_dir_is_refused(tmp_path):
     with pytest.raises(ValueError):
         rp.manifest_paths([str(tmp_path)])
+
+
+def test_side_at_follows_seat_swaps():
+    assert mg.side_at(10, "left", []) == "left"
+    assert mg.side_at(10, "left", [100]) == "left"
+    assert mg.side_at(100, "left", [100]) == "right"
+    assert mg.side_at(250, "left", [100, 200]) == "left"
+    assert mg.side_at(150, "right", [100, 200]) == "left"
+    assert mg.side_at(150, "full", []) == "full"
+
+
+def test_swap_crops_the_other_side_and_records_it(tmp_path, monkeypatch):
+    import json
+    seen = []
+
+    def fake_extract(recording, t, side, out):
+        from PIL import Image
+        seen.append((t, side))
+        Image.new("RGB", (64, 72), (90, 80, 120)).save(out)
+
+    monkeypatch.setattr(mg, "extract", fake_extract)
+    out = tmp_path / "faces"
+    assert mg.main(["rec.mp4", str(out), "--host", "nadav", "--side", "right", "--prefix", "N",
+                    "--swap-at", "10:00", "--verified", "00:30 Nadav right (intro)",
+                    "--verified", "10:30 Nadav left after the break",
+                    "--times", "05:00", "20:00"]) == 0
+    assert seen == [(300.0, "right"), (1200.0, "left")]
+    man = json.loads((out / "manifest-nadav-N.json").read_text())
+    assert man["swaps"] == [600.0] and len(man["verified"]) == 2
+    assert man["items"]["N1"]["side"] == "right" and man["items"]["N2"]["side"] == "left"
+    items, _ = rp.merge_manifests([man])
+    assert items["N2"]["side"] == "left"
+
+
+def test_identity_must_be_verified_for_every_seating(tmp_path, monkeypatch):
+    monkeypatch.setattr(mg, "extract", lambda *a: None)
+    base = ["rec.mp4", str(tmp_path / "f"), "--host", "amitai", "--side", "left", "--prefix", "A",
+            "--times", "00:10"]
+    with pytest.raises(SystemExit):  # no --verified at all
+        mg.main(base)
+    with pytest.raises(SystemExit):  # a swap without a second check
+        mg.main(base + ["--swap-at", "05:00", "--verified", "00:30 Amitai left"])
+    with pytest.raises(SystemExit):  # blank note
+        mg.main(base + ["--verified", "  "])

@@ -34,7 +34,7 @@ def merge_manifests(manifests: list[dict]) -> tuple[dict, str]:
                 raise ValueError(f"id {sid}: host differs from its manifest's host")
             if sid in items:
                 raise ValueError(f"id {sid} appears in two manifests")
-            items[sid] = dict(it, side=m["side"])
+            items[sid] = {"side": m["side"], **it}  # a still's own side (after a seat swap) wins
     if len(recs) != 1:
         raise ValueError(f"manifests come from different recordings: {sorted(recs)}")
     return items, recs.pop()
