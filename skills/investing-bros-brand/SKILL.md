@@ -57,7 +57,7 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    is no fallback: no Pillow compositing on the box, no other image generator, no
    template pasted together in code. If Codex or the Mac is unavailable, stop and report
    a blocker (to the Producer when one runs the episode). Until Amitai says the design is
-   dialed in, each of those covers is three clearly labeled options A/B/C. Other artwork
+   dialed in, each of those covers is three clearly labeled options A/B/C. Independent Codex renders (A/B/C, wide vs square, each Short's cover) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). Other artwork
    may use the built-in image tool with the same prompt; say which generator ran in the
    hand-back. No code-drawn illustrations and no ad hoc Pillow renderers: the only
    typesetting script is `scripts/make_cover_title.py` (Heebo Black).
@@ -71,7 +71,9 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    before it goes to Amitai. Real frames are passed to Codex as photographic cutouts;
    what is forbidden is inventing, reshaping or synthesizing a face. Shorts covers use the
    **face format** (a real frame of the speaking host; `references/shorts-covers.md`):
-   one-pass Codex covers when the Hebrew verifies exactly, otherwise text-free Codex art
+   **the one-pass Codex cover with the real face frame via `-i` is the default** (Amitai's
+   pick, episode 10; prompt on stdin, ~941×1672 upscaled to 1080×1920 with ffmpeg, named
+   `שורט-NN-<נושא>-cover.jpg`); only if its Hebrew is not exact, text-free Codex art
    plus the shared `cover_title` with `make_cover_title.py --config short.json`; that
    field also drives the opening banner and YouTube metadata.
 5. Review all three labeled options against the quality checks; fix an isolated error

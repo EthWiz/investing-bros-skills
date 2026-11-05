@@ -72,12 +72,14 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    `investing-bros-brand` → `references/shorts-covers.md`. **The face format is the
    current standard** (Amitai, episode 10: covers without the hosts' faces were the old
    format): a real frame of the host who speaks in the Short, picked from the verified
-   face grids and passed to Codex as an `-i` input, kept photographic. Codex makes it on
-   Amitai's Mac, either in one pass (art, Hebrew title, pill and logo) when the Hebrew on
-   the result matches `cover_title` exactly, or as text-free art typeset with
-   `make_cover_title.py --config short.json` (the fallback; both read the same
-   `cover_title` as the opening banner, so they cannot drift). Which of the two becomes
-   final is Amitai's pick. Until he says the design is dialed in, brand delivers three
+   face grids and passed to Codex as an `-i` input, kept photographic. **Default (Amitai's
+   pick, episode 10): the one-pass Codex cover** — Codex on Amitai's Mac draws art, Hebrew
+   title, pill and logo in one pass with the real face frame via `-i`, prompt fed on stdin
+   (`-i` swallows a trailing prompt argument); upscale its ~941×1672 PNG to 1080×1920 with
+   ffmpeg (lanczos) straight to `שורט-NN-<נושא>-cover.jpg`. Only if the one-pass Hebrew
+   still does not match `cover_title` after one regenerate, fall back to text-free art
+   typeset with `make_cover_title.py --config short.json` (same `cover_title` as the
+   opening banner, so they cannot drift). Until he says the design is dialed in, brand delivers three
    clearly labeled options A/B/C per Short and he picks one. Check the pick with
    `check_cover.py --kind shorts-vertical --config short.json` and use it both as
    `-cover.jpg` and as the YouTube custom thumbnail. No Pillow compositing on the box: if

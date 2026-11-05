@@ -56,5 +56,5 @@
       "audio": "nadav-camera-aligned.wav"
     }
   ],
-  "_notes": "Max 30 s total. Omit a crop to show the frame whole (never zoom into side-by-side). A piece may set its own 'source'/'audio' (that host's own camera track, aligned to the combined video first) and 'crop'."
+  "_notes": "Max 30 s total. Each clip shows only the speaking host. Prefer that host's camera track (piece-level source/audio, aligned first). For a one-speaker side-by-side moment set crop to their half and \"sxs\": true so --check warns if the crop is missing; omit crop only for a native solo shot."
 }
