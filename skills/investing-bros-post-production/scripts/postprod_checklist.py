@@ -43,6 +43,8 @@ ITEMS = [
     ("shorts", "done", "Shorts/ with exactly three rendered shorts (.mp4)"),
     ("shorts_covers", "done", "Three Shorts covers (*-cover.jpg) in Shorts/ + mark: face format from real frames, "
      "Codex on Amitai's Mac, check_cover.py OK"),
+    ("past_episode_cards", "done", "extras/past-episode-cards.json (find_past_episode_refs.py, max 4, IDs from "
+     "investing-bros-show/references/episode-index.json, [] if none) + mark: cards added in Studio at those times"),
     ("redcircle_draft", "done", "RedCircle unpublished draft (mark with the draft URL)"),
     ("old_uploads", "done", "Superseded Private YouTube uploads of this episode's assets deleted, nothing public or "
      "current touched (mark with the deleted IDs, or 'none')"),
@@ -50,7 +52,7 @@ ITEMS = [
 IDS = [i for i, _, _ in ITEMS]
 MANUAL = {"transcript_doc", "redcircle_draft", "face_identity", "old_uploads"}
 # file check AND a mark (chapters shifted; teaser moments reviewed; cover provenance)
-NEEDS_MARK = {"chapters", "teaser_quality", "cover_checks", "shorts_covers"}
+NEEDS_MARK = {"chapters", "teaser_quality", "cover_checks", "shorts_covers", "past_episode_cards"}
 # an item that falls away when Amitai waives its parent
 WAIVED_WITH = {"teaser_quality": "teaser", "shorts_covers": "shorts"}
 
@@ -121,6 +123,18 @@ def file_check(ep: Path, n: int, item: str):
         sh = ep / "Shorts"
         k = len(list(sh.rglob("*-cover.jpg"))) if sh.is_dir() else 0
         return None if k >= 3 else f"{k}/3 Shorts covers"
+    if item == "past_episode_cards":
+        c = x / "past-episode-cards.json"
+        if not c.is_file():
+            return "missing extras/past-episode-cards.json (find_past_episode_refs.py)"
+        try:
+            sys.path.insert(0, str(Path(__file__).parent))
+            import find_past_episode_refs as fr
+            idx = Path(__file__).resolve().parents[2] / "investing-bros-show/references/episode-index.json"
+            errs = fr.validate(json.loads(c.read_text(encoding="utf-8")), json.loads(idx.read_text(encoding="utf-8")))
+        except ValueError:
+            return "extras/past-episode-cards.json unreadable"
+        return "; ".join(errs) or None
     if item == "intro":
         return None if list(x.glob("*intro*.mp4")) else "no intro clip in extras/"
     if item == "full_video":

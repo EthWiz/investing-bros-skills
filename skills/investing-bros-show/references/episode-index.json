@@ -1,0 +1,15 @@
+{
+ "_note": "Episode index for past-episode cards. One entry per episode on channel UCWIlggXQNDFiyJghl6VB6Xw. youtube_id = the full episode's current Public/Private ID (old channel @nadavruskin905 IDs are dead, never use them). null = not verified yet: verify in Studio before using, then fill it in here by PR. topics = Hebrew + English keywords that resolve a topic reference ('the nuclear episode'). Update after every episode upload.",
+ "episodes": [
+  {"episode": 1, "title": "פרק 1", "youtube_id": "fVpJXxn01CM", "topics": []},
+  {"episode": 2, "title": "פרק 2", "youtube_id": null, "topics": []},
+  {"episode": 3, "title": "פרק 3", "youtube_id": "5MEi1z8EvBo", "topics": []},
+  {"episode": 4, "title": "פרק 4", "youtube_id": "3L4OLfD5dKw", "topics": []},
+  {"episode": 5, "title": "פרק 5 - אנרגיה גרעינית: מי יספק את החשמל ל-AI?", "youtube_id": "pPOdBcol5qc", "topics": ["גרעין", "גרעינית", "אנרגיה גרעינית", "כורים", "nuclear", "uranium", "אורניום"]},
+  {"episode": 6, "title": "פרק 6 - טוקניזציה: האם וול סטריט עוברת לבלוקצ׳יין?", "youtube_id": "lL6ZmfWcdrY", "topics": ["טוקניזציה", "בלוקצ׳יין", "בלוקצ'יין", "tokenization", "blockchain"]},
+  {"episode": 7, "title": "פרק 7 - זהב", "youtube_id": "8BEj8lVDvL4", "topics": ["זהב", "gold"]},
+  {"episode": 8, "title": "פרק 8 - מדדים, ערך וצמיחה", "youtube_id": "6chKVe8nQ8A", "topics": ["מדדים", "S&P", "אס-פי", "ערך וצמיחה", "שיטות השקעה", "index funds"]},
+  {"episode": 9, "title": "פרק 9", "youtube_id": "YL1hdpdcVt8", "topics": []},
+  {"episode": 10, "title": "פרק 10 - וורן באפט וברקשייר", "youtube_id": null, "topics": ["באפט", "בופט", "ברקשייר", "Buffett", "Berkshire", "חפיר כלכלי", "moat"]}
+ ]
+}

@@ -56,7 +56,7 @@ def test_upload_stage_passes_but_done_needs_downstream(tmp_path):
     upload_ready(tmp_path)
     assert pc.main(["check", str(tmp_path), "--episode", str(N)]) == 0
     _, missing = pc.check(tmp_path, N, "done")
-    assert missing == ["segments", "shorts", "shorts_covers", "redcircle_draft", "old_uploads"]
+    assert missing == ["segments", "shorts", "shorts_covers", "past_episode_cards", "redcircle_draft", "old_uploads"]
 
 
 def test_done_passes_with_everything(tmp_path):
@@ -67,6 +67,9 @@ def test_done_passes_with_everything(tmp_path):
         touch(tmp_path / f"Shorts/short-0{i+1}/s.mp4")
         touch(tmp_path / f"Shorts/short-0{i+1}/שורט-0{i+1}-x-cover.jpg")
     pc.main(["mark", str(tmp_path), "shorts_covers", "--evidence", "face format, check_cover OK"])
+    touch(tmp_path / "extras/past-episode-cards.json", json.dumps([{"v5_timestamp": 787.9, "quote": "בפרק 8",
+          "referenced_episode": 8, "youtube_video_id": "6chKVe8nQ8A"}]))
+    pc.main(["mark", str(tmp_path), "past_episode_cards", "--evidence", "1 card set in Studio at 13:08"])
     pc.main(["mark", str(tmp_path), "redcircle_draft", "--evidence", "draft url"])
     pc.main(["mark", str(tmp_path), "old_uploads", "--evidence", "deleted Private abc123 (old full episode)"])
     assert pc.main(["check", str(tmp_path), "--episode", str(N), "--stage", "done"]) == 0
@@ -121,3 +124,9 @@ def test_waived_teaser_also_clears_teaser_quality(tmp_path):
     pc.main(["waive", str(tmp_path), "teaser", "--by", "Amitai 09:12: no teaser this time"])
     rows, missing = pc.check(tmp_path, N)
     assert missing == [] and dict((r[1], r[0]) for r in rows)["teaser_quality"] == "WAIVED"
+
+
+def test_past_episode_cards_rejects_unknown_id(tmp_path):
+    touch(tmp_path / "extras/past-episode-cards.json", json.dumps([{"v5_timestamp": 1, "quote": "q",
+          "referenced_episode": 8, "youtube_video_id": "XXXXXXXXXXX"}]))
+    assert "not in episode index" in (pc.file_check(tmp_path, N, "past_episode_cards") or "")

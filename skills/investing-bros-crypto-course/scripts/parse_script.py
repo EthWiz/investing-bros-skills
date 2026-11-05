@@ -24,7 +24,7 @@ import re
 import sys
 from pathlib import Path
 
-HEADING = re.compile(r"^#{1,3}\s*\**\s*קטע\s+(\d+)\s*:\s*(.+?)\s*(?:\(כ-?\s*(\d+)\s*שניות\))?\s*\**\s*$")
+HEADING = re.compile(r"^(?:#{1,3}\s*)?\**\s*קטע\s+(\d+)\s*:\s*(.+?)\s*(?:\(כ-?\s*(\d+)\s*שניות\))?\s*\**\s*$")
 ON_SCREEN = re.compile(r"^\*?\s*על המסך\s*:\s*(.+?)\s*\*?$")
 LIST_ITEM = re.compile(r"^\s*(?:\d+\.|[-*])\s+")
 KINDS = ("revision_id", "modified_time")
@@ -40,7 +40,8 @@ def parse(text: str) -> dict:
                    "on_screen": "", "text": []}
             beats[m.group(1)] = cur
             continue
-        if line.startswith("#"):                   # another heading (sources, notes) ends the beats
+        if line.startswith("#") or line.strip("* \ufeff") in ("מקורות", "הערות"):
+            # Native Docs text exports omit Markdown heading markers.
             cur = None
             continue
         if cur is None or not line:

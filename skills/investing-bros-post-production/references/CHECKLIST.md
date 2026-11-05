@@ -23,6 +23,7 @@ Gate script: `scripts/postprod_checklist.py` (state in `extras/postprod-checklis
 | `segments` | `segments/סגמנט-01` (deep dive) + `סגמנט-02` | segment-video | done |
 | `shorts` | Exactly three Shorts in `Shorts/` | shorts | done |
 | `shorts_covers` | Three `*-cover.jpg` in `Shorts/`; mark: face format from real frames, Codex on Amitai's Mac, `check_cover.py` OK. Waived with `shorts`. | shorts / brand | done |
+| `past_episode_cards` | `extras/past-episode-cards.json` from `scripts/find_past_episode_refs.py` (`[]` if no references): max 4, one per referenced episode at its first strong mention, video IDs from `investing-bros-show/references/episode-index.json`; mark once the info cards are set in Studio | post-production / episode-upload | done |
 | `redcircle_draft` | RedCircle unpublished draft (mark with URL) | episode-upload | done |
 | `old_uploads` | Superseded **Private** YouTube uploads of this episode's assets deleted (never the current version or anything public); mark with the deleted IDs or `none` | episode-upload | done |
 
