@@ -103,13 +103,19 @@ def plan_segment(edit: dict, rng, drops=(), source_type="raw", offset=0.0, allow
         src_cuts = [[to_src(x), to_src(y)] for x, y in drops]
     else:
         raise Refused("source type is raw or assembled")
-    kept, cur = [], a
-    for x, y in removed_raw:
-        kept.append([cur, x])
-        cur = y
-    kept.append([cur, b])
+    def minus(removed):
+        out, cur = [], a
+        for x, y in removed:
+            out.append([cur, x])
+            cur = y
+        out.append([cur, b])
+        return out
+    kept = minus(removed_raw)
+    # the picked range minus the segment's own drops (episode cuts inside stay in): what the Producer watches,
+    # so a new cut there, or restoring a crossed one, makes this render stale
+    selected = minus(drops)
     return {"raw_range": [a, b], "raw_drops": [list(d) for d in drops], "episode_cuts_crossed": [list(c) for c in crossed],
-            "raw_ranges": kept, "source_type": source_type, "offset": offset if source_type == "assembled" else 0.0,
+            "raw_ranges": kept, "selected_ranges": selected, "source_type": source_type, "offset": offset if source_type == "assembled" else 0.0,
             "source_start": to_src(a), "source_end": to_src(b), "source_cuts": src_cuts,
             "length": round(sum(y - x for x, y in kept), 3)}
 
@@ -145,9 +151,11 @@ def check_points(duration: float) -> list:
 
 
 def gain_db(lufs: float, true_peak: float) -> float:
-    """Gain to -16 LUFS, held back so the true peak stays <= -1.5 dBTP; 0 when within 0.5 LU."""
-    g = TARGET_LUFS - lufs
-    g = min(g, MAX_TP - true_peak)
+    """Gain to -16 LUFS, held back so the true peak stays <= -1.5 dBTP; 0 when within 0.5 LU and the peak is
+    already under the ceiling (a peak over it is always brought down, however small the cut)."""
+    g = min(TARGET_LUFS - lufs, MAX_TP - true_peak)
+    if true_peak > MAX_TP:
+        return round(g, 2)
     return 0.0 if abs(g) < 0.5 else round(g, 2)
 
 

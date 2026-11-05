@@ -29,6 +29,11 @@ which gates passed, for which version of which files.
 - **Invalidation**: when an input's version changes, every stage that recorded the old
   version is **stale** and has to pass again; an approval of a stale version is stale too.
   Stale stages show in `pipeline.py next` and are logged as events.
+- **What publishing fills in is not a change**: the Spotify line of a YouTube description (the
+  show link becomes the episode link, `investing-bros-publish` step 7) and the `- status:` /
+  `- URL:` lines of the notes files (`youtube-סגמנט-NN.md`, `youtube-שורט-NN.md`) are masked in
+  their fingerprints. Neither stales an approval or the publish OK; any other change to those
+  files (title, description) still does.
 
 The postprod gate items (`investing-bros-post-production` → `references/CHECKLIST.md`) keep
 their ids; the table says which stage each belongs to.
@@ -47,7 +52,7 @@ their ids; the table says which stage each belongs to.
 | `art` | brand (steps 3–8) | `title_ok` | file: `cover-פרק-N.png`, `thumbnail-פרק-N.jpg` in the root (item `thumbnail_cover`); log: `extras/cover-check.log` OK for both + mark: Codex provenance (item `cover_checks`); mark: `face_identity` | — | `title_ok` (the headline) |
 | `art_ok` | brand (step 6) | `art` | approval: the owner's A/B/C pick, tied to the cover and thumbnail files | owner | a changed cover or thumbnail |
 | `video` | video | `trim`, `copy` | file: teaser in `promo/` (item `teaser`); log `extras/teaser-check.log` CAPTIONS OK + mark (item `teaser_quality`); intro in `extras/` (item `intro`); `video/פרק-N-וידאו.mp4` (item `full_video`); log `extras/verify_sync.log` SYNC OK (item `verify_sync`); `video/תיאור-פרק-N-youtube.txt` with chapters + mark (item `chapters`) | — (the owner sees it in the approval round) | `trim`, `copy` |
-| `upload` | episode-upload (step 3) | `video`, `art_ok`, `title_ok`; the postprod `upload` stage passes | record: `extras/uploads/main.json` from `yt_upload.py --record` (Private, show channel, video ID); file + mark: `extras/past-episode-cards.json`, cards set (item `past_episode_cards`); mark: `main.endscreen` (previous episode(s) + Subscribe over the outro, Editor preview) | — | `video`, `art_ok`, `title_ok`; a re-upload (new video ID) |
+| `upload` | episode-upload (step 3) | `video`, `art_ok`, `title_ok`; the postprod `upload` stage passes | record: `extras/uploads/main.json` from `yt_upload.py --source <master> --record` (Private, show channel, video ID, version = the current master's sha256: a record of an older render fails); file + mark: `extras/past-episode-cards.json`, cards set (item `past_episode_cards`); mark: `main.endscreen` (previous episode(s) + Subscribe over the outro, Editor preview) | — | `video`, `art_ok`, `title_ok`; a re-upload (new video ID) |
 | `ok` | episode-upload (3b approval round) | `upload` | approval of the uploaded version (file sha256 + video ID) | owner | `upload` |
 
 ## seg01, seg02
@@ -56,10 +61,10 @@ their ids; the table says which stage each belongs to.
 |---|---|---|---|---|---|
 | `select` | segment-video (step 1) | `main.trim` | mark: `segNN.select` (raw in/out, internal cuts, length, the alternative) | — | — |
 | `range_ok` | segment-video (step 1) | `select` | approval of the range | owner | a changed selection |
-| `render` | segment-video (`make_segment.py`) | `range_ok` | record: `extras/segment-NN.json` (raw range, source, mapping, `SYNC OK`, output sha256) | — | `range_ok`; a `main.trim` change that overlaps the raw range |
+| `render` | segment-video (`make_segment.py`) | `range_ok` | record: `extras/segment-NN.json` (raw range, source, mapping, `SYNC OK`, output sha256) | — | `range_ok`; a `main.trim` change that overlaps the picked range minus the segment's own drops (`selected_ranges`: a new cut there, or restoring one the segment crossed) |
 | `package` | segment-video (steps 5–9) | `render` | file: the slot's four files in `segments/`, none empty (item `segments`, this slot); mark: `segNN.nudge` (0:31 frame checked) | — | `render` |
 | `thumb_ok` | segment-video (step 7) / brand | `package` | approval: the owner's A/B/C pick, tied to `-thumb.jpg` | owner | a changed thumbnail |
-| `upload` | segment-video (steps 10–11) | `thumb_ok` | record: `extras/uploads/segNN.json` (Private); mark: `segNN.links` (one card at 0:30 + end screen to the full episode, verified) | — | `package`, `thumb_ok`, `main.upload` (the full-episode link); a re-upload |
+| `upload` | segment-video (steps 10–11) | `thumb_ok` | record: `extras/uploads/segNN.json` (Private, version = the current `.mp4`'s sha256); mark: `segNN.links` (one card at 0:30 + end screen to the full episode, verified) | — | `package`, `thumb_ok`, `main.upload` (the full-episode link); a re-upload |
 | `ok` | episode-upload (3b) | `upload` | approval of the uploaded version | owner | `upload` |
 
 ## short01, short02, short03
@@ -72,7 +77,7 @@ their ids; the table says which stage each belongs to.
 | `cover` | brand (Shorts covers) | `pick_ok` | file: `Shorts/שורט-NN-<נושא>-cover.jpg`; log: `extras/cover-check.log` has `OK` for it (the provenance mark, item `shorts_covers`, is checked by `release.review_gate`) | — | `pick_ok` (the cover title) |
 | `cover_ok` | brand | `cover` | approval: the owner's A/B/C pick, tied to the cover file | owner | a changed cover |
 | `package` | shorts (step 7) | `render`, `cover_ok` | file: the slot's four files in `Shorts/`, none empty (item `shorts`, this slot) | — | `render`, `cover_ok` |
-| `upload` | shorts / episode-upload (step 3) | `package`, `main.upload` | record: `extras/uploads/shortNN.json` (Private); mark: `shortNN.related` (Related video = the full episode after reopening, `.srt` published) | — | `package`, `main.upload`; a re-upload |
+| `upload` | shorts / episode-upload (step 3) | `package`, `main.upload` | record: `extras/uploads/shortNN.json` (Private, version = the current `.m4v`'s sha256), `.srt` published. Related video is not required here: the full episode is still Private, so it is set and checked before the Short goes Public (`investing-bros-publish`, item `related`, never waived) | — | `package`, `main.upload`; a re-upload |
 | `ok` | episode-upload (3b) | `upload` | approval of the uploaded version (this is the cut approval) | owner | `upload` |
 
 ## release
@@ -85,7 +90,7 @@ their ids; the table says which stage each belongs to.
 | `publish_ok` | publish | every track's `ok`, `approval_round` | approval: the owner's own words naming what may go Public, tied to every `ok` version and video ID; **never waivable** | owner | any `ok`, any re-upload |
 | `publish` | publish | `publish_ok` | file: `extras/publish-checklist.json`, every item ticked or waived (item `published`); `publish_checklist.py can-public` re-checks `publish_ok` and the video IDs against this file every time | — | `publish_ok` |
 | `spotify_links` | publish (step 7) | `publish` | mark (item `spotify_links`): the Spotify episode URL on the episode, both segments and all three Shorts, `check_links.py` passed | — | `publish` |
-| `old_uploads` | episode-upload / publish | `publish` | mark (item `old_uploads`): superseded Private IDs deleted (listed from the upload records), or `none` | — | a new superseded upload |
+| `old_uploads` | episode-upload / publish | `publish` | mark (item `old_uploads`): superseded Private IDs deleted, naming every ID in the upload records' `superseded`, or `none` when there are none | — | any upload record changing (a new superseded upload) |
 | `retro` | producer (`pipeline.py retro`) | `spotify_links`, `old_uploads` | file: `extras/retro-פרק-N.md`; mark: `release.retro` (the learnings PR/issue links, the one message to the owner) | — | — (never blocks publishing) |
 
 The postprod `done` stage passes once `publish`, `spotify_links` and `old_uploads` pass.

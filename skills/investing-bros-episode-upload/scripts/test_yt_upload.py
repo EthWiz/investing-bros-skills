@@ -153,6 +153,19 @@ def test_new_version_is_a_reupload_with_superseded(tmp_path):
     assert r["video_id"] == "VID00000002" and r["superseded"][0]["video_id"] == "VID00000001"
 
 
+def test_source_is_the_version_of_a_compressed_copy(tmp_path):
+    v, t, rec = files(tmp_path, b"compressed")
+    master = tmp_path / "master.mp4"
+    master.write_bytes(b"master-v1")
+    yt = FakeYT()
+    assert yu.main(args(v, t, rec, "--source", str(master)), yt=yt) == 0
+    r = json.loads(rec.read_text())
+    assert r["version"] == r["source_sha256"] == yu.sha256_file(master) and r["file_sha256"] == yu.sha256_file(v)
+    v.write_bytes(b"compressed again")                                     # a new copy of the same master
+    assert yu.main(args(v, t, rec, "--source", str(master)), yt=yt) == 1   # same version: refused
+    assert yt.inserts == 1
+
+
 def test_resume_without_a_record_refuses(tmp_path):
     yt = FakeYT()
     assert yu.main(["--resume", str(tmp_path / "none.json")], yt=yt) == 1

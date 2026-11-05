@@ -62,7 +62,7 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   },
   "marks": {                            // evidence written with `pipeline.py mark`
     "transcript_doc": {"evidence": "https://docs.google.com/…", "at": "..."},
-    "short01.related": {"evidence": "reopened 21:40: Related video = פרק 11 …", "at": "..."}
+    "seg01.links": {"evidence": "card at 0:30 + end screen to פרק 11, reopened 21:40", "at": "..."}
   },
   "waivers": {                          // the owner's own words, per gate item or stage
     "teaser": {"quote": "Nadav 09:12: בלי טיזר הפעם", "by": "nadav", "at": "..."}
@@ -85,18 +85,28 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   `outputs` map serialized with sorted keys (`json.dumps(..., sort_keys=True,
   separators=(",", ":"), ensure_ascii=False)`), the same recipe as the crypto course's
   `make_lesson_base.py digest()` and export records.
+- An output key `mark:ID` is the digest of that mark's evidence; `text:PATH` is the sha256 of
+  the file's text with the publication fields masked (`pipeline_state.PUBLICATION_FIELDS`: the
+  `האזינו בספוטיפיי:` link and `status:` / `URL:` lines), used for the YouTube descriptions and
+  the notes files (`youtube-*-NN.md`), so the Spotify swap and the status written after
+  publishing don't stale them.
 - A stage is **stale** when (a) one of its output files no longer matches its recorded
   sha256, or (b) an input stage's current version differs from the one recorded in `inputs`,
   or that input is itself stale. An approval is stale when the version of `of` differs from
   the approved `version`, or `of` is stale.
 - **Overlap rule:** a segment or Short render records its raw ranges and the `edit` snapshot
-  it was made from. When `main.trim` changes, the render is stale only if a raw range overlaps
+  it was made from (a segment: `selected_ranges`, the picked range minus its own drops, with
+  the episode cuts inside it kept in, so restoring a cut the segment crossed stales it too). When `main.trim` changes, the render is stale only if a raw range overlaps
   the span the edit changed (kept ranges added or removed); otherwise the change is logged as
   an event and the render keeps its version.
 - **Upload records** (`extras/uploads/<track>.json`, written by `episode-upload` →
   `yt_upload.py --record`): `{asset, version, channel, video_id, steps, steps_done, file,
-  file_sha256, privacy, created_at, superseded: [{video_id, version, at}]}`. The `upload`
-  stage copies `video_id` into `data`; a new record (re-upload) changes the stage's version
+  file_sha256, source, source_sha256, privacy, created_at, superseded: [{video_id, version,
+  at}]}`. `version` is the sha256 of `--source` (the full video master the compressed copy was
+  made from) or else of the uploaded file. The `upload` stage passes only when `version`,
+  `file_sha256` or `source_sha256` equals the sha256 of the track's current video (the master,
+  the segment `.mp4`, the Short `.m4v`), so a record of an older render fails. It copies
+  `video_id` into `data`; a new record (re-upload) changes the stage's version
   and so stales `ok`, `publish_ok` and the publish checks for that group.
 - **Segment package records** (`extras/segment-NN.json`, written by `segment-video` →
   `make_segment.py`): the raw range, source type and offset, the mapped source range, the

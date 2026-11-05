@@ -9,6 +9,7 @@ Used by pipeline.py (investing-bros-producer, the only writer) and publish_check
 import hashlib
 import json
 import os
+import re
 from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
@@ -17,6 +18,12 @@ STATE_NAME = "pipeline.json"
 CACHE_NAME = ".pipeline-hash-cache.json"   # local only (size, mtime -> sha256); never synced
 DONE = ("done", "approved", "waived")
 TZ = timezone(timedelta(hours=2))           # Asia/Jerusalem (winter); times are for people, order comes from the log
+# Fields publishing fills in after the approval: the Spotify show link becomes the episode link
+# (investing-bros-publish step 7), and the notes files get `- status:` and `- URL:` lines. A `text:` output hashes
+# its file with these masked, so those edits don't stale what was approved; any other change (title, description)
+# still does.
+PUBLICATION_FIELDS = [re.compile(r"(האזינו בספוטיפיי:)[ \t]*\S*"),
+                      re.compile(r"(?im)^([ \t]*(?:[-*][ \t]*)?\**(?:status|url)\**:).*$")]
 
 
 def now() -> str:
@@ -103,14 +110,31 @@ def all_marks(state: dict) -> dict:
     return {**legacy, **state.get("marks", {})}
 
 
+def publication_neutral(text: str) -> str:
+    for rx in PUBLICATION_FIELDS:
+        text = rx.sub(r"\1 <set at publish>", text)
+    return text
+
+
+def text_digest(path: Path) -> "str | None":
+    """sha256 of a text file with the publication fields masked (a `text:` output)."""
+    if not Path(path).is_file():
+        return None
+    return hashlib.sha256(publication_neutral(Path(path).read_text(encoding="utf-8", errors="replace"))
+                          .encode("utf-8")).hexdigest()
+
+
 def current_outputs(ep, recorded: dict, marks: dict, hasher: "Hasher | None" = None) -> dict:
-    """Recompute each recorded output: files by sha256, `mark:ID` entries by the mark's evidence."""
+    """Recompute each recorded output: files by sha256, `mark:ID` entries by the mark's evidence, `text:REL`
+    by the file's text with the publication fields masked."""
     hasher = hasher or Hasher(ep)
     out = {}
     for key in recorded:
         if key.startswith("mark:"):
             m = marks.get(key[5:])
             out[key] = digest(m["evidence"]) if m else None
+        elif key.startswith("text:"):
+            out[key] = text_digest(Path(ep) / key[5:])
         else:
             out[key] = hasher.sha(key)
     return out

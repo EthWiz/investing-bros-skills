@@ -24,10 +24,19 @@ def run(*args):
     return pl.main([str(a) for a in args])
 
 
-def record(ep, track, vid, version="v1"):
+def sha(p: Path) -> str:
+    import hashlib
+    return hashlib.sha256(p.read_bytes()).hexdigest()
+
+
+def record(ep, track, vid, version=None, superseded=()):
+    """An upload record as yt_upload.py writes it; version = the asset file's sha256 (main: --source master)."""
+    if version is None:
+        version = sha(ep / f"video/פרק-{N}-וידאו.mp4") if track == "main" else "v1"
     touch(ep / f"extras/uploads/{track}.json", json.dumps({
         "asset": track, "version": version, "channel": pl.SHOW_CHANNEL_ID, "video_id": vid, "privacy": "private",
-        "steps": [{"name": "thumbnail"}], "steps_done": ["insert", "thumbnail"], "superseded": []}))
+        "steps": [{"name": "thumbnail"}], "steps_done": ["insert", "thumbnail"],
+        "superseded": [{"video_id": s} for s in superseded]}))
 
 
 def audio_files(ep, cuts=([500, 520],)):
@@ -50,7 +59,8 @@ def main_files(ep):
     touch(ep / "extras/teaser-check.log", "CAPTIONS OK\n")
     touch(ep / "extras/investing-bro-intro-with-beat.mp4")
     touch(ep / f"video/פרק-{N}-וידאו.mp4", "video")
-    touch(ep / f"video/תיאור-פרק-{N}-youtube.txt", "00:00 טיזר\n01:05 חדשות\n20:00 עומק\n")
+    touch(ep / f"video/תיאור-פרק-{N}-youtube.txt", "00:00 טיזר\n01:05 חדשות\n20:00 עומק\n\n"
+          "האזינו בספוטיפיי: https://open.spotify.com/show/4fREAemgQDMWIUK58N5Jjk\n")
     touch(ep / "extras/verify_sync.log", "SYNC OK\n")
     touch(ep / "extras/past-episode-cards.json", "[]")
     record(ep, "main", "MAINvid0001")
@@ -164,13 +174,79 @@ def test_reupload_stales_the_approval_and_publish_ok(tmp_path):
     through_main(ep)
     s = ps.load(ep)
     old = s["stages"]["main.ok"]["version"]
-    record(ep, "main", "MAINvid0002", version="v2")              # a fixed master went up again
+    touch(ep / f"video/פרק-{N}-וידאו.mp4", "video v2")          # a fixed master
     e = ev(ep)
-    assert e["main.upload"]["status"] == "stale" and e["main.ok"]["status"] == "stale"
+    assert e["main.video"]["status"] == "stale" and e["main.ok"]["status"] == "stale"
+    assert run("advance", ep, "main", "video") == 0
+    assert run("advance", ep, "main", "upload") == 1             # the record is still the old video's
+    assert "older version" in ps.load(ep)["events"][-1]["detail"]
+    record(ep, "main", "MAINvid0002", superseded=["MAINvid0001"])  # the fixed master went up again
     assert run("advance", ep, "main", "upload") == 0
     assert ps.evaluate(ep, ps.load(ep))["main.ok"]["status"] == "stale"
     assert run("approve", ep, "main", "ok", "--by", AM) == 0
     assert ps.load(ep)["stages"]["main.ok"]["version"] != old
+
+
+def test_publication_edits_do_not_stale_what_was_approved(tmp_path):
+    ep = started(tmp_path)
+    through_main(ep)
+    d = ep / f"video/תיאור-פרק-{N}-youtube.txt"
+    touch(d, d.read_text(encoding="utf-8").replace("show/4fREAemgQDMWIUK58N5Jjk", "episode/7abcDEF"))  # step 7 swap
+    e = ev(ep)
+    assert e["main.video"]["status"] == "current" and e["main.ok"]["status"] == "current"
+    touch(d, d.read_text(encoding="utf-8").replace("01:05 חדשות", "01:10 חדשות"))               # a real change
+    assert ev(ep)["main.video"]["status"] == "stale"
+    # a Short's notes: the status/URL lines publishing writes are masked, the title and description are not
+    notes = ep / "Shorts/youtube-שורט-01.md"
+    touch(ep / "Shorts/שורט-01-x.m4v", "short")
+    touch(notes, "## Title\nזהב?\n\n## Description\nזהב?\n- status: Private\n- URL: (pending)\n")
+    c = pl.Ctx(ep, ps.load(ep))
+    keys = pl.out_slot("short", "short01", [".m4v"])(c)
+    assert keys == ["Shorts/שורט-01-x.m4v", "text:Shorts/youtube-שורט-01.md"]
+    before = ps.current_outputs(ep, dict.fromkeys(keys), {})
+    touch(notes, notes.read_text(encoding="utf-8").replace("- status: Private\n- URL: (pending)",
+                                                           "- status: Public 21:40\n- URL: https://youtube.com/shorts/abc"))
+    assert ps.current_outputs(ep, dict.fromkeys(keys), {}) == before
+    touch(notes, notes.read_text(encoding="utf-8").replace("## Title\nזהב?", "## Title\nכסף?"))
+    assert ps.current_outputs(ep, dict.fromkeys(keys), {}) != before
+    notes.unlink()
+    assert ps.current_outputs(ep, dict.fromkeys(keys), {})["text:Shorts/youtube-שורט-01.md"] is None
+
+
+def test_short_upload_needs_no_related_video_before_the_episode_is_public(tmp_path):
+    ep = started(tmp_path)
+    touch(ep / "Shorts/שורט-01-x.m4v", "short")
+    record(ep, "short01", "SHORTvid001", version=sha(ep / "Shorts/שורט-01-x.m4v"))
+    c = pl.Ctx(ep, ps.load(ep))
+    assert pl.SPEC["short01.upload"]["check"](c) == []           # Related video: the publish checklist's `related`
+    touch(ep / "Shorts/שורט-01-x.m4v", "short v2")
+    c = pl.Ctx(ep, ps.load(ep))
+    assert "older version" in pl.SPEC["short01.upload"]["check"](c)[0]
+
+
+def test_old_uploads_must_name_every_superseded_id_and_reopen_on_a_new_one(tmp_path):
+    ep = started(tmp_path)
+    touch(ep / "segments/סגמנט-01-צלילה-זהב.mp4", "seg")
+    record(ep, "seg01", "SEGvid00002", superseded=["SEGvid00001"])
+    assert run("mark", ep, "old_uploads", "--evidence", "none") == 0
+    c = pl.Ctx(ep, ps.load(ep))
+    assert "SEGvid00001" in pl.old_uploads_check(c)[0]
+    assert run("mark", ep, "old_uploads", "--evidence", "deleted SEGvid00001 in Studio 21:40") == 0
+    c = pl.Ctx(ep, ps.load(ep))
+    assert pl.old_uploads_check(c) == []
+    before = pl.SPEC["release.old_uploads"]["outputs"](c)
+    assert "extras/uploads/seg01.json" in before                 # a later re-upload changes it: cleanup reopens
+
+
+def test_segment_watches_its_picked_range_not_only_the_kept_pieces(tmp_path):
+    ep = started(tmp_path)
+    touch(ep / "extras/segment-01.json", json.dumps({
+        "raw_ranges": [[100, 200], [220, 300]], "selected_ranges": [[100, 300]],
+        "edit": {"start": 10, "end": 2000, "cuts": [[200, 220]]}}))
+    c = pl.Ctx(ep, ps.load(ep))
+    data = pl.segment_data("seg01")(c)
+    restored = {"start": 10, "end": 2000, "cuts": []}
+    assert ps.overlaps(data["raw_ranges"], ps.changed_spans(data["edit"], restored))
 
 
 def test_waivers_by_owner_and_never_for_approvals(tmp_path):

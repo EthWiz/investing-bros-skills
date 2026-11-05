@@ -160,7 +160,7 @@ This is what turns Short views into episode views:
   2. `אין כאן המלצת השקעה. רק שיחה.`;
   3. blank line, `🎧 לפרק המלא ביוטיוב: <episode link>?t=<seconds>` and `האזינו בספוטיפיי: <Spotify episode link>`;
   4. blank line, a subscribe line, then hashtags (Hebrew and English allowed here).
-- **Publish** (only after the episode owner's publish OK and their approval of the cut): the phone-friendly MP4 is already up as **Private** with its custom cover for the approval round; before Public, confirm **Related video** is the full episode (verified by reopening the edit page; if it can't be set, the Short stays Private) and `.srt` is attached. Once the Short is Public, update `youtube-שורט-NN.md` with the status and Shorts URL. Covers always follow `investing-bros-brand` → `references/shorts-covers.md` (face format).
+- **Publish** (only after the episode owner's publish OK and their approval of the cut): the phone-friendly MP4 is already up as **Private** with its custom cover for the approval round; before Public, confirm **Related video** is the full episode (verified by reopening the edit page; if it can't be set, the Short stays Private) and `.srt` is attached. Once the Short is Public, update `youtube-שורט-NN.md` with `- status:` and `- URL:` lines (the Shorts URL); the Producer ignores only those lines, so any other edit after the approval needs it again. Covers always follow `investing-bros-brand` → `references/shorts-covers.md` (face format).
 
 ## Mid-form highlights
 Optional 5–10 min YouTube videos, each **one continuous standalone stretch** of the episode on one engaging subject (episode 7: "למה זהב?" 11:57–19:11, about 7 min). Not a montage. Elsewhere these are called highlights or clips.

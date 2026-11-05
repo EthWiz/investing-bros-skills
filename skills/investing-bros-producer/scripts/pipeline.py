@@ -41,8 +41,7 @@ TRACKS = ["main", "seg01", "seg02", "short01", "short02", "short03", "release"]
 SHOW_CHANNEL_ID = "UCWIlggXQNDFiyJghl6VB6Xw"  # אחים להשקעות (investing-bros-show -> Roles and accounts)
 RANGE_RE = re.compile(r"(\d+(?:\.\d+)?)\s*[-–]\s*(\d+(?:\.\d+)?)")
 TRACK_MARKS = {"main.endscreen", "seg01.select", "seg02.select", "seg01.nudge", "seg02.nudge", "seg01.links",
-               "seg02.links", "short01.pick", "short02.pick", "short03.pick", "short01.related", "short02.related",
-               "short03.related", "release.approval_round", "release.retro"}
+               "seg02.links", "short01.pick", "short02.pick", "short03.pick", "release.approval_round", "release.retro"}
 MARKABLE = TRACK_MARKS | G.MANUAL | G.NEEDS_MARK
 NOTE_KINDS = ["note", "owner_fix", "handback_returned", "workaround"]
 P = "python3 <investing-bros-producer>/scripts/pipeline.py"
@@ -116,6 +115,15 @@ def record_path(c, track):
     return c.ep / "extras" / "uploads" / f"{track}.json"
 
 
+def asset_file(c, track) -> "Path | None":
+    """The file whose version an upload record must carry: the full video master (the upload is its compressed
+    copy, recorded with --source), the segment's .mp4 or the Short's .m4v."""
+    if track == "main":
+        return c.ep / f"video/פרק-{c.n}-וידאו.mp4"
+    kind = "segment" if track.startswith("seg") else "short"
+    return G.slot_file(c.ep, kind, slot(track), ".mp4" if kind == "segment" else ".m4v")
+
+
 def upload_record(track):
     def f(c):
         p = record_path(c, track)
@@ -138,6 +146,16 @@ def upload_record(track):
         todo = [s["name"] for s in r.get("steps", []) if s["name"] not in r.get("steps_done", [])]
         if todo:
             out.append(f"{c.rel(p)}: steps not done {todo}: yt_upload.py --resume {c.rel(p)}")
+        asset = asset_file(c, track)
+        if asset is None or not asset.is_file():
+            out.append(f"{track}: no video file to compare {c.rel(p)} with")
+        else:
+            sha = c.hasher.sha(c.rel(asset))
+            if sha not in {r.get("version"), r.get("file_sha256"), r.get("source_sha256")}:
+                out.append(f"{c.rel(p)} is the upload of an older version, not the current {c.rel(asset)} "
+                           f"(sha256 {sha[:12]}): upload the current file (yt_upload.py moves the old ID to "
+                           "superseded). A record made without --source, or by hand after a Studio upload, needs "
+                           "source_sha256 = that file's sha256 (once verify_sync.py shows the uploaded copy matches)")
         return out
     return f
 
@@ -200,6 +218,16 @@ def publish_done(c):
     return items("published")(c)
 
 
+def old_uploads_check(c):
+    """The cleanup mark must name every superseded Private ID in the upload records (or the owner waived it)."""
+    out = items("old_uploads")(c)
+    if out or "old_uploads" in c.waived:
+        return out
+    left = [x for x in superseded_ids(c) if x.split(": ", 1)[1] not in c.marks.get("old_uploads", "")]
+    return [f"old_uploads: the evidence doesn't name superseded {', '.join(left)}; delete them, then mark "
+            "old_uploads again with every ID"] if left else []
+
+
 # ---- outputs (what a stage's version is made of) and data ------------------------------------------
 
 def out_files(*rels):
@@ -226,21 +254,27 @@ def out_raw(c):
 
 
 def out_slot(kind, track, suffixes):
+    """The slot's files. The .txt description and the notes file (youtube-*-NN.md: title, description) are
+    `text:` outputs: the Spotify link and the status/URL lines publishing fills in are masked, any other
+    change stales the package and what was approved of it."""
     def f(c):
         out = []
         for s in suffixes:
             p = G.slot_file(c.ep, kind, slot(track), s)
             if p is not None:
-                out.append(c.rel(p))
-        notes = ("segments/youtube-סגמנט-{}.md" if kind == "segment" else "{}/youtube-שורט-{}.md")
+                out.append(("text:" if s == ".txt" else "") + c.rel(p))
         if kind == "segment":
-            out.append(notes.format(slot(track)))
+            out.append(f"text:segments/youtube-סגמנט-{slot(track)}.md")
         else:
             sh = G.shorts_dir(c.ep)
             if sh:
-                out.append(notes.format(sh.name, slot(track)))
+                out.append(f"text:{sh.name}/youtube-שורט-{slot(track)}.md")
         return out
     return f
+
+
+def out_records(c):
+    return [f"extras/uploads/{t}.json" for t in TRACKS[:-1]]
 
 
 def out_segment(track):
@@ -285,7 +319,9 @@ def segment_data(track):
     def f(c):
         p = c.ep / "extras" / f"segment-{slot(track)}.json"
         r = json.loads(p.read_text(encoding="utf-8")) if p.is_file() else {}
-        return {"raw_ranges": r.get("raw_ranges"), "edit": r.get("edit") or edit_snapshot(c)}
+        # the picked range minus the segment's own drops: an episode cut inside it counts, so restoring one
+        # stales the render (raw_ranges, the kept pieces, is the fallback for records made before)
+        return {"raw_ranges": r.get("selected_ranges") or r.get("raw_ranges"), "edit": r.get("edit") or edit_snapshot(c)}
     return f
 
 
@@ -339,10 +375,11 @@ def stage_map():
         W("main", "video", vd, "helper", f"python3 <{vd}>/scripts/build_fullframe_teaser.py; assemble_episode.sh; "
           "verify_sync.py > extras/verify_sync.log",
           items("teaser", "teaser_quality", "intro", "full_video", "verify_sync", "chapters"),
-          join(out_teaser, out_files("video/פרק-{n}-וידאו.mp4", "video/תיאור-פרק-{n}-youtube.txt")),
+          join(out_teaser, out_files("video/פרק-{n}-וידאו.mp4", "text:video/תיאור-פרק-{n}-youtube.txt")),
           inputs=["main.trim", "main.copy"]),
-        W("main", "upload", up, "producer", f"python3 <{up}>/scripts/yt_upload.py ... --asset main --record "
-          "EP/extras/uploads/main.json; cards; end screen; then mark main.endscreen",
+        W("main", "upload", up, "producer", f"python3 <{up}>/scripts/yt_upload.py EP/extras/פרק-N-youtube.mp4 "
+          "--source EP/video/פרק-N-וידאו.mp4 ... --asset main --record EP/extras/uploads/main.json; cards; end "
+          "screen; then mark main.endscreen",
           join(gate("upload"), upload_record("main"), items("past_episode_cards"), marks("main.endscreen")),
           join(out_files("extras/uploads/main.json"), out_marks("main.endscreen")),
           inputs=["main.video", "main.art_ok", "main.title_ok"], data=upload_data("main")),
@@ -384,9 +421,11 @@ def stage_map():
             W(t, "package", sh, "producer", f"<{sh}> step 7: the four files in Shorts/",
               package("short", t), out_slot("short", t, [".m4v", "-cover.jpg", ".srt"]),
               inputs=[f"{t}.render", f"{t}.cover_ok"]),
+            # Related video waits for the publish checklist (`related`, never waived): the full episode is
+            # still Private here, and the Short only goes Public after it is live
             W(t, "upload", sh, "producer", f"yt_upload.py ... --asset {t} --record EP/extras/uploads/{t}.json; "
-              f"Related video + .srt in Studio; then mark {t}.related", join(upload_record(t), marks(f"{t}.related")),
-              join(out_files(f"extras/uploads/{t}.json"), out_marks(f"{t}.related")),
+              ".srt in Studio (Related video is set before Public: investing-bros-publish `related`)",
+              upload_record(t), out_files(f"extras/uploads/{t}.json"),
               inputs=[f"{t}.package", "main.upload"], data=upload_data(t)),
             A(t, "ok", up, f"{t}.upload", f"Short {n2} (Private link) in the approval round; this is its cut approval"),
         ]
@@ -408,8 +447,8 @@ def stage_map():
         W("release", "spotify_links", pb, "producer", f"<{pb}> step 7; then {P} mark EP spotify_links --evidence <URL>",
           items("spotify_links"), out_marks("spotify_links"), inputs=["release.publish"]),
         W("release", "old_uploads", up, "producer", f"delete the superseded Private IDs ({P} status lists them); "
-          f"then {P} mark EP old_uploads --evidence \"<IDs or none>\"", items("old_uploads"), out_marks("old_uploads"),
-          needs=["release.publish"]),
+          f"then {P} mark EP old_uploads --evidence \"<IDs or none>\"", old_uploads_check,
+          join(out_marks("old_uploads"), out_records), needs=["release.publish"]),
         W("release", "retro", "investing-bros-producer", "producer", f"{P} retro EP; hand it to "
           f"investing-bros-skill-change; then {P} mark EP release.retro --evidence \"<PR/issue links>\"",
           join(files("extras/retro-פרק-{n}.md"), marks("release.retro")),

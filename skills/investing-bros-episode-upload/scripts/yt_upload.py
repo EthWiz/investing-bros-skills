@@ -171,7 +171,8 @@ def planned_steps(a) -> list:
 
 def upload(yt, a, sleep=time.sleep) -> dict:
     path = Path(a.record)
-    version = a.version or sha256_file(a.file)
+    source_sha = sha256_file(a.source) if getattr(a, "source", None) else None
+    version = a.version or source_sha or sha256_file(a.file)
     old = load_record(path)
     superseded = list(old.get("superseded", [])) if old else []
     if old and old.get("video_id"):
@@ -186,7 +187,9 @@ def upload(yt, a, sleep=time.sleep) -> dict:
     channel = require_show_channel(yt)
     vid = insert(yt, a, sleep)
     rec = {"asset": a.asset, "version": version, "channel": channel, "video_id": vid, "privacy": "private",
-           "file": os.path.basename(a.file), "file_sha256": sha256_file(a.file), "title": a.title,
+           "file": os.path.basename(a.file), "file_sha256": sha256_file(a.file),
+           **({"source": os.path.basename(a.source), "source_sha256": source_sha} if source_sha else {}),
+           "title": a.title,
            "created_at": now(), "steps": planned_steps(a), "steps_done": ["insert"], "superseded": superseded}
     save_record(path, rec)
     print(f"VIDEO_ID {vid}\nURL https://youtu.be/{vid}\nRECORD {path}")
@@ -224,7 +227,9 @@ def parser():
                    help="always private; Public is set in Studio after the publish OK")
     p.add_argument("--asset", choices=ASSETS, help="which deliverable this is (the pipeline track)")
     p.add_argument("--record", help="upload record to write, e.g. extras/uploads/main.json")
-    p.add_argument("--version", help="asset version (default: the file's sha256)")
+    p.add_argument("--source", help="the file this upload was made from (the full video master the compressed "
+                   "copy came from, checked with verify_sync.py); its sha256 is the asset version")
+    p.add_argument("--version", help="asset version (default: the --source sha256, else the file's)")
     p.add_argument("--replace", action="store_true", help="upload this version again; the old ID becomes superseded")
     p.add_argument("--resume", metavar="RECORD", help="finish thumbnail/playlist on the recorded video; never inserts")
     p.add_argument("--set-thumbnail", metavar="VIDEO_ID", help="only set --thumbnail on an existing video")

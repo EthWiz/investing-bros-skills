@@ -33,6 +33,7 @@ def test_crossing_an_episode_cut_is_refused_unless_allowed():
     raw = ms.plan_segment(EDIT, (1500.0, 1900.0), source_type="raw", allow_cut=True)
     assert raw["source_cuts"] == [[1605.0, 1645.2]]                       # removed from the segment too
     assert raw["raw_ranges"] == [[1500.0, 1605.0], [1645.2, 1900.0]]
+    assert raw["selected_ranges"] == [[1500.0, 1900.0]]                   # restoring that cut must stale it
     asm = ms.plan_segment(EDIT, (1500.0, 1900.0), source_type="assembled", offset=OFFSET, allow_cut=True)
     assert asm["source_cuts"] == []                                        # already gone from the episode
     assert asm["source_end"] - asm["source_start"] == pytest.approx(400.0 - 40.2)
@@ -50,6 +51,7 @@ def test_drops_map_to_source_seconds():
     base = OFFSET - 12.0 - 40.2
     assert p["source_cuts"] == [[pytest.approx(base + 1900.0), pytest.approx(base + 1930.5)]]
     assert p["raw_ranges"] == [[1800.0, 1900.0], [1930.5, 2200.0]] and p["length"] == pytest.approx(369.5)
+    assert p["selected_ranges"] == p["raw_ranges"]                         # the segment's own drop stays out
     with pytest.raises(ms.Refused, match="inside the range"):
         ms.plan_segment(EDIT, (1800.0, 2200.0), drops=[(2190.0, 2210.0)])
 
@@ -58,6 +60,8 @@ def test_loudness_gain_is_held_under_the_true_peak():
     assert ms.gain_db(-16.2, -3.0) == 0.0
     assert ms.gain_db(-19.0, -4.0) == 2.5            # +3 would put the peak at -1.0
     assert ms.gain_db(-13.0, -0.5) == -3.0
+    assert ms.gain_db(-16.0, -1.2) == -0.3           # on target but over the ceiling: still brought down
+    assert ms.gain_db(-16.3, -1.6) == 0.0            # within 0.5 LU and under the ceiling
     assert ms.parse_loudness("  I:         -17.1 LUFS\n  Peak:        -2.3 dBFS\n") == (-17.1, -2.3)
 
 

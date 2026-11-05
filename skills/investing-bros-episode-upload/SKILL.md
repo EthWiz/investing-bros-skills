@@ -64,7 +64,7 @@ Why and what the marks do: [references/redcircle-rtl.md](references/redcircle-rt
 **Gate first:** before uploading the full episode (API or Studio, any visibility) run `investing-bros-producer` → `scripts/pipeline.py gate "$EP" --stage upload` (an episode without `extras/pipeline.json`: `investing-bros-post-production` → `scripts/postprod_checklist.py check "$EP" --episode N`). It must print `PASS`; any missing item (for example the cold-open teaser) is made first or explicitly waived by the episode owner for this episode. See `investing-bros-post-production` → `references/CHECKLIST.md`.
 
 **Preferred: the YouTube Data API** when `~/.config/youtube-uploader/` has `client_secret.json` and `token.json` on the Grok Bot box: `scripts/yt_upload.py --asset main|segNN|shortNN --record "$EP/extras/uploads/<asset>.json"` (resumable, frees the browser, Private only, show channel only, ~6 uploads/day, reauth every ~7 days while the app is in Testing). It writes the upload record right after the insert; if a later step fails, `--resume RECORD` finishes it on the same video. See [references/youtube-api.md](references/youtube-api.md).
-**Studio fallback** (no credentials, a refused token, quota used up): first read `extras/uploads/<asset>.json`. If it holds a `video_id` for this asset version, the video is already uploaded: finish the remaining steps on that video in Studio and never upload a second copy. Only with no record (or a record of an older version) upload in the browser as below, then write the video ID you copied into the record. Either way, publishing still needs the publish OK.
+**Studio fallback** (no credentials, a refused token, quota used up): first read `extras/uploads/<asset>.json`. If it holds a `video_id` for this asset version, the video is already uploaded: finish the remaining steps on that video in Studio and never upload a second copy. Only with no record (or a record of an older version) upload in the browser as below, then write the video ID you copied into the record, with `source_sha256` = the sha256 of the master (full episode) or of the segment/Short file. Either way, publishing still needs the publish OK.
 
 **Upload a compressed copy, not the master.** Make a ~1 GB copy (H.264 CRF 23,
 max 3000 kb/s, AAC 160 kb/s, faststart) and check it against the master with
@@ -72,6 +72,7 @@ max 3000 kb/s, AAC 160 kb/s, faststart) and check it against the master with
 ```bash
 scripts/compress_for_youtube.sh "$EP/video/פרק-N-וידאו.mp4" "$EP/extras/פרק-N-youtube.mp4"
 ```
+Upload the copy with `--source "$EP/video/פרק-N-וידאו.mp4"`, so the record's version is the master's.
 In Studio, never reload the tab or navigate away while a file uploads; if a "Leave
 site?" dialog appears, press **Cancel**.
 
