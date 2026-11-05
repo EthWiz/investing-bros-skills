@@ -40,7 +40,7 @@ three clearly labeled Codex options A/B/C for him to choose from. This means thr
 options for each of the episode's three Shorts, not one option per Short.
 
 ## How to make it (Codex on Amitai's Mac only)
-There is no box fallback: no Pillow compositing of faces, art or strips. If Codex or the
+There is no box fallback: no Pillow compositing of faces, art or strips. Independent Codex renders (A/B/C for this Short, and other Shorts' covers) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). If Codex or the
 Mac is unavailable, report the blocker (to the Producer when one runs the episode).
 
 1. **Pick the face.** From the episode's verified face grids, take a picked frame of the

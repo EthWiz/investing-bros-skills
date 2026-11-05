@@ -57,7 +57,7 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    is no fallback: no Pillow compositing on the box, no other image generator, no
    template pasted together in code. If Codex or the Mac is unavailable, stop and report
    a blocker (to the Producer when one runs the episode). Until Amitai says the design is
-   dialed in, each of those covers is three clearly labeled options A/B/C. Other artwork
+   dialed in, each of those covers is three clearly labeled options A/B/C. Independent Codex renders (A/B/C, wide vs square, each Short's cover) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). Other artwork
    may use the built-in image tool with the same prompt; say which generator ran in the
    hand-back. No code-drawn illustrations and no ad hoc Pillow renderers: the only
    typesetting script is `scripts/make_cover_title.py` (Heebo Black).

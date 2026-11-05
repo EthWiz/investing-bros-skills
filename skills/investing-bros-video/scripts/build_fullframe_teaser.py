@@ -282,18 +282,33 @@ def check_caption_safe_area(pieces: list[dict], fonts_dir: Path | None = None) -
 
 
 MOMENT_MIN_S = 4.0
+MOMENT_MAX_S = 12.0
+REQUIRED_HOSTS = ("amitai", "nadav")
 
 
 def moment_warnings(pieces: list[dict]) -> list[str]:
-    """Flag moments too short to carry an idea and its payoff (teaser-rules.md)."""
+    """Flag host balance and punchy-hook length issues (teaser-rules.md)."""
     warnings = []
     total = sum(float(p["end"]) - float(p["start"]) for p in pieces)
+    hosts = {str(p.get("host", "")).strip().lower() for p in pieces}
+    for host in REQUIRED_HOSTS:
+        if host not in hosts:
+            warnings.append(
+                f"teaser must include at least one clip of each host "
+                f"(missing {host}; need amitai and nadav)"
+            )
     for piece in pieces:
         length = float(piece["end"]) - float(piece["start"])
+        label = f"moment {piece.get('host', '?')} @ {piece['start']}"
         if length < MOMENT_MIN_S:
             warnings.append(
-                f"moment {piece.get('host', '?')} @ {piece['start']} is {length:.1f} s: "
-                "check it is not cut before its payoff"
+                f"{label} is {length:.1f} s: check it is not cut before its payoff"
+            )
+        elif length > MOMENT_MAX_S:
+            warnings.append(
+                f"{label} is {length:.1f} s: too long for a punchy hook "
+                f"(keep under {MOMENT_MAX_S:.0f} s; long explainers like "
+                f"'20 hole punches' are a bad example)"
             )
     if total > TEASER_MAX_S + 0.05:
         warnings.append(f"teaser is {total:.1f} s; keep it to {TEASER_MAX_S:.0f} s or less")

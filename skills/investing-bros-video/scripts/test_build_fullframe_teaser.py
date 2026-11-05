@@ -157,3 +157,22 @@ def test_check_mode_needs_no_media(tmp_path, monkeypatch, capsys):
     monkeypatch.setattr(sys, "argv", ["build_fullframe_teaser.py", str(path), "--check"])
     assert teaser.main() == 0
     assert "CAPTIONS OK" in capsys.readouterr().out
+
+
+def test_missing_host_is_flagged():
+    from build_fullframe_teaser import moment_warnings
+    warnings = moment_warnings([
+        {"host": "amitai", "start": 0, "end": 6, "cards": []},
+        {"host": "amitai", "start": 10, "end": 16, "cards": []},
+    ])
+    assert any("missing nadav" in w for w in warnings)
+
+
+def test_long_moment_is_flagged_as_not_punchy():
+    from build_fullframe_teaser import moment_warnings
+    warnings = moment_warnings([
+        {"host": "amitai", "start": 0, "end": 8, "cards": []},
+        {"host": "nadav", "start": 20, "end": 44, "cards": []},  # 24 s explainer
+    ])
+    assert any("punchy" in w or "hole punches" in w for w in warnings)
+

@@ -146,16 +146,21 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    one-pass cover, every Hebrew word exactly as above); if wrong, regenerate or edit once.
    Report the final file name and pixel size (sips)." Typeset the title on the box with
    `make_cover_title.py`, which also brings the art to 1080×1920.
-4. Run, allowing about 5 minutes (Shell `block_until_ms` ≥ 600000):
+4. **Default: run independent Codex renders as parallel concurrent sessions on the Mac**
+   (Amitai, episode 10). A/B/C options, wide vs square, and each Short's cover are
+   independent: give each its own subfolder under the workdir (e.g. `cover/a-wide/`,
+   `cover/b-square/`, `short-01/a/`), start every ready `codex exec` at once, then collect
+   the outputs. Run sequentially only when one render depends on another's result (a
+   targeted fix of a failed option, or a typesetting pass that needs that option's PNG).
+   Allow about 5 minutes per session (Shell `block_until_ms` ≥ 600000 each):
    ```bash
-   cd <workdir> && env -u OPENAI_API_KEY ~/.nvm/versions/node/v22.23.1/bin/codex exec \
+   cd <option-subdir> && env -u OPENAI_API_KEY ~/.nvm/versions/node/v22.23.1/bin/codex exec \
      --skip-git-repo-check -i ref-episode-<N>-cover.png -i ref-episode-07-gold.png \
-     -- "$(cat prompt-a.txt)" < /dev/null > codex-a.log 2>&1
+     -- "$(cat prompt.txt)" < /dev/null > codex.log 2>&1
    ```
    For a face-format Short add `-i <host-frame>.jpg` (the speaking host's picked frame).
-   Repeat with the B and C prompt and log names. Replace the example Shorts reference
-   arguments with the matching style reference and both same-episode host frames for a
-   photo-cutout cover.
+   Replace the example Shorts reference arguments with the matching style reference and
+   both same-episode host frames for a photo-cutout cover.
    `env -u OPENAI_API_KEY` keeps billing on the ChatGPT plan. `--skip-git-repo-check`
    is needed outside a trusted folder. `-i` takes several values, so `--` must come
    before the prompt or Codex fails with "a value is required for '--image'".
@@ -170,8 +175,9 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
 For main episodes and segments, use the photo-cutout prompts and their source image
 arguments, skip the Shorts steps, and inspect the real dimensions and both faces in each
 ratio; disclose the real size ([covers](covers.md) → Delivery checks). For every cover
-type, repeat the run for labeled options A, B and C and wait for Amitai's pick before
-promoting a final filename.
+type, launch labeled options A, B and C (and each ratio) as parallel Codex sessions in
+their own subfolders, collect them, and wait for Amitai's pick before promoting a final
+filename.
 Delivery stays under this skill's rules: nothing is published or sent without Amitai's OK.
 
 ## Example requests

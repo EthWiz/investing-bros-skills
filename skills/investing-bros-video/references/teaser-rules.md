@@ -21,19 +21,22 @@
 A viewer who has never heard the show sees the teaser first. Each moment must make
 sense to them with no context, and the teaser must stay short and engaging.
 
+- **Both hosts.** Every teaser must include at least one clip of Amitai and at least one
+  of Nadav (verify speaker identity; hosts can swap sides mid-recording). The renderer
+  `--check` warns when either host is missing.
 - **Self-explanatory.** Before choosing a moment, read it as a stranger: who is speaking
   about what, and why it is interesting, must be clear from the clip alone.
 - **No niche names without context.** A name most viewers don't know (episode 10:
   "Greg Abel") is out unless the same clip says who he is. Household names (Warren
   Buffett, Coca-Cola, Apple) are fine.
-- **Never cut an idea before its payoff.** "Tease, don't resolve" means the *episode's*
-  answer stays open, not that the clip stops mid-thought. The clip runs until its point
-  lands. Episode 10's "20 hole punches" clip stopped before saying that an investor
-  limited to 20 investments in a lifetime would do better, so it meant nothing. End on the
-  sentence that makes the point, a question or a hook. The renderer warns about any
-  moment under 4 s: check it is not cut before its payoff.
-- **Few and punchy.** Prefer 2-3 strong moments over more weak ones; drop a moment
-  rather than trim it into nonsense.
+- **Punchy hooks only.** Every moment is a short, self-contained hook: a concrete number,
+  a one-liner, or a sharp question. Prefer 2-3 strong moments over more weak ones; drop a
+  moment rather than trim it into nonsense. Long setup/explainer clips are out — episode
+  10's "20 hole punches" card (Charlie Munger's 20-investment punch-card) dragged and was
+  too complicated for a cold open, even after extending it through Buffett's payoff; that
+  is a **bad example**. The clip still ends on the sentence that makes its point (never
+  mid-thought); "tease, don't resolve" means the *episode's* answer stays open. The
+  renderer warns about any moment under 4 s (cut before payoff?) or over 12 s (not punchy).
 - **Good examples (Amitai, episode 10):**
   - "If you'd invested $1,000 in Berkshire Hathaway, what would it be worth today?": a
     concrete number anyone can picture, posed as a question the episode answers.
