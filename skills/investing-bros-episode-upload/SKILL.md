@@ -131,16 +131,19 @@ full episode is live.
 - Thumbnail: the episode's 16:9 `promo/thumbnail-פרק-N.jpg` (made from the square cover by `investing-bros-brand`). If it isn't approved yet, upload without one and say so.
 
 ### 3b. Approval round: one Telegram message
-Nadav approves the episode's assets together. Once the full episode, both segment
-videos and the three Shorts (with covers) are ready, write **one** message for the
-`אחים להשקעות` Telegram group (show conventions → Telegram) listing every asset with
-its copied link (YouTube Private/Unlisted, or Drive), ending with the line
-`sent by Grokbot`. Check it, show it to Amitai, and post it only after his OK:
+Nadav approves the episode's assets together. Once **all** of them are ready — the
+full episode (YouTube Private), both segment videos (YouTube Unlisted, so Nadav can
+open them), the three Shorts (with covers) and the RedCircle draft link — write **one**
+message for the `אחים להשקעות` Telegram group (show conventions → Telegram) listing
+every asset with its copied link (YouTube, Drive for covers, RedCircle draft), ending
+with the line `sent by Grokbot`. Check it, then post it automatically as part of the
+pipeline; no separate preview or OK from Amitai is needed for this message (Amitai,
+2026-11-05, ep10):
 ```bash
 python3 scripts/check_links.py approval.txt --message
 python3 <investing-bros-shorts>/scripts/send_telegram.py text approval.txt
 ```
-Not one post per asset; something added later goes in a new single message with the
+Never one post per asset; something added later goes in a new single message with the
 full list.
 
 ### 4. Publish (only after Amitai's OK in chat)
