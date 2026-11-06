@@ -7,6 +7,7 @@
   pipeline.py next    EP [--json]
   pipeline.py advance EP TRACK [STAGE]          # no STAGE: as far as the track goes
   pipeline.py approve EP TRACK STAGE --by "<Owner> HH:MM: <their words>"
+  pipeline.py backfill-art EP TRACK STAGE --by "<Owner> HH:MM: <their words>"
   pipeline.py mark    EP ITEM --evidence "what you saw, where"
   pipeline.py waive   EP ITEM --by "<Owner> HH:MM: <their words>"      # ITEM: gate item or TRACK.STAGE
   pipeline.py owner   EP --set amitai|nadav --by "<the owner's words>"
@@ -483,7 +484,7 @@ def stage_map():
           out_marks("release.approval_round"), inputs=["release.review_gate"]),
         A("release", "publish_ok", pb, None, "the OK to publish, naming what may go Public. "
           "Record it after the asset oks and the art picks (the same quote may be passed to each approve)",
-          needs=["release.approval_round"], inputs=oks + art_oks),
+          needs=["release.approval_round"], inputs=oks + art_oks + ["main.cuts_ok"]),
         W("release", "publish", pb, "producer", f"python3 <{pb}>/scripts/publish_checklist.py ... (every item)",
           publish_done, out_files("extras/publish-checklist.json"), inputs=["release.publish_ok"]),
         W("release", "spotify_links", pb, "producer", f"<{pb}> step 7; then {P} mark EP spotify_links --evidence <URL>",
@@ -808,6 +809,31 @@ def file_sha(ep, rel: str):
     return h.hexdigest()
 
 
+def art_hash_paths(c: Ctx, spec, rec) -> list:
+    """Files an art approval should fingerprint. Prefer what it already names, else the canonical file.
+
+    A segment thumbnail is not one of the package outputs, so thumb_ok never hashes those.
+    """
+    if rec.get("of_keys"):
+        return [k for k in rec["of_keys"] if not str(k).startswith(("mark:", "text:"))]
+    if spec["name"] == "thumb_ok":
+        return live_of_keys(c, spec, "-thumb.jpg")
+    of = c.state["stages"].get(spec["of"]) or {}
+    paths = [k for k in (of.get("outputs") or {}) if k and not str(k).startswith(("mark:", "text:"))]
+    if spec["name"] == "art_ok":
+        images = [k for k in paths if str(k).endswith((".jpg", ".png"))]
+        if images:
+            return images
+        return [r for r in (f"thumbnail-פרק-{c.n}.jpg", f"cover-פרק-{c.n}.png") if (c.ep / r).is_file()]
+    if spec["name"] == "cover_ok":
+        images = [k for k in paths if str(k).endswith("-cover.jpg")]
+        if images:
+            return images
+        p = G.slot_file(c.ep, "short", slot(spec["track"]), "-cover.jpg")
+        return [c.rel(p)] if p else []
+    return []
+
+
 def live_of_keys(c: Ctx, spec, pat: str) -> list:
     """A file the approval fingerprints that is not one of `of`'s outputs (the segment thumbnail)."""
     if spec["track"].startswith("seg") and pat == "-thumb.jpg":
@@ -867,6 +893,48 @@ def cmd_approve(ep, a):
     PS.add_event(s, "approval", spec["track"], spec["name"], a.by.strip()[:200])
     PS.save(ep, s)
     print(f"approved {key} ({rec['version'][:19]})")
+    return 0
+
+
+def cmd_backfill_art(ep, a):
+    """Record of_hashes on an already-current art approval. Does not change its version."""
+    s = need_state(ep)
+    key = f"{a.track}.{a.stage}"
+    spec = SPEC.get(key)
+    if not spec or spec["name"] not in ("art_ok", "thumb_ok", "cover_ok"):
+        print(f"{key} is not an art approval (art_ok, thumb_ok, cover_ok)", file=sys.stderr)
+        return 2
+    ok, msg = owner_quote_ok(s, a.by)
+    if not ok:
+        print(f"refused: {msg}", file=sys.stderr)
+        return 1
+    rec = s["stages"].get(key)
+    if not rec or rec.get("state") != "approved":
+        print(f"refused: {key} has no approval to backfill; approve it", file=sys.stderr)
+        return 1
+    if isinstance(rec.get("of_hashes"), dict) and rec["of_hashes"]:
+        print(f"refused: {key} already records file hashes; re-approve it to change them", file=sys.stderr)
+        return 1
+    c = Ctx(ep, s)
+    if not c.current(key):
+        why = c.ev.get(key, {}).get("why", "")
+        print(f"refused: {key} is stale ({why}); re-approve it instead of backfilling", file=sys.stderr)
+        return 1
+    hashes = {}
+    for rel in art_hash_paths(c, spec, rec):
+        h = file_sha(ep, rel)
+        if not h:
+            hashes = {}
+            break
+        hashes[rel] = h
+    if not hashes:
+        print(f"refused: {key} has no art file to hash; put the file in place and re-approve", file=sys.stderr)
+        return 1
+    rec["of_hashes"] = hashes
+    rec["backfill"] = {"by": s["owner"]["name"], "quote": a.by.strip(), "at": PS.now()}
+    PS.add_event(s, "note", spec["track"], spec["name"], f"backfill file hashes; {a.by.strip()[:160]}")
+    PS.save(ep, s)
+    print(f"backfilled {key} ({len(hashes)} file{'s' if len(hashes) != 1 else ''}; version unchanged)")
     return 0
 
 
@@ -1180,6 +1248,8 @@ def parser():
     p = sub.add_parser("advance"); p.add_argument("ep"); p.add_argument("track"); p.add_argument("stage", nargs="?")
     p = sub.add_parser("approve"); p.add_argument("ep"); p.add_argument("track"); p.add_argument("stage")
     p.add_argument("--by", required=True)
+    p = sub.add_parser("backfill-art"); p.add_argument("ep"); p.add_argument("track"); p.add_argument("stage")
+    p.add_argument("--by", required=True)
     p = sub.add_parser("mark"); p.add_argument("ep"); p.add_argument("item"); p.add_argument("--evidence", required=True)
     p = sub.add_parser("waive"); p.add_argument("ep"); p.add_argument("item"); p.add_argument("--by", required=True)
     p = sub.add_parser("owner"); p.add_argument("ep"); p.add_argument("--set", choices=sorted(O.NAMES), required=True)
@@ -1195,7 +1265,8 @@ def parser():
 def main(argv=None) -> int:
     a = parser().parse_args(argv)
     fn = {"start": cmd_start, "migrate": cmd_migrate, "status": cmd_status, "next": cmd_next,
-          "advance": cmd_advance, "approve": cmd_approve, "mark": cmd_mark, "waive": cmd_waive,
+          "advance": cmd_advance, "approve": cmd_approve, "backfill-art": cmd_backfill_art,
+          "mark": cmd_mark, "waive": cmd_waive,
           "owner": cmd_owner, "note": cmd_note, "gate": cmd_gate, "retro": cmd_retro, "doctor": cmd_doctor}[a.cmd]
     try:
         return fn(Path(getattr(a, "ep", ".") or "."), a)

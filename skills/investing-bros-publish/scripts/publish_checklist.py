@@ -8,6 +8,8 @@ to let anything go Public out of order. Its rendered form is the report to the e
   publish_checklist.py fail STATE ITEM --reason "what went wrong"
   publish_checklist.py waive STATE ITEM --by "<Owner> HH:MM: <the owner's words>"
   publish_checklist.py can-public STATE GROUP     # exit 0 only if GROUP may go Public now
+  publish_checklist.py record-thumb STATE --asset TRACK --thumbnail FILE --video-id ID \
+      --evidence SCREENSHOT --by "<Owner> HH:MM: <their words>"
   publish_checklist.py set-video STATE GROUP ID    # after a re-upload: the new ID; reopens that group
   publish_checklist.py status STATE                # next open item
   publish_checklist.py render STATE                # Markdown ticked checklist for Amitai
@@ -30,9 +32,12 @@ Rules enforced:
   * channel (the first check of every YouTube video: אחים להשקעות is the active Studio
     channel), public, live, publish_ok, thumb, cover and every Short's `related` item can never be waived. A Short whose
     Related video could not be set is `fail`ed and stays Private.
-  * With extras/pipeline.json, episode.thumb, segNN.thumb and shortNN.cover are not ticked by hand.
-    can-public treats one as done only when extras/uploads/<asset>-thumb.json names this video and its
-    sha256 is the approved pick (art_ok / thumb_ok / cover_ok `of_hashes`). A mismatch blocks Public.
+  * With extras/pipeline.json, episode.thumb, segNN.thumb and shortNN.cover are not ticked by hand
+    and never waived. can-public treats one as done only when extras/uploads/<asset>-thumb.json names
+    this video and its sha256 is the approved pick (art_ok / thumb_ok / cover_ok `of_hashes`). A
+    `failed` item stays failed even when that record matches. A missing file hash does not pass:
+    re-approve, or `pipeline.py backfill-art`. When the API refuses a Short cover, `record-thumb`
+    writes that side record from the owner's words plus a screenshot; it does not tick or waive.
   * With the episode state (extras/pipeline.json next to STATE, investing-bros-producer), every
     `can-public` and every `public` tick re-checks it, each time, against its current revision: the
     pipeline's release.publish_ok must be current, each group's `ok` approval current, and the video
@@ -44,6 +49,7 @@ Exit 1 when a command is refused.
 from __future__ import annotations
 
 import argparse
+import hashlib
 import json
 import re
 import sys
@@ -216,8 +222,11 @@ def _load_pipeline(checklist_path: Path):
 
 
 def _approved_sha(stage: dict, suffixes) -> "str | None":
-    for key, val in (stage.get("of_hashes") or {}).items():
-        if any(str(key).endswith(s) for s in suffixes):
+    hashes = stage.get("of_hashes")
+    if not isinstance(hashes, dict):
+        return None
+    for key, val in hashes.items():
+        if val and any(str(key).endswith(s) for s in suffixes):
             return str(val).split(":")[-1]
     return None
 
@@ -239,9 +248,14 @@ def art_proof(checklist_path: Path, state: dict, group: str):
     st = ev.get(stage_key, {"status": "missing", "why": ""})
     if st["status"] != "current":
         return "bad", f"{item}: {stage_key} is {st['status']}" + (f" ({st['why']})" if st.get("why") else "")
-    want = _approved_sha(ps.get("stages", {}).get(stage_key) or {}, suffixes)
+    stage = ps.get("stages", {}).get(stage_key) or {}
+    if not isinstance(stage, dict):
+        stage = {}
+    want = _approved_sha(stage, suffixes)
+    track, _, name = stage_key.partition(".")
     if not want:
-        return "bad", f"{item}: {stage_key} records no approved file hash"
+        return "bad", (f"{item}: {stage_key} has no file hash; re-approve it, or "
+                       f"`pipeline.py backfill-art EP {track} {name} --by \"<the owner's words>\"`")
     rec_path = ep / "extras" / "uploads" / f"{asset}-thumb.json"
     if not rec_path.is_file():
         return "bad", f"{item}: missing extras/uploads/{asset}-thumb.json (yt_upload.py --set-thumbnail)"
@@ -249,7 +263,11 @@ def art_proof(checklist_path: Path, state: dict, group: str):
         rec = json.loads(rec_path.read_text(encoding="utf-8"))
     except ValueError:
         return "bad", f"{item}: extras/uploads/{asset}-thumb.json is unreadable"
-    vid = ((ps.get("stages", {}).get(f"{asset}.upload") or {}).get("data") or {}).get("video_id")
+    if not isinstance(rec, dict):
+        return "bad", f"{item}: extras/uploads/{asset}-thumb.json is unreadable"
+    upload = (ps.get("stages", {}).get(f"{asset}.upload") or {})
+    data = upload.get("data") if isinstance(upload, dict) else None
+    vid = data.get("video_id") if isinstance(data, dict) else None
     if rec.get("sha256") != want:
         return "bad", f"{item}: thumbnail record sha256 is not the approved pick"
     if rec.get("video_id") != vid:
@@ -257,6 +275,10 @@ def art_proof(checklist_path: Path, state: dict, group: str):
     if rec.get("video_id") != state["videos"].get(group):
         return "bad", (f"{item}: thumbnail record is for {rec.get('video_id')}, "
                        f"the checklist has {state['videos'].get(group)}")
+    import episode_owner
+    problem = episode_owner.manual_thumb_problem(ep, (ps.get("owner") or {}).get("name"), rec)
+    if problem:
+        return "bad", f"{item}: {problem}"
     return "ok", ""
 
 
@@ -266,7 +288,7 @@ def art_item_ids(group: str) -> list:
 
 
 def apply_art_proof(checklist_path: Path, state: dict, group: str, blocked: list) -> list:
-    """Drop a thumb/cover tick the thumbnail record already proves, and say so when it doesn't."""
+    """Drop a thumb/cover the thumbnail record proves. A fail wins over a matching record."""
     if _load_pipeline(checklist_path) is None:
         return blocked
     gi = ORDER.index(group)
@@ -275,15 +297,21 @@ def apply_art_proof(checklist_path: Path, state: dict, group: str, blocked: list
         ids = art_item_ids(g)
         if not ids:
             continue
+        it = _find(state, ids[0])
+        if it["state"] == "failed":
+            drop.update(ids)
+            extra.append(f"{ids[0]} is failed")
+            continue
         proof = art_proof(checklist_path, state, g)
         if proof is None:
             continue
         status, why = proof
+        if status == "ok":
+            drop.update(ids)
+            continue
+        # A waiver or a hand-edited tick does not stand in for a bad or missing record.
         drop.update(ids)
-        if status != "ok":
-            extra.append(why)
-        elif ids[0] not in blocked:
-            pass
+        extra.append(why)
     return [x for x in blocked if x not in drop] + extra
 
 
@@ -371,6 +399,8 @@ def owner_check_for(path: Path):
 def proved(checklist_path: "Path | None", state: dict, it: dict) -> bool:
     if checklist_path is None or it["id"].split(".", 1)[-1] not in ("thumb", "cover"):
         return False
+    if it.get("state") == "failed":
+        return False
     proof = art_proof(checklist_path, state, it["group"])
     return bool(proof and proof[0] == "ok")
 
@@ -394,6 +424,67 @@ def render(state: dict, checklist_path: "Path | None" = None) -> str:
     return "\n".join(lines)
 
 
+def _sha256_file(path: Path) -> str:
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def record_manual_thumb(checklist_path: Path, asset: str, image: str, video_id: str, evidence: str, by: str) -> Path:
+    """Write extras/uploads/<asset>-thumb.json from the owner's words. Does not tick or waive."""
+    loaded = _load_pipeline(checklist_path)
+    if loaded is None:
+        raise ValueError("no extras/pipeline.json; a manual thumbnail record belongs to an episode")
+    ep, ps = loaded
+    state = json.loads(checklist_path.read_text(encoding="utf-8"))
+    known = {spec[1]: (group, spec) for group, spec in ART_PROOF.items()}
+    if asset not in known:
+        raise ValueError(f"unknown asset {asset}; use {', '.join(sorted(known))}")
+    group, spec = known[asset]
+    _item_key, _asset, stage_key, suffixes = spec
+    if not ID_RE.match(video_id):
+        raise ValueError(f"not an 11-character video ID (copy it from the upload record): {video_id}")
+    if state.get("videos", {}).get(group) != video_id:
+        raise ValueError(f"{video_id} is not {group}'s video on the checklist")
+    upload = (ps.get("stages") or {}).get(f"{asset}.upload") or {}
+    data = upload.get("data") if isinstance(upload, dict) else None
+    current = data.get("video_id") if isinstance(data, dict) else None
+    if current not in (None, video_id):
+        raise ValueError(f"{video_id} is not the current upload ({current})")
+    ok, owner, msg = owner_check_for(checklist_path)(by)
+    if not ok:
+        raise PermissionError(f"refused: {msg}")
+    img = Path(image)
+    if not img.is_file() or img.stat().st_size == 0:
+        raise ValueError(f"thumbnail file missing: {image}")
+    import episode_owner
+    shot = episode_owner.manual_thumb_problem(ep, owner, {"manual": True, "quote": by, "evidence": evidence})
+    if shot:
+        raise ValueError(f"refused: {shot}")
+    stage = (ps.get("stages") or {}).get(stage_key) or {}
+    want = _approved_sha(stage if isinstance(stage, dict) else {}, suffixes)
+    track, _, name = stage_key.partition(".")
+    if not want:
+        raise ValueError(f"{stage_key} has no file hash; re-approve it, or "
+                         f"`pipeline.py backfill-art EP {track} {name} --by \"<the owner's words>\"`")
+    got = _sha256_file(img)
+    if got != want:
+        raise ValueError("this file is not the approved pick")
+    root = Path(ep).resolve()
+    ev = Path(evidence)
+    found = ev.resolve() if ev.is_absolute() else (root / evidence).resolve()
+    rel = str(found.relative_to(root))
+    import pipeline_state as PS
+    rec = {"asset": asset, "video_id": video_id, "file": img.name, "sha256": got, "set_at": PS.now(),
+           "manual": True, "by": owner, "quote": by.strip(), "evidence": rel}
+    dest = root / "extras" / "uploads" / f"{asset}-thumb.json"
+    dest.parent.mkdir(parents=True, exist_ok=True)
+    dest.write_text(json.dumps(rec, ensure_ascii=False, indent=1), encoding="utf-8")
+    return dest
+
+
 def main(argv=None) -> int:
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     sub = ap.add_subparsers(dest="cmd", required=True)
@@ -404,6 +495,9 @@ def main(argv=None) -> int:
     for name, extra in (("tick", "--evidence"), ("fail", "--reason"), ("waive", "--by")):
         p = sub.add_parser(name); p.add_argument("state"); p.add_argument("item"); p.add_argument(extra, required=True)
     p = sub.add_parser("can-public"); p.add_argument("state"); p.add_argument("group", choices=ORDER)
+    p = sub.add_parser("record-thumb"); p.add_argument("state"); p.add_argument("--asset", required=True)
+    p.add_argument("--thumbnail", required=True); p.add_argument("--video-id", required=True)
+    p.add_argument("--evidence", required=True); p.add_argument("--by", required=True)
     p = sub.add_parser("set-video"); p.add_argument("state"); p.add_argument("group", choices=ORDER); p.add_argument("id")
     for name in ("status", "render"):
         p = sub.add_parser(name); p.add_argument("state")
@@ -444,6 +538,13 @@ def main(argv=None) -> int:
              "waive": lambda: waive(state, a.item, a.by, owner_check_for(path))}[a.cmd]()
             path.write_text(json.dumps(state, ensure_ascii=False, indent=1), encoding="utf-8")
             print(f"{a.cmd}: {a.item}")
+        elif a.cmd == "record-thumb":
+            before = json.loads(path.read_text(encoding="utf-8"))["items"]
+            dest = record_manual_thumb(path, a.asset, a.thumbnail, a.video_id, a.evidence, a.by)
+            after = json.loads(path.read_text(encoding="utf-8"))["items"]
+            if before != after:
+                raise RuntimeError("record-thumb must not change the checklist")
+            print(f"recorded {dest.name}")
         elif a.cmd == "can-public":
             b = apply_art_proof(path, state, a.group, blockers(state, f"{a.group}.public"))
             pb = pipeline_blockers(path, state, a.group)
@@ -454,7 +555,7 @@ def main(argv=None) -> int:
             print("all done" if nxt is None else f"next: {nxt['id']} [{nxt['state']}] {nxt['label']}")
         else:
             print(render(state, path))
-    except (PermissionError, ValueError, KeyError, FileExistsError) as e:
+    except (PermissionError, ValueError, KeyError, FileExistsError, RuntimeError) as e:
         print(e, file=sys.stderr)
         return 1
     return 0

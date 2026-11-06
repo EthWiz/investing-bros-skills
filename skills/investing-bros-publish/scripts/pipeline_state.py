@@ -226,6 +226,15 @@ def evaluate(ep, state: dict, hasher: "Hasher | None" = None) -> dict:
                         res = {"status": "stale", "why": f"{rec['of']} is {of['status']}"}
                     elif of_rec.get("version") != approved_ver:
                         res = {"status": "stale", "why": f"{rec['of']} changed after the approval"}
+            # A backfilled approval names the files in of_hashes without of_keys (an older
+            # thumb_ok watches the package, not the image). A later byte change stales it.
+            hashes = rec.get("of_hashes")
+            if (res["status"] == "current" and rec.get("state") == "approved"
+                    and isinstance(hashes, dict) and hashes and not rec.get("of_keys")):
+                cur = current_outputs(ep, dict.fromkeys(hashes), marks, hasher)
+                changed = [k for k, v in hashes.items() if cur.get(k) != str(v).split(":")[-1]]
+                if changed:
+                    res = {"status": "stale", "why": "approved file changed: " + ", ".join(changed)}
             if res["status"] == "current":
                 for inp, ver in (rec.get("inputs") or {}).items():
                     i = ev(inp, seen)

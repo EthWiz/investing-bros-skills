@@ -130,7 +130,7 @@ only after the full episode is live and publishing is OK'd.
   Recheck each time against the delivered file (cuts shift times). After a re-upload, set the
   cards on the new video. Mark `past_episode_cards` with the times you set. These are added to
   the Private upload, no extra approval needed.
-- Thumbnail: upload option A, the episode's 16:9 `thumbnail-פרק-N.jpg` from the episode root (made from the square cover by `investing-bros-brand`). The same for a segment's `-thumb.jpg` and a Short's `-cover.jpg`. The A/B/C pick is round 2 and gates publish, not this upload. If the pick is not A, promote that file onto the canonical name and run `yt_upload.py --set-thumbnail VIDEO_ID --thumbnail <pick> --asset <track> --record extras/uploads/<track>.json`. That writes `extras/uploads/<track>-thumb.json` (the file's sha256 and the video ID) and does not rewrite the upload record.
+- Thumbnail: upload option A, the episode's 16:9 `thumbnail-פרק-N.jpg` from the episode root (made from the square cover by `investing-bros-brand`). The same for a segment's `-thumb.jpg` and a Short's `-cover.jpg`. The A/B/C pick is round 2 and gates publish, not this upload. If the pick is not A, promote that file onto the canonical name and run `yt_upload.py --set-thumbnail VIDEO_ID --thumbnail <pick> --asset <track> --record extras/uploads/<track>.json`. That writes `extras/uploads/<track>-thumb.json` (the file's sha256 and the video ID) and does not rewrite the upload record. A Short cover the API refuses is recorded by investing-bros-publish `record-thumb` instead, from the owner's words and a screenshot.
 
 ### 3b. Approval round: one Telegram message
 The episode owner approves the episode's assets together. Once **all** of them are ready — the

@@ -76,10 +76,11 @@ python3 $P retro "$EP"                             # after the last track is liv
    track's `ok` and the publish OK stale. A later art change of mind stales that art approval
    and `publish_ok`.
 7. **Publish.** After the approval round, approve each asset `ok` and each art pick, then the
-   owner's publish OK (`approve release publish_ok`; it needs those approvals current and is
-   never waived). Then `investing-bros-publish`; its `can-public` re-checks this state file and
-   the thumbnail records every time. Then the post-live obligations: the Spotify link swap and
-   deleting superseded Private uploads (`status` lists them).
+   owner's publish OK (`approve release publish_ok`; it needs those approvals and the current
+   `cuts_ok`, and is never waived). Then `investing-bros-publish`; its `can-public` re-checks
+   this state file and the thumbnail records every time. The publish gate counts a matching
+   record as the thumb or cover tick, and a failed one stays open. Then the post-live
+   obligations: the Spotify link swap and deleting superseded Private uploads (`status` lists them).
 8. **Retro (תחקיר), unasked.** When `next` shows `release.retro`: `retro` drafts
    `extras/retro-פרק-N.md` from the events (what went wrong by stage, where time went, waits on the
    owner, repeats from the last retro), each finding classified (script check / one line in the

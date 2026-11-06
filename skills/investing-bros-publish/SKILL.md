@@ -85,7 +85,7 @@ For each Short:
    - **Empty Related video picker: check the active channel first.** "No matching results" for the episode URL, ID and title is not a permissions problem. It means Studio is acting as Grok Bot. Go back to `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`, confirm אחים להשקעות in the avatar menu, click into the Short and try again. Only if the picker is still empty with אחים להשקעות active: keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Name the Short (title + ID) and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`), with the path Studio → אחים להשקעות → Content → Shorts → the Short. Then reopen it yourself (from the list, with אחים להשקעות active) and check the field before ticking.
    - If the picker answers "No matching results" or won't save in any other case: retry with the episode title, then the full URL, then wait a few minutes and reload Studio (the episode must be Public and indexed). If it still fails, `fail shortNN.related --reason ...`. **The Short stays Private**, and you report the failure to the episode owner. Never publish a Short with only a description link, and never waive this check.
 3. Hebrew `.srt`: upload it in Studio → Subtitles, reopen, and check that the language row shows it published. An upload toast that says "failed" means it didn't work, even when the lines appear in the editor.
-4. Custom cover: `can-public` checks `extras/uploads/shortNN-thumb.json` against the approved pick. It is not a hand tick and cannot be waived. The cut approval from the approval round is `shortNN.approval` (or the owner's waiver of that cut, in their words).
+4. Custom cover: `can-public` checks `extras/uploads/shortNN-thumb.json` against the approved pick. It is not a hand tick and cannot be waived. A failed cover stays failed even when the record matches. When the API refuses the cover, `record-thumb` stores the owner's words and a screenshot (references/studio-checks.md). The cut approval from the approval round is `shortNN.approval` (or the owner's waiver of that cut, in their words).
 5. `can-public shortNN`, Public, `check_live.py`, tick `shortNN.live`.
 
 ### 6. No pinned comments
@@ -95,7 +95,7 @@ No pinned comments on segments or Shorts (Amitai, 2026-11-01). Don't post or pin
 Swap the show link for the Spotify episode link (`https://open.spotify.com/episode/<id>`, no `?si=`) on the `האזינו בספוטיפיי:` line of the episode, both segments and all three Shorts. Run `check_links.py` and report it. This edit is part of the approved publish.
 
 ## Done when
-- The state file (`extras/publish-checklist.json` in the episode folder) has every item ticked or waived by the episode owner, except `thumb` and `cover`, which `can-public` accepts from the thumbnail record, and `render` says "All checks done."
+- The state file (`extras/publish-checklist.json` in the episode folder) has every item ticked or waived by the episode owner, except `thumb` and `cover`: those stay open, `can-public` accepts a matching thumbnail record, a failed one stays failed, and `render` says "All checks done."
 - RedCircle, the full episode, both segments and all three Shorts are Public, in that order, each confirmed by `check_live.py`.
 - Every Short's Related video is the full episode, confirmed by reopening its edit page.
 - Every open or failed item has been reported to the episode owner with its reason, and its video is still Private if the failure was before its `public` item.

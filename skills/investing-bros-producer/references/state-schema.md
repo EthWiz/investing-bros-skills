@@ -121,8 +121,16 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   step and by `yt_upload.py --set-thumbnail`): `{asset, video_id, file, sha256, set_at}`.
   `publish_checklist.py can-public` accepts `episode.thumb`, `segNN.thumb` and `shortNN.cover`
   only when `sha256` is the approved pick (`of_hashes` on `main.art_ok`, `segNN.thumb_ok` or
-  `shortNN.cover_ok`) and `video_id` is the current upload. Those checklist items are never
-  waived, and with this file present they are not hand-ticked.
+  `shortNN.cover_ok`) and `video_id` is the current upload. The publish gate (`published`)
+  counts that same match as ticked. A failed item is never counted. Those items are never
+  waived, and with this file present they are not hand-ticked. A manual record (the YouTube
+  phone app, `publish_checklist.py record-thumb`) adds `manual`, `by`, `quote` and `evidence`
+  (a screenshot inside the episode folder). It is the owner's acknowledgement, not a waiver.
+  An older art approval with no `of_hashes` does not pass that check. `pipeline.py backfill-art`
+  records the hashes from the owner's words and does not change the approval's version; a later
+  change to those bytes stales it. `release.publish_ok` takes `main.cuts_ok` as an input, so a
+  new cut approval stales the publish OK. Render stages do not: a cut outside a render's range
+  still leaves that render current.
 - A segment package fingerprints the `.mp4`, the `.txt` and the notes file. A Short package
   fingerprints the `.m4v`, the `.srt` and the notes file. `-thumb.jpg` and `-cover.jpg` stay
   required on disk and stay out of those fingerprints, so promoting an A/B/C pick does not

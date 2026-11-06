@@ -1,4 +1,5 @@
 """publish_checklist.py: order gate, waivers, and the Related-video hard rule."""
+import hashlib
 import json
 import sys
 from pathlib import Path
@@ -188,7 +189,8 @@ TRACKS = {"episode": "main", "seg01": "seg01", "seg02": "seg02", "short01": "sho
 IDS = {"episode": FULL, "seg01": S1, "seg02": S2, "short01": SH[0], "short02": SH[1], "short03": SH[2]}
 
 
-ART_SHA = "ab" * 32
+ART_BYTES = b"art-bytes"
+ART_SHA = hashlib.sha256(ART_BYTES).hexdigest()
 ART = {"episode": ("main", "main.art_ok", "thumbnail.jpg"),
        "seg01": ("seg01", "seg01.thumb_ok", "seg01-thumb.jpg"),
        "seg02": ("seg02", "seg02.thumb_ok", "seg02-thumb.jpg"),
@@ -211,6 +213,7 @@ def pipeline_episode(tmp_path):
     for g, (asset, stage, name) in ART.items():
         st["stages"][stage] = {"state": "approved", "version": f"sha256:{stage}", "inputs": {},
                                "of_hashes": {name: ART_SHA}}
+        (tmp_path / name).write_bytes(ART_BYTES)
         (uploads / f"{asset}-thumb.json").write_text(json.dumps(
             {"asset": asset, "video_id": IDS[g], "file": name, "sha256": ART_SHA}), encoding="utf-8")
     st["stages"]["release.publish_ok"] = {"state": "approved", "version": "sha256:p",
@@ -308,3 +311,84 @@ def test_reupload_during_a_partial_publication(tmp_path, capsys):
     assert pc.main(["can-public", str(f), "seg01"]) == 1               # seg01's checks were reopened
     tick_group(f, "seg01")
     assert pc.main(["can-public", str(f), "seg01"]) == 0
+
+
+def finish_public(f, g):
+    tick_group(f, g)
+    assert pc.main(["can-public", str(f), g]) == 0, g
+    assert pc.main(["tick", str(f), f"{g}.public", "--evidence", "switched"]) == 0
+    live = f"{g}.live"
+    st = json.loads(Path(f).read_text(encoding="utf-8"))
+    if any(x["id"] == live for x in st["items"]):
+        assert pc.main(["tick", str(f), live, "--evidence", "live"]) == 0
+
+
+def test_failed_thumbnail_blocks_public_even_when_the_record_matches(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    finish_public(f, "redcircle")
+    tick_group(f, "episode")
+    assert pc.main(["fail", str(f), "episode.thumb", "--reason", "wrong frame"]) == 0
+    assert pc.main(["can-public", str(f), "episode"]) == 1
+    assert "episode.thumb is failed" in capsys.readouterr().out
+    rendered = pc.render(json.loads(f.read_text(encoding="utf-8")), f)
+    line = next(ln for ln in rendered.splitlines() if "Approved thumbnail" in ln)
+    assert line.startswith("- [ ]") and "FAILED" in line and "thumbnail record" not in line
+    st = json.loads(f.read_text(encoding="utf-8"))
+    for it in st["items"]:
+        if it["id"] == "episode.thumb":
+            it.update(state="open", note="")
+    f.write_text(json.dumps(st), encoding="utf-8")
+    for g in ("episode", "seg01", "seg02"):
+        finish_public(f, g)
+    tick_group(f, "short01")
+    assert pc.main(["fail", str(f), "short01.cover", "--reason", "phone cover is the wrong frame"]) == 0
+    assert pc.main(["can-public", str(f), "short01"]) == 1
+    assert "short01.cover is failed" in capsys.readouterr().out
+
+
+def test_manual_thumbnail_record_needs_the_owner_and_is_not_a_waiver(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    img = tmp_path / "thumbnail.jpg"
+    shot = tmp_path / "extras" / "phone.png"
+    shot.write_bytes(b"screenshot")
+    quote = "Nadav 21:40: שמתי את הקאבר מהטלפון"
+    base = ["record-thumb", str(f), "--asset", "main", "--thumbnail", str(img), "--video-id", FULL]
+    assert pc.main(base + ["--evidence", str(tmp_path / "missing.png"), "--by", quote]) == 1
+    assert pc.main(base + ["--evidence", str(shot), "--by", "Amitai 21:40: אני"]) == 1
+    before = json.loads(f.read_text(encoding="utf-8"))["items"]
+    assert pc.main(base + ["--evidence", str(shot), "--by", quote]) == 0
+    after = json.loads(f.read_text(encoding="utf-8"))["items"]
+    assert before == after and next(x["state"] for x in after if x["id"] == "episode.thumb") == "open"
+    rec = json.loads((tmp_path / "extras/uploads/main-thumb.json").read_text(encoding="utf-8"))
+    assert rec["manual"] is True and rec["sha256"] == ART_SHA and rec["video_id"] == FULL
+    assert rec["quote"] == quote and rec["evidence"].endswith("phone.png")
+    assert not (tmp_path / "extras/uploads/main.json").is_file()
+    rec["quote"] = ""
+    (tmp_path / "extras/uploads/main-thumb.json").write_text(json.dumps(rec), encoding="utf-8")
+    finish_public(f, "redcircle")
+    tick_group(f, "episode")
+    assert pc.main(["can-public", str(f), "episode"]) == 1
+    assert "owner" in capsys.readouterr().out
+    assert pc.main(base + ["--evidence", str(shot), "--by", quote]) == 0
+    assert pc.main(["can-public", str(f), "episode"]) == 0
+    assert pc.main(["waive", str(f), "episode.thumb", "--by", quote]) == 1
+    st = json.loads(f.read_text(encoding="utf-8"))
+    assert next(x["state"] for x in st["items"] if x["id"] == "episode.thumb") == "open"
+
+
+def test_art_approval_without_a_file_hash_does_not_pass_or_crash(tmp_path, capsys):
+    f = pipeline_episode(tmp_path)
+    st = ps.load(tmp_path)
+    st["stages"]["main.art_ok"]["of_hashes"] = None
+    ps.save(tmp_path, st)
+    finish_public(f, "redcircle")
+    tick_group(f, "episode")
+    assert pc.main(["can-public", str(f), "episode"]) == 1
+    refused = capsys.readouterr().out
+    assert "no file hash" in refused and "backfill-art" in refused
+    st = ps.load(tmp_path)
+    st["stages"]["main.art_ok"]["of_hashes"] = ["not-a-dict"]
+    ps.save(tmp_path, st)
+    assert pc.main(["can-public", str(f), "episode"]) == 1
+    assert "Traceback" not in capsys.readouterr().out
+    assert ps.evaluate(tmp_path, ps.load(tmp_path))["main.art_ok"]["status"] == "current"
