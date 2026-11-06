@@ -42,7 +42,8 @@ their ids; the table says which stage each belongs to.
 
 | Stage | Owning skill | Prerequisite | Evidence | Approver | Invalidated by |
 |---|---|---|---|---|---|
-| `intake` | post-production (steps 1–2) | the recording parts | file: `extras/investing-bros-episode-raw-untrimmed.m4a` (or `.mp4`) | — | a new raw master (everything below) |
+| `riverside` | post-production (step 1); [riverside-pull.md](riverside-pull.md) | the episode owner says in chat that the episode was recorded | record: `extras/riverside-pull.json` plus each file under `riverside/` (size and duration). Stage data lists every speaker, part, path, bytes and duration; `drive_upload` is false. A temporary polling routine, about every 15 minutes (10–20), disarms itself when this passes or after about 6 hours | — | a new download |
+| `intake` | post-production (step 2) | `riverside` | file: `extras/investing-bros-episode-raw-untrimmed.m4a` (or `.mp4`), on the box. Not uploaded to Drive when `riverside` passed | — | `riverside`; a new raw master (everything below) |
 | `master` | post-production (steps 3–4, 8 transcript Doc) | `intake` | file: `extras/transcript/segments.json` (item `transcript`); mark: `transcript_doc` (Doc URL) | — | `intake` |
 | `cut_list` | post-production (step 5) | `master` | file: `extras/cuts-review/cuts-list.txt`, every cut tagged `[routine]` or `[content]` | — | `master` |
 | `trim` | post-production (step 6) | `cut_list` | file: edited audio in the root (item `audio`), `extras/edit.json` + one review clip per cut (item `cut_list`). Runs on the full draft list, before `cuts_ok` | — | `cut_list`; a new `edit.json` stales `copy`, `video`, `upload`, `release.redcircle_draft` and every segment/Short whose raw ranges overlap the changed span |

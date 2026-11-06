@@ -4,8 +4,9 @@ description: >-
   Run an Investing Bros / אחים להשקעות episode end to end as its Producer: one
   state file (extras/pipeline.json), the next step on every track, approvals
   from the episode owner tied to file versions, review rounds, and the episode
-  retro at the end. Use when post-production starts or resumes, "where does
-  episode N stand", "מה הלאה בפרק", "תחקיר" or "retro".
+  retro at the end. Use when the owner says the episode was recorded,
+  post-production starts or resumes, "where does episode N stand",
+  "מה הלאה בפרק", "תחקיר" or "retro".
 ---
 # Investing Bros producer
 
@@ -16,6 +17,7 @@ skill holds the contracts ([gate map](references/gates.md), [state schema](refer
 and `scripts/pipeline.py`, which implements them.
 
 ## When to use
+- The episode owner says in chat that the episode was recorded. That message starts the Riverside pull.
 - The recording is in and post-production starts (with `investing-bros-post-production` for the audio).
 - Resuming an episode, or asked where an episode stands.
 - After every helper hand-back, owner reply or upload: record it and take the next step.
@@ -50,6 +52,8 @@ python3 $P retro "$EP"                             # after the last track is liv
 2. **Loop on `next`.** Do the step it names with its owning skill, or hand it to the helper and
    say so; then `advance`. A failed check is logged; fix it and advance again. Never mark or
    advance from memory, a toast or another agent's word.
+   The first stage after a recording is `main.riverside`. It does not start until the owner
+   says the episode was recorded; the steps are below.
 3. **Helpers** (segments, brand on Amitai's Mac, video) hand back to you, never to the hosts. Check
    each hand-back against its stage's evidence; send back what fails (`note --kind handback_returned`).
    You run `investing-bros-shorts` yourself; there is no Shorts bot.
@@ -88,6 +92,24 @@ python3 $P retro "$EP"                             # after the last track is liv
    the list to `investing-bros-skill-change`, send the owner one message with the PR and issue
    links, then `mark release.retro` and `advance release retro`. The retro never blocks publishing.
 
+### Riverside tracks (`main.riverside`)
+This starts only when the episode owner says in chat that the episode was recorded. Do not
+open Riverside before that message. Record it, then arm **one temporary polling routine**:
+
+```bash
+python3 <investing-bros-producer>/scripts/riverside_tracks.py begin "$EP" --project "פרק N" \
+  --by "<Owner HH:MM: their words>"
+```
+
+The routine checks the Riverside web dashboard about every 15 minutes. A gap of 10–20
+minutes is allowed; the script refuses anything outside that. Run the first check in this
+turn. Each later wake is a single check (`due`): look once, and if the tracks are not ready
+run `checked` and stop. Do not busy-loop. When the high-quality video and audio for every
+speaker and every part are downloaded, `commit` and `advance` the stage, then **delete or
+disable the routine** (`disarm: true`). About 6 hours after `begin`, `due` prints `give_up`:
+alert the episode owner once, disable the routine, and stop. Browser steps, the file check,
+and the Drive rule: [references/riverside-pull.md](references/riverside-pull.md).
+
 ## Done when
 - `extras/pipeline.json` shows every stage of every track current or waived by the episode
   owner, and `gate "$EP" --stage done` passes.
@@ -105,4 +127,7 @@ output and the retro's PR/issue links.
 - Hand Shorts off to a separate Grok bot.
 - Upload anything but Private, or a second copy of an asset that already has an upload record.
 - Edit `extras/pipeline.json` by hand.
+- Open Riverside before the owner says the episode was recorded, or leave the polling routine armed after `disarm: true`.
+- Delete a Riverside studio, project or recording, or type the Riverside login. Secure fill only (`investing-bros-show`).
+- Leave the raw pull off Drive after `main.riverside` passes, and don't spin on that stage.
 - Write your own code where a skill's script exists (`investing-bros-show` → Working rules).

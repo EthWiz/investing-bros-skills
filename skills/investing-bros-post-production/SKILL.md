@@ -14,7 +14,7 @@ description: >-
 Load `investing-bros-show` first: naming, Drive tree, roles and the episode flow live there.
 
 This skill makes the audio edit: the main track's first stages in `investing-bros-producer`
-(intake, master, cut list, trim from the draft). The cut approval is round 1 and gates
+(riverside, intake, master, cut list, trim from the draft). The cut approval is round 1 and gates
 renders, not the trim. The edited audio, the transcript and `edit.json`
 are the handoff to everything else. Starting post-production also starts the episode's
 **Producer** (`investing-bros-producer`), which runs the standing bundle (main flow, two
@@ -27,26 +27,40 @@ its gate is `pipeline.py gate`. `scripts/postprod_checklist.py` stays as a compa
 with the same CLI for older installs.
 
 ## When to use
-The recording is in (parts posted in group `אחים להשקעות`, or files in Drive), or Amitai asks to redo the edit.
+The episode owner says the episode was recorded, the parts are already in, or Amitai asks to redo the edit.
 
 ## Inputs
 - Episode number N **as Amitai states it**.
-- The recording parts (`חלק 1`, `חלק 2`, …). For shorts in the house style, also each host's own Riverside track (Individual tracks, highest resolution): the side-by-side export is too soft once cropped to 9:16.
+- Per-speaker high-quality video and audio in `$EP/riverside/` (every part, when the session was split). The side-by-side export is too soft once cropped to 9:16. The pull's trigger lives in `investing-bros-producer`.
 - Working dir `$EP` (show conventions → Roles and accounts).
 - Tools: `ffmpeg`, Python 3 with numpy, `faster-whisper`. If Hugging Face is blocked, `sherpa-onnx` + `soundfile` (step 4).
 - Long jobs: under a per-command time limit (show conventions → references/environment.md), use the chunked/resumable options below.
 
 ## Steps
 
-### 1. Fetch the parts
-Ask the WhatsApp owner to download the latest parts from group `אחים להשקעות` into `$EP/parts/` (prefer `m4a`), named so they sort in order (`part1.m4a`, `part2.m4a`). Host tracks go in `$EP` as `track-amitai.mp4` / `track-nadav.mp4`.
+### 1. Pull the Riverside tracks (`main.riverside`)
+When the episode owner says the episode was recorded, the Producer arms one temporary polling routine and pulls every speaker's high-quality video and audio in the browser. How the routine starts, waits, and deletes itself: `investing-bros-producer` → `references/riverside-pull.md`.
+
+```bash
+R=<investing-bros-producer>/scripts/riverside_tracks.py
+python3 $R begin "$EP" --project "פרק N" --by "<Owner HH:MM: their words>"
+python3 $R due "$EP"       # check, wait, or give_up. One look per wake. Do not loop.
+python3 $R checked "$EP"   # after a look that is not ready yet
+python3 $R commit "$EP" --listing "$EP/extras/riverside-listing.json"
+python3 $R verify "$EP"
+python3 <investing-bros-producer>/scripts/pipeline.py advance "$EP" main riverside
+```
+
+Files go to `$EP/riverside/`. A speaker can have several files when the session was split. Do not upload them to Drive. When the script prints `disarm: true`, delete or disable the routine. About 6 hours with the tracks still processing: alert the owner once and disable the routine.
+
+If that sign-in cannot be completed, the owner may waive `main.riverside`. Only then, ask the WhatsApp owner to download the latest parts from group `אחים להשקעות` into `$EP/parts/` (prefer `m4a`), named so they sort (`part1.m4a`, `part2.m4a`). Host tracks then go in `$EP` as `track-amitai.mp4` / `track-nadav.mp4`, and raw footage may be filed in Drive.
 
 ### 2. Combine into the raw master
 ```bash
 scripts/combine_parts.sh "$EP/investing-bros-episode-raw-untrimmed.m4a" "$EP"/parts/part*
 # video parts, when video or shorts will be made: add --video "$EP/investing-bros-episode-raw-untrimmed.mp4"
 ```
-Never overwrite the raw master.
+Never overwrite the raw master. When `main.riverside` passed, keep it on the box; do not upload it to Drive.
 
 ### 3. Level the two hosts
 ```bash
@@ -113,7 +127,7 @@ Find the `פרק N` folder (prefix match; prep normally created it). Only create
 | Where | What |
 |---|---|
 | Episode root | Edited audio, renamed `הקלטה-ערוכה-פרק-N.m4a` |
-| `extras/` | Raw untrimmed audio (and video), leveled WAV, parts, host tracks, `transcript/` (`segments.json`, `.txt`, `.srt`), `edit.json`, the cut list |
+| `extras/` | When `main.riverside` was waived: raw untrimmed audio (and video), parts, host tracks. Always: leveled WAV, `transcript/` (`segments.json`, `.txt`, `.srt`), `edit.json`, the cut list. A passed Riverside pull keeps raw footage in the working folder, not here. |
 
 Large files: if a final video must reach Amitai's Mac, use the verified
 10–20 MB chunked `CopyFromBox` handoff to `~/Downloads` (show conventions →
@@ -138,8 +152,9 @@ verify the ID, and add it to the index by PR. After each episode goes up, add it
 ## Done when
 The audio edit is done; the episode is done only when `investing-bros-producer` says so.
 - Episode root has `הקלטה-ערוכה-פרק-N.m4a`, at −16 LUFS with the hosts within 3 dB.
+- `main.riverside` passed, or the owner waived it. When it passed, `extras/pipeline.json` lists every speaker's files and those files are in the working folder `riverside/`, not on Drive.
 - `extras/` has `transcript/segments.json`, `edit.json`, `cuts-review/` (the cut list + one clip
-  per cut) and the raw master (plus host tracks if shorts will use them).
+  per cut) and the raw master on the box (plus host tracks if shorts will use them).
 - The episode folder has the Google Doc `תמלול - פרק N` (automatic transcript, timestamped).
 - `pipeline.py advance "$EP" main trim` passed on the draft cut list. `extras/cuts-review/cuts-list.txt`
   tags every cut `[routine]` or `[content]`. `cuts_ok` is in round 1 (with the title, the segment
@@ -147,6 +162,7 @@ The audio edit is done; the episode is done only when `investing-bros-producer` 
 - Once the full video exists, `extras/past-episode-cards.json` (step 8).
 
 ## Hand back
+- Whether `main.riverside` passed (tracks stayed off Drive) or was waived
 - Drive folder link
 - Link to the `תמלול - פרק N` Doc
 - Edited length, the start/end cut points and every cut inside the episode (raw time + the words around it)
@@ -160,6 +176,8 @@ The audio edit is done; the episode is done only when `investing-bros-producer` 
 - Render the full video, a segment or a Short before `cuts_ok`. A content cut is trimmed in the draft and asked in round 1; a restore re-trims and re-copies only.
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
+- Upload raw Riverside footage to Drive when `main.riverside` passed, poll that pull in a loop, or delete a Riverside studio, project or recording.
+- Put the Riverside login anywhere except secure fill.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).
 

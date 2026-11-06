@@ -28,12 +28,13 @@ From the episode's `extras/` folder:
 - the raw master — `.mp4` if the recording has video, otherwise `.m4a` (timeline and audio)
 - **each host's own Riverside video track** for the picture — the **canonical camera
   track as-is**, never the combined / side-by-side Riverside export, and never a zoomed
-  or re-cropped half of that export: Riverside recording share link → Tracks → <host> →
-  download → **Aligned video** (`investing-bros-show` → Recording layout). **If either
-  host's Aligned video track is missing: stop.** Ask the episode owner for the recording's share
-  link (or to download each host's Aligned video from Tracks). Do **not** fall
-  back to cropping, zooming or upscaling the side-by-side / combined recording, and do
-  **not** pass `--allow-side-by-side` without the episode owner's explicit OK in chat.
+  or re-cropped half of that export. Prefer the files `main.riverside` saved in the episode
+  working folder `riverside/` (every part of a split session); they are not on Drive. If that
+  stage was waived or a host's file is missing: **stop.** Ask the episode owner for the
+  recording share link → Tracks → <host> → download → **Aligned video**
+  (`investing-bros-show` → Recording layout). Do **not** fall back to cropping, zooming or
+  upscaling the side-by-side / combined recording, and do **not** pass
+  `--allow-side-by-side` without the episode owner's explicit OK in chat.
 - the current newspaper logo source (location in `investing-bros-show`) and Heebo
   (`Heebo[wght].ttf` from google/fonts — fallback in `investing-bros-show` →
   references/environment.md)
@@ -46,7 +47,7 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
 ## Steps
 1. **Propose moments.** Follow [references/moment-scoring.md](references/moment-scoring.md).
    Riverside's auto-generated shorts, when they are already in Drive, are candidates
-   like any other (the box cannot pass Riverside's captcha; don't block on it).
+   like any other. Don't block the picks on fetching those clips.
    - Pull ~10 candidates from the transcript, at least 3 from the deep dive.
    - Score each 1–5 on hook, standalone, payoff and friction, then rank them:
      `python3 scripts/score_moments.py segments.json candidates.json --top 5`
@@ -189,7 +190,7 @@ As the Producer (this is not a separate Shorts-bot hand-back): keep the `Shorts/
 - Put words on screen the hosts didn't say, or captions you haven't proofread.
 - Splice pieces so a sentence means something the host didn't mean, or cut a caveat.
 - Crop, zoom or upscale a Short's picture from the combined / side-by-side Riverside export; use each host's **canonical camera track as-is**. Never pass `--allow-side-by-side` without the episode owner's OK.
-- Keep going when a host's Aligned video track is missing — stop and ask the episode owner for the Riverside share link (or the tracks) instead.
+- Keep going when a host's camera track is missing from `riverside/` and from a waived pull — stop and ask the episode owner for the Riverside share link (or the tracks) instead.
 - Hand Shorts off to a separate Grok bot (`SendToAgent`, "Investing Bro Shorts", periphery-marketing helper). The Producer runs this skill directly.
 - Use an ASS style `Encoding` other than `-1` — any other value forces left-to-right and Hebrew punctuation lands on the wrong side.
 - Add music, SFX or stock footage.

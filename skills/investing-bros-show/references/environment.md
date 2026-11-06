@@ -18,12 +18,20 @@ Read this before working around anything. Every line here cost an agent time to 
    account `investingbros.grokbot@gmail.com` (`?authuser=1`): open the file → Download →
    **Download anyway** on the virus-scan warning. Other bot accounts (e.g. `ami.grokbot`) may hit
    Google re-verification; don't fight it, switch to the upload account.
-3. **Riverside:** a shared `riverside.com/shared/exported-clip/...` link has one **Download** button
-   and no quality picker. Riverside's "1080p" cloud download was really 720p on episode 8.
-   A **recording** share link (`/dashboard/studios/…/recordings/<id>?share-token=…`) lists each
-   host's track with raw / **aligned** video and audio. It opens without a sign-in, but the
-   Claude app's built-in browser pane doesn't save downloads (episode 8): ask Amitai to click
-   Download → Aligned video for each host in his own Chrome, into `~/Downloads`.
+3. **Riverside:** the episode pull is the web dashboard in the browser (`investing-bros-producer`
+   → `main.riverside`). It starts when the owner says the episode was recorded, then a temporary
+   polling routine checks about every 15 minutes (10–20 is allowed) and deletes or disables
+   itself after the download or after about 6 hours. Sign in at riverside.fm (it redirects to
+   riverside.com) with the Grok Bot vault login, secure fill only. Never print it. High-quality
+   per-speaker video and audio, every part of a split session, stay in the episode working
+   folder. Do not upload that raw footage to Drive.
+   A shared `riverside.com/shared/exported-clip/...` link is not this pull: one **Download**
+   button, no quality picker, and its "1080p" was 720p on episode 8. The recording share link
+   (`/dashboard/studios/…/recordings/<id>?share-token=…`) is the fallback when `main.riverside`
+   is waived. If a captcha blocks secure fill, waive the stage and use that fallback; do not
+   skip the dashboard before trying it. The Claude app's built-in browser pane doesn't save
+   downloads (episode 8): the Producer's browser does. A waived pull can still be the host
+   clicking Download → Aligned video in their own Chrome, into `~/Downloads`.
 4. **Always check what you got** and keep the highest-quality copy:
    `ffprobe -v error -select_streams v:0 -show_entries stream=width,height,avg_frame_rate -show_entries format=duration -of compact FILE`.
    If Riverside gives 720p, use Nadav's own Drive master (episode 8: `פרק 8 לא ערוך.mp4`, 1920×1080, 24 fps).
@@ -31,7 +39,7 @@ Read this before working around anything. Every line here cost an agent time to 
 5. Downloads land in `/home/box/Downloads`; move them into the episode working folder (`$EP`)
    and note which source and resolution you used.
 
-- **Riverside** login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive. Nadav drags full episodes to Drive himself.
+- **Riverside sign-in** is the web dashboard with the Grok Bot vault (secure fill only). A captcha that secure fill cannot clear waives `main.riverside`; the host can then download the tracks. Never delete a studio, project or recording there. Do not upload the raw files to Drive when the pull worked.
 - For moving a completed large file out of the box, use the chunked handoff under
   [Delivering files](#delivering-files); do not assume a browser upload will be faster.
 - **Never sign in to Amitai's Google account from a browser.** The account is in Advanced Protection: sign-in needs his passkey or security key; approving on the phone isn't enough, and a failed attempt locks browser sign-in for 48 hours.
@@ -84,8 +92,9 @@ Different from the device shell above: Claude Code in the Claude desktop app run
 
 ## Browsers for downloads (episode 8)
 - The Claude app's built-in browser pane isn't signed in to Google and doesn't save
-  downloads; Claude in Chrome can be offline. A Drive raw master or a Riverside track that
-  the connector can't fetch: ask Amitai to download it in his Chrome into `~/Downloads`.
+  downloads; Claude in Chrome can be offline. A Drive raw master the Drive download can't
+  fetch, or a Riverside track the dashboard pull did not get: ask Amitai to download it in
+  his Chrome into `~/Downloads`.
 - With `~/Downloads` connected, the device shell sees it at `~/mnt/Downloads` (Linux
   sandbox, ffmpeg available): cut the needed window there and stage only that (a 65 s
   1080p window, re-encoded CRF 12, is ~125 MB and stages in one call).
