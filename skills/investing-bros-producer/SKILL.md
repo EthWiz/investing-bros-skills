@@ -53,21 +53,34 @@ python3 $P retro "$EP"                             # after the last track is liv
 3. **Helpers** (segments, brand on Amitai's Mac, video) hand back to you, never to the hosts. Check
    each hand-back against its stage's evidence; send back what fails (`note --kind handback_returned`).
    You run `investing-bros-shorts` yourself; there is no Shorts bot.
-4. **Review rounds.** Collect every pending `waits: owner` stage into **one** message to the
-   episode owner per round (cut list, title, picks, covers, ranges, the approval round's links).
-   Record each answer with `approve` in the owner's own words; a change they ask for is
-   `note --kind owner_fix` and the fixed stage goes through `advance` again. After the owner signs
-   a round off, post the one round summary for the other brother (`investing-bros-show` → Telegram).
+4. **Review rounds.** Two rounds, and every approval stays the owner's own words. `next` names
+   every approval that can be asked now, including two on the same track. Round 1 holds the cut
+   list (each `[content]` cut as a question, every `[routine]` line still listed), the title, the
+   segment ranges and the Short picks. Trim and copy have already run on the draft list, so a
+   restore re-trims and re-copies only. Round 2 is the Telegram approval round: the six Private
+   links, an A/B/C pick per asset, and the publish go (`investing-bros-episode-upload` step 3b).
+   Record each answer with `approve`; the same quote may be passed to several (the way one quote
+   covers the three Short picks). Promote an art pick onto the canonical file before `approve`.
+   A change they ask for is `note --kind owner_fix` and the fixed stage goes through `advance`
+   again. After the owner signs a round off, post the one round summary for the other brother
+   (`investing-bros-show` → Telegram).
 5. **Stale.** A changed input makes every stage made from it stale, and approvals of it with them
-   (a new cut: the main renders, chapters and the overlapping Shorts/segments). `next` lists them
-   first; redo them and ask for the approval again in the next round.
-6. **Uploads** are Private, through `investing-bros-episode-upload` → `yt_upload.py --record
-   "$EP/extras/uploads/<track>.json"`; the record is the upload stage's evidence. A re-upload makes
-   that track's `ok` and the publish OK stale.
-7. **Publish.** After the approval round, the owner's publish OK (`approve release publish_ok`),
-   then `investing-bros-publish`; its `can-public` re-checks this state file every time. Then the
-   post-live obligations: the Spotify link swap and deleting superseded Private uploads (`status`
-   lists them).
+   (a new cut: the main renders, chapters and the overlapping Shorts/segments). The title approval
+   (`main.title_ok`) follows only `כותרות-פרק-N.txt`: a description or chapter edit does not reopen
+   it. `next` lists stale stages first; redo them and ask for the approval again in the next round.
+6. **Uploads** are Private, with option A, through `investing-bros-episode-upload` →
+   `yt_upload.py --thumbnail <option A> --record "$EP/extras/uploads/<track>.json"`. The upload
+   record is the upload stage's evidence. The image sha256 is the sibling
+   `extras/uploads/<asset>-thumb.json` (`--set-thumbnail` after a pick that is not A); it is not
+   written into the upload record, so the swap does not stale `ok`. A re-upload makes that
+   track's `ok` and the publish OK stale. A later art change of mind stales that art approval
+   and `publish_ok`.
+7. **Publish.** After the approval round, approve each asset `ok` and each art pick, then the
+   owner's publish OK (`approve release publish_ok`; it needs those approvals and the current
+   `cuts_ok`, and is never waived). Then `investing-bros-publish`; its `can-public` re-checks
+   this state file and the thumbnail records every time. The publish gate counts a matching
+   record as the thumb or cover tick, and a failed one stays open. Then the post-live
+   obligations: the Spotify link swap and deleting superseded Private uploads (`status` lists them).
 8. **Retro (תחקיר), unasked.** When `next` shows `release.retro`: `retro` drafts
    `extras/retro-פרק-N.md` from the events (what went wrong by stage, where time went, waits on the
    owner, repeats from the last retro), each finding classified (script check / one line in the

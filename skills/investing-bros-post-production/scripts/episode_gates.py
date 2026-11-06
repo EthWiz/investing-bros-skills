@@ -14,10 +14,13 @@ Package contracts (the show's Drive tree and Naming):
              שורט-NN-<נושא>.m4v + -cover.jpg + .srt + youtube-שורט-NN.md, none empty
              (a Short is never filed as .mp4).
 """
+import hashlib
 import json
 import re
 import sys
 from pathlib import Path
+
+import episode_owner
 
 TS_RE = re.compile(r"^\s*\u200f?\(?(\d{1,2}:)?\d{1,2}:\d{2}\b", re.M)
 
@@ -50,7 +53,8 @@ ITEMS = [
     ("past_episode_cards", "review", "extras/past-episode-cards.json (find_past_episode_refs.py, max 4, IDs from "
      "investing-bros-show/references/episode-index.json, [] if none) + mark: cards added in Studio at those times"),
     ("redcircle_draft", "review", "RedCircle unpublished draft (mark with the draft URL)"),
-    ("published", "done", "extras/publish-checklist.json from investing-bros-publish with every item ticked or waived"),
+    ("published", "done", "extras/publish-checklist.json: every item ticked or waived, a thumb or cover "
+     "counted when its thumbnail record matches (a failed one stays open)"),
     ("spotify_links", "done", "Spotify episode URL swapped in for the show link on the episode, both segments and "
      "all three Shorts; check_links.py passed (mark with the URL)"),
     ("old_uploads", "done", "Superseded Private YouTube uploads of this episode's assets deleted, nothing public or "
@@ -164,6 +168,85 @@ def slot_file(ep: Path, kind: str, slot: str, suffix: str):
     return hits[0] if len(hits) == 1 else None
 
 
+# Checklist ids proved by extras/uploads/<asset>-thumb.json once extras/pipeline.json exists.
+# (item key is the checklist id; the tuple is asset, approval stage, filename suffixes.)
+ART_ITEMS = {
+    "episode.thumb": ("main", "main.art_ok", (".jpg",)),
+    "seg01.thumb": ("seg01", "seg01.thumb_ok", ("-thumb.jpg",)),
+    "seg02.thumb": ("seg02", "seg02.thumb_ok", ("-thumb.jpg",)),
+    "short01.cover": ("short01", "short01.cover_ok", ("-cover.jpg",)),
+    "short02.cover": ("short02", "short02.cover_ok", ("-cover.jpg",)),
+    "short03.cover": ("short03", "short03.cover_ok", ("-cover.jpg",)),
+}
+
+
+def _sha256(path: Path):
+    if not path.is_file():
+        return None
+    h = hashlib.sha256()
+    with open(path, "rb") as f:
+        for block in iter(lambda: f.read(1 << 20), b""):
+            h.update(block)
+    return h.hexdigest()
+
+
+def _approved_file_sha(stage: dict, suffixes) -> "tuple | None":
+    """(relative path, raw sha256) of the first approved image, or None."""
+    hashes = stage.get("of_hashes")
+    if not isinstance(hashes, dict):
+        return None
+    for key, val in hashes.items():
+        if val and any(str(key).endswith(s) for s in suffixes):
+            return str(key), str(val).split(":")[-1]
+    return None
+
+
+def art_record_matches(ep: Path, checklist: dict, item_id: str) -> bool:
+    """True when the side record is the approved pick for this video. A fail is not decided here."""
+    spec = ART_ITEMS.get(item_id)
+    if spec is None or not (ep / "extras" / "pipeline.json").is_file():
+        return False
+    asset, stage_key, suffixes = spec
+    try:
+        ps = json.loads((ep / "extras" / "pipeline.json").read_text(encoding="utf-8"))
+        rec = json.loads((ep / "extras" / "uploads" / f"{asset}-thumb.json").read_text(encoding="utf-8"))
+    except (OSError, ValueError, TypeError):
+        return False
+    if not isinstance(ps, dict) or not isinstance(rec, dict):
+        return False
+    stage = (ps.get("stages") or {}).get(stage_key) or {}
+    if not isinstance(stage, dict) or stage.get("state") != "approved":
+        return False
+    approved = _approved_file_sha(stage, suffixes)
+    if approved is None or rec.get("sha256") != approved[1]:
+        return False
+    if _sha256(ep / approved[0]) != approved[1]:
+        return False
+    upload = (ps.get("stages") or {}).get(f"{asset}.upload") or {}
+    data = upload.get("data") if isinstance(upload, dict) else None
+    vid = data.get("video_id") if isinstance(data, dict) else None
+    if rec.get("video_id") != vid:
+        return False
+    videos = checklist.get("videos") if isinstance(checklist, dict) else None
+    group = item_id.split(".", 1)[0]
+    if not isinstance(videos, dict) or rec.get("video_id") != videos.get(group):
+        return False
+    owner = ((ps.get("owner") or {}).get("name")) if isinstance(ps.get("owner"), dict) else None
+    return episode_owner.manual_thumb_problem(ep, owner, rec) is None
+
+
+def publish_item_satisfied(ep: Path, checklist: dict, item: dict) -> bool:
+    """A failed item is never done. With a pipeline, a thumb/cover counts only via its record."""
+    if not isinstance(item, dict):
+        return False
+    if item.get("state") == "failed":
+        return False
+    item_id = item.get("id") or ""
+    if item_id in ART_ITEMS and (ep / "extras" / "pipeline.json").is_file():
+        return art_record_matches(ep, checklist, item_id)
+    return item.get("state") in ("ticked", "waived")
+
+
 def file_check(ep: Path, n: int, item: str):
     """Return None when satisfied by files, else a reason string."""
     x = ep / "extras"
@@ -269,11 +352,15 @@ def file_check(ep: Path, n: int, item: str):
         if not f.is_file():
             return "missing extras/publish-checklist.json (investing-bros-publish)"
         try:
-            items = json.loads(f.read_text(encoding="utf-8"))["items"]
+            data = json.loads(f.read_text(encoding="utf-8"))
+            items = data["items"]
         except (ValueError, KeyError, TypeError):
             return "extras/publish-checklist.json unreadable"
-        open_ = [i["id"] for i in items if i.get("state") not in ("ticked", "waived")]
-        return None if items and not open_ else f"publish checklist still open: {', '.join(open_[:6])}"
+        if not isinstance(data, dict) or not isinstance(items, list):
+            return "extras/publish-checklist.json unreadable"
+        open_ = [i.get("id", "?") if isinstance(i, dict) else "?"
+                 for i in items if not publish_item_satisfied(ep, data, i)]
+        return None if items and not open_ else f"publish checklist still open: {', '.join(str(x) for x in open_[:6])}"
     return None  # manual items have no file check
 
 

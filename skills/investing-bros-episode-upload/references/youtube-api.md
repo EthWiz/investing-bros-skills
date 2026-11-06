@@ -17,11 +17,17 @@ $PY $S/yt_upload.py "$EP/extras/פרק-N-youtube.mp4" --source "$EP/video/פרק
     --tags "השקעות,פודקאסט" --thumbnail thumb.jpg [--playlist PLAYLIST_ID] \
     --asset main --record "$EP/extras/uploads/main.json"                  # always Private
 $PY $S/yt_upload.py --resume "$EP/extras/uploads/main.json"           # after a failure: finish, never insert again
-$PY $S/yt_upload.py --set-thumbnail VIDEO_ID --thumbnail thumb.jpg   # thumbnail only
+$PY $S/yt_upload.py --set-thumbnail VIDEO_ID --thumbnail thumb.jpg \
+    --asset main --record "$EP/extras/uploads/main.json"            # swap only; does not rewrite the upload record
 ```
 It prints `VIDEO_ID`, `URL` and `RECORD`. The record (`asset`, `version`, `channel`, `video_id`,
 `steps`, `steps_done`, `file_sha256`, `source_sha256`, `superseded`) is the episode's proof of what
-is uploaded; `investing-bros-producer` reads it. `version` is the sha256 of `--source` (for the full
+is uploaded; `investing-bros-producer` reads it. A thumbnail that is set also writes
+`extras/uploads/<asset>-thumb.json` (`asset`, `video_id`, `file`, `sha256`, `set_at`) beside that
+record. The image sha256 is not a field of the upload record, so a swap does not stale `ok` or
+`publish_ok`. `can-public` checks the side record against the approved pick. When `thumbnails.set`
+refuses a Short cover, the phone-app acknowledgement is `publish_checklist.py record-thumb`
+(`investing-bros-publish`), not a hand-written file and not a waiver. `version` is the sha256 of `--source` (for the full
 episode: the master the compressed copy was made from, after `verify_sync.py` showed `SYNC OK`), else
 of the uploaded file; the Producer refuses a record whose version isn't the current video's. After a
 Studio upload, write the record by hand with `source_sha256` = `shasum -a 256` of that video. The script refuses:

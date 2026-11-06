@@ -210,17 +210,31 @@ def evaluate(ep, state: dict, hasher: "Hasher | None" = None) -> dict:
                     res = {"status": "stale", "why": "changed since it passed: " + ", ".join(
                         ("missing " if cur.get(k) is None else "") + k for k in changed)}
             if res["status"] == "current" and rec.get("state") == "approved" and rec.get("of"):
-                of = ev(rec["of"], seen)
-                of_rec = stages.get(rec["of"])
                 approved_ver = rec.get("of_version", rec.get("version"))
-                if of["status"] != "current":
-                    res = {"status": "stale", "why": f"{rec['of']} is {of['status']}"}
-                elif rec.get("of_keys"):
-                    now_ver = version_of({k: (of_rec.get("outputs") or {}).get(k) for k in rec["of_keys"]})
-                    if now_ver != approved_ver:
+                if rec.get("of_keys"):
+                    # The approval is of these files only. A sibling output of `of` (the description
+                    # under a title, the segment video under a thumbnail) does not stale it, and neither
+                    # does `of` being stale for that reason. Compare the files on disk, not the parent's
+                    # recorded hashes, so a titles-file edit stales the approval before `of` is re-run.
+                    cur = current_outputs(ep, dict.fromkeys(rec["of_keys"]), marks, hasher)
+                    if version_of(cur) != approved_ver:
                         res = {"status": "stale", "why": f"{', '.join(rec['of_keys'])} changed after the approval"}
-                elif of_rec.get("version") != approved_ver:
-                    res = {"status": "stale", "why": f"{rec['of']} changed after the approval"}
+                else:
+                    of = ev(rec["of"], seen)
+                    of_rec = stages.get(rec["of"]) or {}
+                    if of["status"] != "current":
+                        res = {"status": "stale", "why": f"{rec['of']} is {of['status']}"}
+                    elif of_rec.get("version") != approved_ver:
+                        res = {"status": "stale", "why": f"{rec['of']} changed after the approval"}
+            # A backfilled approval names the files in of_hashes without of_keys (an older
+            # thumb_ok watches the package, not the image). A later byte change stales it.
+            hashes = rec.get("of_hashes")
+            if (res["status"] == "current" and rec.get("state") == "approved"
+                    and isinstance(hashes, dict) and hashes and not rec.get("of_keys")):
+                cur = current_outputs(ep, dict.fromkeys(hashes), marks, hasher)
+                changed = [k for k, v in hashes.items() if cur.get(k) != str(v).split(":")[-1]]
+                if changed:
+                    res = {"status": "stale", "why": "approved file changed: " + ", ".join(changed)}
             if res["status"] == "current":
                 for inp, ver in (rec.get("inputs") or {}).items():
                     i = ev(inp, seen)

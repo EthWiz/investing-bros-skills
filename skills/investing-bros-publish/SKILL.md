@@ -51,7 +51,7 @@ python3 scripts/publish_checklist.py render $S                 # the report for 
 - Evidence is what you saw and where, after reopening the page: a saved toast doesn't count, and neither does memory of having clicked.
 - Pre checks of a later item (for example a Short's Related video while it's Private) may be done early. Only the switch to Public waits.
 - `publish-ok` records the owner's OK (`release.publish_ok`) with the video IDs it covers; nothing goes Public before it, and a changed video ID makes it stale.
-- `waive` takes the episode owner's own words (`--by "<Owner> 22:10: ..."`) and only for waivable checks. `public`, `live` and a Short's `related` can never be waived.
+- `waive` takes the episode owner's own words (`--by "<Owner> 22:10: ..."`) and only for waivable checks. `public`, `live`, `thumb`, `cover` and a Short's `related` can never be waived.
 - A failed or open item blocks every later Public switch. Report it and wait. Don't skip ahead.
 - With the episode state (`extras/pipeline.json`, `investing-bros-producer`), `can-public` and every `public` tick re-check it each time: the owner's publish OK there must be current, each group's approval current, and each video ID the one in its upload record. After a re-upload, `set-video STATE GROUP ID` records the new ID and reopens that group; the owner gives the publish OK again (in both: `pipeline.py approve release publish_ok` and `publish-ok`).
 - Outside checks, with no login: `python3 scripts/check_live.py redcircle --episode N --title title.txt` and `python3 scripts/check_live.py youtube ID ... --expect public|unlisted|private`.
@@ -85,7 +85,7 @@ For each Short:
    - **Empty Related video picker: check the active channel first.** "No matching results" for the episode URL, ID and title is not a permissions problem. It means Studio is acting as Grok Bot. Go back to `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`, confirm אחים להשקעות in the avatar menu, click into the Short and try again. Only if the picker is still empty with אחים להשקעות active: keep the Short Private and ask Amitai or Nadav to set Related video from the owner/brand account. Name the Short (title + ID) and the full episode to pick (title + `https://youtu.be/<EPISODE_ID>`), with the path Studio → אחים להשקעות → Content → Shorts → the Short. Then reopen it yourself (from the list, with אחים להשקעות active) and check the field before ticking.
    - If the picker answers "No matching results" or won't save in any other case: retry with the episode title, then the full URL, then wait a few minutes and reload Studio (the episode must be Public and indexed). If it still fails, `fail shortNN.related --reason ...`. **The Short stays Private**, and you report the failure to the episode owner. Never publish a Short with only a description link, and never waive this check.
 3. Hebrew `.srt`: upload it in Studio → Subtitles, reopen, and check that the language row shows it published. An upload toast that says "failed" means it didn't work, even when the lines appear in the editor.
-4. Custom cover, and the episode owner's approval of the cut from the approval round (or their waiver in their words).
+4. Custom cover: `can-public` checks `extras/uploads/shortNN-thumb.json` against the approved pick. It is not a hand tick and cannot be waived. A failed cover stays failed even when the record matches. When the API refuses the cover, `record-thumb` stores the owner's words and a screenshot (references/studio-checks.md). The cut approval from the approval round is `shortNN.approval` (or the owner's waiver of that cut, in their words).
 5. `can-public shortNN`, Public, `check_live.py`, tick `shortNN.live`.
 
 ### 6. No pinned comments
@@ -95,7 +95,7 @@ No pinned comments on segments or Shorts (Amitai, 2026-11-01). Don't post or pin
 Swap the show link for the Spotify episode link (`https://open.spotify.com/episode/<id>`, no `?si=`) on the `האזינו בספוטיפיי:` line of the episode, both segments and all three Shorts. Run `check_links.py` and report it. This edit is part of the approved publish.
 
 ## Done when
-- The state file (`extras/publish-checklist.json` in the episode folder) has every item ticked or waived by the episode owner, and `render` says "All checks done."
+- The state file (`extras/publish-checklist.json` in the episode folder) has every item ticked or waived by the episode owner, except `thumb` and `cover`: those stay open, `can-public` accepts a matching thumbnail record, a failed one stays failed, and `render` says "All checks done."
 - RedCircle, the full episode, both segments and all three Shorts are Public, in that order, each confirmed by `check_live.py`.
 - Every Short's Related video is the full episode, confirmed by reopening its edit page.
 - Every open or failed item has been reported to the episode owner with its reason, and its video is still Private if the failure was before its `public` item.

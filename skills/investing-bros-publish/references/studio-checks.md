@@ -40,8 +40,12 @@ verification.
     Short Private and report it. No waiver.
 - **srt**: Subtitles → Add language → Hebrew → Upload file → With timing. Reopen Subtitles and check that
   the Hebrew row shows as published. A "failed" toast is a failure even if the lines show in the editor.
-- **cover**: desktop Studio may not offer a cover for a Short. Then the cover is set in the YouTube phone
-  app by Amitai or Nadav, or Amitai waives it in his own words.
+- **cover**: desktop Studio may not offer a cover for a Short, and `thumbnails.set` sometimes refuses
+  one. Amitai or Nadav sets it in the YouTube phone app, then
+  `publish_checklist.py record-thumb STATE --asset shortNN --thumbnail <cover> --video-id ID --evidence <screenshot> --by "<owner> HH:MM: <their words>"`
+  writes `extras/uploads/shortNN-thumb.json` (the file's sha256, the video ID, the quote, the screenshot).
+  That is not a waiver and it does not tick the item. `can-public` accepts it only when the sha256 is the
+  approved pick. A failed cover stays failed.
 
 ## Comments
 No pinned comments on segments or Shorts (Amitai, 2026-11-01): there is no comment check. Any comment is posted only while **אחים להשקעות** is the active channel (a comment from Grok Bot, `@GrokBot-c2b`, appears under the wrong channel).

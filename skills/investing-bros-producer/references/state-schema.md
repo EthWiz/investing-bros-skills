@@ -32,13 +32,14 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
       "at": "...",
       "version": "sha256:…",            // digest of `outputs` (approvals: the approved version)
       "outputs": {"extras/edit.json": "<sha256>", "הקלטה-ערוכה-פרק-11.m4a": "<sha256>"},
-      "inputs": {"main.cuts_ok": "sha256:…"},   // each input stage's version when this passed
+      "inputs": {"main.cut_list": "sha256:…"},  // each input stage's version when this passed (trim follows the draft list)
       "data": {"edit": {"start": 12.4, "end": 2710.0, "cuts": [[1605.0, 1645.2]]}}
     },
     "main.cuts_ok": {
       "state": "approved", "at": "...",
       "of": "main.cut_list", "of_version": "sha256:…", "version": "sha256:…",  // the version of `of` approved
-      "of_keys": null,                  // or the outputs of `of` it covers (a thumbnail pick: only -thumb.jpg)
+      "of_keys": null,                  // or the outputs of `of` it covers (title_ok: only כותרות-פרק-N.txt;
+                                        // a thumbnail pick: only -thumb.jpg). Other outputs of `of` do not stale it.
       "inputs": {},
       "by": "nadav", "quote": "Nadav 11:40: מאשר את כל החיתוכים"
     },
@@ -92,8 +93,15 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   publishing don't stale them.
 - A stage is **stale** when (a) one of its output files no longer matches its recorded
   sha256, or (b) an input stage's current version differs from the one recorded in `inputs`,
-  or that input is itself stale. An approval is stale when the version of `of` differs from
-  the approved `version`, or `of` is stale.
+  or that input is itself stale. A prerequisite listed only as a need (not an input) blocks
+  `advance` until it is current and is not recorded, so it does not stale the stage by itself.
+  `main.cuts_ok` is a need of `main.video`, `segNN.render` and `shortNN.render`, and an input
+  of none of them: trim follows the draft cut list. An approval with no `of_keys` is stale when the version of
+  `of` differs from the approved `version`, or `of` is stale. An approval with `of_keys` is
+  stale only when one of those files is missing or its bytes differ from the approved
+  fingerprint (compared on disk, not via the parent's recorded hash). Another output of `of`
+  changing — the description and its chapters under `title_ok`, the segment video under a
+  thumbnail pick — does not stale it, even while `of` itself is stale.
 - **Overlap rule:** a segment or Short render records its raw ranges and the `edit` snapshot
   it was made from (a segment: `selected_ranges`, the picked range minus its own drops, with
   the episode cuts inside it kept in, so restoring a cut the segment crossed stales it too). When `main.trim` changes, the render is stale only if a raw range overlaps
@@ -107,7 +115,26 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   `file_sha256` or `source_sha256` equals the sha256 of the track's current video (the master,
   the segment `.mp4`, the Short `.m4v`), so a record of an older render fails. It copies
   `video_id` into `data`; a new record (re-upload) changes the stage's version
-  and so stales `ok`, `publish_ok` and the publish checks for that group.
+  and so stales `ok`, `publish_ok` and the publish checks for that group. The thumbnail is not
+  a field of this record.
+- **Thumbnail records** (`extras/uploads/<asset>-thumb.json`, written by the upload's thumbnail
+  step and by `yt_upload.py --set-thumbnail`): `{asset, video_id, file, sha256, set_at}`.
+  `publish_checklist.py can-public` accepts `episode.thumb`, `segNN.thumb` and `shortNN.cover`
+  only when `sha256` is the approved pick (`of_hashes` on `main.art_ok`, `segNN.thumb_ok` or
+  `shortNN.cover_ok`) and `video_id` is the current upload. The publish gate (`published`)
+  counts that same match as ticked. A failed item is never counted. Those items are never
+  waived, and with this file present they are not hand-ticked. A manual record (the YouTube
+  phone app, `publish_checklist.py record-thumb`) adds `manual`, `by`, `quote` and `evidence`
+  (a screenshot inside the episode folder). It is the owner's acknowledgement, not a waiver.
+  An older art approval with no `of_hashes` does not pass that check. `pipeline.py backfill-art`
+  records the hashes from the owner's words and does not change the approval's version; a later
+  change to those bytes stales it. `release.publish_ok` takes `main.cuts_ok` as an input, so a
+  new cut approval stales the publish OK. Render stages do not: a cut outside a render's range
+  still leaves that render current.
+- A segment package fingerprints the `.mp4`, the `.txt` and the notes file. A Short package
+  fingerprints the `.m4v`, the `.srt` and the notes file. `-thumb.jpg` and `-cover.jpg` stay
+  required on disk and stay out of those fingerprints, so promoting an A/B/C pick does not
+  stale the package, the upload or `ok`.
 - **Segment package records** (`extras/segment-NN.json`, written by `segment-video` →
   `make_segment.py`): the raw range, source type and offset, the mapped source range, the
   cuts, the render plan, the `verify_sync` result and the sha256 of each package file.

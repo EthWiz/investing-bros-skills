@@ -7,7 +7,7 @@ and never the same asset twice.
                --asset main|seg01|seg02|short01|short02|short03 --record extras/uploads/ASSET.json
                [--version V] [--replace]
   yt_upload.py --resume extras/uploads/ASSET.json [--thumbnail IMG] [--playlist ID]
-  yt_upload.py --set-thumbnail VIDEO_ID --thumbnail IMG
+  yt_upload.py --set-thumbnail VIDEO_ID --thumbnail IMG --asset ASSET --record extras/uploads/ASSET.json
 
 Credentials: ~/.config/youtube-uploader/{client_secret.json,token.json} (never commit/print).
 
@@ -20,6 +20,10 @@ Rules the script enforces:
   video_id, steps, steps_done), before the thumbnail and the playlist. If a later step
   fails, rerun with --resume RECORD: it finishes the remaining steps on the same video
   ID and never inserts again.
+- A thumbnail that is set (the upload's thumbnail step, or --set-thumbnail) is recorded
+  beside the upload record, at extras/uploads/<asset>-thumb.json: asset, video_id, file,
+  sha256, set_at. That sha is not written into the upload record, so swapping the
+  thumbnail does not stale the upload or the approvals of it.
 - A record already holding this asset version refuses a second insert, unless --replace
   (the old ID moves to `superseded`, for the old-uploads cleanup). A new version of the
   asset (a fixed file) is a normal re-upload; the old ID is recorded as superseded too.
@@ -143,6 +147,20 @@ def insert(yt, a, sleep=time.sleep) -> str:
     return resp["id"]
 
 
+def thumb_record_path(record: Path, asset: str) -> Path:
+    return Path(record).parent / f"{asset}-thumb.json"
+
+
+def write_thumb_record(record: Path, asset: str, video_id: str, image: str) -> Path:
+    """Proof of which image is on the video. A sibling of the upload record, never a field of it."""
+    img = Path(image)
+    path = thumb_record_path(record, asset)
+    save_record(path, {"asset": asset, "video_id": video_id, "file": img.name,
+                       "sha256": sha256_file(img), "set_at": now()})
+    print(f"THUMB_RECORD {path}")
+    return path
+
+
 def finish(yt, rec: dict, path: Path, sleep=time.sleep) -> None:
     """The steps after the insert, each recorded as soon as it is done."""
     vid = rec["video_id"]
@@ -152,6 +170,7 @@ def finish(yt, rec: dict, path: Path, sleep=time.sleep) -> None:
         if step["name"] == "thumbnail":
             retry(lambda: yt.thumbnails().set(videoId=vid, media_body=media(step["file"])).execute(), "thumbnail", sleep)
             print("THUMBNAIL_SET")
+            write_thumb_record(path, rec["asset"], vid, step["file"])
         elif step["name"] == "playlist":
             retry(lambda: yt.playlistItems().insert(part="snippet", body={"snippet": {"playlistId": step["id"],
                   "resourceId": {"kind": "youtube#video", "videoId": vid}}}).execute(), "playlist", sleep)
@@ -232,7 +251,8 @@ def parser():
     p.add_argument("--version", help="asset version (default: the --source sha256, else the file's)")
     p.add_argument("--replace", action="store_true", help="upload this version again; the old ID becomes superseded")
     p.add_argument("--resume", metavar="RECORD", help="finish thumbnail/playlist on the recorded video; never inserts")
-    p.add_argument("--set-thumbnail", metavar="VIDEO_ID", help="only set --thumbnail on an existing video")
+    p.add_argument("--set-thumbnail", metavar="VIDEO_ID", help="only set --thumbnail on an existing video; "
+                   "writes extras/uploads/<asset>-thumb.json next to --record and does not rewrite the upload record")
     p.add_argument("--check-auth", action="store_true", help="refresh token and print channel; no upload")
     return p
 
@@ -245,8 +265,8 @@ def main(argv=None, yt=None, sleep=time.sleep) -> int:
             p.error("file and --title required")
         if not a.asset or not a.record:
             p.error("--asset and --record are required for an upload (the record prevents a second copy)")
-    if a.set_thumbnail and not a.thumbnail:
-        p.error("--set-thumbnail needs --thumbnail")
+    if a.set_thumbnail and not (a.thumbnail and a.asset and a.record):
+        p.error("--set-thumbnail needs --thumbnail, --asset and --record")
     if a.description_file:
         a.description = Path(a.description_file).read_text(encoding="utf-8")
     yt = yt or client()
@@ -260,6 +280,7 @@ def main(argv=None, yt=None, sleep=time.sleep) -> int:
         if a.set_thumbnail:
             retry(lambda: yt.thumbnails().set(videoId=a.set_thumbnail, media_body=media(a.thumbnail)).execute(),
                   "thumbnail", sleep)
+            write_thumb_record(Path(a.record), a.asset, a.set_thumbnail, a.thumbnail)
             print("THUMBNAIL_SET", a.set_thumbnail)
             return 0
         if a.resume:
