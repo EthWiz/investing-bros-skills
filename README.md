@@ -16,7 +16,7 @@ From the finished recording to live on RedCircle, Spotify and YouTube. Each step
 | # | Step | Skill | Leaves in the Drive folder `פרק N — נושא/` | Approves |
 |---|---|---|---|---|
 | 0 | Before recording: news ideas, deep dive | `investing-bros-episode-preparation` | `brief/` | — |
-| 1 | Combine, level, transcribe and trim the audio; start the Producer | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`) | Episode owner (cuts) |
+| 1 | After the owner says the episode was recorded: pull Riverside tracks in the browser, then combine, level, transcribe and trim; start the Producer | `investing-bros-post-production` | `הקלטה-ערוכה-פרק-N.m4a`, `extras/` (transcript, `edit.json`). Raw footage stays off Drive when the pull works | Episode owner (cuts) |
 | 2 | Five question-led titles, description with chapters, artwork brief | `investing-bros-title-description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt`, artwork brief for brand | Episode owner (title) |
 | 3 | Per-host cold opens + intro + episode as one video; promo teaser | `investing-bros-video` | `video/`, `promo/` | Episode owner |
 | 4 | Exactly 3 shorts with a Codex cover each; optional 5–10 min mid-form highlights | `investing-bros-shorts` | `Shorts/`, `mid-form/` | Episode owner |

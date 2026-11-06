@@ -27,6 +27,9 @@ Prep docs, review-ready pings, draft links
 Status = the folder
 # Review uploads stay Private (2026-11-05); open PR #86 still has this
 Unlisted URL
+# Riverside tracks are pulled in the browser dashboard, not skipped because of a captcha (2026-11-06)
+the box cannot pass Riverside's captcha; don't block on it
+Riverside login from an agent box hits a captcha. Workaround: the host downloads the files on his Mac and uploads them to Drive.
 # The episode owner approves an episode's assets (2026-11-05)
 Nadav approves each cut before a rebuild or an upload
 only Amitai can waive a check

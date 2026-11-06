@@ -98,6 +98,8 @@ replacement, his latest named file wins and this entry must be updated.
   analytics/                       weekly YouTube/podcast stats: investing-bros-youtube-weekly.csv (id 1zd32riRkKuW7XjVNY4doCRbhwt49HdC7) ← analytics
 ```
 
+When `main.riverside` passes (`investing-bros-producer`), raw per-speaker footage stays in the episode working folder (`riverside/`) and is not uploaded to Drive. Drive `extras/` still gets the transcript, `edit.json` and the cut list. The raw master is uploaded only when that stage was waived.
+
 `לוח נושאי עומק (טנטטיבי)` is the only root-level working Doc. It lists upcoming episodes week by week, with one line for each planned deep-dive angle; all entries are tentative. If Amitai chooses another subject, move that week's planned subject and every later one back one week without dropping any, unless he says otherwise. Append new deep-dive candidates to the end. Episode prep reads and confirms or updates the queue first; after recording, mark the week done with the actual subject and roll the queue forward.
 
 **Shorts rule (all episodes):** exactly three Shorts are required. Every Short's Drive video (`.m4v`, so Drive assigns playable `video/x-m4v`) and its cover/thumbnail (`-cover.jpg`), plus its `.srt` and `youtube-שורט-NN.md`, go in the `Shorts/` subfolder of the Drive folder of the episode currently being worked on (whichever episode that is, e.g. `פרק 5 — …/Shorts/` when working on episode 5). Create `Shorts/` there if it's missing; never put a Short or its cover in the episode root, `promo/` or another episode's folder. If the episode already has a lowercase `shorts/` folder, use it instead of creating a second one. Episode-level art (square cover, 16:9 thumbnail, transcript) stays in the episode folder itself.
@@ -127,7 +129,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 - **Tone:** professional and calm. No "get rich quick", no money rain, no loud colours.
 - **Loudness:** episode −16 LUFS, social clips −14 LUFS, true peak ≤ −1.5 dBTP. A cold-open music mix uses true peak −1 dBTP (`investing-bros-video` → Cold-open music bed). The two hosts within ~3 dB of each other.
 - **Episode art:** every episode has a square cover and a 16:9 YouTube thumbnail made from it (square centred on a blurred background), both filed in the episode's Drive folder. `investing-bros-title-description` supplies the headline; `investing-bros-brand` owns the rules and the artwork.
-- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video); **vertical crops (shorts) use each host's own canonical camera track as-is** — never crop, zoom or upscale the combined / side-by-side export: the recording's share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline). Not the studio invite link or an exported-clip link; if the tracks are missing, **stop and ask the episode owner for the recording share link** (decided 2026-10-25; reinforced 2026-11-05). `--allow-side-by-side` needs the episode owner's OK.
+- **Recording layout:** Episodes are recorded in **Riverside**. Riverside side-by-side export, 1920×1080, 24 fps, often **mono** AAC audio: Amitai in the left half, Nadav in the right half (confirmed on episode 7). Check the first frame each episode — seats can change. The side-by-side export is the episode master (timeline, audio, the 16:9 video). When the owner says the episode was recorded, the Producer pulls each speaker's high-quality video and audio in the browser (`main.riverside`, `investing-bros-producer`) into the episode working folder and does not upload that raw footage to Drive. **Vertical crops (shorts) use each host's own canonical camera track as-is** — never crop, zoom or upscale the combined / side-by-side export. Those files are the pull's `riverside/` tracks (every part of a split session). The share link (`riverside.com/dashboard/studios/<studio>/recordings/<id>?share-token=…`) → Tracks → Amitai Ruskin / Nadav ruskin → download → **Aligned video** (CFR MP4, on the recording's timeline) is the fallback when that stage was waived or a file is missing. Not the studio invite link or an exported-clip link; if the tracks are still missing, **stop and ask the episode owner for the recording share link** (decided 2026-10-25; reinforced 2026-11-05). `--allow-side-by-side` needs the episode owner's OK.
 - **Host levels in the raw recording:** on episode 7 Amitai measured about 6.5 dB quieter than Nadav; give his pieces about +6 dB so both land within ~2 dB.
 
 ## Animation
@@ -145,6 +147,7 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
 | Video producer | ליאורה | Cold opens, the intro, mid-form and the video episode (Shorts are run by the Producer). The episode owner approves each video change before a rebuild or upload, and going Public |
 | WhatsApp owner | **Amitai Personal** (agent that owns WhatsApp Web) | No other agent opens WhatsApp Web or scans a QR. Agents without access to Amitai Personal: give Amitai the exact group, text and links and ask him (or whoever owns that account) to send. |
 | RedCircle login | `ami.ruskin@gmail.com` | Password in env `REDCIRCLE_PASSWORD`. If missing, use the live page's own password form — never ask Amitai to paste it in chat. |
+| Riverside login | Grok Bot vault | Web dashboard only. Open riverside.fm; it redirects to riverside.com. Fill the login only with secure fill. Never print it or store it in the repo. Not an env var. |
 | Drive large-file uploads | browser, signed in as `ami.grokbot@gmail.com` | Connector uploads cap at 100 MB, while large uploads in the box browser can stall. For finished videos, use the verified chunked handoff to the Mac in [references/environment.md](references/environment.md#delivering-files); connectors remain fine for Docs, folders and moves. |
 | YouTube Editor / large-file download | `investingbros.grokbot@gmail.com` | In the box browser. It owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`, its default; being deleted). Before any Studio action, open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` and confirm **אחים להשקעות** is active in the avatar menu (direct edit links load as Grok Bot). For a Drive file over the connector's 100 MB limit, first have the episode folder shared to this account, then use Drive's browser download. |
 | Show cover art | `Brand Resources/ישנים/אחים-להשקעות-cover-1400.jpg` (archived) | Old square cover; current logo is `Brand Resources/Investing-bros-logo.png` |
@@ -179,7 +182,9 @@ The title and description are plain `.txt` files (decided 2026-10-18), not Googl
   decide, it says so in its hand-back; the Producer asks them, batched with anything else pending.
 - **Contact the episode owner only for reviews and approvals**: one batched message per review round, with
   every asset and decision in it. Not for progress updates, status pings, routine choices the
-  skills already decide, or questions a skill or the transcript answers.
+  skills already decide, or questions a skill or the transcript answers. The one alert outside a
+  round is the Riverside pull still not ready after about 6 hours (`investing-bros-producer`). The
+  "episode was recorded" message is theirs; do not ping them to ask whether it happened.
 - **Superseded uploads are cleaned up automatically.** When an asset is re-uploaded (a fixed
   episode, segment or Short), the older **Private** upload of the same asset is deleted once the
   new one is verified in Studio. Never delete a Public video, one shared for review (Private, not yet replaced)
@@ -222,7 +227,7 @@ Prefer a **Doc or folder link** over pasting long text — long messages split b
 | # | Stage | Skill | Who approves |
 |---|---|---|---|
 | 0 | Before recording | `investing-bros-episode-preparation` | — |
-| 1 | Audio edit | `investing-bros-post-production` | Episode owner (cuts) |
+| 1 | Riverside tracks, then the audio edit | `investing-bros-post-production` | Episode owner (cuts). The pull starts when they say the episode was recorded |
 | 2 | Titles, description, artwork brief | `investing-bros-title-description` | Episode owner (title) |
 | 3 | Cold opens + intro + video episode, promo teaser | `investing-bros-video` | Episode owner |
 | 4 | Exactly 3 shorts, run by the Producer (rendered and animated with `investing-bros-remotion`); optional mid-form highlights | `investing-bros-shorts` | Episode owner |
@@ -240,6 +245,7 @@ Stages 2–4b only need the edit (transcript + `edit.json`), so they can run in 
 - Take an approval of an episode asset from anyone but its episode owner, or treat episode ownership as covering the course, show-wide metadata or new destinations.
 - Hand Shorts off to a separate Grok bot (`SendToAgent`, "Investing Bro Shorts", periphery-marketing). The Producer runs `investing-bros-shorts` directly.
 - Delete a Public video, the current version of an asset, or a Private review upload that hasn't been replaced.
-- Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name.
+- Put a token, password or cookie in chat, project instructions, project docs or this repo — refer to it by env-var name. The Riverside login is the Grok Bot vault entry, not an env var: secure fill only.
+- Delete a Riverside studio, project or recording.
 - Sign in to Amitai's Google account from a browser: Advanced Protection blocks automated sign-in (see [references/environment.md](references/environment.md)).
 - Write your own code where a skill's script exists, or work around a missing feature without saying so (Working rules).

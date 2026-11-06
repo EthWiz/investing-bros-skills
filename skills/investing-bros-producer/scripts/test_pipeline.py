@@ -9,10 +9,18 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent))
 import pipeline as pl  # noqa: E402
 import pipeline_state as ps  # noqa: E402
+import riverside_tracks as rt  # noqa: E402
 
 N = 11
 AM = "Amitai 10:00: מאשר"
 NA = "Nadav 10:00: מאשר"
+RIVER_DUR = 12.0
+
+
+@pytest.fixture(autouse=True)
+def _riverside_duration(monkeypatch):
+    """Fixture media is not a real recording; the pull's duration check reads this."""
+    monkeypatch.setattr(rt, "probe_duration", lambda path: RIVER_DUR)
 
 
 def touch(p: Path, text="x"):
@@ -39,7 +47,40 @@ def record(ep, track, vid, version=None, superseded=()):
         "superseded": [{"video_id": s} for s in superseded]}))
 
 
+def riverside_ready(ep: Path):
+    """A finished browser pull on disk: Amitai in two parts, Nadav in one.
+
+    Written straight into the pull record so fixtures that have no pipeline.json yet
+    (a migrate) still satisfy main.riverside. Duration is RIVER_DUR.
+    """
+    rows = [
+        ("riverside/amitai-1-video.mp4", "Amitai", 1, "video", b"av1"),
+        ("riverside/amitai-1-audio.wav", "Amitai", 1, "audio", b"aa1"),
+        ("riverside/amitai-2-video.mp4", "Amitai", 2, "video", b"av2"),
+        ("riverside/amitai-2-audio.wav", "Amitai", 2, "audio", b"aa2"),
+        ("riverside/nadav-1-video.mp4", "Nadav", 1, "video", b"nv1"),
+        ("riverside/nadav-1-audio.wav", "Nadav", 1, "audio", b"na1"),
+    ]
+    by, order = {}, []
+    for rel, speaker, part, kind, payload in rows:
+        p = ep / rel
+        p.parent.mkdir(parents=True, exist_ok=True)
+        p.write_bytes(payload)
+        if speaker not in order:
+            order.append(speaker)
+        by.setdefault(speaker, {}).setdefault(part, {})[kind] = {
+            "path": rel, "bytes": len(payload), "duration_s": RIVER_DUR, "quality": "high"}
+    speakers = [{"name": name, "parts": [
+        {"part": n, "video": parts["video"], "audio": parts["audio"]}
+        for n, parts in sorted(by[name].items())]} for name in order]
+    rt.save(ep, {"project": f"פרק {N}", "started_at": "2026-11-06T10:00:00+00:00",
+                 "last_check_at": "2026-11-06T10:05:00+00:00", "status": "ready", "via": "browser",
+                 "drive_upload": False, "interval_minutes": 15, "armed_by": AM,
+                 "ready_at": "2026-11-06T10:05:00+00:00", "checks": [], "speakers": speakers})
+
+
 def audio_files(ep, cuts=([500, 520],)):
+    riverside_ready(ep)
     touch(ep / "extras/investing-bros-episode-raw-untrimmed.m4a", "raw")
     touch(ep / "extras/transcript/segments.json", "[]")
     touch(ep / "extras/cuts-review/cuts-list.txt", "[routine] 500-520 the courier call")
@@ -104,10 +145,20 @@ def test_start_then_next_shows_the_first_step(tmp_path, capsys):
     assert run("next", tmp_path, "--json") == 0
     rows = json.loads(capsys.readouterr().out)
     main = next(r for r in rows if r["track"] == "main")
-    assert main["stage"] == "intake" and main["skill"] == "investing-bros-post-production"
+    assert main["stage"] == "riverside" and main["skill"] == "investing-bros-post-production"
+    assert "polling routine" in main["command"] and "10-20" in main["command"]
+    assert "secure fill" in main["command"] and "busy loop" in main["command"]
     seg = next(r for r in rows if r["track"] == "seg01")
     assert seg["waits"] == "blocked" and seg["blocked_by"] == ["main.trim"]
     assert run("start", tmp_path, "--episode", N, "--owner", "amitai") == 1     # never twice
+
+
+def test_waived_riverside_lets_intake_use_a_local_master(tmp_path):
+    ep = started(tmp_path)
+    touch(ep / "extras/investing-bros-episode-raw-untrimmed.m4a", "raw")
+    assert run("advance", ep, "main", "intake") == 1
+    assert run("waive", ep, "main.riverside", "--by", "Amitai 10:05: בלי ריברסייד, הקבצים אצלי") == 0
+    assert run("advance", ep, "main", "intake") == 0
 
 
 def test_start_owner_quote_must_be_the_owners(tmp_path):
@@ -118,6 +169,11 @@ def test_start_owner_quote_must_be_the_owners(tmp_path):
 
 def test_advance_refuses_on_a_failed_check_and_logs_it(tmp_path):
     ep = started(tmp_path)
+    assert run("advance", ep, "main", "riverside") == 1
+    s = ps.load(ep)
+    assert s["events"][-1]["kind"] == "check_failed" and "riverside" in s["events"][-1]["detail"].lower()
+    riverside_ready(ep)
+    assert run("advance", ep, "main", "riverside") == 0
     assert run("advance", ep, "main", "intake") == 1
     s = ps.load(ep)
     assert s["events"][-1]["kind"] == "check_failed" and "raw master" in s["events"][-1]["detail"]
@@ -468,7 +524,9 @@ def test_note_kinds_and_retro_classification(tmp_path):
     run("note", ep, "--kind", "workaround", "Drive upload stalled; used the chunked handoff")
     run("note", ep, "--kind", "handback_returned", "--track", "seg02", "nudge covered Nadav's eyes")
     run("note", ep, "--kind", "owner_fix", "spelling: ספייסאקס")
-    assert run("advance", ep, "main", "intake") == 1             # a failed check
+    riverside_ready(ep)
+    assert run("advance", ep, "main", "riverside") == 0
+    assert run("advance", ep, "main", "intake") == 1             # a failed check (no raw master yet)
     assert run("retro", ep) == 1                                 # not live yet
     assert run("retro", ep, "--force") == 0
     text = (ep / f"extras/retro-פרק-{N}.md").read_text(encoding="utf-8")
@@ -482,6 +540,8 @@ def test_retro_flags_repeats_from_the_last_one(tmp_path):
     prev = tmp_path / "פרק 10 — y" / "extras" / "retro-פרק-10.md"
     touch(prev, "| # | Finding | Stage | Class | Why |\n|---|---|---|---|---|\n"
                 "| 1 | check_failed: raw | main.intake | one line in the owning skill | x |\n")
+    riverside_ready(ep)
+    assert run("advance", ep, "main", "riverside") == 0
     assert run("advance", ep, "main", "intake") == 1
     assert run("retro", ep, "--force") == 0
     text = (ep / f"extras/retro-פרק-{N}.md").read_text(encoding="utf-8")

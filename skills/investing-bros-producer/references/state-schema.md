@@ -107,6 +107,11 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   the episode cuts inside it kept in, so restoring a cut the segment crossed stales it too). When `main.trim` changes, the render is stale only if a raw range overlaps
   the span the edit changed (kept ranges added or removed); otherwise the change is logged as
   an event and the render keeps its version.
+- **Riverside pull** (`main.riverside`, `extras/riverside-pull.json`): the owner's words that
+  the episode was recorded, the polling interval (10–20 minutes, about 15), and each
+  speaker's high-quality video and audio (every part of a split session) with path, bytes
+  and duration. `via` is `browser` and `drive_upload` is false. The same list is copied
+  into the stage's `data` when it passes. The media stays in the episode working folder.
 - **Upload records** (`extras/uploads/<track>.json`, written by `episode-upload` →
   `yt_upload.py --record`): `{asset, version, channel, video_id, steps, steps_done, file,
   file_sha256, source, source_sha256, privacy, created_at, superseded: [{video_id, version,

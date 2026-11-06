@@ -38,6 +38,7 @@ sys.path.insert(0, str(HERE))
 import episode_gates as G  # noqa: E402
 import episode_owner as O  # noqa: E402
 import pipeline_state as PS  # noqa: E402
+import riverside_tracks as RT  # noqa: E402
 
 TRACKS = ["main", "seg01", "seg02", "short01", "short02", "short03", "release"]
 SHOW_CHANNEL_ID = "UCWIlggXQNDFiyJghl6VB6Xw"  # אחים להשקעות (investing-bros-show -> Roles and accounts)
@@ -48,6 +49,19 @@ TRACK_MARKS = {"main.endscreen", "seg01.select", "seg02.select", "seg01.nudge", 
 MARKABLE = TRACK_MARKS | G.MANUAL | G.NEEDS_MARK
 NOTE_KINDS = ["note", "owner_fix", "handback_returned", "workaround"]
 P = "python3 <investing-bros-producer>/scripts/pipeline.py"
+# Printed by `next` for main.riverside. Browser dashboard only; the owner's chat message arms the routine.
+RIVERSIDE_CMD = (
+    "python3 <investing-bros-producer>/scripts/riverside_tracks.py begin|due|checked|commit|verify "
+    "(references/riverside-pull.md). Starts when the episode owner says in chat that the episode was "
+    "recorded: begin --by those words, then arm one temporary polling routine at about 15 minutes "
+    "(allowed range 10-20). In the browser, open the episode's project on the Riverside web dashboard; "
+    "riverside.fm redirects to riverside.com. Sign in with the Grok Bot vault login via secure fill only. "
+    "Each wake is one check, never a busy loop. Download every speaker's high-quality video and audio, "
+    "including every part when the session was split, into $EP/riverside/. Verify sizes and durations, "
+    "advance main riverside, then delete or disable the routine (disarm: true). Give up and alert the "
+    "owner after about 6 hours, and disable the routine then too. Do not upload that raw footage to "
+    "Drive. Never delete a Riverside studio, project or recording."
+)
 
 
 # ---- context --------------------------------------------------------------------------------------
@@ -126,6 +140,18 @@ def raw_master(c):
 def raw_master_files(c):
     return [f"extras/investing-bros-episode-raw-untrimmed.{e}" for e in ("m4a", "mp4")
             if (c.ep / f"extras/investing-bros-episode-raw-untrimmed.{e}").is_file()]
+
+
+def riverside_check(c):
+    return RT.verify_episode(c.ep)
+
+
+def out_riverside(c):
+    return [RT.MANIFEST_REL, *RT.media_paths(RT.load(c.ep) or {})]
+
+
+def riverside_data(c):
+    return RT.stage_data(RT.load(c.ep) or {})
 
 
 def gate(stage):
@@ -377,8 +403,11 @@ def stage_map():
     up, sg, sh, pb = ("investing-bros-episode-upload", "investing-bros-segment-video", "investing-bros-shorts",
                       "investing-bros-publish")
     m = [
-        W("main", "intake", pp, "producer", f"<{pp}>/scripts/combine_parts.sh (steps 1-2); raw master into extras/",
-          raw_master, out_raw),
+        W("main", "riverside", pp, "producer", RIVERSIDE_CMD, riverside_check, out_riverside,
+          data=riverside_data),
+        W("main", "intake", pp, "producer", f"<{pp}>/scripts/combine_parts.sh (step 2); the raw master stays "
+          "local when main.riverside passed",
+          raw_master, out_raw, inputs=["main.riverside"]),
         W("main", "master", pp, "producer", f"python3 <{pp}>/scripts/transcribe.py (step 4); then {P} mark EP "
           "transcript_doc --evidence <Doc URL>", items("transcript", "transcript_doc"),
           join(out_files("extras/transcript/segments.json"), out_marks("transcript_doc")), inputs=["main.intake"]),
