@@ -43,7 +43,7 @@ change is actually there. If it is, you're done; if it isn't, save again.
     tick it after your own reopen check.
   - Still failing after that reload, with the episode Public and אחים להשקעות active: `fail shortNN.related --reason ...`, leave the
     Short Private and report it. No waiver.
-- **srt**: Subtitles → Add language → Hebrew → Upload file → With timing. Reopen Subtitles and check that
+- **srt**: Languages → Upload manual → With timing (Hebrew is the Short's own language, so it is greyed out under Add language). Reopen Subtitles and check that
   the Hebrew row shows as published. A "failed" toast is a failure even if the lines show in the editor.
 - **cover**: desktop Studio may not offer a cover for a Short, and `thumbnails.set` sometimes refuses
   one. Amitai or Nadav sets it in the YouTube phone app, then
