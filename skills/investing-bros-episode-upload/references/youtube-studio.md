@@ -21,6 +21,9 @@ Use the browser profile for the Editor account named in `investing-bros-show`.
 - Copy the new video link from Studio's upload dialog (or the Content row's ⋮ → Get
   shareable link); never type it.
 
+## After saving
+A toast that says "not able to save your video" is not proof the save failed. Leave the page, reopen the video from the Content list (with אחים להשקעות active) and check whether the change is actually there (`investing-bros-publish` → references/studio-checks.md). If it is, you're done; if it isn't, save again. A "Saved" toast is not verification either.
+
 ## Details
 - Paste the approved title and the YouTube description as plain text, with no
   RedCircle RTL marks.
