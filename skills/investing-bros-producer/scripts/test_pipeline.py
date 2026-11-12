@@ -139,6 +139,14 @@ def ev(ep):
     return ps.evaluate(ep, s)
 
 
+def test_approve_on_a_mark_stage_points_to_mark(tmp_path, capsys):
+    started(tmp_path)
+    assert run("approve", tmp_path, "release", "approval_round", "--by", AM) == 2
+    err = capsys.readouterr().err
+    assert "is not an approval stage" in err
+    assert "mark EP release.approval_round" in err
+
+
 def test_start_then_next_shows_the_first_step(tmp_path, capsys):
     started(tmp_path)
     capsys.readouterr()
