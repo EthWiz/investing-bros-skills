@@ -6,7 +6,9 @@ Usage:
 
 Prints duration, integrated loudness (target about -14 LUFS) and true peak (below -1 dB),
 and checks the opening and the ending: frame 1 is not black or fading in, speech starts
-within 0.4 s, and the short doesn't trail off in more than 1 s of silence. Length outside
+within 0.4 s on a clean, strong first word (never eh/אה, a filler, a false start or a
+stutter; the first caption/word may not start later than that), and the short doesn't
+trail off in more than 1 s of silence. Length outside
 15-45 s fails: 45 seconds is a hard cap, measured after the 1.15x speed-up.
 If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
 given), the caption and hook positions must be inside brand.CAPTION_Y_BOUNDS and
@@ -40,6 +42,146 @@ from brand import CAPTION_HALF, CAPTION_Y_BOUNDS, HOOK_GAP, HOOK_Y_BOUNDS, LOGO_
 LIMIT = (15, 45)
 DARK_FRAME = 25            # mean luma (0-255) below this reads as a black frame
 LEAD_SILENCE, TAIL_SILENCE = 0.4, 1.0
+OPENING_WINDOW = 3.0
+# Same idea as score_moments.FILLERS, plus Latin fillers and stretched "אה".
+FILLER_WORDS = frozenset({
+    "אז", "כן", "אוקיי", "אוקי", "טוב", "בקיצור", "רגע", "אה", "אהה", "אההה",
+    "אמ", "אממ", "יאללה", "נו",
+    "eh", "uh", "um", "umm", "uhh", "ah", "erm",
+})
+
+
+def _norm_word(tok):
+    return re.sub(r"^[^\w\u0590-\u05FF]+|[^\w\u0590-\u05FF]+$", "", tok or "", flags=re.UNICODE).lower()
+
+
+def _is_filler_token(tok):
+    w = _norm_word(tok)
+    return bool(w) and (w in FILLER_WORDS or w.startswith("אה") or w.startswith("eh") or w.startswith("uh") or w.startswith("um"))
+
+
+def opening_word_problems(words, lead=LEAD_SILENCE, window=OPENING_WINDOW):
+    """The first audio must be a clean, strong word. `words` are on the cut timeline (0 = start)."""
+    timed = sorted(
+        (w for w in words if w.get("end", 0) > 0 and w.get("start", 0) < window),
+        key=lambda w: w["start"],
+    )
+    if not timed:
+        return [f"no words in the first {window:.0f} s; transcribe the opening and trim to the first clean word"]
+    first = timed[0]
+    out = []
+    if first["start"] > lead:
+        out.append(
+            f"first word {first['w']!r} starts at {first['start']:.1f} s; "
+            f"trim the opening to the first clean word (lead must be ≤ {lead:.1f} s)"
+        )
+    if _is_filler_token(first["w"]):
+        out.append(
+            f"opens on filler {first['w']!r}; the first audio must be a clean, strong word, "
+            "never eh/אה, a filler, a false start or a stutter"
+        )
+    if len(timed) >= 2:
+        a, b = _norm_word(timed[0]["w"]), _norm_word(timed[1]["w"])
+        prefix_stutter = a and b and a != b and b.startswith(a) and len(a) <= 4
+        repeated_short = a and b and a == b and (a in FILLER_WORDS or len(a) <= 2)
+        if prefix_stutter or repeated_short:
+            out.append(
+                f"opens on a stutter {timed[0]['w']!r} {timed[1]['w']!r}; "
+                "cut to the first clean full word"
+            )
+    return out
+
+
+def first_clean_start(words, proposed_start, lead=LEAD_SILENCE, window=OPENING_WINDOW):
+    """Raw-timeline in-point: skip filler/stutter in the first `window` s and return the first clean word start."""
+    timed = sorted(
+        (w for w in words if w["end"] > proposed_start and w["start"] < proposed_start + window),
+        key=lambda w: w["start"],
+    )
+    i = 0
+    while i < len(timed) and _is_filler_token(timed[i]["w"]):
+        i += 1
+    if i + 1 < len(timed):
+        a, b = _norm_word(timed[i]["w"]), _norm_word(timed[i + 1]["w"])
+        if a and b and a != b and b.startswith(a) and len(a) <= 4:
+            i += 1
+        elif a and b and a == b and (a in FILLER_WORDS or len(a) <= 2):
+            i += 1
+    if i >= len(timed):
+        return proposed_start
+    start = timed[i]["start"]
+    return start if start - proposed_start > lead else proposed_start
+
+
+def iter_words(payload):
+    """Flatten captions.json, words.json, or a bare word list into {w, start, end}."""
+    if not payload:
+        return []
+    if isinstance(payload, dict):
+        payload = payload.get("words") or payload.get("captions") or payload.get("segments") or []
+    out = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        if "words" in item and isinstance(item["words"], list):
+            out.extend(iter_words(item["words"]))
+            continue
+        w = item.get("w") or item.get("word") or item.get("text")
+        s = item.get("start", item.get("s"))
+        e = item.get("end", item.get("e"))
+        if w and s is not None and e is not None:
+            out.append({"w": str(w), "start": float(s), "end": float(e)})
+    return out
+
+
+def words_from_srt(text):
+    """One word record per cue (cue start + first token) plus remaining tokens spread across the cue."""
+    cues = re.findall(
+        r"(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*-->\s*(\d{2}):(\d{2}):(\d{2})[,.](\d{3})\s*\n(.*?)(?=\n\n|\Z)",
+        text.replace("\r\n", "\n"),
+        flags=re.S,
+    )
+
+    def stamp(h, m, s, ms):
+        return int(h) * 3600 + int(m) * 60 + int(s) + int(ms) / 1000.0
+
+    out = []
+    for c in cues:
+        t0, t1 = stamp(*c[:4]), stamp(*c[4:8])
+        body = re.sub(r"<[^>]+>", "", c[8])
+        toks = [t for t in body.replace("\n", " ").split() if _norm_word(t)]
+        if not toks:
+            continue
+        step = (t1 - t0) / len(toks)
+        for i, tok in enumerate(toks):
+            out.append({"w": tok, "start": t0 + i * step, "end": t0 + (i + 1) * step})
+    return out
+
+
+def load_opening_words(path):
+    raw = open(path, encoding="utf-8").read()
+    if path.lower().endswith(".srt"):
+        return words_from_srt(raw)
+    return iter_words(json.loads(raw))
+
+
+def find_opening_words(video, explicit=None):
+    """Prefer an explicit file, then NAME.srt / captions.json next to the video (output timeline)."""
+    if explicit:
+        return explicit, load_opening_words(explicit)
+    stem = re.sub(r"\.[^.]+$", "", video)
+    directory = os.path.dirname(os.path.abspath(video)) or "."
+    name = os.path.basename(stem)
+    candidates = [
+        stem + ".srt",
+        os.path.join(directory, "captions.json"),
+        os.path.join(directory, name + "_captions.json"),
+    ]
+    for path in candidates:
+        if os.path.isfile(path):
+            return path, load_opening_words(path)
+    return None, None
+
 
 
 def luma(path, t):
@@ -147,6 +289,7 @@ def main():
     ap.add_argument("--layout", help="NAME_layout.json from build_fullbleed.py (default: next to the video)")
     ap.add_argument("--config", help="Short config containing the shared cover_title")
     ap.add_argument("--youtube-notes", help="youtube-שורט-NN.md; checked against --config")
+    ap.add_argument("--words", help="captions.json, words.json or .srt on the cut timeline (default: NAME.srt or captions.json next to the video)")
     a = ap.parse_args()
     if bool(a.config) != bool(a.youtube_notes):
         ap.error("--config and --youtube-notes must be given together")
@@ -167,6 +310,12 @@ def main():
         bad.append(f"layout file {a.layout} not found")
     if a.config:
         bad += metadata_problems(a.config, a.youtube_notes)
+    src, opening = find_opening_words(a.video, a.words)
+    if opening is None:
+        bad.append("no captions/words/srt for the opening; pass --words or keep NAME.srt next to the video")
+    else:
+        print(f"opening words: {src}")
+        bad += opening_word_problems(opening)
     for p in bad:
         print("warning:", p)
     return 1 if bad else 0

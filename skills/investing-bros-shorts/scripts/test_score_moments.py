@@ -38,6 +38,7 @@ def test_missing_scores_are_an_error():
 def test_pace_and_filler():
     assert pace_score(0.7) == 1 and pace_score(1.0) == 3 and pace_score(1.3) == 5
     assert starts_on_filler("אז, מה קרה בשוק?") and not starts_on_filler("אסטרואיד אחד יכול")
+    assert starts_on_filler("eh, כשזרקת את הרפרנס") and starts_on_filler("אה, תקשיב")
 
 
 def test_pieces_may_move_but_not_repeat():
@@ -57,3 +58,9 @@ def test_packaging_warnings():
 def test_candidate_speed_can_be_disabled():
     rows = rank(SEGS, [cand(0, 20, 5)], speed=1.0)
     assert not rows[0]["flags"]
+
+
+def test_late_first_word_is_flagged():
+    segs = SEGS + [{"start": 72.0, "end": 95.0, "text": "כשזרקת את הרפרנס לאינטרנט"}]
+    rows = rank(segs, [cand(70.0, 95.0, 5)])
+    assert "late first word" in rows[0]["flags"]
