@@ -80,7 +80,9 @@ site?" dialog appears, press **Cancel**.
 (`yt_upload.py`, the Studio share link), never retype it, and before saving any
 description, notes file or message run
 `python3 scripts/check_links.py FILE`: every YouTube link must resolve
-(episode 9 shipped a link with `I` typed for `l`), and a link on a look-alike
+(episode 9 shipped a link with `I` typed for `l`), leftover template tokens such as
+`<EPISODE_URL>` fail (replace them with the real URL before pasting; use the Spotify
+show link until the episode is listed), and a link on a look-alike
 domain (`youtube.com.evil.io`, `y0utube.com`) fails. Links to hosts outside the
 show's usual list (sponsors) are flagged for you to open, not failed.
 
