@@ -22,10 +22,10 @@ Gate: `investing-bros-producer` → `scripts/pipeline.py gate "$EP" --stage …`
 | `titles_description` | `כותרות-פרק-N.txt`, `תיאור-פרק-N.txt` | title-description | upload |
 | `thumbnail_cover` | `thumbnail-פרק-N.jpg`, `cover-פרק-N.png` in the episode root (not `promo/`) | brand | upload |
 | `face_identity` | Face grids labeled by **verified** host identity: side mapping checked at the start and after any mid-recording swap, each grid eyeballed before it reached Amitai (mark; `investing-bros-brand` → `references/face-picks.md`) | brand | upload |
-| `cover_checks` | `extras/cover-check.log`: `check_cover.py` `OK` for `thumbnail-פרק-N.jpg` and `cover-פרק-N.png` (with `--title`/`--register` headlines), no `FAIL`; mark with the Codex provenance (made by Codex on Amitai's Mac) | brand | upload |
+| `cover_checks` | `extras/cover-check.log`: `check_cover.py` `OK` for `thumbnail-פרק-N.jpg` and `cover-פרק-N.png` (with `--title`/`--register` headlines), no `FAIL`; mark with the Codex provenance (made by Codex on Amitai's Mac or the box CLI fallback, with the host) | brand | upload |
 | `segments` | Flat in `segments/`, exactly slots 01 (deep dive, `סגמנט-01-צלילה-…`) and 02, one package each: `סגמנט-NN-<סוג>-<נושא>.mp4` + `.txt` + `-thumb.jpg` + `youtube-סגמנט-NN.md`, none empty; a second final video for one slot fails | segment-video | review |
 | `shorts` | Exactly slots 01–03 in `Shorts/` (or an existing `shorts/`), one package each: `שורט-NN-<נושא>.m4v` + `-cover.jpg` + `.srt` + `youtube-שורט-NN.md`, none empty; a `.mp4` Short fails | shorts | review |
-| `shorts_covers` | Each Short's non-empty `-cover.jpg`; mark: face format from real frames, Codex on Amitai's Mac, `check_cover.py` OK. Waived with `shorts`. | shorts / brand | review |
+| `shorts_covers` | Each Short's non-empty `-cover.jpg`; mark: face format from real frames, Codex on Amitai's Mac or the box CLI fallback, `check_cover.py` OK. Waived with `shorts`. | shorts / brand | review |
 | `past_episode_cards` | `extras/past-episode-cards.json` from `scripts/find_past_episode_refs.py` (`[]` if no references): max 4, one per referenced episode at its first strong mention, video IDs from `investing-bros-show/references/episode-index.json`; mark once the info cards are set in Studio | post-production / episode-upload | review |
 | `redcircle_draft` | RedCircle unpublished draft (mark with URL) | episode-upload | review |
 | `published` | `extras/publish-checklist.json` from `investing-bros-publish`, every item ticked or waived | publish | done |

@@ -2,8 +2,8 @@
 """Typeset the exact Hebrew title on a vertical Shorts cover (Financial Journal style).
 
 The fallback for Shorts covers (references/shorts-covers.md): when a one-pass Codex
-cover's Hebrew does not verify exactly, Codex makes the face-format artwork text-free on
-Amitai's Mac and this script puts the title on. The headline is checked first with
+cover's Hebrew does not verify exactly, Codex makes the face-format artwork text-free
+(Mac first, box CLI fallback) and this script puts the title on. The headline is checked first with
 check_cover.py's glyph rules (no U+061F, brackets, box characters or missing glyphs). Torn-paper strips (line 1
 cream, line 2 mustard, slight opposite tilts, white paper fringe), navy Heebo Black
 type, an optional `פרק N` pill under the strips and the logo bottom-right.

@@ -424,7 +424,7 @@ def stage_map():
           "the cut list (raw times + the words around each cut; ask each [content] cut as a question and show every line)"),
         A("main", "title_ok", td, "main.copy", "the final title (written after בחירה סופית:)",
           of_keys="כותרות-פרק-{n}.txt"),
-        W("main", "art", br, "helper", f"<{br}> steps 3-8 (Codex on Amitai's Mac); check_cover.py >> "
+        W("main", "art", br, "helper", f"<{br}> steps 3-8 (Codex on Amitai's Mac, box CLI fallback); check_cover.py >> "
           "extras/cover-check.log. Option A is the file that goes up; A/B/C differ in art only",
           items("thumbnail_cover", "cover_checks", "face_identity"),
           out_files("cover-פרק-{n}.png", "thumbnail-פרק-{n}.jpg"), inputs=["main.title_ok"]),
@@ -479,7 +479,7 @@ def stage_map():
               f"EP/extras/check-short-{n2}.log", short_log(t), out_files(f"extras/check-short-{n2}.log"),
               inputs=[f"{t}.pick_ok", "main.trim"], needs=["main.cuts_ok"],
               data=render_data_from_mark(f"{t}.pick")),
-            W(t, "cover", br, "helper", f"<{br}> Shorts covers (Codex on Amitai's Mac) only after round 1 "
+            W(t, "cover", br, "helper", f"<{br}> Shorts covers (Codex on Amitai's Mac, box CLI fallback) only after round 1 "
               f"(the episode title and this Short's cover title). A/B/C differ in art only; check_cover.py "
               "--kind shorts-vertical >> EP/extras/cover-check.log", short_cover(t), out_short_cover(t),
               inputs=[f"{t}.pick_ok"], needs=["main.title_ok"]),

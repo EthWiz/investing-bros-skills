@@ -33,3 +33,12 @@ Riverside login from an agent box hits a captcha. Workaround: the host downloads
 # The episode owner approves an episode's assets (2026-11-05)
 Nadav approves each cut before a rebuild or an upload
 only Amitai can waive a check
+
+# Codex on the Mac is the first try; box CLI is the automatic fallback (2026-11-13, issue 101)
+Codex being unavailable is a blocker to report, not permission to switch
+There is no box fallback
+If Codex or the Mac is unavailable, stop and report
+If that backend is unavailable, report the blocker
+anywhere but Codex on Amitai's Mac
+Codex on Amitai's Mac makes every episode,
+segment and Shorts cover; there is no fallback

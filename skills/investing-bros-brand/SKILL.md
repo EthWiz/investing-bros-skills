@@ -4,7 +4,7 @@ description: >-
   Artwork for Investing Bros / אחים להשקעות in the Financial Journal identity:
   show and episode covers, thumbnails, segment thumbnails, Shorts covers,
   cards, lower thirds, intro art, templates and cover checks (Codex on
-  Amitai's Mac, Heebo). Use for "קאבר לשורט", "תמונת שער לשורט", קאבר, תמונת
+  Amitai's Mac, box CLI fallback, Heebo). Use for "קאבר לשורט", "תמונת שער לשורט", קאבר, תמונת
   פרק, מיתוג, שפה עיצובית, a brand guide or any visual decision.
 ---
 # Investing Bros brand
@@ -35,7 +35,7 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
 | [covers](references/covers.md) | Main-episode cover and thumbnail, segment thumbnail, show cover, illustrated alternatives |
 | [Shorts covers](references/shorts-covers.md) | Vertical Shorts cover and its Heebo title step |
 | [video graphics](references/video-graphics.md) | Teaser, Shorts hook, discussion card, lower third, motion |
-| [prompts](references/prompts.md) | Image-generation prompts and the Codex backend |
+| [prompts](references/prompts.md) | Image-generation prompts and the Codex backend (Mac first, box CLI fallback; `scripts/codex_runner.py`) |
 | [face picks](references/face-picks.md) | Each episode's host stills: ~10 per speaker, the operator picks and rejects (with reasons), recorded as eval labels |
 | [quality checks](references/quality-checks.md) | What to inspect by eye |
 | [asset index](references/asset-index.md) | Every reference image with its Drive ID |
@@ -50,13 +50,17 @@ does not override this skill. GitHub is canonical; refresh installed copies afte
    inspect each. A missing reference stops the run: report it, don't substitute. For an
    edit, use the exact image the user selected, never a nearby variant.
 3. Fill the matching prompt with the exact copy, number, format and subject, and attach
-   only the relevant references. **Hard rule (Amitai, episode 10): every episode, segment
-   and Shorts cover is made by Codex on Amitai's Mac** through prompts → Codex backend,
-   with this skill's references and the episode's real host frames as `-i` inputs. There
-   is no fallback: no Pillow compositing on the box, no other image generator, no
-   template pasted together in code. If Codex or the Mac is unavailable, stop and report
-   a blocker (to the Producer when one runs the episode). Until Amitai says the design is
-   dialed in, each of those covers is three clearly labeled options A/B/C. The options differ in art only (same approved headline, same Short cover title). Render a Short cover only after round 1 approves the episode title and that Short's cover title; there is no best-guess title. A cover-title change is not an A/B/C swap: the title is burned into the Short's opening banner, so the Short is re-rendered and re-uploaded. Independent Codex renders (A/B/C, wide vs square, each Short's cover) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). Other artwork
+   only the relevant references. **Hard rule: every episode, segment and Shorts cover is
+   made by Codex** through prompts → Codex backend, with this skill's references and the
+   episode's real host frames as `-i` inputs. Prefer Codex on Amitai's Mac. If the Mac is
+   offline, unreachable, or Codex there fails for a non-auth reason, fall back
+   automatically to Codex CLI on the box (`scripts/codex_runner.py`). There is no other
+   fallback: no Pillow compositing, no other image generator, no template pasted together
+   in code. If either Codex needs a login, a device code, or re-auth, stop and tell
+   Amitai — show him the device-code URL and one-time code and wait. When a Producer is
+   running the episode, report that stop to the Producer. Never copy
+   `~/.codex/auth.json`, never print tokens, never use an API key. Until Amitai says the design is
+   dialed in, each of those covers is three clearly labeled options A/B/C. The options differ in art only (same approved headline, same Short cover title). Render a Short cover only after round 1 approves the episode title and that Short's cover title; there is no best-guess title. A cover-title change is not an A/B/C swap: the title is burned into the Short's opening banner, so the Short is re-rendered and re-uploaded. Independent Codex renders (A/B/C, wide vs square, each Short's cover) run as **parallel concurrent sessions** on the chosen host, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). Other artwork
    may use the built-in image tool with the same prompt; say which generator ran in the
    hand-back. No code-drawn illustrations and no ad hoc Pillow renderers: the only
    typesetting script is `scripts/make_cover_title.py` (Heebo Black).
@@ -131,7 +135,10 @@ request return the filled prompt. Label a new format as a proposed adaptation un
   Codex as `-i` inputs and keeping them as photographic cutouts is required, not forbidden.
 - Label a face grid by seat or file order without checking who is who (episode 10: the
   Amitai and Nadav grids were swapped).
-- Make an episode, segment or Shorts cover anywhere but Codex on Amitai's Mac, or
-  composite one with Pillow on the box as a fallback.
+- Make an episode, segment or Shorts cover with any generator other than Codex (Mac
+  first, box CLI only as the fallback in prompts → Codex backend), or composite one
+  with Pillow as a fallback.
+- Copy `~/.codex/auth.json` between machines, print tokens, use an API key, or skip a
+  Codex login. If a login or device code is needed, stop and tell Amitai.
 - Show or file a cover whose `check_cover.py` run failed, or a headline with tofu, brackets
   or Arabic punctuation (episode 10).

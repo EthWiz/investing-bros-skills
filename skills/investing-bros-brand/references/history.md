@@ -79,3 +79,13 @@ a sample and get it approved first.
 - The same episode's editing and upload lessons (single-pass cuts with measured sync,
   the compressed YouTube copy, verified links, one approval message) live in
   `investing-bros-video` and `investing-bros-episode-upload`.
+
+## Episode 11 (2026-11-12)
+- The Mac was offline, which blocked covers under the old Mac-only rule. Codex CLI
+  was installed on the producer box (`npm i -g @openai/codex`, 0.167.2) and Amitai
+  signed in with ChatGPT via `codex login --device-auth` (a first device code failed;
+  a fresh one worked). Covers were generated on the box with `env -u OPENAI_API_KEY`.
+  From then on, Mac Codex stays the first try; the box CLI is the automatic fallback
+  when the Mac is unreachable or Codex there fails. A needed login still stops the
+  run: show Amitai the device-code URL and code and wait. Never copy
+  `~/.codex/auth.json`. Pillow and other generators stay forbidden.

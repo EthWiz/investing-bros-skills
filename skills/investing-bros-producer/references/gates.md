@@ -113,8 +113,8 @@ The postprod `done` stage passes once `publish`, `spotify_links` and `old_upload
 ## Who waits on whom (`pipeline.py next`)
 
 - `waits: producer`: the Producer runs the command.
-- `waits: helper`: a helper agent runs it and hands back to the Producer (brand on Amitai's
-  Mac, segment helper); the Producer checks what comes back.
+- `waits: helper`: a helper agent runs it and hands back to the Producer (brand — Codex
+  on Amitai's Mac, box CLI fallback; segment helper); the Producer checks what comes back.
 - `waits: owner`: an approval. The Producer batches every pending approval into one review
   round (`investing-bros-show` → Ownership and contact) and never pings per item.
 - `next` lists every approval on a track that can be asked now, not only the first. Round 1
