@@ -49,8 +49,33 @@ episode owner once (this is the one alert outside a review round, `investing-bro
    for one speaker (episode 10: Amitai had two). A part still processing means the pull
    is not ready: do not download a stand-in and do not drop that part from the list.
 5. When every speaker's **high-quality** video and **high-quality** audio are ready for
-   every part, download all of them into `$EP/riverside/`. High quality means the
-   dashboard's high-quality export, not a 720p proxy and not the side-by-side file.
+   every part, download all of them into `$EP/riverside/`. High quality means that
+   speaker's own dashboard high-quality track, not a 720p proxy. These tracks stay
+   the source for Shorts and one-host crops.
+6. Also download Riverside's **native side-by-side export** (1080p, 1920×1080, 24 fps)
+   into `$EP/riverside/` (for example `riverside/side-by-side.mp4`). That file is the
+   default 16:9 episode master. Download it in the browser from the dashboard or the
+   project's Export / side-by-side control. Riverside has no Drive or email export, and
+   a shared `exported-clip` link is not this file. Then record it:
+
+   ```bash
+   python3 scripts/sbs_master.py commit-export "$EP" --file riverside/side-by-side.mp4
+   ```
+
+   If that export fails — "Couldn't download your edit" (at 4k or 1080p), the Exports
+   tab never loads, or Export is disabled — record the failure and **stop**. Do not
+   build a side-by-side from the per-speaker tracks automatically:
+
+   ```bash
+   python3 scripts/sbs_master.py export-failed "$EP" --reason "<what failed>"
+   python3 scripts/pipeline.py approve "$EP" main sbs_fallback_ok --by "<Owner HH:MM: their words>"
+   python3 scripts/sbs_master.py build-from-tracks "$EP" --left riverside/<amitai>.mp4 --right riverside/<nadav>.mp4
+   ```
+
+   The fallback needs the episode owner's explicit approval **each time** (who and when
+   are stored on `main.sbs_fallback_ok` in `extras/pipeline.json`). A new Riverside pull
+   stales that approval. Seats: Amitai left, Nadav right, unless the first frame shows
+   otherwise (`investing-bros-show`).
 
 Never delete a studio, a project, or a recording. The script has no delete command.
 

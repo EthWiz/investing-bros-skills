@@ -31,7 +31,7 @@ The episode owner says the episode was recorded, the parts are already in, or Am
 
 ## Inputs
 - Episode number N **as Amitai states it**.
-- Per-speaker high-quality video and audio in `$EP/riverside/` (every part, when the session was split). The side-by-side export is too soft once cropped to 9:16. The pull's trigger lives in `investing-bros-producer`.
+- Per-speaker high-quality video and audio in `$EP/riverside/` (every part, when the session was split), and Riverside's native side-by-side export as the default 16:9 master (too soft once cropped to 9:16, so Shorts still use each host's own track). The pull and the side-by-side rule live in `investing-bros-producer` → `references/riverside-pull.md`.
 - Working dir `$EP` (show conventions → Roles and accounts).
 - Tools: `ffmpeg`, Python 3 with numpy, `faster-whisper`. If Hugging Face is blocked, `sherpa-onnx` + `soundfile` (step 4).
 - Long jobs: under a per-command time limit (show conventions → references/environment.md), use the chunked/resumable options below.
@@ -56,11 +56,30 @@ Files go to `$EP/riverside/`. A speaker can have several files when the session 
 If that sign-in cannot be completed, the owner may waive `main.riverside`. Only then, ask the WhatsApp owner to download the latest parts from group `אחים להשקעות` into `$EP/parts/` (prefer `m4a`), named so they sort (`part1.m4a`, `part2.m4a`). Host tracks then go in `$EP` as `track-amitai.mp4` / `track-nadav.mp4`, and raw footage may be filed in Drive.
 
 ### 2. Combine into the raw master
+The 16:9 video master is **Riverside's native side-by-side export**, not a video built from
+the separate tracks. After the pull (step 1), record that export and keep the audio
+combination for the m4a:
+
 ```bash
-scripts/combine_parts.sh "$EP/investing-bros-episode-raw-untrimmed.m4a" "$EP"/parts/part*
-# video parts, when video or shorts will be made: add --video "$EP/investing-bros-episode-raw-untrimmed.mp4"
+python3 <investing-bros-producer>/scripts/sbs_master.py commit-export "$EP" --file "$EP"/riverside/side-by-side.mp4
+# audio parts (split session or a waived pull in $EP/parts/):
+scripts/combine_parts.sh "$EP/extras/investing-bros-episode-raw-untrimmed.m4a" "$EP"/parts/part*
 ```
-Never overwrite the raw master. When `main.riverside` passed, keep it on the box; do not upload it to Drive.
+
+`combine_parts.sh --video` joins parts end to end; it is not the side-by-side master. If
+Riverside's export failed ("Couldn't download your edit", the Exports tab never loads,
+Export disabled), record the failure and get the episode owner's approval **before**
+building from tracks (each time; it does not run automatically):
+
+```bash
+python3 <investing-bros-producer>/scripts/sbs_master.py export-failed "$EP" --reason "<what failed>"
+python3 <investing-bros-producer>/scripts/pipeline.py approve "$EP" main sbs_fallback_ok --by "<Owner HH:MM: their words>"
+python3 <investing-bros-producer>/scripts/sbs_master.py build-from-tracks "$EP" --left <amitai-track> --right <nadav-track>
+```
+
+The approval (`by`, `at`, the owner's words) is stored on `main.sbs_fallback_ok`. Details:
+`investing-bros-producer` → `references/riverside-pull.md`. Never overwrite the raw master.
+When `main.riverside` passed, keep it on the box; do not upload it to Drive.
 
 ### 3. Level the two hosts
 ```bash
@@ -177,6 +196,7 @@ The audio edit is done; the episode is done only when `investing-bros-producer` 
 - Ship an episode where one host is more than ~3 dB quieter than the other.
 - Put anything in the episode root except the files named in the show's Drive tree.
 - Upload raw Riverside footage to Drive when `main.riverside` passed, poll that pull in a loop, or delete a Riverside studio, project or recording.
+- Build the side-by-side video master from tracks except as `investing-bros-producer` allows (native Riverside export first; `main.sbs_fallback_ok` after it fails).
 - Put the Riverside login anywhere except secure fill.
 - Drive WhatsApp Web yourself, or make Mac-local editing the primary path.
 - Write your own code where this skill has a script, or work around a missing step without saying so (show conventions → Working rules).

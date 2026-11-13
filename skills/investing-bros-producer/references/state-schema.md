@@ -112,6 +112,13 @@ Other scripts read it and never write it: `publish_checklist.py can-public` (pub
   speaker's high-quality video and audio (every part of a split session) with path, bytes
   and duration. `via` is `browser` and `drive_upload` is false. The same list is copied
   into the stage's `data` when it passes. The media stays in the episode working folder.
+- **Side-by-side master** (`extras/sbs-master.json`, `sbs_master.py`): how the 16:9 episode
+  video master (`extras/investing-bros-episode-raw-untrimmed.mp4`) was produced. `via` is
+  `riverside_export` (Riverside's native side-by-side export, the default) or `tracks` (a
+  fallback build from per-speaker tracks). The track-build is allowed only after the native
+  export failed (`status: export_failed` plus `failure`) **and** `main.sbs_fallback_ok` is
+  a current approval (`by`, `at`, `quote`, of the current `main.riverside` version). A
+  present raw `.mp4` without this record fails `main.intake`.
 - **Upload records** (`extras/uploads/<track>.json`, written by `episode-upload` →
   `yt_upload.py --record`): `{asset, version, channel, video_id, steps, steps_done, file,
   file_sha256, source, source_sha256, privacy, created_at, superseded: [{video_id, version,

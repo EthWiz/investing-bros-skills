@@ -42,3 +42,6 @@ If that backend is unavailable, report the blocker
 anywhere but Codex on Amitai's Mac
 Codex on Amitai's Mac makes every episode,
 segment and Shorts cover; there is no fallback
+# The 16:9 master is Riverside's native side-by-side export; a track-build is a fallback with owner approval (2026-11-13)
+not a 720p proxy and not the side-by-side file
+video parts, when video or shorts will be made: add --video
