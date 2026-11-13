@@ -16,15 +16,15 @@ Include at least 3 candidates from the deep dive. The deep dive is what the epis
 
 | Score | 1 | 3 | 5 |
 |---|---|---|---|
-| **hook**: the first sentence alone | context or filler ("אז…", "כן, אז…") | an interesting topic, said plainly | a number, a claim against intuition, a sharp question, or something at stake |
+| **hook**: the first sentence alone | context or filler ("אז…", "כן, אז…", "eh"/"אה") | an interesting topic, said plainly | a number, a claim against intuition, a sharp question, or something at stake |
 | **standalone** | needs the episode to make sense | needs one line of context the hook title can give | fully self-contained |
 | **payoff** | trails off or keeps going | resolves, but not in one line | one idea that lands in a line you can end on |
 | **friction** | one voice, no reaction | a reaction or a follow-up question | the brothers disagree, push back or surprise each other |
 
-`score_moments.py` adds **pace** (speech rate against the episode median, 1–5), flags anything outside 20–45 s and any filler opener, and sorts by total. Pace is only a proxy; listen to the top picks before proposing them. The selected edit must be at most 45.0 s after the 1.15x speed-up.
+`score_moments.py` adds **pace** (speech rate against the episode median, 1–5), flags anything outside 20–45 s, any filler opener, and a late first word (the transcript starts more than 0.5 s after the in-point — often an "eh"/stutter in the lead-in), and sorts by total. Pace is only a proxy; listen to the top picks before proposing them. The selected edit must be at most 45.0 s after the 1.15x speed-up.
 
 ## Shape the pick
-- **Open on the strongest line.** If the best sentence comes 10 s in, move that piece to the front and let the context follow. Move it, don't repeat it (the renderer rejects overlapping pieces), and keep its meaning: the "Never" rules in the skill still apply.
+- **Open on the strongest line, and on a clean first word.** The first audio must be a clean, strong word, never an "eh"/"אה", filler, false start or stutter. If the best sentence comes 10 s in, move that piece to the front and let the context follow. Move it, don't repeat it (the renderer rejects overlapping pieces), and keep its meaning: the "Never" rules in the skill still apply. Inspect word timestamps for the first ~3 s of the raw cut and trim to the first clean word (`check_short.first_clean_start`).
 - **End on the payoff.** Cut right after the line that resolves the idea. No "so yeah", no wind-down.
 - **20–45 seconds.** 45.0 s is a hard cap; cut tighter rather than making an exception.
 - **Hook title = an open question** the short answers only at the end, a faithful paraphrase of what is said, and **as short as possible**: one idea, ideally ≤ 6 words. Drop secondary details: `למה לסייברקאב אין הגה?`, not `למה לסייברקאב אין הגה ורק שני מקומות?`.

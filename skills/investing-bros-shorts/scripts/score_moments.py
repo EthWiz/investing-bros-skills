@@ -19,7 +19,7 @@ scores (1-5, see references/moment-scoring.md):
 The script adds, from the transcript:
   pace        words per second against the episode's median (a rough energy proxy), scored 1-5
   length      flags candidates outside the 20-45 s target after playback speed
-  opener      flags a first sentence that starts on filler ("אז", "כן", "אוקיי"...)
+  opener      flags a first sentence that starts on filler ("אז", "כן", "אוקיי", "eh"/"אה"...) or a late first word
 and prints a markdown table, best first, to paste for Amitai.
 """
 import argparse
@@ -29,7 +29,7 @@ import sys
 
 from build_short import DEFAULT_SPEED, playback_speed, speed_arg
 
-FILLERS = ("אז", "כן", "אוקיי", "אוקי", "טוב", "בקיצור", "רגע", "אה", "אממ", "יאללה", "נו")
+FILLERS = ("אז", "כן", "אוקיי", "אוקי", "טוב", "בקיצור", "רגע", "אה", "אהה", "אממ", "יאללה", "נו", "eh", "uh", "um")
 RUBRIC = ("hook", "standalone", "payoff", "friction")
 TARGET = (20, 45)
 
@@ -86,6 +86,9 @@ def rank(segments, candidates, speed=DEFAULT_SPEED):
         pace = pace_score(ratio)
         line = opening_line(segments, start)
         flags = []
+        first = next((s for s in segments if s["end"] > start + 0.2), None)
+        if first is not None and first["start"] - start > 0.5:
+            flags.append("late first word")
         output_duration = (end - start) / speed
         if not TARGET[0] <= output_duration <= TARGET[1]:
             flags.append(f"{output_duration:.0f} s after {speed:g}x")

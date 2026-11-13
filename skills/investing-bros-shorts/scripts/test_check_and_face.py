@@ -6,7 +6,10 @@ import sys
 import numpy as np
 
 sys.path.insert(0, os.path.dirname(__file__))
-from check_short import layout_problems, metadata_problems, opening_problems, problems  # noqa: E402
+from check_short import (  # noqa: E402
+    first_clean_start, layout_problems, metadata_problems,
+    opening_problems, opening_word_problems, opening_word_review, problems, words_from_srt,
+)
 from face_crop import place, skin_centre_x  # noqa: E402
 
 
@@ -72,3 +75,78 @@ def test_callout_must_clear_captions_hook_and_end_card():
     assert any("captions" in p for p in layout_problems(low))
     late = dict(ok, callouts=[{"window": [29.0, 31.2], "box": [1157, 1357]}])
     assert any("end card" in p for p in layout_problems(late))
+
+
+def test_opening_must_start_on_a_clean_word():
+    # The fiber Short's original captions: first word at 2.183 s, after the "eh"/stutter.
+    late = [{"w": "כשזרקת", "start": 2.183, "end": 2.487}]
+    assert any("2.2 s" in p and "trim" in p for p in opening_word_problems(late))
+    clean = [{"w": "כשזרקת", "start": 0.125, "end": 0.429}]
+    assert opening_word_problems(clean) == []
+    eh = [{"w": "אה", "start": 0.05, "end": 0.3}, {"w": "כשזרקת", "start": 0.4, "end": 0.8}]
+    assert any("filler" in p for p in opening_word_problems(eh))
+    latin = [{"w": "eh", "start": 0.0, "end": 0.2}, {"w": "כשזרקת", "start": 0.3, "end": 0.8}]
+    assert any("filler" in p for p in opening_word_problems(latin))
+    stutter = [{"w": "כש", "start": 0.05, "end": 0.2}, {"w": "כשזרקת", "start": 0.25, "end": 0.7}]
+    fails, warns = opening_word_review(stutter)
+    assert fails == []
+    assert any("stutter" in p for p in warns)
+    repeated = [{"w": "אה", "start": 0.05, "end": 0.2}, {"w": "אה", "start": 0.25, "end": 0.4}, {"w": "כשזרקת", "start": 0.5, "end": 0.9}]
+    assert any("stutter" in p for p in opening_word_problems(repeated))
+    # Intentional emphasis later in the window is not a stutter at the open.
+    emphasis = [
+        {"w": "כשזרקת", "start": 0.1, "end": 0.4},
+        {"w": "המון", "start": 1.0, "end": 1.2},
+        {"w": "המון", "start": 1.2, "end": 1.4},
+    ]
+    assert opening_word_problems(emphasis) == []
+
+
+def test_srt_first_cue_catches_a_late_opening():
+    srt = "1\n00:00:02,183 --> 00:00:03,826\nכשזרקת את הרפרנס\n\n"
+    words = words_from_srt(srt)
+    assert words[0]["w"] == "כשזרקת"
+    assert any("trim" in p for p in opening_word_problems(words))
+    fixed = "1\n00:00:00,125 --> 00:00:01,768\nכשזרקת את הרפרנס\n\n"
+    assert opening_word_problems(words_from_srt(fixed)) == []
+
+
+def test_first_clean_start_skips_filler_lead_in():
+    words = [
+        {"w": "שימושים", "start": 2261.1, "end": 2261.46},
+        {"w": "אה", "start": 2262.8, "end": 2263.1},
+        {"w": "כשזרקת", "start": 2264.36, "end": 2265.0},
+        {"w": "את", "start": 2265.0, "end": 2265.2},
+    ]
+    assert first_clean_start(words, 2262.7) == 2264.36
+    assert first_clean_start(words, 2264.36) == 2264.36
+
+def test_opening_false_positives_pass_and_fillers_fail():
+    def words(*pairs, t0=0.05):
+        out = []
+        t = t0
+        for w in pairs:
+            out.append({"w": w, "start": t, "end": t + 0.3})
+            t += 0.3
+        return out
+
+    for tok in ("אהבה", "אהרן", "umbrella", "UHNW"):
+        assert opening_word_problems(words(tok)) == []
+        assert opening_word_review(words(tok))[1] == []
+
+    for a, b in (("זה", "זהב"), ("כל", "כלכלה")):
+        fails, warns = opening_word_review(words(a, b))
+        assert fails == []
+        assert warns == []
+
+    assert any("filler" in p for p in opening_word_problems(words("eh", "כשזרקת")))
+    assert any("filler" in p for p in opening_word_problems(words("אה", "כשזרקת")))
+    assert any("stutter" in p for p in opening_word_problems(words("לא", "לא")))
+
+    mid = [{"w": "כשזרקת", "start": 0.5, "end": 0.9}]
+    fails, warns = opening_word_review(mid)
+    assert fails == []
+    assert any("0.5 s" in p for p in warns)
+    late = [{"w": "כשזרקת", "start": 1.01, "end": 1.4}]
+    assert any("1.0 s" in p or "1.0" in p for p in opening_word_problems(late))
+
