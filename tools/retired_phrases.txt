@@ -44,3 +44,5 @@ Codex on Amitai's Mac makes every episode,
 segment and Shorts cover; there is no fallback
 # Empty Related video picker is not automatically Grok Bot (episode 11: reload on the brand channel)
 It means Studio is acting as Grok Bot
+# Shorts Hebrew captions: Languages → Upload manual, not Add language (episode 11)
+Subtitles → Add language → Hebrew
