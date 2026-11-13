@@ -6,8 +6,8 @@ Usage:
 
 Prints duration, integrated loudness (target about -14 LUFS) and true peak (below -1 dB),
 and checks the opening and the ending: frame 1 is not black or fading in, speech starts
-within 0.4 s on a clean, strong first word (never eh/אה, a filler, a false start or a
-stutter; the first caption/word may not start later than that), and the short doesn't
+within 0.4 s on a clean, strong first word (never eh/אה or a repeated-word stutter;
+a first caption after 1.0 s is a hard fail, 0.4–1.0 s is a warning), and the short doesn't
 trail off in more than 1 s of silence. Length outside
 15-45 s fails: 45 seconds is a hard cap, measured after the 1.15x speed-up.
 If NAME_layout.json from build_fullbleed.py sits next to the video (or --layout is
@@ -42,13 +42,15 @@ from brand import CAPTION_HALF, CAPTION_Y_BOUNDS, HOOK_GAP, HOOK_Y_BOUNDS, LOGO_
 LIMIT = (15, 45)
 DARK_FRAME = 25            # mean luma (0-255) below this reads as a black frame
 LEAD_SILENCE, TAIL_SILENCE = 0.4, 1.0
+LATE_WORD_FAIL = 1.0
 OPENING_WINDOW = 3.0
-# Same idea as score_moments.FILLERS, plus Latin fillers and stretched "אה".
+# Whole-word fillers only (episode 11: "eh"/"אה"). No prefix match: "אהבה" and "umbrella" are real words.
 FILLER_WORDS = frozenset({
-    "אז", "כן", "אוקיי", "אוקי", "טוב", "בקיצור", "רגע", "אה", "אהה", "אההה",
-    "אמ", "אממ", "יאללה", "נו",
-    "eh", "uh", "um", "umm", "uhh", "ah", "erm",
+    "אה", "אהה", "אההה",
+    "eh", "uh", "um", "umm", "uhh", "ah",
 })
+# Prefix-stutter warnings skip these common particles ("זה זהב", "כל כלכלה").
+PREFIX_STUTTER_SKIP = frozenset({"זה", "מי", "על", "כל", "יש", "או"})
 
 
 def _norm_word(tok):
@@ -57,43 +59,65 @@ def _norm_word(tok):
 
 def _is_filler_token(tok):
     w = _norm_word(tok)
-    return bool(w) and (w in FILLER_WORDS or w.startswith("אה") or w.startswith("eh") or w.startswith("uh") or w.startswith("um"))
+    return bool(w) and w in FILLER_WORDS
 
 
-def opening_word_problems(words, lead=LEAD_SILENCE, window=OPENING_WINDOW):
-    """The first audio must be a clean, strong word. `words` are on the cut timeline (0 = start)."""
+def _is_prefix_stutter(a, b):
+    return bool(a and b and a != b and b.startswith(a) and len(a) <= 4 and a not in PREFIX_STUTTER_SKIP)
+
+
+def _is_repeated_word(a, b):
+    return bool(a and b and a == b)
+
+
+def opening_word_review(words, lead=LEAD_SILENCE, late_fail=LATE_WORD_FAIL, window=OPENING_WINDOW):
+    """Return (hard_fails, warnings). `words` are on the cut timeline (0 = start)."""
     timed = sorted(
         (w for w in words if w.get("end", 0) > 0 and w.get("start", 0) < window),
         key=lambda w: w["start"],
     )
     if not timed:
-        return [f"no words in the first {window:.0f} s; transcribe the opening and trim to the first clean word"]
+        return [f"no words in the first {window:.0f} s; transcribe the opening and trim to the first clean word"], []
     first = timed[0]
-    out = []
-    if first["start"] > lead:
-        out.append(
+    fails, warns = [], []
+    if first["start"] > late_fail:
+        fails.append(
             f"first word {first['w']!r} starts at {first['start']:.1f} s; "
-            f"trim the opening to the first clean word (lead must be ≤ {lead:.1f} s)"
+            f"trim the opening to the first clean word (lead must be ≤ {late_fail:.1f} s)"
+        )
+    elif first["start"] > lead:
+        warns.append(
+            f"first word {first['w']!r} starts at {first['start']:.1f} s; "
+            f"prefer trimming so the lead is ≤ {lead:.1f} s"
         )
     if _is_filler_token(first["w"]):
-        out.append(
+        fails.append(
             f"opens on filler {first['w']!r}; the first audio must be a clean, strong word, "
             "never eh/אה, a filler, a false start or a stutter"
         )
     if len(timed) >= 2:
         a, b = _norm_word(timed[0]["w"]), _norm_word(timed[1]["w"])
-        prefix_stutter = a and b and a != b and b.startswith(a) and len(a) <= 4
-        repeated_short = a and b and a == b and (a in FILLER_WORDS or len(a) <= 2)
-        if prefix_stutter or repeated_short:
-            out.append(
+        if _is_repeated_word(a, b):
+            fails.append(
                 f"opens on a stutter {timed[0]['w']!r} {timed[1]['w']!r}; "
                 "cut to the first clean full word"
             )
-    return out
+        elif _is_prefix_stutter(a, b):
+            warns.append(
+                f"opens on a possible stutter {timed[0]['w']!r} {timed[1]['w']!r}; "
+                "listen and cut to the first clean full word if it is a false start"
+            )
+    return fails, warns
+
+
+def opening_word_problems(words, lead=LEAD_SILENCE, late_fail=LATE_WORD_FAIL, window=OPENING_WINDOW):
+    """Hard-fail opening problems (warnings are in opening_word_review)."""
+    fails, _ = opening_word_review(words, lead=lead, late_fail=late_fail, window=window)
+    return fails
 
 
 def first_clean_start(words, proposed_start, lead=LEAD_SILENCE, window=OPENING_WINDOW):
-    """Raw-timeline in-point: skip filler/stutter in the first `window` s and return the first clean word start."""
+    """Raw-timeline in-point: skip filler/repeated-word stutter in the first `window` s."""
     timed = sorted(
         (w for w in words if w["end"] > proposed_start and w["start"] < proposed_start + window),
         key=lambda w: w["start"],
@@ -103,9 +127,9 @@ def first_clean_start(words, proposed_start, lead=LEAD_SILENCE, window=OPENING_W
         i += 1
     if i + 1 < len(timed):
         a, b = _norm_word(timed[i]["w"]), _norm_word(timed[i + 1]["w"])
-        if a and b and a != b and b.startswith(a) and len(a) <= 4:
+        if _is_repeated_word(a, b):
             i += 1
-        elif a and b and a == b and (a in FILLER_WORDS or len(a) <= 2):
+        elif _is_prefix_stutter(a, b):
             i += 1
     if i >= len(timed):
         return proposed_start
@@ -315,7 +339,10 @@ def main():
         bad.append("no captions/words/srt for the opening; pass --words or keep NAME.srt next to the video")
     else:
         print(f"opening words: {src}")
-        bad += opening_word_problems(opening)
+        fails, warns = opening_word_review(opening)
+        bad += fails
+        for p in warns:
+            print("warning:", p)
     for p in bad:
         print("warning:", p)
     return 1 if bad else 0

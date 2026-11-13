@@ -8,7 +8,7 @@ import numpy as np
 sys.path.insert(0, os.path.dirname(__file__))
 from check_short import (  # noqa: E402
     first_clean_start, layout_problems, metadata_problems,
-    opening_problems, opening_word_problems, problems, words_from_srt,
+    opening_problems, opening_word_problems, opening_word_review, problems, words_from_srt,
 )
 from face_crop import place, skin_centre_x  # noqa: E402
 
@@ -88,7 +88,11 @@ def test_opening_must_start_on_a_clean_word():
     latin = [{"w": "eh", "start": 0.0, "end": 0.2}, {"w": "כשזרקת", "start": 0.3, "end": 0.8}]
     assert any("filler" in p for p in opening_word_problems(latin))
     stutter = [{"w": "כש", "start": 0.05, "end": 0.2}, {"w": "כשזרקת", "start": 0.25, "end": 0.7}]
-    assert any("stutter" in p for p in opening_word_problems(stutter))
+    fails, warns = opening_word_review(stutter)
+    assert fails == []
+    assert any("stutter" in p for p in warns)
+    repeated = [{"w": "אה", "start": 0.05, "end": 0.2}, {"w": "אה", "start": 0.25, "end": 0.4}, {"w": "כשזרקת", "start": 0.5, "end": 0.9}]
+    assert any("stutter" in p for p in opening_word_problems(repeated))
     # Intentional emphasis later in the window is not a stutter at the open.
     emphasis = [
         {"w": "כשזרקת", "start": 0.1, "end": 0.4},
@@ -116,3 +120,33 @@ def test_first_clean_start_skips_filler_lead_in():
     ]
     assert first_clean_start(words, 2262.7) == 2264.36
     assert first_clean_start(words, 2264.36) == 2264.36
+
+def test_opening_false_positives_pass_and_fillers_fail():
+    def words(*pairs, t0=0.05):
+        out = []
+        t = t0
+        for w in pairs:
+            out.append({"w": w, "start": t, "end": t + 0.3})
+            t += 0.3
+        return out
+
+    for tok in ("אהבה", "אהרן", "umbrella", "UHNW"):
+        assert opening_word_problems(words(tok)) == []
+        assert opening_word_review(words(tok))[1] == []
+
+    for a, b in (("זה", "זהב"), ("כל", "כלכלה")):
+        fails, warns = opening_word_review(words(a, b))
+        assert fails == []
+        assert warns == []
+
+    assert any("filler" in p for p in opening_word_problems(words("eh", "כשזרקת")))
+    assert any("filler" in p for p in opening_word_problems(words("אה", "כשזרקת")))
+    assert any("stutter" in p for p in opening_word_problems(words("לא", "לא")))
+
+    mid = [{"w": "כשזרקת", "start": 0.5, "end": 0.9}]
+    fails, warns = opening_word_review(mid)
+    assert fails == []
+    assert any("0.5 s" in p for p in warns)
+    late = [{"w": "כשזרקת", "start": 1.01, "end": 1.4}]
+    assert any("1.0 s" in p or "1.0" in p for p in opening_word_problems(late))
+
