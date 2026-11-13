@@ -3,7 +3,9 @@
 ## channel (first, every video, never waived)
 **Active channel first (non-waivable; before any Studio action: upload, edit, comment, Related video).** `investingbros.grokbot@gmail.com` also owns a personal channel, **Grok Bot** (`UCj9n6mOn7uWpN8G51nPggfA`), and it is the default. Studio acts as whichever channel is active. The Related video picker lists only the active channel's videos (that is why it came up empty in episode 9), and comments post as the active channel (that is why episode 9's comments came from Grok Bot). Opening `studio.youtube.com/video/<id>/edit` directly still loads as Grok Bot, even with `authuser=1`, so never work from direct edit links. Open `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos` (Shorts: `https://studio.youtube.com/channel/UCWIlggXQNDFiyJghl6VB6Xw/videos/short`), confirm in the avatar menu that **אחים להשקעות** is the active channel, and click into each video from that list. Check the active channel again on every edit page before changing anything. The Grok Bot channel is being deleted; keep this check anyway.
 "Verified" means you saved, left the page, reopened it and saw the value. A "Saved" toast is not
-verification.
+verification. A toast that says "not able to save your video" is not proof it failed either: leave
+the page, reopen the video from the Content list (with אחים להשקעות active) and check whether the
+change is actually there. If it is, you're done; if it isn't, save again.
 
 ## RedCircle
 - **audio / copy / titles**: draft → Upload File (on a network error, retry once; if `.m4a` is
