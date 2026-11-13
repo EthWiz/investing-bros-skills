@@ -42,3 +42,5 @@ If that backend is unavailable, report the blocker
 anywhere but Codex on Amitai's Mac
 Codex on Amitai's Mac makes every episode,
 segment and Shorts cover; there is no fallback
+# Empty Related video picker is not automatically Grok Bot (episode 11: reload on the brand channel)
+It means Studio is acting as Grok Bot
