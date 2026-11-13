@@ -5,8 +5,10 @@
 #   combine_parts.sh [--video OUT_VIDEO.mp4] OUT_AUDIO.m4a PART1 [PART2 ...]
 #
 # - Audio is always produced (AAC 192k, 48 kHz) from every part's first audio stream.
-# - With --video, the parts' video is also joined (scaled/padded to 1920x1080, 30 fps)
-#   so promo clips can use it later. All parts must then contain video.
+# - With --video, the parts' video is also joined end-to-end (scaled/padded to 1920x1080, 30 fps)
+#   so promo clips can use it later. All parts must then contain video. This is not the
+#   episode side-by-side master: that file is Riverside's native export by default
+#   (investing-bros-producer → sbs_master.py / references/riverside-pull.md).
 # - Refuses to overwrite an existing output (the raw master must never be overwritten).
 set -euo pipefail
 

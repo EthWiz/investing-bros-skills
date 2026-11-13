@@ -107,8 +107,13 @@ turn. Each later wake is a single check (`due`): look once, and if the tracks ar
 run `checked` and stop. Do not busy-loop. When the high-quality video and audio for every
 speaker and every part are downloaded, `commit` and `advance` the stage, then **delete or
 disable the routine** (`disarm: true`). About 6 hours after `begin`, `due` prints `give_up`:
-alert the episode owner once, disable the routine, and stop. Browser steps, the file check,
-and the Drive rule: [references/riverside-pull.md](references/riverside-pull.md).
+alert the episode owner once, disable the routine, and stop. In the same dashboard session,
+download Riverside's **native side-by-side export** as the default 16:9 episode master
+(`sbs_master.py commit-export`). Riverside has no Drive or email export; download in the
+browser. If that export fails, record it (`export-failed`) and do not build a side-by-side
+from tracks until the owner approves `main.sbs_fallback_ok` (each time; who and when are
+stored on that stage). Browser steps, the file check, the side-by-side rule, and the Drive
+rule: [references/riverside-pull.md](references/riverside-pull.md).
 
 ## Done when
 - `extras/pipeline.json` shows every stage of every track current or waived by the episode
@@ -129,5 +134,6 @@ output and the retro's PR/issue links.
 - Edit `extras/pipeline.json` by hand.
 - Open Riverside before the owner says the episode was recorded, or leave the polling routine armed after `disarm: true`.
 - Delete a Riverside studio, project or recording, or type the Riverside login. Secure fill only (`investing-bros-show`).
+- Build the side-by-side episode master from per-speaker tracks without the owner's approval on `main.sbs_fallback_ok`, or skip trying Riverside's native export first.
 - Leave the raw pull off Drive after `main.riverside` passes, and don't spin on that stage.
 - Write your own code where a skill's script exists (`investing-bros-show` → Working rules).

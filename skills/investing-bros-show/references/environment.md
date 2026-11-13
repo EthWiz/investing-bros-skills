@@ -23,8 +23,11 @@ Read this before working around anything. Every line here cost an agent time to 
    polling routine checks about every 15 minutes (10–20 is allowed) and deletes or disables
    itself after the download or after about 6 hours. Sign in at riverside.fm (it redirects to
    riverside.com) with the Grok Bot vault login, secure fill only. Never print it. High-quality
-   per-speaker video and audio, every part of a split session, stay in the episode working
-   folder. Do not upload that raw footage to Drive.
+   per-speaker video and audio, every part of a split session, and Riverside's native
+   side-by-side export (the default 16:9 episode master), stay in the episode working
+   folder. Download them in the browser; Riverside has no Drive or email export. Do not
+   upload that raw footage to Drive. How to use the export, and the owner-approved
+   track-build fallback when it fails: `investing-bros-producer` → `references/riverside-pull.md`.
    A shared `riverside.com/shared/exported-clip/...` link is not this pull: one **Download**
    button, no quality picker, and its "1080p" was 720p on episode 8. The recording share link
    (`/dashboard/studios/…/recordings/<id>?share-token=…`) is the fallback when `main.riverside`

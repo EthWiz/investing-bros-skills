@@ -39,6 +39,7 @@ import episode_gates as G  # noqa: E402
 import episode_owner as O  # noqa: E402
 import pipeline_state as PS  # noqa: E402
 import riverside_tracks as RT  # noqa: E402
+import sbs_master as SBS  # noqa: E402
 
 TRACKS = ["main", "seg01", "seg02", "short01", "short02", "short03", "release"]
 SHOW_CHANNEL_ID = "UCWIlggXQNDFiyJghl6VB6Xw"  # אחים להשקעות (investing-bros-show -> Roles and accounts)
@@ -57,10 +58,13 @@ RIVERSIDE_CMD = (
     "(allowed range 10-20). In the browser, open the episode's project on the Riverside web dashboard; "
     "riverside.fm redirects to riverside.com. Sign in with the Grok Bot vault login via secure fill only. "
     "Each wake is one check, never a busy loop. Download every speaker's high-quality video and audio, "
-    "including every part when the session was split, into $EP/riverside/. Verify sizes and durations, "
-    "advance main riverside, then delete or disable the routine (disarm: true). Give up and alert the "
-    "owner after about 6 hours, and disable the routine then too. Do not upload that raw footage to "
-    "Drive. Never delete a Riverside studio, project or recording."
+    "including every part when the session was split, into $EP/riverside/, and also Riverside's native "
+    "side-by-side export (the default 16:9 episode master; download in the browser, Riverside has no "
+    "Drive or email export). Verify sizes and durations, advance main riverside, then delete or disable "
+    "the routine (disarm: true). Give up and alert the owner after about 6 hours, and disable the "
+    "routine then too. Do not upload that raw footage to Drive. Never delete a Riverside studio, "
+    "project or recording. If the native side-by-side export fails, do not build one from tracks until "
+    "the owner approves main.sbs_fallback_ok."
 )
 
 
@@ -134,7 +138,11 @@ def files(*rels):
 
 
 def raw_master(c):
-    return [] if raw_master_files(c) else ["no raw master in extras/ (investing-bros-episode-raw-untrimmed.m4a/.mp4)"]
+    probs = [] if raw_master_files(c) else ["no raw master in extras/ (investing-bros-episode-raw-untrimmed.m4a/.mp4)"]
+    # The 16:9 side-by-side master, when present, must come from the native Riverside export
+    # unless the owner approved the track-build fallback (sbs_master.py).
+    probs.extend(SBS.verify_master(c.ep, c.state))
+    return probs
 
 
 def raw_master_files(c):
@@ -300,7 +308,10 @@ def out_teaser(c):
 
 
 def out_raw(c):
-    return raw_master_files(c)
+    files = raw_master_files(c)
+    if (c.ep / SBS.RECORD_REL).is_file():
+        files.append(SBS.RECORD_REL)
+    return files
 
 
 def out_slot(kind, track, suffixes):
@@ -391,10 +402,11 @@ def W(track, name, skill, waits, cmd, check, outputs, needs=(), inputs=(), data=
             "inputs": list(inputs), "data": data}
 
 
-def A(track, name, skill, of, ask, of_keys=None, needs=(), inputs=()):
+def A(track, name, skill, of, ask, of_keys=None, needs=(), inputs=(), when=None):
     return {"kind": "approval", "track": track, "name": name, "key": f"{track}.{name}", "skill": skill,
             "waits": "owner", "cmd": ask, "of": of, "of_keys": of_keys,
-            "needs": ([of] if of else []) + list(needs) + list(inputs), "inputs": list(inputs)}
+            "needs": ([of] if of else []) + list(needs) + list(inputs), "inputs": list(inputs),
+            "when": when}
 
 
 def stage_map():
@@ -405,9 +417,17 @@ def stage_map():
     m = [
         W("main", "riverside", pp, "producer", RIVERSIDE_CMD, riverside_check, out_riverside,
           data=riverside_data),
-        W("main", "intake", pp, "producer", f"<{pp}>/scripts/combine_parts.sh (step 2); the raw master stays "
-          "local when main.riverside passed",
+        W("main", "intake", pp, "producer",
+          f"<{pp}> step 2: the raw video master is Riverside's native side-by-side export "
+          f"(sbs_master.py commit-export). combine_parts.sh is the audio (and split parts). "
+          f"If that export failed, {P} approve EP main sbs_fallback_ok --by the owner's words, then "
+          f"sbs_master.py build-from-tracks. The raw master stays local when main.riverside passed",
           raw_master, out_raw, inputs=["main.riverside"]),
+        A("main", "sbs_fallback_ok", pp, "main.riverside",
+          "build the side-by-side video from per-speaker tracks, only after Riverside's native "
+          "export failed (Couldn't download your edit, Exports tab never loads, Export disabled). "
+          "Each use needs a new OK; it does not run automatically",
+          when="sbs_fallback"),
         W("main", "master", pp, "producer", f"python3 <{pp}>/scripts/transcribe.py (step 4); then {P} mark EP "
           "transcript_doc --evidence <Doc URL>", items("transcript", "transcript_doc"),
           join(out_files("extras/transcript/segments.json"), out_marks("transcript_doc")), inputs=["main.intake"]),
@@ -619,10 +639,26 @@ def track_keys(track):
     return [k for k, s in SPEC.items() if s["track"] == track]
 
 
+def stage_applies(c: Ctx, spec) -> bool:
+    """Conditional stages stay out of next/advance until they are needed or already recorded."""
+    when = spec.get("when")
+    if not when:
+        return True
+    if when == "sbs_fallback":
+        if c.state.get("stages", {}).get(spec["key"]):
+            return True
+        return SBS.fallback_pending(c.ep, c.state)
+    return True
+
+
+def applicable_keys(c: Ctx, track):
+    return [k for k in track_keys(track) if stage_applies(c, SPEC[k])]
+
+
 def advance_track(ep, c: Ctx, track: str) -> list:
     """Advance every work stage of the track in order until one fails or waits on an approval."""
     report = []
-    for key in track_keys(track):
+    for key in applicable_keys(c, track):
         st, _ = stage_status(c, key)
         if st == "current":
             continue
@@ -661,7 +697,7 @@ def next_steps(c: Ctx) -> list:
     for track in TRACKS:
         ready = []
         hold = None
-        for key in track_keys(track):
+        for key in applicable_keys(c, track):
             st, why = stage_status(c, key)
             if st == "current":
                 continue
@@ -714,7 +750,7 @@ def cmd_status(ep, a):
     sym = {"current": "✓", "stale": "~", "missing": "·", "failed": "✗"}
     for track in TRACKS:
         cells = []
-        for key in track_keys(track):
+        for key in applicable_keys(c, track):
             st, _ = stage_status(c, key)
             if s["stages"].get(key, {}).get("state") == "waived":
                 cells.append(f"W {SPEC[key]['name']}")
@@ -887,6 +923,11 @@ def cmd_approve(ep, a):
     if blocked:
         print(f"refused: {key} needs {', '.join(f'{b} ({stage_status(c, b)[0]})' for b in blocked)} first",
               file=sys.stderr)
+        return 1
+    if key == SBS.APPROVAL_KEY and not SBS.export_failed(ep):
+        print("refused: approve main.sbs_fallback_ok only after Riverside's native side-by-side "
+              "export has failed (sbs_master.py export-failed --reason ...). The track-build is "
+              "not the default and does not run automatically.", file=sys.stderr)
         return 1
     rec = {"state": "approved", "at": PS.now(), "by": s["owner"]["name"], "quote": a.by.strip()}
     if spec["of"]:
