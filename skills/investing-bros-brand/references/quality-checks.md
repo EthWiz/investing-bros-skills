@@ -44,8 +44,9 @@ for downloaded references. This list is what only eyes can check.
 - No tofu boxes, `؟` (U+061F, the Arabic question mark), literal `[` `]` brackets or
   missing letters in any headline (episode 10's thumbnails showed bracket tofu).
 - The disc and strips are brand mustard `#D8A52E`, never a green disc (episode 10).
-- The cover was made by Codex on Amitai's Mac (log and prompt in the workdir), not
-  assembled on the box.
+- The cover was made by Codex on Amitai's Mac or, when that host was unreachable or
+  failed, by Codex CLI on the box (log and prompt in the workdir), not assembled
+  with Pillow or another generator.
 - Then `check_cover.py FILE --kind <kind> --episode N --register extras/artwork-register.json --title "<line>" …`
   (Shorts: `--config short.json`) must pass, with its output appended to
   `extras/cover-check.log`. It fails a headline with banned or missing glyphs (U+061F,

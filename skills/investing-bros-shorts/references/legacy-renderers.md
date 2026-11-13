@@ -66,4 +66,4 @@ Kept as on main for rebuilding older exports; the approved format above replaces
      --headline "סוויפט היא בכלל|[לא מערכת תשלומים]" --episode N \
      --frame frame_vertical.png --fonts fonts/ "שורט-01-סוויפט-cover.jpg"
    ```
-   The current standing batch needs all three covers from that brand flow (Codex on Amitai's Mac, face format, exact Hebrew); a legacy `make_cover.py` rebuild does not complete a new episode's standing batch.
+   The current standing batch needs all three covers from that brand flow (Codex on Amitai's Mac or the box CLI fallback, face format, exact Hebrew); a legacy `make_cover.py` rebuild does not complete a new episode's standing batch.

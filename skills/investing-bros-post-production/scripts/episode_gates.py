@@ -43,13 +43,13 @@ ITEMS = [
     ("face_identity", "upload", "Face grids labeled by verified host identity: side mapping checked at the start and "
      "after any swap, every grid eyeballed before it went to the owner (mark with what you saw)"),
     ("cover_checks", "upload", "extras/cover-check.log: check_cover.py OK for both episode covers with --title/--register "
-     "headlines, no FAIL + mark: made by Codex on Amitai's Mac (session/prompt path)"),
+     "headlines, no FAIL + mark: made by Codex on Amitai's Mac or the box CLI fallback (host, session/prompt path)"),
     ("segments", "review", "segments/: exactly two complete packages, 01 (deep dive) and 02: "
      "סגמנט-NN-<סוג>-<נושא>.mp4 + .txt + -thumb.jpg + youtube-סגמנט-NN.md, none empty"),
     ("shorts", "review", "Shorts/: exactly three complete packages, 01-03: "
      "שורט-NN-<נושא>.m4v + -cover.jpg + .srt + youtube-שורט-NN.md, none empty"),
     ("shorts_covers", "review", "Each Short's -cover.jpg in Shorts/ + mark: face format from real frames, "
-     "Codex on Amitai's Mac, check_cover.py OK"),
+     "Codex on Amitai's Mac or the box CLI fallback, check_cover.py OK"),
     ("past_episode_cards", "review", "extras/past-episode-cards.json (find_past_episode_refs.py, max 4, IDs from "
      "investing-bros-show/references/episode-index.json, [] if none) + mark: cards added in Studio at those times"),
     ("redcircle_draft", "review", "RedCircle unpublished draft (mark with the draft URL)"),

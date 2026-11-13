@@ -59,6 +59,23 @@ Read this before working around anything. Every line here cost an agent time to 
 - `ffmpeg` (with libass) and Python 3 with Pillow and numpy are installed on Amitai's Mac. If the Mac you are on has no ffmpeg (Nadav's machine, episode 7), don't install one for a trim — passthrough with `avconvert`.
 - Writing a changed file to the Mac under the same name can leave the old version in place; give revised files a new name (`_v2`) and check the content on the Mac.
 
+## Codex CLI (covers)
+Facts only; the Mac-first / box-fallback policy lives in `investing-bros-brand`
+(prompts → Codex backend, `scripts/codex_runner.py`).
+- **Amitai's Mac:** machine `566a74b2-614d-458f-be63-660743243124`. Reach it with
+  ListMachines, then Shell with that machineId. Binary:
+  `~/.nvm/versions/node/v22.23.1/bin/codex` (npm under nvm). Workdirs under
+  `/Users/amitairuskin/Pictures/investing-bros/episode-<N>/`. CopyToBox/CopyFromBox
+  need absolute `/Users/amitairuskin/...` paths; `~` is not expanded.
+- **Producer box:** `npm i -g @openai/codex` (0.167.2 as of episode 11), binary
+  `codex` on PATH (`~/.local/bin/codex`). Workdirs under
+  `/workspace/investing-bros/episode-<N>/art/`.
+- **Login:** Amitai's ChatGPT plan, never an API key (`env -u OPENAI_API_KEY`).
+  Device-code auth is `codex login --device-auth`. If either host needs a login, a
+  device code, or re-auth, stop, show Amitai the URL and one-time code, and wait.
+  A first device code can fail; use a fresh one. Never copy `~/.codex/auth.json`
+  between machines and never print tokens.
+
 ## Claude Code on Amitai's Mac (desktop app, crypto course lesson 1, 2026-10-26)
 Different from the device shell above: Claude Code in the Claude desktop app runs commands on the Mac itself.
 - 10 cores, 16 GB. No 3-minute limit, but run long jobs (Whisper, a full render) as background commands and wait for them to finish.

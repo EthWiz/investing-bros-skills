@@ -54,7 +54,7 @@ python3 $P retro "$EP"                             # after the last track is liv
    advance from memory, a toast or another agent's word.
    The first stage after a recording is `main.riverside`. It does not start until the owner
    says the episode was recorded; the steps are below.
-3. **Helpers** (segments, brand on Amitai's Mac, video) hand back to you, never to the hosts. Check
+3. **Helpers** (segments, brand — Codex on Amitai's Mac, box CLI fallback, video) hand back to you, never to the hosts. Check
    each hand-back against its stage's evidence; send back what fails (`note --kind handback_returned`).
    You run `investing-bros-shorts` yourself; there is no Shorts bot.
 4. **Review rounds.** Two rounds, and every approval stays the owner's own words. `next` names

@@ -122,19 +122,30 @@ Create {DISCUSSION_CARD_OR_LOWER_THIRD} using its layout in [video graphics](vid
 Exact text: {COPY}. Adapt illustration placement to this aspect ratio. Label this a
 proposed format adaptation until reviewed. Do not merely stretch a square image.
 
-## Codex backend (Grokbot on Amitai's Mac)
+## Codex backend (Mac first, box CLI fallback)
 Until Amitai says the design is dialed in, every main-episode, segment and individual
-Short cover is generated as three labeled options A/B/C through Codex on Amitai's Mac
-(machine 566a74b2-614d-458f-be63-660743243124) with the device shell (Shell with that
-machineId). If that backend is unavailable, report the blocker; do not switch generators and do not
-fall back to a Pillow composite on the box (hard rule since episode 10).
-For non-cover artwork, Grokbot may use its own image tool with the same prompt when the
-Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
-1. Before a run, refresh the Mac's `~/.agents/skills` copies from this repo's `main`
-   (Codex reads them), only after Amitai approves that exact command.
-2. Workdir `/Users/amitairuskin/Pictures/investing-bros/episode-<N>/short-<NN>/`,
+Short cover is generated as three labeled options A/B/C through Codex. Prefer Amitai's
+Mac (machine `566a74b2-614d-458f-be63-660743243124`; ListMachines, then the device shell
+with that machineId). If the Mac is offline, unreachable, or Codex there fails for a
+non-auth reason, fall back automatically to Codex CLI on the box. Hosts, binaries and
+workdirs are in `investing-bros-show` → environment; `scripts/codex_runner.py decide`
+picks the host once you have ListMachines and `codex login status` for each reachable
+machine. Do not switch generators and do not fall back to a Pillow composite (hard rule
+since episode 10). For non-cover artwork, Grokbot may use its own image tool with the
+same prompt when Codex is unavailable. Codex uses Amitai's ChatGPT plan, never an API
+key (`env -u OPENAI_API_KEY`).
+If either Codex needs a login, a device code, or re-auth, stop and tell Amitai: run
+`codex login --device-auth` on that host, show him the URL and one-time code, and wait.
+Never copy `~/.codex/auth.json` between machines and never print tokens. A first device
+code can fail; use a fresh one (episode 11).
+1. Before a run on the Mac, refresh its `~/.agents/skills` copies from this repo's `main`
+   (Codex reads them), only after Amitai approves that exact command. On the box, Codex
+   uses its local skills (`~/.codex/skills`); do not copy `auth.json` from the Mac.
+2. Workdir on the Mac: `/Users/amitairuskin/Pictures/investing-bros/episode-<N>/short-<NN>/`,
    `episode-<N>/cover/` for main-episode artwork, or
-   `episode-<N>/segment-<NN>/` for segment artwork. Put the relevant references there
+   `episode-<N>/segment-<NN>/` for segment artwork. On the box:
+   `/workspace/investing-bros/episode-<N>/art/` (for example `art/cover/a-wide/`,
+   `art/shorts/s01/a/`). Put the relevant references there
    (for main episodes and segments: the selected photo-cutout reference plus original
    host frames from episode N; for face-format Shorts: the episode and gold style
    references and the speaking host's picked frame) and the filled prompt as `prompt-{a|b|c}.txt`. CopyToBox/CopyFromBox need
@@ -148,18 +159,23 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    **one-pass** cover (Codex draws title, pill and show mark with the real host frame
    passed via `-i`); typeset with `make_cover_title.py` only as the fallback when the
    one-pass Hebrew is not exact.
-4. **Default: run independent Codex renders as parallel concurrent sessions on the Mac**
-   (Amitai, episode 10). A/B/C options, wide vs square, and each Short's cover are
-   independent: give each its own subfolder under the workdir (e.g. `cover/a-wide/`,
-   `cover/b-square/`, `short-01/a/`), start every ready `codex exec` at once, then collect
-   the outputs. Run sequentially only when one render depends on another's result (a
-   targeted fix of a failed option, or a typesetting pass that needs that option's PNG).
-   Allow about 5 minutes per session (Shell `block_until_ms` ≥ 600000 each):
+4. **Default: run independent Codex renders as parallel concurrent sessions on the
+   chosen host** (Mac when it is available; otherwise the box). A/B/C options, wide vs
+   square, and each Short's cover are independent: give each its own subfolder under the
+   workdir (e.g. `cover/a-wide/`, `cover/b-square/`, `short-01/a/`), start every ready
+   `codex exec` at once, then collect the outputs. Run sequentially only when one render
+   depends on another's result (a targeted fix of a failed option, or a typesetting pass
+   that needs that option's PNG). Allow about 5 minutes per session (Shell
+   `block_until_ms` ≥ 600000 each). On the Mac:
    ```bash
    cd <option-subdir> && env -u OPENAI_API_KEY ~/.nvm/versions/node/v22.23.1/bin/codex exec \
      --skip-git-repo-check -i ref-episode-<N>-cover.png -i ref-episode-07-gold.png \
      < prompt.txt > codex.log 2>&1
    ```
+   On the box, the same command with `codex` on PATH (`~/.local/bin/codex`), or
+   `python3 scripts/codex_runner.py exec -- --skip-git-repo-check -i …` with the prompt
+   on stdin. After a run, `python3 scripts/codex_runner.py detect-auth < codex.log`
+   must not report `NEEDS_LOGIN`; if it does, stop and tell Amitai.
    **Feed the prompt on stdin** (no prompt argument): `-i` takes several values and
    swallows a trailing prompt argument as another image path (episode 10). Codex reads
    the instructions from stdin when no prompt argument is given.
@@ -169,7 +185,8 @@ Mac is unavailable. Codex uses Amitai's ChatGPT plan, never an API key.
    `env -u OPENAI_API_KEY` keeps billing on the ChatGPT plan. `--skip-git-repo-check`
    is needed outside a trusted folder. Never put the prompt after `-i …` on the command
    line; use stdin as above.
-   Never print or copy `~/.codex/auth.json`. Verified with codex-cli 0.163.0.
+   Never print or copy `~/.codex/auth.json`. Verified with codex-cli 0.163.0 on the Mac
+   and 0.167.2 on the box (episode 11).
 5. Built-in `$imagegen` is gpt-image-2 (per OpenAI docs) with no model, quality or
    size control: it picks the size (square 1254×1254, 9:16 ~941×1672). Copy the PNG to
    the box. A one-pass Shorts cover (the default) is upscaled there straight to the gate

@@ -75,7 +75,8 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    current standard** (Amitai, episode 10: covers without the hosts' faces were the old
    format): a real frame of the host who speaks in the Short, picked from the verified
    face grids and passed to Codex as an `-i` input, kept photographic. **Default (Amitai's
-   pick, episode 10): the one-pass Codex cover** — Codex on Amitai's Mac draws art, Hebrew
+   pick, episode 10): the one-pass Codex cover** — Codex (Mac first, box CLI fallback;
+   `investing-bros-brand`) draws art, Hebrew
    title, pill and logo in one pass with the real face frame via `-i`, prompt fed on stdin
    (`-i` swallows a trailing prompt argument); upscale its ~941×1672 PNG to 1080×1920 with
    ffmpeg (lanczos) straight to `שורט-NN-<נושא>-cover.jpg`. Only if the one-pass Hebrew
@@ -86,8 +87,9 @@ Times are on the raw timeline, the same one as `segments.json`. To tell Amitai w
    upload uses option A. Changing `cover_title` after that means rendering this Short again and uploading
    it again, because the opening banner burns the title in. Check the pick with
    `check_cover.py --kind shorts-vertical --config short.json` and use it both as
-   `-cover.jpg` and as the YouTube custom thumbnail. No Pillow compositing on the box: if
-   Codex is unavailable, report the blocker to the Producer; a legacy `make_cover.py`
+   `-cover.jpg` and as the YouTube custom thumbnail. No Pillow compositing: if Codex needs
+   a login, stop and tell Amitai (device-code URL and code, then wait); if the Mac is
+   unreachable, brand falls back to the box CLI. A legacy `make_cover.py`
    rebuild does not complete the current standing batch.
 7. **Upload to Drive** — every Short's video and its cover/thumbnail go in the `Shorts/` subfolder of the current episode's Drive folder (`investing-bros-show` → Drive tree, Shorts rule; find the episode folder by its `פרק N` prefix; create `Shorts/` inside it if missing). File names follow `investing-bros-show` → Naming:
    - **Cover (`.jpg`) and captions (`.srt`)** — small: the Drive connector's create-file call into the `Shorts/` folder id (JPEG as base64 with `image/jpeg`; `.srt` as text with `text/plain`, conversion to Google Docs **off**).

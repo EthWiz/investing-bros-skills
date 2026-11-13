@@ -12,7 +12,7 @@ the old format; that style (reference `shorts-title-strips-ep1.png`, Drive
 pill and show mark.
 
 **Default since episode 10 (Amitai's pick, 2026-11-05): the one-pass Codex cover with
-the real face.** Codex on the Mac renders the whole cover (art, title strips, `פרק N`
+the real face.** Codex renders the whole cover (art, title strips, `פרק N`
 pill, show mark) in one pass, with the speaking host's real picked frame passed via
 `-i`. `make_cover_title.py` over text-free Codex art is only the fallback when the
 one-pass Hebrew is not exact after one targeted regenerate. Feed the prompt on stdin
@@ -50,9 +50,15 @@ round 1 approves the episode title and this Short's cover title. There is no bes
 title. A later change to that title is a re-render of the Short plus a re-upload, because
 the cover title is burned into the opening banner.
 
-## How to make it (Codex on Amitai's Mac only)
-There is no box fallback: no Pillow compositing of faces, art or strips. Independent Codex renders (A/B/C for this Short, and other Shorts' covers) run as **parallel concurrent sessions** on the Mac, each in its own subfolder; sequential only when one depends on another (prompts → Codex backend). If Codex or the
-Mac is unavailable, report the blocker (to the Producer when one runs the episode).
+## How to make it (Codex: Mac first, box CLI fallback)
+No Pillow compositing of faces, art or strips, and no other generator. Prefer Codex on
+Amitai's Mac. If the Mac is offline, unreachable, or Codex there fails for a non-auth
+reason, fall back automatically to Codex CLI on the box (`scripts/codex_runner.py`;
+prompts → Codex backend). Independent Codex renders (A/B/C for this Short, and other
+Shorts' covers) run as **parallel concurrent sessions** on the chosen host, each in its
+own subfolder; sequential only when one depends on another. If either Codex needs a
+login, a device code, or re-auth, stop and tell Amitai (show him the URL and one-time
+code and wait); never copy `~/.codex/auth.json` or print tokens.
 
 1. **Pick the face.** From the episode's verified face grids, take a picked frame of the
    host who speaks in this Short (a different frame per option where possible). Copy it
@@ -96,7 +102,7 @@ rebuilding older Shorts.
 
 ## Done when
 `שורט-NN-<נושא>-cover.jpg` (1080×1920 JPEG) sits next to its Short in `Shorts/` in the
-face format, made by Codex on Amitai's Mac, with the exact Hebrew hook, the `פרק N`
+face format, made by Codex (Mac, or the box CLI fallback), with the exact Hebrew hook, the `פרק N`
 pill and the bottom-right show mark, no name strip, and `check_cover.py --config` passes.
 Until the design is dialed in, Amitai selected it from three clearly labeled Codex
 options.

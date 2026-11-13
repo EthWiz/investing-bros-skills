@@ -24,10 +24,16 @@ using Codex through the backend recipe in [prompts](prompts.md). The episode own
 not promote an option to the final delivery filename before his selection. For a main
 episode, each option includes a directly composed square cover and matching wide
 thumbnail. Put the option label in its filename, folder or review presentation, never
-inside the artwork. **Hard rule (episode 10): Codex on Amitai's Mac makes every episode,
-segment and Shorts cover; there is no fallback.** No Pillow template or compositing on the
-box, no other generator. Codex being unavailable is a blocker to report, not permission
-to switch. **Default (episode 10): independent Codex renders run as parallel concurrent sessions on the Mac** — A/B/C options, wide vs square, and each Short's cover each get their own subfolder; start every ready session together and collect. Sequential only when one render depends on another (see prompts → Codex backend).
+inside the artwork. **Hard rule: Codex makes every episode, segment and Shorts cover.**
+Prefer Codex on Amitai's Mac. If the Mac is offline, unreachable, or Codex there fails
+for a non-auth reason, fall back automatically to Codex CLI on the box
+(`scripts/codex_runner.py`; prompts → Codex backend). No Pillow template or compositing,
+no other generator. If either Codex needs a login, a device code, or re-auth, stop and
+tell Amitai — show him the URL and one-time code and wait. Never copy
+`~/.codex/auth.json` or print tokens. **Default: independent Codex renders run as
+parallel concurrent sessions on the chosen host** — A/B/C options, wide vs square, and
+each Short's cover each get their own subfolder; start every ready session together and
+collect. Sequential only when one render depends on another (see prompts → Codex backend).
 
 ## Selected references
 Inspect both before every new cover (Drive `references/covers`, IDs in the
