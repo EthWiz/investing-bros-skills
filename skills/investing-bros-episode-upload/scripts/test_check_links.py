@@ -142,3 +142,15 @@ def test_cli_with_mocked_http(tmp_path, monkeypatch, capsys):
     m.write_text("https://youtube.com.evil.io/watch?v=AbCdEfGhIjK\nsent by Grokbot\n", encoding="utf-8")
     assert cl.main([str(m), "--message"]) == 1
     assert "look-alike" in capsys.readouterr().out
+
+
+def test_leftover_placeholders_are_a_failure(tmp_path, capsys):
+    assert cl.placeholders("לפרק המלא: <EPISODE_URL>\n") == ["<EPISODE_URL>"]
+    assert cl.placeholders("🎧 לפרק המלא ביוטיוב: <EPISODE_URL>&t=1723s\nהאזינו בספוטיפיי: <SPOTIFY_EPISODE_URL>\n") == [
+        "<EPISODE_URL>", "<SPOTIFY_EPISODE_URL>"]
+    assert cl.placeholders("לפרק המלא: https://youtu.be/AbCdEfGhIjK\n") == []
+    bad = tmp_path / "seg.txt"
+    bad.write_text("לפרק המלא: <EPISODE_URL>\n", encoding="utf-8")
+    assert cl.main([str(bad), "--offline"]) == 1
+    out = capsys.readouterr().out
+    assert "leftover placeholder <EPISODE_URL>" in out

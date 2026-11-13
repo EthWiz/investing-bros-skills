@@ -5,7 +5,7 @@
   echo "https://youtu.be/ID" | check_links.py -
 
 Never retype a video ID or URL: copy it from tool output (Studio, yt_upload.py, the
-API), then run this. YouTube links are resolved through oEmbed
+API), then run this. Leftover template tokens such as <EPISODE_URL> or <SPOTIFY_EPISODE_URL> are a failure (replace them with the real URL; use the Spotify show link until the episode is listed). YouTube links are resolved through oEmbed
 (https://www.youtube.com/oembed?url=...): 200 = public or unlisted, 401/403 = the video
 exists but is private (or embedding is off), 400/404 = no such video (a mistyped ID,
 episode 9's I-vs-l). URLs are parsed with urllib.parse: YouTube is recognised by exact
@@ -27,6 +27,8 @@ import urllib.request
 
 SIGNATURE = "sent by Grokbot"
 URL_RE = re.compile(r"https?://[^\s<>\"')\]]+")
+# Template tokens left in a description or message (episode 11: a segment went up with <EPISODE_URL>).
+PLACEHOLDER_RE = re.compile(r"<[A-Z][A-Z0-9_]{2,}>")
 YT_ID_RE = re.compile(r"[A-Za-z0-9_-]{11}")
 # Exact host names (no suffix matching: "youtube.com.evil.io" is not YouTube).
 YOUTUBE_HOSTS = {"youtube.com", "www.youtube.com", "m.youtube.com", "music.youtube.com",
@@ -39,6 +41,15 @@ KNOWN_HOSTS = YOUTUBE_HOSTS | {
 LOOKALIKE = ("youtube", "youtu.be", "google", "spotify", "redcircle", "apple")
 YT_PAGES = ("/channel/", "/c/", "/user/", "/@", "/playlist", "/feed/")  # not videos
 UA = {"User-Agent": "Mozilla/5.0 (investing-bros check_links)"}
+
+
+def placeholders(text: str) -> list[str]:
+    """Leftover template tokens such as <EPISODE_URL> or <SPOTIFY_EPISODE_URL>."""
+    found = []
+    for tok in PLACEHOLDER_RE.findall(text):
+        if tok not in found:
+            found.append(tok)
+    return found
 
 
 def find_links(text: str) -> list[str]:
@@ -153,6 +164,9 @@ def main(argv=None) -> int:
         text = sys.stdin.read() if f == "-" else open(f, encoding="utf-8").read()
         if a.message and not signature_ok(text):
             print(f"{f}: the message must end with the line '{SIGNATURE}'")
+            bad += 1
+        for tok in placeholders(text):
+            print(f"{f}: leftover placeholder {tok}: replace it with the real URL before posting")
             bad += 1
         links = find_links(text)
         if not links:
