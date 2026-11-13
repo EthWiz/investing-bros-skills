@@ -65,7 +65,10 @@ The full video episode (`video/פרק-N-וידאו.mp4`, with its teaser + intro
    - **Card:** exactly ONE Video card to the full episode at 0:30 (in sync with the nudge). YouTube rejects a second card to the same video. Set BOTH custom message and teaser text to `לפרק המלא`; never leave them blank (a blank teaser shows the full long title, which gets cut off). To pick the target, paste the full-episode URL into **Search videos from other channels** in the card picker (searching your own videos by URL returns nothing); verify title + thumbnail.
    - **Verify** after saving: open the watch page fresh, check around 0:30 that the teaser appears and the card links to the full-episode video ID.
    - **End screen** over the last 20 s: the full episode as a video element + a
-     Subscribe element. This segment-specific link-back stays unchanged; the
+     Subscribe element, clear of faces (including foreheads). Reopen and play the
+     preview; if it does not render, reload once or twice, then report if the preview still doesn't render — do not leave elements
+     in the default template position (`investing-bros-publish` → studio-checks).
+     This segment-specific link-back stays unchanged; the
      previous-episode end screen over the canonical outro belongs only to the full
      episode.
    - **No pinned comment** (Amitai, 2026-11-01): the description, card and end screen carry the link.
