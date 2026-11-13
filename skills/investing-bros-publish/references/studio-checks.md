@@ -17,7 +17,7 @@ verification.
 ## Full episode
 - **endscreen**: Content → the video → Editor → End screen. Add one or two previous-episode Video
   elements plus Subscribe, spanning exactly the last 20 s. Save, reopen the Editor and play the
-  preview over the window. If the preview does not render, reload until it plays — do not leave
+  preview over the window. If the preview does not render, reload once or twice, then report if the preview still doesn't render — do not leave
   elements in the default template position. Keep every Video element clear of faces, including
   foreheads.
 
@@ -27,7 +27,7 @@ verification.
   `לפרק המלא` → drag to ~0:30 → Save. Only one card per target video is allowed. Reopen to check.
 - **endscreen**: Editor → End screen → Video (*Choose specific video* → the full episode) +
   Subscribe over the last 20 s, clear of faces (including foreheads). Reopen and play the
-  preview; if it does not render, reload until it plays — do not leave elements in the default
+  preview; if it does not render, reload once or twice, then report if the preview still doesn't render — do not leave elements in the default
   template position.
 
 ## Shorts

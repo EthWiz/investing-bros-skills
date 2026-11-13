@@ -66,7 +66,7 @@ The full video episode (`video/פרק-N-וידאו.mp4`, with its teaser + intro
    - **Verify** after saving: open the watch page fresh, check around 0:30 that the teaser appears and the card links to the full-episode video ID.
    - **End screen** over the last 20 s: the full episode as a video element + a
      Subscribe element, clear of faces (including foreheads). Reopen and play the
-     preview; if it does not render, reload until it plays — do not leave elements
+     preview; if it does not render, reload once or twice, then report if the preview still doesn't render — do not leave elements
      in the default template position (`investing-bros-publish` → studio-checks).
      This segment-specific link-back stays unchanged; the
      previous-episode end screen over the canonical outro belongs only to the full
