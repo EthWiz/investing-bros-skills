@@ -877,6 +877,9 @@ def cmd_approve(ep, a):
     spec = SPEC.get(key)
     if not spec or spec["kind"] != "approval":
         print(f"{key} is not an approval stage", file=sys.stderr)
+        target = key if key in MARKABLE else (a.stage if a.stage in MARKABLE else None)
+        if target:
+            print(f"record it with: {P} mark EP {target} --evidence \"<what you checked>\"", file=sys.stderr)
         return 2
     ok, msg = owner_quote_ok(s, a.by)
     if not ok:

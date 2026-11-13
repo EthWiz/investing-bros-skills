@@ -79,7 +79,7 @@ python3 $P retro "$EP"                             # after the last track is liv
    written into the upload record, so the swap does not stale `ok`. A re-upload makes that
    track's `ok` and the publish OK stale. A later art change of mind stales that art approval
    and `publish_ok`.
-7. **Publish.** After the approval round, approve each asset `ok` and each art pick, then the
+7. **Publish.** After the approval round, record it with `mark EP release.approval_round --evidence` (it is a mark, not an `approve` stage), approve each asset `ok` and each art pick, then the
    owner's publish OK (`approve release publish_ok`; it needs those approvals and the current
    `cuts_ok`, and is never waived). Then `investing-bros-publish`; its `can-public` re-checks
    this state file and the thumbnail records every time. The publish gate counts a matching
