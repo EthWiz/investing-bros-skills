@@ -3,21 +3,28 @@
 
 Usage:
   find_past_episode_refs.py SEGMENTS_JSON --episode N --index EPISODE_INDEX_JSON
-      [--edit EDIT_JSON_MAP] [--offset SECONDS] [--out CARDS_JSON]
+      [--edit EDIT_JSON] [--offset SECONDS] [--out CARDS_JSON]
 
 Detection:
   * by number: "פרק 8", "בפרק שמונה", "episode 8" (digits or Hebrew number words)
   * by topic: a back-reference cue ("דיברנו", "בפרק", "talked about", ...) in the same
     segment as a topic keyword from the index, for an episode < N.
 Pick: one card per referenced episode at its first strong mention; rank by
-(number references first, then mention count); max 4. Times are converted to the
-delivered video with --offset (seconds added) — check them by ear before Studio.
-Candidates are a proposal: a human/agent reads every quote before adding cards.
+(number references first, then mention count); max 4. Transcript times are in
+raw-master time. Pass --edit extras/edit.json so start and cuts are mapped with
+edit_map.py, then --offset for the teaser + intro on the delivered video.
+Without --edit, only --offset is added, which is wrong when the edit has cuts
+(episode 12 first computed 16:40 instead of 13:28). Check times by ear before
+Studio. Candidates are a proposal: a human/agent reads every quote before
+adding cards.
 """
 import argparse
 import json
 import re
 import sys
+from pathlib import Path
+
+import edit_map as em
 
 MAX_CARDS = 4
 HEB_NUM = {"אחד": 1, "אחת": 1, "שתיים": 2, "שניים": 2, "שני": 2, "שלוש": 3, "שלושה": 3, "ארבע": 4,
@@ -29,6 +36,26 @@ CUE_RE = re.compile(r"דיברנו|דברנו|סיפרנו|בפרק|בפרקים
 
 def _num(tok):
     return int(tok) if tok.isdigit() else HEB_NUM.get(tok)
+
+
+def load_edit(path):
+    """Return (start, end, cuts) from an edit.json (raw seconds)."""
+    data = json.loads(Path(path).read_text(encoding="utf-8"))
+    start = em.to_sec(data["start"])
+    end = em.to_sec(data["end"])
+    cuts = [[em.to_sec(a), em.to_sec(b)] for a, b in (data.get("cuts") or [])]
+    return start, end, cuts
+
+
+def video_time(raw_start, offset=0.0, edit=None):
+    """Map a raw transcript time to delivered-video seconds, or None if cut/outside."""
+    if edit is None:
+        return raw_start + offset
+    start, end, cuts = edit
+    edited = em.raw_to_edited(raw_start, start, end, cuts)
+    if edited is None:
+        return None
+    return edited + offset
 
 
 def find(segments, episode, index):
@@ -46,21 +73,31 @@ def find(segments, episode, index):
                 if n < episode and any(k.lower() in text.lower() for k in e.get("topics", [])):
                     found.append((n, "topic"))
         for n, how in found:
-            h = hits.setdefault(n, {"episode": n, "how": how, "count": 0, "first": s})
+            h = hits.setdefault(n, {"episode": n, "how": how, "count": 0, "first": s, "mentions": []})
             h["count"] += 1
+            h["mentions"].append(s)
             if how == "number" and h["how"] == "topic":
                 h.update(how="number", first=s)
     return hits
 
 
-def pick(hits, index, offset=0.0):
+def pick(hits, index, offset=0.0, edit=None):
     eps = {e["episode"]: e for e in index["episodes"]}
     ranked = sorted(hits.values(), key=lambda h: (h["how"] != "number", -h["count"], h["first"]["start"]))
     cards = []
     for h in ranked[:MAX_CARDS]:
         e = eps[h["episode"]]
         vid = e.get("youtube_id")
-        cards.append({"v5_timestamp": round(h["first"]["start"] + offset, 2), "quote": h["first"]["text"],
+        t = None
+        quote_seg = h["first"]
+        for s in h.get("mentions") or [h["first"]]:
+            t = video_time(s["start"], offset, edit)
+            if t is not None:
+                quote_seg = s
+                break
+        if t is None:
+            continue
+        cards.append({"v5_timestamp": round(t, 2), "quote": quote_seg["text"],
                       "referenced_episode": h["episode"], "youtube_video_id": vid,
                       "url": f"https://youtu.be/{vid}" if vid else None,
                       "card_teaser_text": e["title"], "detection": f"{h['how']} x{h['count']}"})
@@ -93,13 +130,15 @@ def main(argv=None):
     ap.add_argument("segments")
     ap.add_argument("--episode", type=int, required=True)
     ap.add_argument("--index", required=True)
+    ap.add_argument("--edit", help="edit.json (start, end, cuts) so raw times map through cuts")
     ap.add_argument("--offset", type=float, default=0.0)
     ap.add_argument("--out")
     a = ap.parse_args(argv)
     segs = json.load(open(a.segments, encoding="utf-8"))
     segs = segs.get("segments", segs) if isinstance(segs, dict) else segs
     index = json.load(open(a.index, encoding="utf-8"))
-    cards = pick(find(segs, a.episode, index), index, a.offset)
+    edit = load_edit(a.edit) if a.edit else None
+    cards = pick(find(segs, a.episode, index), index, a.offset, edit)
     txt = json.dumps(cards, ensure_ascii=False, indent=1)
     if a.out:
         open(a.out, "w", encoding="utf-8").write(txt)

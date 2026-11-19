@@ -138,11 +138,13 @@ box can stall.
 Find every reference to a past episode (by number or by topic) for the YouTube info cards:
 ```bash
 python3 scripts/find_past_episode_refs.py "$EP/extras/transcript/segments.json" --episode N \
-  --index <investing-bros-show>/references/episode-index.json --offset <raw→video shift> \
+  --index <investing-bros-show>/references/episode-index.json \
+  --edit "$EP/extras/edit.json" --offset <teaser+intro seconds> \
   --out "$EP/extras/past-episode-cards.json"
 ```
-The transcript is in raw-master time: convert to the delivered video (teaser + intro shift,
-minus any cuts before that point; `edit_map.py`), then check each time by ear. Max 4 cards,
+The transcript is in raw-master time: `--edit` maps start and cuts through `edit_map.py`,
+then `--offset` adds the teaser + intro. Do not pass only `--offset` when the edit has
+cuts (episode 12 first computed 16:40 instead of 13:28). Check each time by ear. Max 4 cards,
 one per referenced episode at its first strong mention, clearest / most repeated first. Read
 every quote and delete false hits; write `[]` when nothing references a past episode. A topic
 reference to an episode missing from `episode-index.json`: look it up (Drive tree, channel),
