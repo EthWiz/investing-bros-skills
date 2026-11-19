@@ -120,6 +120,14 @@ scripts/assemble_episode.sh "$EP/video/פרק-N-וידאו.mp4" \
 
 The output keeps the body's native frame rate; use `--fps RATE` only for a deliberate
 conversion. `--force` replaces an existing output and rebuilds its cached parts.
+The cold-open teaser is baked into this master (`--before`). Changing the
+teaser's framing or recutting it after assembly means remastering the main
+(reuse the body cache; do not pass `--force` unless the body also changed),
+making a new YouTube copy, re-uploading, and updating every description and
+Shorts link that pointed at the old ID. A superseded Private copy of the same
+asset is deleted without asking (`investing-bros-episode-upload`); never delete
+the current version or anything public. Segment packages do not include the
+teaser, so they do not need a remaster for a teaser-only change.
 The teaser renderer's `assembly_audio` is a normalized PCM
 sidecar; pass it with `--before-audio` so AAC encoder delay cannot move the next
 segment's speech. The script decodes every other part to PCM too, verifies each
