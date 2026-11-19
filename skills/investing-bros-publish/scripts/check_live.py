@@ -14,6 +14,11 @@ youtube: for each video ID (copied from Studio, never retyped):
   private  = oEmbed 401/403
 oEmbed 400/404 means no such video (a mistyped ID). The channel feed lists only the
 newest ~15 uploads, which always covers the episode being published.
+A just-published video (especially a Short) can return oEmbed 200 but stay out of
+the channel feed for about 1–3 minutes, so check_live reports it as unlisted. When
+--expect public, the check retries the feed for about three minutes (six waits of
+30 s; override with --retries / --wait) before failing. Episode 12's first Short
+passed on retry after that lag.
 
 This is the outside check only. The Studio checks (Related video on Shorts, cards,
 end screens, subtitles) are done by reopening the Studio page; see the SKILL.md.
@@ -22,6 +27,7 @@ Exit 0 when every check passes, 1 otherwise.
 from __future__ import annotations
 
 import argparse
+import time
 import re
 import sys
 import urllib.error
@@ -102,24 +108,37 @@ def youtube_state(oembed_status: int, in_feed: bool) -> str:
     return f"unknown (HTTP {oembed_status})"
 
 
-def check_youtube(ids: list[str], expect: str, get=http_get) -> list[str]:
+def check_youtube(ids: list[str], expect: str, get=http_get,
+                  retries: int = 0, wait: float = 30.0, sleep=time.sleep) -> list[str]:
     out = []
     bad = [i for i in ids if not ID_RE.match(i)]
     for i in bad:
         out.append(f"FAIL {i!r} is not an 11-character video ID; copy it from Studio")
     ids = [i for i in ids if ID_RE.match(i)]
-    status, feed = get(CHANNEL_FEED)
-    if status != 200:
-        return out + [f"FAIL channel feed returned HTTP {status}"]
-    listed = channel_ids(feed)
-    for vid in ids:
-        url = OEMBED + urllib.parse.quote(f"https://www.youtube.com/watch?v={vid}", safe="")
-        code, _ = get(url)
-        state = youtube_state(code, vid in listed)
-        mark = "ok  " if state == expect else "FAIL"
-        out.append(f"{mark} {vid}: {state} (expected {expect}; oEmbed {code}, "
-                   f"{'in' if vid in listed else 'not in'} channel feed)")
-    return out
+    attempts = retries if expect == "public" and retries > 0 else 0
+    last = []
+    for attempt in range(attempts + 1):
+        status, feed = get(CHANNEL_FEED)
+        if status != 200:
+            return out + [f"FAIL channel feed returned HTTP {status}"]
+        listed = channel_ids(feed)
+        last = []
+        lagging = []
+        for vid in ids:
+            url = OEMBED + urllib.parse.quote(f"https://www.youtube.com/watch?v={vid}", safe="")
+            code, _ = get(url)
+            state = youtube_state(code, vid in listed)
+            mark = "ok  " if state == expect else "FAIL"
+            last.append(f"{mark} {vid}: {state} (expected {expect}; oEmbed {code}, "
+                        f"{'in' if vid in listed else 'not in'} channel feed)")
+            if expect == "public" and code == 200 and vid not in listed:
+                lagging.append(vid)
+        if not lagging or attempt == attempts:
+            break
+        print(f"waiting {wait:g}s for channel feed ({', '.join(lagging)} not listed yet; "
+              f"attempt {attempt + 1}/{attempts})", file=sys.stderr)
+        sleep(wait)
+    return out + last
 
 
 def main(argv=None) -> int:
@@ -131,11 +150,15 @@ def main(argv=None) -> int:
     yt = sub.add_parser("youtube")
     yt.add_argument("ids", nargs="+")
     yt.add_argument("--expect", choices=["public", "unlisted", "private"], required=True)
+    yt.add_argument("--retries", type=int, default=6,
+                    help="when expecting public, retry a 200 oEmbed not yet in the channel feed")
+    yt.add_argument("--wait", type=float, default=30,
+                    help="seconds between channel-feed retries (default 30; six retries ≈ 3 min)")
     a = ap.parse_args(argv)
     if a.cmd == "redcircle":
         lines = check_redcircle(a.episode, _read(a.title) if a.title else None)
     else:
-        lines = check_youtube(a.ids, a.expect)
+        lines = check_youtube(a.ids, a.expect, retries=a.retries, wait=a.wait)
     print("\n".join(lines))
     return 1 if any(l.startswith("FAIL") for l in lines) else 0
 
