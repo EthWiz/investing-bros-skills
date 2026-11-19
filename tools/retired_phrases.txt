@@ -46,3 +46,7 @@ segment and Shorts cover; there is no fallback
 It means Studio is acting as Grok Bot
 # Shorts Hebrew captions: Languages → Upload manual, not Add language (episode 11)
 Subtitles → Add language → Hebrew
+
+# Shorts Hebrew srt: no separate Hebrew translation row; proof is Done after reopen (ep 12, 2026-11-19)
+the Hebrew row shows as published
+the language row shows it published
