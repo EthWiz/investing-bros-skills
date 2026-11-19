@@ -53,3 +53,38 @@ def test_check_youtube():
     out = cl.check_youtube(["N_EaOlbiPAc", "mzV4BAzqdD0", "short"], "public", get)
     assert sum(l.startswith("FAIL") for l in out) == 3
     assert cl.check_youtube(["mzV4BAzqdD0"], "private", get)[0].startswith("ok")
+
+
+def test_check_youtube_retries_feed_lag():
+    calls = {"feed": 0}
+
+    def get(url):
+        if "feeds/videos.xml" in url:
+            calls["feed"] += 1
+            ids = "<yt:videoId>YL1hdpdcVt8</yt:videoId>"
+            if calls["feed"] >= 3:
+                ids += "<yt:videoId>N_EaOlbiPAc</yt:videoId>"
+            return 200, f"<feed>{ids}</feed>"
+        if "N_EaOlbiPAc" in url:
+            return 200, "{}"
+        return 404, ""
+
+    slept = []
+    out = cl.check_youtube(["N_EaOlbiPAc"], "public", get, retries=5, wait=1, sleep=slept.append)
+    assert all(l.startswith("ok") for l in out) and "public" in out[0]
+    assert calls["feed"] == 3 and slept == [1, 1]
+
+
+def test_check_youtube_feed_lag_gives_up():
+    def get(url):
+        if "feeds/videos.xml" in url:
+            return 200, CHANNEL
+        if "N_EaOlbiPAc" in url:
+            return 200, "{}"
+        return 404, ""
+
+    slept = []
+    out = cl.check_youtube(["N_EaOlbiPAc"], "public", get, retries=2, wait=0, sleep=slept.append)
+    assert out[0].startswith("FAIL") and "unlisted" in out[0]
+    assert slept == [0, 0]
+
