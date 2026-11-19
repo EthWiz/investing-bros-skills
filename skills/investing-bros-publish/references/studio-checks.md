@@ -43,8 +43,7 @@ change is actually there. If it is, you're done; if it isn't, save again.
     tick it after your own reopen check.
   - Still failing after that reload, with the episode Public and אחים להשקעות active: `fail shortNN.related --reason ...`, leave the
     Short Private and report it. No waiver.
-- **srt**: Languages → Upload manual → With timing (Hebrew is the Short's own language, so it is greyed out under Add language). Reopen Subtitles and check that
-  the Hebrew row shows as published. A "failed" toast is a failure even if the lines show in the editor.
+- **srt**: Languages → Upload manual → With timing (Hebrew is the Short's own language, so it is greyed out under Add language and the Languages / Translations table has no separate Hebrew row). After the upload toast, reopen Subtitles: the Hebrew editor should show the lines with Done (no pending Publish). A "failed" toast is a failure even if the lines show in the editor. Do not look for a Hebrew translation row in the Languages table as proof it published.
 - **cover**: desktop Studio may not offer a cover for a Short, and `thumbnails.set` sometimes refuses
   one. Amitai or Nadav sets it in the YouTube phone app, then
   `publish_checklist.py record-thumb STATE --asset shortNN --thumbnail <cover> --video-id ID --evidence <screenshot> --by "<owner> HH:MM: <their words>"`
